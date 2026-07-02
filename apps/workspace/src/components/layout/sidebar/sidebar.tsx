@@ -5,6 +5,7 @@ import { useAccountContext } from "@/domains/auth";
 import { useAgentThreadsQuery } from "@/domains/agents";
 import { cn } from "@/lib/utils";
 import { SidebarRail } from "./components/sidebar-rail";
+import { SidebarRailSkeleton } from "./components/sidebar-rail-skeleton";
 import { SidebarSecondaryPanel } from "./components/sidebar-secondary-panel";
 import { SidebarThreadHistoryDialog } from "./components/sidebar-thread-history-dialog";
 import { SidebarDeleteThreadAlert } from "./components/sidebar-delete-thread-alert";
@@ -18,6 +19,7 @@ export function Sidebar() {
   const account = useAccountContext();
 
   const workspaceOrganizationId = account.workspace.organizationId;
+  const isLoading = account.workspace.status === "loadingSession" || !workspaceOrganizationId;
 
   const agentThreads = useAgentThreadsQuery(workspaceOrganizationId, {
     enabled: Boolean(workspaceOrganizationId),
@@ -40,7 +42,7 @@ export function Sidebar() {
             : "max-w-14",
         )}
       >
-        <SidebarRail />
+        {isLoading ? <SidebarRailSkeleton /> : <SidebarRail />}
         {/* 3px darker divider between rail and secondary panel */}
         <div
           className={cn(

@@ -26,6 +26,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { SidebarPanelLayout } from "./sidebar-panel-layout";
+import { SpacesPanelSkeleton } from "@/components/loading-ui";
 
 function SpaceItem({
   space,
@@ -266,6 +267,7 @@ export function SidebarSpacePanel() {
 
   const spaces = useWorkspaceSpacesQuery(orgId);
   const spaceList = spaces ?? [];
+  const isLoadingSpaces = spaces === undefined;
 
   const activeSpace = spaceSlug ? spaceList.find((s) => s.slug === spaceSlug) ?? null : null;
 
@@ -274,6 +276,10 @@ export function SidebarSpacePanel() {
   }
 
   const showActiveView = activeSpace && (level === "space" || level === "project");
+
+  if (isLoadingSpaces) {
+    return <SpacesPanelSkeleton />;
+  }
 
   return (
     <SidebarPanelLayout

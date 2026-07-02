@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
+import { ProgressBar } from "@qentrah/our-platform-components";
+import { ColorDot } from "@qentrah/ui";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { useProjectsIndexQuery } from "../../api/projects";
 import { useAccountContext } from "@/domains/auth";
-import { cn } from "@/lib/utils";
 
 const statusDot: Record<string, string> = {
   planned: "bg-gray-400",
@@ -44,18 +45,17 @@ export function RecentProjectsWidget() {
             extraParams={{ project: project.id }}
             className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors text-left"
           >
-            <span className={cn("h-2 w-2 rounded-full shrink-0", statusDot[project.status] ?? "bg-gray-400")} />
+            <ColorDot dotClassName={statusDot[project.status] ?? "bg-gray-400"} size="sm" />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-foreground truncate">{project.name}</p>
               <p className="text-[11px] text-muted-foreground capitalize">{project.status}</p>
             </div>
             <div className="text-right shrink-0">
-              <div className="h-1 w-12 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary rounded-full"
-                  style={{ width: `${project.progress ?? 0}%` }}
-                />
-              </div>
+              <ProgressBar
+                value={project.progress ?? 0}
+                size="xs"
+                className="w-12"
+              />
               <p className="text-[10px] text-muted-foreground mt-1">{project.progress ?? 0}%</p>
             </div>
           </WorkspaceLink>

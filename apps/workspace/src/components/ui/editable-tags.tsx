@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Plus, X } from "lucide-react";
+import { ColorDot } from "@qentrah/ui";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
@@ -134,7 +135,7 @@ export function EditableTags({
                             isSelected && "ring-2 ring-primary ring-offset-1 ring-offset-background"
                           )}
                         >
-                          <span className={cn("h-2 w-2 rounded-full shrink-0", cStyle.dot)} />
+                          <ColorDot dotClassName={cStyle.dot} size="sm" />
                           <span className="capitalize">{cKey}</span>
                         </button>
                       );
@@ -275,7 +276,7 @@ export function EditableTags({
                               )}
                               title={cKey}
                             >
-                              <span className={cn("h-2 w-2 rounded-full", cStyle.dot)} />
+                              <ColorDot dotClassName={cStyle.dot} size="sm" />
                             </button>
                           );
                         })}

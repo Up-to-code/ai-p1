@@ -31,13 +31,13 @@ export function CustomPermissionsDrawer({
         <ModulePanelHeader
           left={
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-xs font-medium text-muted-foreground">
                 {t("roles.pageEyebrow")}
               </p>
-              <ModulePanelTitle className="text-lg font-black uppercase tracking-tight">
+              <ModulePanelTitle className="text-lg font-semibold">
                 {t("roles.pageTitle")}
               </ModulePanelTitle>
-              <ModulePanelDescription className="max-w-2xl text-xs font-medium leading-5">
+              <ModulePanelDescription className="max-w-2xl text-sm text-muted-foreground">
                 {t("roles.pageDesc")}
               </ModulePanelDescription>
             </div>

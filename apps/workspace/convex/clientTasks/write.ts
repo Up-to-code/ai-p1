@@ -1,14 +1,85 @@
 import { v } from "convex/values";
-import { mutation } from "../_generated/server";
+import { internalMutation, mutation } from "../_generated/server";
+import type { Id, MutationCtx } from "../_generated/dataModel";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { cancelQueuedJobsForSource, scheduleTaskReminders } from "../notifications/helpers";
 import { clientTaskInputValidator, clientTaskValidator } from "./validators";
-import { validateStrictTaskDates, updateProjectRollup } from "../projects/rollup";
+import { updateProjectRollup, validateStrictTaskDates } from "../projects/rollup";
 import { assertActiveWorkspaceRecord } from "../workspace/businessData";
 
 function presentTask<TTask extends { _id: string; visibility?: "private" | "team" | "workspace" }>(task: TTask) {
   return { ...task, id: task._id, visibility: task.visibility ?? "private" };
+}
+
+async function createTaskCore(ctx: MutationCtx, args: { organizationId: string; input: Parameters<typeof clientTaskInputValidator.parse>[0]; actorUserId: string }) {
+  if (args.input.projectId) {
+    await validateStrictTaskDates(ctx.db, args.input.projectId, args.input.dueDate);
+  }
+
+  const now = Date.now();
+  const id = await ctx.db.insert("tasks", {
+    organizationId: args.organizationId,
+    ...args.input,
+    visibility: args.input.visibility ?? "private",
+    createdByUserId: args.actorUserId,
+    createdAt: now,
+    updatedAt: now,
+    ...(args.input.status === "done" ? { completedAt: now } : {}),
+  });
+
+  if (args.input.projectId) {
+    await updateProjectRollup(ctx.db, args.input.projectId);
+  }
+
+  const task = await ctx.db.get(id);
+  if (!task) throw new Error("Task could not be created.");
+  await scheduleTaskReminders(ctx, task);
+  return { presented: presentTask(task), now };
+}
+
+async function updateTaskCore(ctx: MutationCtx, args: { organizationId: string; taskId: Id<"tasks">; input: Parameters<typeof clientTaskInputValidator.parse>[0]; actorUserId: string }) {
+  const existing = await ctx.db.get(args.taskId);
+  if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Task was not found.");
+
+  if (args.input.projectId) {
+    await validateStrictTaskDates(ctx.db, args.input.projectId, args.input.dueDate);
+  }
+
+  const nextVisibility = args.input.visibility ?? (existing.visibility ?? "private");
+  const now = Date.now();
+  await ctx.db.patch(args.taskId, {
+    ...args.input,
+    visibility: nextVisibility,
+    updatedAt: now,
+    ...(args.input.status === "done" ? { completedAt: existing.completedAt ?? now } : {}),
+  });
+
+  if (args.input.projectId) {
+    await updateProjectRollup(ctx.db, args.input.projectId);
+  }
+  if (existing.projectId && existing.projectId !== args.input.projectId) {
+    await updateProjectRollup(ctx.db, existing.projectId);
+  }
+
+  const task = await ctx.db.get(args.taskId);
+  if (!task) throw new Error("Task was not found.");
+  await scheduleTaskReminders(ctx, task);
+  return { presented: presentTask(task), now };
+}
+
+async function deleteTaskCore(ctx: MutationCtx, args: { organizationId: string; taskId: Id<"tasks">; actorUserId: string }) {
+  const existing = await ctx.db.get(args.taskId);
+  if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Task was not found.");
+  const now = Date.now();
+  await ctx.db.patch(args.taskId, { deletedAt: now, updatedAt: now });
+  await cancelQueuedJobsForSource(ctx, args.organizationId, "task", args.taskId);
+
+  if (existing.projectId) {
+    await updateProjectRollup(ctx.db, existing.projectId);
+  }
+
+  return { removed: true as const, now, title: existing.title };
 }
 
 export const createFromHono = mutation({
@@ -17,41 +88,20 @@ export const createFromHono = mutation({
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
-    
-    // Strict dates check
-    if (args.input.projectId) {
-      await validateStrictTaskDates(ctx.db, args.input.projectId, args.input.dueDate);
-    }
-    
-    const now = Date.now();
-    const id = await ctx.db.insert("tasks", {
+    const { presented, now } = await createTaskCore(ctx, {
       organizationId: args.organizationId,
-      ...args.input,
-      visibility: args.input.visibility ?? "private",
-      createdByUserId: user._id,
-      createdAt: now,
-      updatedAt: now,
-      ...(args.input.status === "done" ? { completedAt: now } : {}),
+      input: args.input,
+      actorUserId: user._id,
     });
-
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,
       action: "client.task.create",
-      target: id,
+      target: presented.id,
       summary: `Created task ${args.input.title}.`,
       createdAt: now,
     });
-
-    // Rollup progress
-    if (args.input.projectId) {
-      await updateProjectRollup(ctx.db, args.input.projectId);
-    }
-
-    const task = await ctx.db.get(id);
-    if (!task) throw new Error("Task could not be created.");
-    await scheduleTaskReminders(ctx, task);
-    return presentTask(task);
+    return presented;
   },
 });
 
@@ -61,23 +111,12 @@ export const updateFromHono = mutation({
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
-    const existing = await ctx.db.get(args.taskId);
-    if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Task was not found.");
-    
-    // Strict dates check
-    if (args.input.projectId) {
-      await validateStrictTaskDates(ctx.db, args.input.projectId, args.input.dueDate);
-    }
-
-    const nextVisibility = args.input.visibility ?? (existing.visibility ?? "private");
-    const now = Date.now();
-    await ctx.db.patch(args.taskId, {
-      ...args.input,
-      visibility: nextVisibility,
-      updatedAt: now,
-      ...(args.input.status === "done" ? { completedAt: existing.completedAt ?? now } : {}),
+    const { presented, now } = await updateTaskCore(ctx, {
+      organizationId: args.organizationId,
+      taskId: args.taskId,
+      input: args.input,
+      actorUserId: user._id,
     });
-
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,
@@ -86,19 +125,7 @@ export const updateFromHono = mutation({
       summary: `Updated task ${args.input.title}.`,
       createdAt: now,
     });
-
-    // Rollup progress updates
-    if (args.input.projectId) {
-      await updateProjectRollup(ctx.db, args.input.projectId);
-    }
-    if (existing.projectId && existing.projectId !== args.input.projectId) {
-      await updateProjectRollup(ctx.db, existing.projectId);
-    }
-
-    const task = await ctx.db.get(args.taskId);
-    if (!task) throw new Error("Task was not found.");
-    await scheduleTaskReminders(ctx, task);
-    return presentTask(task);
+    return presented;
   },
 });
 
@@ -108,25 +135,19 @@ export const deleteFromHono = mutation({
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
-    const existing = await ctx.db.get(args.taskId);
-    if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Task was not found.");
-    const now = Date.now();
-    await ctx.db.patch(args.taskId, { deletedAt: now, updatedAt: now });
-    await cancelQueuedJobsForSource(ctx, args.organizationId, "task", args.taskId);
+    const { now, title } = await deleteTaskCore(ctx, {
+      organizationId: args.organizationId,
+      taskId: args.taskId,
+      actorUserId: user._id,
+    });
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,
       action: "client.task.delete",
       target: args.taskId,
-      summary: `Deleted task ${existing.title}.`,
+      summary: `Deleted task ${title}.`,
       createdAt: now,
     });
-
-    // Rollup progress updates on deletion
-    if (existing.projectId) {
-      await updateProjectRollup(ctx.db, existing.projectId);
-    }
-
     return { removed: true };
   },
 });
@@ -177,5 +198,45 @@ export const assignTasksToProject = mutation({
     }
 
     return { updated };
+  },
+});
+
+export const createInternal = internalMutation({
+  args: { organizationId: v.string(), input: clientTaskInputValidator, actorUserId: v.string() },
+  returns: clientTaskValidator,
+  handler: async (ctx, args) => {
+    const { presented } = await createTaskCore(ctx, {
+      organizationId: args.organizationId,
+      input: args.input,
+      actorUserId: args.actorUserId,
+    });
+    return presented;
+  },
+});
+
+export const updateInternal = internalMutation({
+  args: { organizationId: v.string(), taskId: v.id("tasks"), input: clientTaskInputValidator, actorUserId: v.string() },
+  returns: clientTaskValidator,
+  handler: async (ctx, args) => {
+    const { presented } = await updateTaskCore(ctx, {
+      organizationId: args.organizationId,
+      taskId: args.taskId,
+      input: args.input,
+      actorUserId: args.actorUserId,
+    });
+    return presented;
+  },
+});
+
+export const deleteInternal = internalMutation({
+  args: { organizationId: v.string(), taskId: v.id("tasks"), actorUserId: v.string() },
+  returns: v.object({ removed: v.boolean() }),
+  handler: async (ctx, args) => {
+    await deleteTaskCore(ctx, {
+      organizationId: args.organizationId,
+      taskId: args.taskId,
+      actorUserId: args.actorUserId,
+    });
+    return { removed: true };
   },
 });

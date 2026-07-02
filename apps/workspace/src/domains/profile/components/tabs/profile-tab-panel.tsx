@@ -23,10 +23,8 @@ export function ProfileTabPanel({
     rolePermsTitle: string;
     rolePermsDesc: string;
     roleLabel: string;
-    activeLabel: string;
     currentRoleLabel: string;
     permissionsLabel: string;
-    adminNote: string;
     permissionLabels: string[];
     roleColor: string;
   };
@@ -63,10 +61,8 @@ export function ProfileTabPanel({
           <RolePermissionsList
             roleColor={labels.roleColor}
             roleLabel={labels.roleLabel}
-            activeLabel={labels.activeLabel}
             currentRoleLabel={labels.currentRoleLabel}
             permissionsLabel={labels.permissionsLabel}
-            adminNote={labels.adminNote}
             permissionLabels={labels.permissionLabels}
           />
         </Section>

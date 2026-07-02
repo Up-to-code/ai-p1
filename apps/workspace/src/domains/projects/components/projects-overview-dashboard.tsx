@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import "gridstack/dist/gridstack.min.css";
 import { GridStack } from "gridstack";
+import { PopoverMenu } from "@qentrah/our-platform-components";
 import { cn } from "@/lib/utils";
 import { GripHorizontal, MoreHorizontal, Plus, Trash2, Pencil } from "lucide-react";
 import { ProjectStatsWidget } from "./widgets/project-stats-widget";
@@ -52,7 +53,6 @@ function WidgetShell({
   onRename: (title: string) => void;
   children: React.ReactNode;
 }) {
-  const [showMenu, setShowMenu] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(widget.title);
 
@@ -81,19 +81,34 @@ function WidgetShell({
           )}
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
-          <button type="button" onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }} className="p-1 text-muted-foreground/40 hover:text-foreground rounded hover:bg-muted/50 transition-colors">
-            <MoreHorizontal className="h-4 w-4" />
-          </button>
-          {showMenu && (
-            <div className="absolute right-2 top-10 z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[120px]">
-              <button type="button" onClick={() => { setIsRenaming(true); setShowMenu(false); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors">
-                <Pencil className="h-3 w-3" /> Rename
+          <PopoverMenu
+            align="right"
+            trigger={
+              <button
+                type="button"
+                onClick={(e) => e.stopPropagation()}
+                className="p-1 text-muted-foreground/40 hover:text-foreground rounded hover:bg-muted/50 transition-colors"
+                aria-label="Widget options"
+              >
+                <MoreHorizontal className="h-4 w-4" />
               </button>
-              <button type="button" onClick={() => { onRemove(); setShowMenu(false); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/10 transition-colors">
-                <Trash2 className="h-3 w-3" /> Remove
-              </button>
-            </div>
-          )}
+            }
+            items={[
+              {
+                key: "rename",
+                label: "Rename",
+                icon: <Pencil className="h-3 w-3" />,
+                onClick: () => setIsRenaming(true),
+              },
+              {
+                key: "remove",
+                label: "Remove",
+                icon: <Trash2 className="h-3 w-3" />,
+                destructive: true,
+                onClick: () => onRemove(),
+              },
+            ]}
+          />
         </div>
       </div>
       <div className="flex-1 overflow-auto bg-background">{children}</div>

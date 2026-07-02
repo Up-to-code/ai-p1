@@ -6,6 +6,26 @@ import { markAppPerformance } from "@/lib/utils/performance";
 import type { QueryDebugMetadata } from "./query-debug";
 import { HttpTimeoutError, isHttpTimeoutError, normalizeErrorMessage } from "./errors";
 import { makeUrl } from "./url";
+import { useOptionalAccountContext } from "@/domains/auth";
+
+type WorkspaceContextSnapshot = {
+  organizationId?: string | null;
+  workspaceStatus?: string;
+  isConvexAuthPending?: boolean;
+  isConvexAuthenticated?: boolean;
+};
+
+function readWorkspaceContext(): WorkspaceContextSnapshot | undefined {
+  const ctx = useOptionalAccountContext();
+  if (!ctx) return undefined;
+  const ws = ctx.workspace;
+  return {
+    organizationId: ws.organizationId ?? null,
+    workspaceStatus: ws.status,
+    isConvexAuthPending: ws.isConvexAuthPending,
+    isConvexAuthenticated: ws.isConvexAuthenticated,
+  };
+}
 
 export type PagedResponse<T> = {
   page: T[];
@@ -99,12 +119,32 @@ export function useDebouncedValue<T>(value: T, delayMs = 250) {
   return debounced;
 }
 
-function debugFor(key: readonly unknown[], url: string): QueryDebugMetadata {
+function debugFor(
+  key: readonly unknown[],
+  url: string,
+  workspaceContext?: { organizationId?: string | null; workspaceStatus?: string; isConvexAuthPending?: boolean; isConvexAuthenticated?: boolean },
+): QueryDebugMetadata {
+  const ORG_ID_PATTERN = /^org_[A-Za-z0-9]+$/;
+  let fromKey: string | null = null;
+  for (const segment of key) {
+    if (typeof segment === "string" && ORG_ID_PATTERN.test(segment)) {
+      fromKey = segment;
+      break;
+    }
+  }
+  if (!fromKey && typeof key.at(-1) === "string") {
+    const fromUrl = /\/organizations\/(org_[A-Za-z0-9]+)\//.exec(key.at(-1) as string);
+    if (fromUrl) fromKey = fromUrl[1];
+  }
   return {
     resourceType: "http",
     resourceId: url,
     path: url.split("?")[0] || "missing",
     queryKey: JSON.stringify(key),
+    organizationId: workspaceContext?.organizationId ?? fromKey,
+    workspaceStatus: workspaceContext?.workspaceStatus,
+    isConvexAuthPending: workspaceContext?.isConvexAuthPending,
+    isConvexAuthenticated: workspaceContext?.isConvexAuthenticated,
   };
 }
 
@@ -154,6 +194,8 @@ export function useHttpQueryResult<T>(
         ? "loading"
         : "success";
 
+  const workspace = readWorkspaceContext();
+
   return {
     data: path ? query.data : undefined,
     queryStatus,
@@ -161,7 +203,7 @@ export function useHttpQueryResult<T>(
     isFetching: query.isFetching,
     refetch: query.refetch,
     timedOut: query.isError && isHttpTimeoutError(query.error),
-    debug: debugFor(queryKey, url),
+    debug: debugFor(queryKey, url, workspace),
   };
 }
 
@@ -247,7 +289,7 @@ export function useHttpPagedQuery<T>(
     isFetching: query.isFetching,
     refetch: query.refetch,
     timedOut: query.isError && isHttpTimeoutError(query.error),
-    debug: debugFor(queryKey, url),
+    debug: debugFor(queryKey, url, readWorkspaceContext()),
     loadMore,
   };
 }
@@ -335,7 +377,7 @@ export function useHttpIndexedPagedQuery<T, TStats>(
     isFetching: query.isFetching,
     refetch: query.refetch,
     timedOut: query.isError && isHttpTimeoutError(query.error),
-    debug: debugFor(queryKey, url),
+    debug: debugFor(queryKey, url, readWorkspaceContext()),
     loadMore,
   };
 }

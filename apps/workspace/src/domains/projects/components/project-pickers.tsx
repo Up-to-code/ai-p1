@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, User, Search, X } from "lucide-react";
+import { ColorDot } from "@qentrah/ui";
 import { cn } from "@/lib/utils";
 import {
   Select,
@@ -70,7 +71,7 @@ export function ProjectStatusPicker({
           <SelectTrigger className="h-9 w-auto rounded-xl border border-border bg-background/50 px-3 text-sm font-semibold focus:ring-1 focus:ring-ring dark:border-white/10 dark:bg-white/5">
             <SelectValue>
               <span className="flex items-center gap-2">
-                <span className={cn("h-2 w-2 rounded-full shrink-0", STATUS_COLORS[value] ?? STATUS_COLORS.planned)} />
+                <ColorDot dotClassName={STATUS_COLORS[value] ?? STATUS_COLORS.planned} size="sm" />
                 {resolvedLabels[value] ?? value}
               </span>
             </SelectValue>
@@ -82,7 +83,7 @@ export function ProjectStatusPicker({
         {PROJECT_STATUSES.map((s) => (
           <SelectItem key={s} value={s}>
             <span className="flex items-center gap-2">
-              <span className={cn("h-2 w-2 rounded-full shrink-0", STATUS_COLORS[s])} />
+              <ColorDot dotClassName={STATUS_COLORS[s]} size="sm" />
               {resolvedLabels[s] ?? s}
             </span>
           </SelectItem>
@@ -114,7 +115,7 @@ export function ProjectHealthPicker({
           <SelectTrigger className="h-9 w-auto rounded-xl border border-border bg-background/50 px-3 text-sm font-semibold focus:ring-1 focus:ring-ring dark:border-white/10 dark:bg-white/5">
             <SelectValue>
               <span className="flex items-center gap-2">
-                <span className={cn("h-2 w-2 rounded-full shrink-0", HEALTH_COLORS[value] ?? HEALTH_COLORS.onTrack)} />
+                <ColorDot dotClassName={HEALTH_COLORS[value] ?? HEALTH_COLORS.onTrack} size="sm" />
                 {resolvedLabels[value] ?? value}
               </span>
             </SelectValue>
@@ -126,7 +127,7 @@ export function ProjectHealthPicker({
         {PROJECT_HEALTHS.map((h) => (
           <SelectItem key={h} value={h}>
             <span className="flex items-center gap-2">
-              <span className={cn("h-2 w-2 rounded-full shrink-0", HEALTH_COLORS[h])} />
+              <ColorDot dotClassName={HEALTH_COLORS[h]} size="sm" />
               {resolvedLabels[h] ?? h}
             </span>
           </SelectItem>

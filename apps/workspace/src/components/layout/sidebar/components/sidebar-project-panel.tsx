@@ -16,6 +16,7 @@ import { useAccountContext } from "@/domains/auth";
 import { useNavigation } from "@/domains/navigation";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { SidebarPanelLayout } from "./sidebar-panel-layout";
+import { ProjectsPanelSkeleton } from "@/components/loading-ui";
 
 const projectTabs = [
   { name: "overview", href: "", icon: LayoutDashboard },
@@ -44,6 +45,11 @@ export function SidebarProjectPanel() {
       : undefined;
 
   const project = projectId ? useProjectQuery(orgId, projectId) : null;
+  const isLoadingProject = project === undefined;
+
+  if (isLoadingProject) {
+    return <ProjectsPanelSkeleton />;
+  }
 
   if (!project) {
     return (

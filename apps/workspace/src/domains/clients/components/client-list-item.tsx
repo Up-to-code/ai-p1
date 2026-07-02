@@ -18,7 +18,8 @@ import {
 import { Badge } from "@qentrah/ui"
 import { Edit, Trash2, CheckCircle2, Building2, User } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { type PipelineStage, pipelineStages } from "../client-view-model"
+import { type PipelineStage, pipelineStages } from "../client-view-model";
+import { PipelineStageIndicator } from "@qentrah/our-platform-components";
 
 /* ── Badge variant mapping ──────────────────────────────────────────────────── */
 
@@ -140,12 +141,15 @@ export function ClientListItem({
         >
           {statusLabel}
         </Badge>
-        <Badge
-          variant={clientStageBadgeVariant(client.pipelineStage ?? "new")}
-          size="sm"
-        >
-          {stageLabel}
-        </Badge>
+        <div className="flex items-center gap-1.5">
+          <PipelineStageIndicator
+            stages={pipelineStages.map((s) => ({ key: s, name: s }))}
+            currentStageKey={client.pipelineStage ?? "new"}
+            variant="dots"
+            ariaLabel={`Pipeline stage: ${stageLabel}`}
+          />
+          <span className="text-[10px] font-semibold text-muted-foreground">{stageLabel}</span>
+        </div>
         {client.priority && client.priority !== "normal" && (
           <Badge
             variant={clientPriorityBadgeVariant(client.priority)}

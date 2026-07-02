@@ -4,15 +4,11 @@ import React from "react";
 import { useRouter } from "@/i18n/routing";
 import { type Project } from "../../store/projects.types";
 import { type ProjectFormValues } from "../../validation/project.schema";
-import { EditableText } from "@/components/ui/editable-text";
-import { EditableTags } from "@/components/ui/editable-tags";
-import { EditableSelect } from "@/components/ui/editable-select";
-import { Button } from "@/components/ui/button";
+import { EntityDetailHeader, type EntityDetailHeaderAction, type EntityDetailHeaderField } from "@/components/shared/entity-detail-header";
 import { DeleteRecordDialog } from "@/components/shared/crud-ui";
 import { useState } from "react";
 import { useAccountContext } from "@/domains/auth";
 import { deleteProjectRequest } from "../../api/projects";
-import { useQueryClient } from "@tanstack/react-query";
 import { useOptimisticInvalidation } from "@/domains/cache/hooks/use-optimistic-invalidation";
 import { Pencil, Trash2 } from "lucide-react";
 import { logger } from "@/lib/logger";
@@ -53,7 +49,6 @@ const defaultHealthColors = {
 export function ProjectDetailHeader({ project, onUpdate }: ProjectDetailHeaderProps) {
   const router = useRouter();
   const account = useAccountContext();
-  const queryClient = useQueryClient();
   const { invalidate } = useOptimisticInvalidation();
   const orgId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
   const [isDeleting, setIsDeleting] = useState(false);
@@ -70,74 +65,54 @@ export function ProjectDetailHeader({ project, onUpdate }: ProjectDetailHeaderPr
     setIsDeleting(false);
   };
 
+  const fields: EntityDetailHeaderField[] = [
+    {
+      type: "tags",
+      value: project.tags || [],
+      onChange: (tags) => onUpdate({ tags }),
+      availableTags: ["Urgent", "Internal", "Client-facing", "Phase 1", "Phase 2"],
+    },
+    {
+      type: "select",
+      value: project.status,
+      onChange: (status) => onUpdate({ status }),
+      options: statusOptions,
+      colorMapType: "project-status",
+      defaultColors: defaultStatusColors,
+    },
+    {
+      type: "select",
+      value: project.health,
+      onChange: (health) => onUpdate({ health }),
+      options: healthOptions,
+      colorMapType: "project-health",
+      defaultColors: defaultHealthColors,
+    },
+  ];
+
+  const actions: EntityDetailHeaderAction[] = [
+    {
+      label: "Edit",
+      icon: Pencil,
+      onClick: () => router.push(`/projects/${project.id}/edit`),
+    },
+    {
+      label: "Delete",
+      icon: Trash2,
+      onClick: () => setIsDeleting(true),
+      destructive: true,
+    },
+  ];
+
   return (
-    <section className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between mb-8">
-      <div className="flex min-w-0 items-start gap-5">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-foreground text-2xl font-black uppercase text-background shadow-sm">
-          {project.name.charAt(0)}
-        </div>
-        <div className="min-w-0 space-y-1.5 mt-1">
-          <EditableText
-            value={project.name}
-            onChange={(name) => onUpdate({ name })}
-            as="h1"
-            className="max-w-3xl text-3xl font-black leading-tight text-foreground tracking-tight"
-          />
-
-          <div className="flex flex-wrap items-center gap-3 pt-1">
-            <EditableTags
-              tags={project.tags || []}
-              onChange={(tags) => onUpdate({ tags })}
-              availableTags={["Urgent", "Internal", "Client-facing", "Phase 1", "Phase 2"]}
-            />
-
-            <div className="h-4 w-px bg-border shrink-0" />
-
-            <EditableSelect
-              value={project.status}
-              options={statusOptions}
-              onChange={(status) => onUpdate({ status })}
-              colorMapType="project-status"
-              defaultColors={defaultStatusColors}
-            />
-
-            <div className="h-4 w-px bg-border shrink-0" />
-
-            <EditableSelect
-              value={project.health}
-              options={healthOptions}
-              onChange={(health) => onUpdate({ health })}
-              colorMapType="project-health"
-              defaultColors={defaultHealthColors}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2 lg:justify-end shrink-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-9 rounded-lg px-3 text-xs font-medium text-muted-foreground hover:text-foreground"
-          onClick={() => router.push(`/projects/${project.id}/edit`)}
-        >
-          <Pencil className="mr-2 h-3.5 w-3.5" />
-          Edit
-        </Button>
-
-        <div className="h-4 w-px bg-border mx-1 shrink-0" />
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-          onClick={() => setIsDeleting(true)}
-          title="Delete Project"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-
+    <>
+      <EntityDetailHeader
+        name={project.name}
+        title={project.name}
+        onTitleChange={(name) => onUpdate({ name })}
+        fields={fields}
+        actions={actions}
+      />
       <DeleteRecordDialog
         open={isDeleting}
         onOpenChange={setIsDeleting}
@@ -146,6 +121,6 @@ export function ProjectDetailHeader({ project, onUpdate }: ProjectDetailHeaderPr
         isDeleting={false}
         onConfirm={handleDelete}
       />
-    </section>
+    </>
   );
 }

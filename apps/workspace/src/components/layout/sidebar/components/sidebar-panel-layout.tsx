@@ -16,16 +16,16 @@ export function SidebarPanelLayout({ title, navbarActions, header, footer, child
   const { closeAll } = useSidebarRail();
 
   return (
-    <div className="flex h-full flex-col bg-secondary">
+    <div className="flex h-full flex-col bg-card">
       {/* Navbar — title + actions + close */}
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-sidebar-border px-4">
+      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
         <span className="truncate text-sm font-semibold text-foreground">{title}</span>
         <div className="flex items-center gap-0.5">
           {navbarActions}
           <button
             type="button"
             onClick={closeAll}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-accent/50 hover:text-text-primary"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             <X className="h-4 w-4" />
           </button>
@@ -34,17 +34,17 @@ export function SidebarPanelLayout({ title, navbarActions, header, footer, child
 
       {/* Header section — static/non-dynamic items per domain */}
       {header && (
-        <div className="shrink-0 border-b border-sidebar-border">
+        <div className="shrink-0 border-b border-border">
           {header}
         </div>
       )}
 
       {/* Body — dynamic scrollable content */}
-      <div className="flex-1 overflow-y-auto pt-7 pb-7 scrollbar-none">{children}</div>
+      <div className="flex-1 overflow-y-auto p-4">{children}</div>
 
       {/* Footer — low-usage items (feedback, token usage, etc.) */}
       {footer && (
-        <div className="shrink-0 border-t border-sidebar-border py-3 mb-7">
+        <div className="shrink-0 border-t border-border py-3">
           {footer}
         </div>
       )}

@@ -157,4 +157,49 @@ export const agentTables = {
     .index("by_organization_id", ["organizationId"])
     .index("by_thread", ["organizationId", "threadId"])
     .index("by_updated", ["updatedAt"]),
+
+  mcpWorkers: defineTable({
+    organizationId: v.string(),
+    name: v.string(),
+    description: v.optional(v.string()),
+    model: v.string(),
+    createdByUserId: v.string(),
+    scope: v.object({
+      type: v.union(v.literal("organization"), v.literal("space"), v.literal("project")),
+      spaceIds: v.optional(v.array(v.id("spaces"))),
+      projectIds: v.optional(v.array(v.id("projects"))),
+    }),
+    permissions: v.array(v.object({
+      resource: v.string(),
+      actions: v.array(v.string()),
+    })),
+    status: v.union(v.literal("active"), v.literal("inactive"), v.literal("deleted")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_organization_id", ["organizationId"])
+    .index("by_creator", ["organizationId", "createdByUserId"])
+    .index("by_status", ["organizationId", "status"]),
+
+  mcpPermissionAudit: defineTable({
+    organizationId: v.string(),
+    mcpWorkerId: v.id("mcpWorkers"),
+    actorUserId: v.string(),
+    action: v.union(v.literal("create"), v.literal("update_scope"), v.literal("delete")),
+    oldScope: v.optional(v.any()),
+    newScope: v.optional(v.any()),
+    oldPermissions: v.optional(v.array(v.object({
+      resource: v.string(),
+      actions: v.array(v.string()),
+    }))),
+    newPermissions: v.optional(v.array(v.object({
+      resource: v.string(),
+      actions: v.array(v.string()),
+    }))),
+    timestamp: v.number(),
+  })
+    .index("by_mcp_worker", ["organizationId", "mcpWorkerId"])
+    .index("by_actor", ["organizationId", "actorUserId"])
+    .index("by_timestamp", ["organizationId", "timestamp"]),
 };

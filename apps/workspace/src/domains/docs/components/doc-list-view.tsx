@@ -67,16 +67,16 @@ export function DocListView({
       <table className="w-full">
         <thead>
           <tr className="border-b border-border bg-muted/30">
-            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-muted">
+            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-muted-foreground">
               Name
             </th>
-            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-muted hidden sm:table-cell">
+            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-muted-foreground hidden sm:table-cell">
               Owner
             </th>
-            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-muted hidden md:table-cell">
+            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-muted-foreground hidden md:table-cell">
               Tags
             </th>
-            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-muted hidden lg:table-cell">
+            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-muted-foreground hidden lg:table-cell">
               Updated
             </th>
             <th className="w-10" />
@@ -96,7 +96,7 @@ export function DocListView({
                   <span className="text-sm font-medium text-foreground truncate">
                     {folder.name}
                   </span>
-                  <ChevronRight className="h-3 w-3 text-text-muted/50 shrink-0" />
+                  <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
                 </div>
               </td>
             </tr>
@@ -107,7 +107,7 @@ export function DocListView({
             <tr className="border-b border-border bg-muted/20">
               <td className="px-4 py-3" colSpan={5}>
                 <div className="flex items-center gap-2.5">
-                  <Folder className="h-4 w-4 text-text-muted shrink-0" />
+                  <Folder className="h-4 w-4 text-muted-foreground shrink-0" />
                   <input
                     value={newFolderName ?? ""}
                     onChange={(e) => onNewFolderNameChange?.(e.target.value)}
@@ -121,7 +121,7 @@ export function DocListView({
                     }}
                     autoFocus
                     placeholder="Folder name..."
-                    className="flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-text-muted"
+                    className="flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-muted-foreground"
                   />
                 </div>
               </td>
@@ -142,14 +142,14 @@ export function DocListView({
             >
               <td className="px-4 py-3">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <FileText className="h-4 w-4 text-text-muted shrink-0" />
+                  <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-sm font-medium text-foreground truncate">
                     {doc.title || "Untitled"}
                   </span>
                 </div>
               </td>
               <td className="px-4 py-3 hidden sm:table-cell">
-                <span className="text-xs text-text-muted">
+                <span className="text-xs text-muted-foreground">
                   {doc.createdByUserId.slice(0, 8)}
                 </span>
               </td>
@@ -158,7 +158,7 @@ export function DocListView({
                   {(doc.tags ?? []).slice(0, 3).map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-text-muted"
+                      className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
                     >
                       {tag}
                     </span>
@@ -166,7 +166,7 @@ export function DocListView({
                 </div>
               </td>
               <td className="px-4 py-3 hidden lg:table-cell">
-                <span className="text-xs text-text-muted">
+                <span className="text-xs text-muted-foreground">
                   {formatDate(doc.updatedAt)}
                 </span>
               </td>

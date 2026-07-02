@@ -1,341 +1,246 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import Link from "next/link";
-import { ChevronDown, Settings2, UserRound, Bell, Code2, Shield, Plug, Bot, FileText, FolderGit2, Tags, Zap, Search } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { usePathname } from "@/i18n/routing";
+import { Database, HardDrive, RefreshCw, Shield, Trash2, Zap, Settings2, Palette } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const personalNav = [
-  { name: "profile", label: "Profile", href: "/profile/settings" },
-  { name: "preferences", label: "Preferences", href: "/settings" },
-  { name: "notifications", label: "Notifications", href: "/settings/notifications" },
-  { name: "codeReviews", label: "Code & reviews", href: "/settings/code-reviews" },
-  { name: "security", label: "Security & access", href: "/settings/security" },
-  { name: "accounts", label: "Connected accounts", href: "/settings/accounts" },
-  { name: "agent", label: "Agent personalization", href: "/settings/agent" },
+const appSettingsNav = [
+  { name: "storage", label: "Storage", icon: HardDrive, href: "#storage" },
+  { name: "data", label: "Data", icon: Database, href: "#data" },
+  { name: "appearance", label: "Appearance", icon: Palette, href: "#appearance" },
+  { name: "quickActions", label: "Quick Actions", icon: Zap, href: "#quick-actions" },
 ];
 
-const issuesNav = [
-  { name: "labels", label: "Labels", href: "/settings/labels" },
-  { name: "templates", label: "Templates", href: "/settings/templates" },
-  { name: "slas", label: "SLAs", href: "/settings/slas" },
-];
-
-const projectsNav = [
-  { name: "labels", label: "Labels", href: "/settings/project-labels" },
-  { name: "templates", label: "Templates", href: "/settings/project-templates" },
-  { name: "statuses", label: "Statuses", href: "/settings/statuses" },
-  { name: "updates", label: "Updates", href: "/settings/updates" },
-];
-
-const featuresNav = [
-  { name: "aiAgents", label: "AI & Agents", href: "/settings/ai-agents" },
-  { name: "initiatives", label: "Initiatives", href: "/settings/initiatives" },
-  { name: "documents", label: "Documents", href: "/settings/documents" },
-  { name: "customerRequests", label: "Customer requests", href: "/settings/customer-requests" },
-  { name: "releases", label: "Releases", href: "/settings/releases" },
-];
-
-function getIconForNav(name: string) {
-  const icons: Record<string, typeof UserRound> = {
-    profile: UserRound,
-    preferences: Settings2,
-    notifications: Bell,
-    codeReviews: Code2,
-    security: Shield,
-    accounts: Plug,
-    agent: Bot,
-    labels: Tags,
-    templates: FileText,
-    slas: Zap,
-    statuses: FolderGit2,
-    updates: FolderGit2,
-    aiAgents: Bot,
-    initiatives: FileText,
-    documents: FileText,
-    customerRequests: UserRound,
-    releases: Zap,
-  };
-  return icons[name] || Settings2;
-}
-
-function SettingsRow({
+function SettingsSection({
+  id,
+  icon: Icon,
   title,
   description,
   children,
 }: {
+  id: string;
+  icon: React.ComponentType<{ className?: string }>;
   title: string;
   description?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 last:border-b-0">
-      <div className="flex-1 space-y-0.5 min-w-0">
-        <div className="text-[13px] font-semibold text-foreground">{title}</div>
-        {description && <div className="text-xs text-muted-foreground">{description}</div>}
+    <section id={id} className="rounded-2xl border border-border bg-card p-6 space-y-4">
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted">
+          <Icon className="h-5 w-5 text-foreground" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base font-semibold text-foreground">{title}</h3>
+          {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
+        </div>
       </div>
-      <div className="shrink-0">{children}</div>
+      {children}
+    </section>
+  );
+}
+
+function SettingRow({
+  title,
+  description,
+  action,
+}: {
+  title: string;
+  description?: string;
+  action: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-3 border-b border-border last:border-b-0">
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium text-foreground">{title}</div>
+        {description && <div className="text-xs text-muted-foreground mt-0.5">{description}</div>}
+      </div>
+      <div className="shrink-0">{action}</div>
     </div>
   );
 }
 
 export default function SettingsPage() {
-  const t = useTranslations("Settings");
-  const pathname = usePathname();
+  const t = useTranslations("AppSettings");
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      {/* Sidebar */}
-      <aside className="flex w-56 shrink-0 flex-col overflow-hidden border-e border-border bg-secondary">
-        {/* Back link */}
-        <div className="shrink-0 border-b border-border px-3 py-2.5">
-          <Link
-            href="/ws"
-            className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            <ChevronDown className="h-4 w-4 rotate-90" />
-            {t("backToApp", { defaultValue: "Back to app" })}
-          </Link>
-        </div>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="border-b border-border bg-card">
+        <div className="mx-auto max-w-4xl px-6 py-6">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">{t("title", { defaultValue: "App Settings" })}</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {t("description", { defaultValue: "Manage local storage, appearance, and advanced app settings" })}
+            </p>
+          </div>
 
-        {/* Search */}
-        <div className="shrink-0 px-3 py-3">
-          <div className="relative">
-            <Search className="pointer-events-none absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder={t("search", { defaultValue: "Search..." })}
-              className="w-full rounded-lg border border-border bg-muted px-9 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+          {/* Quick nav */}
+          <nav className="flex gap-2 overflow-x-auto pb-1 scrollbar-none mt-4">
+            {appSettingsNav.map((item) => {
+              const Icon = item.icon;
+              return (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground whitespace-nowrap"
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </a>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="mx-auto max-w-4xl px-6 py-8 space-y-6">
+        {/* Storage Section */}
+        <SettingsSection
+          id="storage"
+          icon={HardDrive}
+          title={t("storage.title", { defaultValue: "Local Storage" })}
+          description={t("storage.description", { defaultValue: "Manage local storage and offline data" })}
+        >
+          <div className="space-y-0">
+            <SettingRow
+              title={t("storage.usedSpace", { defaultValue: "Used Space" })}
+              description={t("storage.usedSpaceDesc", { defaultValue: "24.5 MB of 50 MB used" })}
+              action={
+                <div className="text-sm font-semibold text-foreground">49%</div>
+              }
+            />
+            <SettingRow
+              title={t("storage.clearIndexedDB", { defaultValue: "Clear IndexedDB" })}
+              description={t("storage.clearIndexedDBDesc", { defaultValue: "Remove all offline data and drafts" })}
+              action={
+                <Button variant="outline" size="sm" className="h-8 rounded-lg gap-2">
+                  <Trash2 className="h-3.5 w-3.5" />
+                  {t("storage.clear", { defaultValue: "Clear" })}
+                </Button>
+              }
+            />
+            <SettingRow
+              title={t("storage.clearLocalStorage", { defaultValue: "Clear Local Storage" })}
+              description={t("storage.clearLocalStorageDesc", { defaultValue: "Remove preferences and cached settings" })}
+              action={
+                <Button variant="outline" size="sm" className="h-8 rounded-lg">
+                  {t("storage.clear", { defaultValue: "Clear" })}
+                </Button>
+              }
             />
           </div>
-        </div>
+        </SettingsSection>
 
-        <div className="flex-1 overflow-y-auto px-3 scrollbar-none">
-          <div className="space-y-5">
-            {/* Personal */}
-            <div>
-              <h3 className="mb-2 px-2 text-[10px] font-black uppercase text-text-muted">
-                {t("personal", { defaultValue: "Personal" })}
-              </h3>
-              <nav className="space-y-0.5">
-                {personalNav.map((item) => {
-                  const Icon = getIconForNav(item.name);
-                  const isActive = pathname === item.href;
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-1.5 rounded-lg px-2 py-1 text-[13px] font-semibold transition-colors",
-                        isActive
-                          ? "bg-accent text-accent-foreground"
-                          : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
-                      )}
-                    >
-                      <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={isActive ? 2.2 : 1.8} />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </nav>
-            </div>
-
-            {/* Issues */}
-            <div>
-              <h3 className="mb-2 px-2 text-[10px] font-black uppercase text-text-muted">
-                {t("issues", { defaultValue: "Issues" })}
-              </h3>
-              <nav className="space-y-0.5">
-                {issuesNav.map((item) => {
-                  const Icon = getIconForNav(item.name);
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-[13px] font-semibold text-muted-foreground transition-colors hover:bg-accent/50 hover:text-accent-foreground"
-                    >
-                      <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </nav>
-            </div>
-
-            {/* Projects */}
-            <div>
-              <h3 className="mb-2 px-2 text-[10px] font-black uppercase text-text-muted">
-                {t("projects", { defaultValue: "Projects" })}
-              </h3>
-              <nav className="space-y-0.5">
-                {projectsNav.map((item) => {
-                  const Icon = getIconForNav(item.name);
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-[13px] font-semibold text-muted-foreground transition-colors hover:bg-accent/50 hover:text-accent-foreground"
-                    >
-                      <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </nav>
-            </div>
-
-            {/* Features */}
-            <div>
-              <h3 className="mb-2 px-2 text-[10px] font-black uppercase text-text-muted">
-                {t("features", { defaultValue: "Features" })}
-              </h3>
-              <nav className="space-y-0.5">
-                {featuresNav.map((item) => {
-                  const Icon = getIconForNav(item.name);
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-[13px] font-semibold text-muted-foreground transition-colors hover:bg-accent/50 hover:text-accent-foreground"
-                    >
-                      <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </nav>
-            </div>
+        {/* Data Section */}
+        <SettingsSection
+          id="data"
+          icon={Database}
+          title={t("data.title", { defaultValue: "Data Management" })}
+          description={t("data.description", { defaultValue: "Manage your app data and sync settings" })}
+        >
+          <div className="space-y-0">
+            <SettingRow
+              title={t("data.syncStatus", { defaultValue: "Sync Status" })}
+              description={t("data.syncStatusDesc", { defaultValue: "Last synced 2 minutes ago" })}
+              action={
+                <Button variant="outline" size="sm" className="h-8 rounded-lg gap-2">
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  {t("data.syncNow", { defaultValue: "Sync Now" })}
+                </Button>
+              }
+            />
+            <SettingRow
+              title={t("data.clearCache", { defaultValue: "Clear Cache" })}
+              description={t("data.clearCacheDesc", { defaultValue: "Clear cached data to free up memory" })}
+              action={
+                <Button variant="outline" size="sm" className="h-8 rounded-lg">
+                  {t("data.clear", { defaultValue: "Clear" })}
+                </Button>
+              }
+            />
+            <SettingRow
+              title={t("data.exportData", { defaultValue: "Export Data" })}
+              description={t("data.exportDataDesc", { defaultValue: "Download all your app data" })}
+              action={
+                <Button variant="outline" size="sm" className="h-8 rounded-lg">
+                  {t("data.export", { defaultValue: "Export" })}
+                </Button>
+              }
+            />
           </div>
-        </div>
-      </aside>
+        </SettingsSection>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="mx-auto max-w-3xl px-8 py-10">
-          <h1 className="text-2xl font-bold text-foreground">{t("preferences", { defaultValue: "Preferences" })}</h1>
-
-          <div className="mt-8 space-y-8">
-            {/* General Section */}
-              <h2 className="mb-2 text-base font-semibold text-foreground">{t("general", { defaultValue: "General" })}</h2>
-            <section className="rounded-xl border border-border bg-card">
-              <div className="mt-2">
-                <SettingsRow
-                  title={t("defaultHomeView", { defaultValue: "Default home view" })}
-                  description={t("defaultHomeViewDesc", { defaultValue: "Select which view to display when launching Linear" })}
-                >
-                  <Select defaultValue="active">
-                    <SelectTrigger className="h-9 w-36 whitespace-nowrap rounded-lg bg-secondary border-border text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active issues</SelectItem>
-                      <SelectItem value="inbox">Inbox</SelectItem>
-                      <SelectItem value="dashboard">Dashboard</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </SettingsRow>
-
-                <SettingsRow
-                  title={t("displayNames", { defaultValue: "Display names" })}
-                  description={t("displayNamesDesc", { defaultValue: "Select how names are displayed in the Linear interface" })}
-                >
-                  <Select defaultValue="full">
-                    <SelectTrigger className="h-9 w-36 whitespace-nowrap rounded-lg bg-secondary border-border text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="full">Full name</SelectItem>
-                      <SelectItem value="first">First name</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </SettingsRow>
-
-                <SettingsRow
-                  title={t("firstDayOfWeek", { defaultValue: "First day of the week" })}
-                  description={t("firstDayOfWeekDesc", { defaultValue: "Used for date pickers" })}
-                >
-                  <Select defaultValue="sunday">
-                    <SelectTrigger className="h-9 w-36 whitespace-nowrap rounded-lg bg-secondary border-border text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="sunday">Sunday</SelectItem>
-                      <SelectItem value="monday">Monday</SelectItem>
-                      <SelectItem value="saturday">Saturday</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </SettingsRow>
-
-                <SettingsRow
-                  title={t("convertEmoticons", { defaultValue: "Convert text emoticons into emojis" })}
-                  description={t("convertEmoticonsDesc", { defaultValue: "Strings like :) will be converted to 🙂" })}
-                >
-                  <Switch defaultChecked />
-                </SettingsRow>
-
-                <SettingsRow
-                  title={t("sendCommentOn", { defaultValue: "Send comment on..." })}
-                  description={t("sendCommentOnDesc", { defaultValue: "Choose which key press is used to submit a comment" })}
-                >
-                  <Select defaultValue="enter">
-                    <SelectTrigger className="h-9 w-36 whitespace-nowrap rounded-lg bg-secondary border-border text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="enter">Enter</SelectItem>
-                      <SelectItem value="cmdEnter">Cmd + Enter</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </SettingsRow>
-              </div>
-            </section>
-
-            {/* Interface and theme Section */}
-              <h2 className="mb-2 text-base font-semibold text-foreground">
-                {t("interfaceAndTheme", { defaultValue: "Interface and theme" })}
-              </h2>
-            <section className="rounded-xl border border-border bg-card">
-              <div className="mt-2">
-                <SettingsRow
-                  title={t("appSidebar", { defaultValue: "App sidebar" })}
-                  description={t("appSidebarDesc", { defaultValue: "Customize sidebar item visibility, ordering, and badge style" })}
-                >
-                  <button className="rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-accent">
-                    {t("customize", { defaultValue: "Customize" })}
-                  </button>
-                </SettingsRow>
-
-                <SettingsRow
-                  title={t("fontSize", { defaultValue: "Font size" })}
-                  description={t("fontSizeDesc", { defaultValue: "Adjust the size of text across the app" })}
-                >
-                  <Select defaultValue="default">
-                    <SelectTrigger className="h-9 w-36 whitespace-nowrap rounded-lg bg-secondary border-border text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="small">Small</SelectItem>
-                      <SelectItem value="default">Default</SelectItem>
-                      <SelectItem value="large">Large</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </SettingsRow>
-
-                <SettingsRow
-                  title={t("usePointerCursors", { defaultValue: "Use pointer cursors" })}
-                  description={t("usePointerCursorsDesc", { defaultValue: "Show hand cursor on clickable elements" })}
-                >
-                  <Switch defaultChecked />
-                </SettingsRow>
-              </div>
-            </section>
+        {/* Appearance Section */}
+        <SettingsSection
+          id="appearance"
+          icon={Palette}
+          title={t("appearance.title", { defaultValue: "Appearance" })}
+          description={t("appearance.description", { defaultValue: "Customize app appearance and theme settings" })}
+        >
+          <div className="space-y-0">
+            <SettingRow
+              title={t("appearance.theme", { defaultValue: "Theme" })}
+              description={t("appearance.themeDesc", { defaultValue: "Choose your preferred theme" })}
+              action={
+                <Button variant="outline" size="sm" className="h-8 rounded-lg">
+                  {t("appearance.system", { defaultValue: "System" })}
+                </Button>
+              }
+            />
+            <SettingRow
+              title={t("appearance.fontSize", { defaultValue: "Font Size" })}
+              description={t("appearance.fontSizeDesc", { defaultValue: "Adjust text size" })}
+              action={
+                <Button variant="outline" size="sm" className="h-8 rounded-lg">
+                  {t("appearance.medium", { defaultValue: "Medium" })}
+                </Button>
+              }
+            />
           </div>
-        </div>
-      </main>
+        </SettingsSection>
+
+        {/* Quick Actions Section */}
+        <SettingsSection
+          id="quick-actions"
+          icon={Zap}
+          title={t("quickActions.title", { defaultValue: "Quick Actions" })}
+          description={t("quickActions.description", { defaultValue: "Common app management actions" })}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Button
+              variant="outline"
+              className="h-auto flex-col items-start gap-2 p-4 rounded-xl text-left"
+            >
+              <Shield className="h-5 w-5 text-foreground" />
+              <div>
+                <div className="text-sm font-semibold text-foreground">
+                  {t("quickActions.resetSecurity", { defaultValue: "Reset Security" })}
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {t("quickActions.resetSecurityDesc", { defaultValue: "Clear all security sessions" })}
+                </div>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-auto flex-col items-start gap-2 p-4 rounded-xl text-left"
+            >
+              <RefreshCw className="h-5 w-5 text-foreground" />
+              <div>
+                <div className="text-sm font-semibold text-foreground">
+                  {t("quickActions.refreshCache", { defaultValue: "Refresh Cache" })}
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {t("quickActions.refreshCacheDesc", { defaultValue: "Force refresh all cached data" })}
+                </div>
+              </div>
+            </Button>
+          </div>
+        </SettingsSection>
+      </div>
     </div>
   );
 }
-

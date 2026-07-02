@@ -16,7 +16,6 @@ import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-load
 import { useAssistantPanel } from "@/components/layout/use-assistant-panel";
 import { ResizableAiPanel } from "./resizable-ai-panel";
 import { NavigationProvider } from "@/domains/navigation";
-import { WorkspaceStoreSync } from "@/domains/workspace/stores/workspace-store-sync";
 
 export interface DashboardAuthenticatedShellProps {
   children: ReactNode;
@@ -121,17 +120,21 @@ export function DashboardAuthenticatedShell({
     <ToastProvider>
       <SidebarRailProvider>
         <NavigationProvider>
-          <WorkspaceStoreSync />
-          <div className="flex h-full overflow-hidden bg-background text-text-primary">
-            <Sidebar />
+          <div className="flex h-screen flex-col overflow-hidden bg-background text-text-primary">
+            {/* Full-width header */}
+            <Topbar />
 
-            <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
-              <Topbar />
-              <div className="flex min-h-0 flex-1 overflow-hidden">
-                <div className="flex min-h-0 flex-1 flex-col outline-none">
-                  {children}
+            {/* Main content area with sidebar beside body */}
+            <div className="flex min-h-0 flex-1 overflow-hidden">
+              <Sidebar />
+
+              <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
+                <div className="flex min-h-0 flex-1 overflow-hidden">
+                  <div className="flex min-h-0 flex-1 flex-col outline-none">
+                    {children}
+                  </div>
+                  {isAiPanelOpen && <ResizableAiPanel />}
                 </div>
-                {isAiPanelOpen && <ResizableAiPanel />}
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import { ColorDot } from "@qentrah/ui";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useDashboardContext } from "../dashboard-context";
 import { useTasksQuery } from "@/domains/tasks/api/tasks";
@@ -126,7 +127,7 @@ export function AssigneeWidget() {
           {chartData.map((item) => (
             <div key={item.id} className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: item.fill }} />
+                <ColorDot color={item.fill} size="sm" />
                 {item.id !== "unassigned" ? (
                   <Avatar className="h-5 w-5 border border-border">
                     {item.image && <AvatarImage src={item.image} alt={item.name} />}

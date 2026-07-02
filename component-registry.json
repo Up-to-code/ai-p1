@@ -4,11 +4,133 @@
       "name": "PipelineBoard",
       "path": "packages/our-platform-components/src/pipeline/pipeline-board.tsx",
       "kind": "shared-ui",
-      "summary": "Generic drag/drop column board. Takes items + stages, emits move/create/delete callbacks.",
+      "summary": "Generic drag/drop column board. Takes items + stages, emits move/create/delete callbacks. 165-line orchestrator (was 709) composed of 11 deep puzzle pieces.",
       "usedIn": ["domains/deals/deal-board", "domains/opportunities/opportunity-board", "components/shared/view-system"],
       "props": ["items", "stages", "onCardMove", "onCardClick", "onCardDelete", "draggable", "showBarColor", "renderEmpty"],
       "createdAt": "2026-04-01",
-      "notes": "Stateless — caller owns data fetching and mutation logic. Re-exported from components/shared/view-system."
+      "updatedAt": "2026-07-01",
+      "notes": "Stateless — caller owns data fetching and mutation logic. Re-exported from components/shared/view-system. Composed of: CardDefault, CardFooterActions, ColumnHeader (StageBar + CountBadge + NewBadge + PopoverMenu), InlineNewCard, useSortableBoard, stage-color."
+    },
+    {
+      "name": "PopoverMenu",
+      "path": "packages/our-platform-components/src/popover-menu/popover-menu.tsx",
+      "kind": "shared-ui",
+      "summary": "Generic kebab / more-options dropdown menu. Outside-click + Escape close. Destructive items get danger styling.",
+      "usedIn": ["packages/our-platform-components/pipeline/card-default", "packages/our-platform-components/pipeline/column-header", "packages/our-platform-components/widget-grid/widget-shell"],
+      "props": ["trigger", "items", "align", "className"],
+      "createdAt": "2026-07-01",
+      "notes": "Extracted from pipeline-board.tsx:36-93. Originally a private component, now shareable. Replaces 6+ inlined kebab menus across the workspace (planned)."
+    },
+    {
+      "name": "CardDefault",
+      "path": "packages/our-platform-components/src/pipeline/card-default.tsx",
+      "kind": "domain-shared",
+      "summary": "Default card render for the pipeline board. Composed of CardFooterActions + PopoverMenu. Header/body/footer slot rendering.",
+      "usedIn": ["packages/our-platform-components/pipeline/pipeline-board"],
+      "props": ["item", "stage", "actions", "cardSlots", "cardClassName", "onClick", "onDelete"],
+      "createdAt": "2026-07-01",
+      "notes": "Extracted from pipeline-board.tsx DefaultCard. 192 lines, was 215 inline."
+    },
+    {
+      "name": "CardFooterActions",
+      "path": "packages/our-platform-components/src/pipeline/card-footer-actions.tsx",
+      "kind": "domain-shared",
+      "summary": "Bottom action row inside a pipeline card. Renders a button per CardAction, or a default 'View' button.",
+      "usedIn": ["packages/our-platform-components/pipeline/card-default"],
+      "props": ["actions", "item", "onClick"],
+      "createdAt": "2026-07-01",
+      "notes": "Extracted from pipeline-board.tsx DefaultCard footer."
+    },
+    {
+      "name": "ColumnHeader",
+      "path": "packages/our-platform-components/src/pipeline/column-header.tsx",
+      "kind": "domain-shared",
+      "summary": "Column header for a pipeline stage. Composed of StageBar + editable title + CountBadge + NewBadge + add button + PopoverMenu kebab.",
+      "usedIn": ["packages/our-platform-components/pipeline/pipeline-board"],
+      "props": ["stage", "count", "showBarColor", "showCount", "showNewBadge", "allowInlineCreate", "onStageRename", "onAddStage", "onStageDelete", "onAddClick"],
+      "createdAt": "2026-07-01",
+      "notes": "Extracted from pipeline-board.tsx column header block. Owns the in-place edit state for the column title."
+    },
+    {
+      "name": "CountBadge",
+      "path": "packages/our-platform-components/src/pipeline/count-badge.tsx",
+      "kind": "domain-shared",
+      "summary": "Count pill for a pipeline column. Color-tinted background + text. Uses badgeBgFor() color math.",
+      "usedIn": ["packages/our-platform-components/pipeline/column-header"],
+      "props": ["color", "count"],
+      "createdAt": "2026-07-01",
+      "notes": "Extracted from pipeline-board.tsx column header count pill."
+    },
+    {
+      "name": "NewBadge",
+      "path": "packages/our-platform-components/src/pipeline/new-badge.tsx",
+      "kind": "domain-shared",
+      "summary": "'New' gradient badge for newly-added columns. Pulse animation.",
+      "usedIn": ["packages/our-platform-components/pipeline/column-header"],
+      "props": ["className"],
+      "createdAt": "2026-07-01",
+      "notes": "Extracted from pipeline-board.tsx column header new badge."
+    },
+    {
+      "name": "StageBar",
+      "path": "packages/our-platform-components/src/pipeline/stage-bar.tsx",
+      "kind": "domain-shared",
+      "summary": "Top color bar of a pipeline column. 1-line visual, parameterized by color.",
+      "usedIn": ["packages/our-platform-components/pipeline/column-header"],
+      "props": ["color"],
+      "createdAt": "2026-07-01",
+      "notes": "Extracted from pipeline-board.tsx column header top bar."
+    },
+    {
+      "name": "InlineNewCard",
+      "path": "packages/our-platform-components/src/pipeline/inline-new-card.tsx",
+      "kind": "domain-shared",
+      "summary": "Inline create form for a pipeline card. Title + optional contact + save/cancel. Enter to commit, Escape to cancel.",
+      "usedIn": ["packages/our-platform-components/pipeline/pipeline-board"],
+      "props": ["stageColor", "onSave", "onCancel", "primaryPlaceholder", "secondaryPlaceholder", "primaryLabel"],
+      "createdAt": "2026-07-01",
+      "notes": "Extracted from pipeline-board.tsx. Replaces 6+ inlined inline-create forms across the workspace (planned)."
+    },
+    {
+      "name": "useSortableBoard",
+      "path": "packages/our-platform-components/src/pipeline/use-sortable-board.ts",
+      "kind": "domain-shared",
+      "summary": "SortableJS lifecycle hook for a kanban board. Includes the DOM-revert workaround that prevents the 'removeChild' race when SortableJS moves a node before React re-renders.",
+      "usedIn": ["packages/our-platform-components/pipeline/pipeline-board"],
+      "props": ["stages", "draggable", "onCardMove"],
+      "createdAt": "2026-07-01",
+      "notes": "Extracted from pipeline-board.tsx. The DOM-revert logic at lines 477-495 of the original is preserved byte-for-byte — drag-between-stages still works without console errors."
+    },
+    {
+      "name": "PipelineStageIndicator",
+      "path": "packages/our-platform-components/src/pipeline/pipeline-stage-indicator.tsx",
+      "kind": "domain-shared",
+      "summary": "Multi-stage progress indicator showing where an entity is in a pipeline. Three variants: dots (table cells), strip (detail headers), breadcrumb (card-internal). User-flagged missing puzzle.",
+      "usedIn": ["apps/workspace/src/domains/deals/components/deal-board.tsx (strip in column header)", "apps/workspace/src/domains/clients/components/client-list-item.tsx (dots in list row)"],
+      "props": ["stages", "currentStageKey", "variant", "className", "onStageClick", "ariaLabel"],
+      "createdAt": "2026-07-01",
+      "updatedAt": "2026-07-01",
+      "notes": "NEW puzzle piece. Adopted in deal-board (column header strip) and client-list-item (row dots). Recommended further adopters: client-table-view.tsx, notion-client-table.tsx, pipeline-stages-settings.tsx."
+    },
+    {
+      "name": "ProgressBar",
+      "path": "packages/our-platform-components/src/feedback/progress-bar.tsx",
+      "kind": "shared-ui",
+      "summary": "Horizontal progress bar. value/max with size variants (xs/sm/md/lg), optional color, optional label.",
+      "usedIn": [],
+      "props": ["value", "max", "size", "color", "showLabel", "className", "trackClassName", "fillClassName"],
+      "createdAt": "2026-07-01",
+      "notes": "NEW puzzle piece. Replaces 9+ inlined progress bar copies across the workspace (planned)."
+    },
+    {
+      "name": "WidgetShell",
+      "path": "packages/our-platform-components/src/widget-grid/widget-shell.tsx",
+      "kind": "shared-ui",
+      "summary": "Wrapper for a widget in the widget grid. Drag handle, rename input, resize controls, kebab menu (now via PopoverMenu).",
+      "usedIn": ["packages/our-platform-components/widget-grid/widget-grid"],
+      "props": ["widget", "onRemove", "onRename", "onResize", "children"],
+      "createdAt": "2026-07-01",
+      "notes": "Extracted from widget-grid.tsx:285-438. 143 lines, was 153 inline. Kebab menu reuses PopoverMenu."
     },
     {
       "name": "WidgetGrid",
@@ -329,6 +451,96 @@
       "props": ["fallback", "children"],
       "createdAt": "2026-03-01",
       "notes": "Catches render-phase errors."
+    },
+    {
+      "name": "ColorDot",
+      "path": "packages/ui/src/components/ui/color-dot.tsx",
+      "kind": "primitive",
+      "summary": "Small color circle indicator. 4 sizes (xs/sm/md/lg), optional ring, optional label. Generalized from DepartmentDot.",
+      "usedIn": ["packages/ui/src/components/ui/department-dot (wrapper)"],
+      "props": ["color", "size", "ring", "label", "className"],
+      "createdAt": "2026-07-01",
+      "notes": "Replaces 16+ inlined `h-2 w-2 rounded-full` copies across the workspace (planned)."
+    },
+    {
+      "name": "ColorSwatch",
+      "path": "packages/ui/src/components/ui/color-swatch.tsx",
+      "kind": "primitive",
+      "summary": "Selectable color circle button. Radio-style with selected/unselected states. Used by color pickers.",
+      "usedIn": [],
+      "props": ["color", "selected", "size", "ariaLabel"],
+      "createdAt": "2026-07-01",
+      "notes": "Replaces 4 inlined color-swatch buttons in pipeline-stages-settings, space-create-form, space-settings (planned)."
+    },
+    {
+      "name": "EmptyState",
+      "path": "packages/ui/src/components/ui/empty-state.tsx",
+      "kind": "primitive",
+      "summary": "Generic empty state placeholder. icon + title + description + optional action/children. Three sizes (sm/md/lg).",
+      "usedIn": ["apps/workspace/src/components/shared/crud-ui/status.tsx (re-export as EmptyWorkspace)"],
+      "props": ["icon", "title", "description", "size", "action", "children", "className"],
+      "createdAt": "2026-07-01",
+      "notes": "Promoted from the workspace's EmptyWorkspace with a size prop. Replaces 12+ inlined `rounded-xl border border-dashed` empty states in clients/projects detail tabs (planned)."
+    },
+    {
+      "name": "FilterChip",
+      "path": "packages/ui/src/components/ui/filter-chip.tsx",
+      "kind": "primitive",
+      "summary": "Clickable filter chip with active/inactive states. Three sizes. FilterChipBar is the row-of-chips variant.",
+      "usedIn": [],
+      "props": ["active", "size", "count", "children", "className"],
+      "createdAt": "2026-07-01",
+      "notes": "Replaces 5+ inlined filter trigger patterns (clients-screens filter popover, saved-views-dropdown, etc.). The existing FilterChipBar.tsx in packages/ui/src/workspace/ remains for backward compat."
+    },
+    {
+      "name": "LegendItem",
+      "path": "packages/ui/src/components/ui/legend-item.tsx",
+      "kind": "primitive",
+      "summary": "Color dot + label + value trio for chart legends. Two sizes.",
+      "usedIn": [],
+      "props": ["color", "label", "value", "icon", "size", "className"],
+      "createdAt": "2026-07-01",
+      "notes": "Replaces 6+ inlined legend rows in project-status-widget, assignee-widget, workload-chart-widget, integration-app-details, workspace-widgets (planned)."
+    },
+    {
+      "name": "ListRow",
+      "path": "packages/ui/src/components/ui/list-row.tsx",
+      "kind": "primitive",
+      "summary": "Clickable row with leading slot + title + subtitle + meta + trailing slot. Three variants (default/compact/card).",
+      "usedIn": [],
+      "props": ["leading", "title", "subtitle", "trailing", "meta", "selected", "variant", "href", "onClick"],
+      "createdAt": "2026-07-01",
+      "notes": "Workspace-flavored variant of the existing ListItem* family (which uses different theme tokens). Replaces 10+ inlined row patterns in workspace-widgets, recent-projects-widget, space-switcher, task-grouped-list, integrations-overview (planned)."
+    },
+    {
+      "name": "StatusPill",
+      "path": "packages/ui/src/components/ui/status-pill.tsx",
+      "kind": "primitive",
+      "summary": "Status / tone pill. Five tones (success/warning/danger/info/neutral) × three variants (soft/solid/outline). Two sizes. Unified from 3 partials.",
+      "usedIn": ["apps/workspace/src/components/shared/crud-ui/status.tsx (re-export)"],
+      "props": ["tone", "label", "icon", "size", "variant", "className"],
+      "createdAt": "2026-07-01",
+      "notes": "Replaces 8+ inlined `bg-emerald-500/10 text-emerald-600 border-emerald-500/20` palette copies in notion-client-table, client-picker-modal, calendar-tab, task-table-widget, task-list-view, etc. (planned). The three existing partials (crud-ui/StatusPill, admin/StatusBadge, components/ui/status-badge) are re-exports."
+    },
+    {
+      "name": "TagChip",
+      "path": "packages/ui/src/components/ui/tag-chip.tsx",
+      "kind": "primitive",
+      "summary": "Rounded tag pill. 8 tones (gray/blue/green/amber/red/purple/pink/cyan) + custom color override + optional removable button. Two sizes.",
+      "usedIn": [],
+      "props": ["tone", "label", "size", "outline", "customBg", "customColor", "removable", "onRemove", "icon"],
+      "createdAt": "2026-07-01",
+      "notes": "Replaces 12+ inlined tag-pill patterns in task-table-widget, task-list-view, notion-client-table, calendar-tab, doc-grid-view, etc. (planned). Complements (does not replace) the existing TokenBar and EditableTags which serve different surfaces."
+    },
+    {
+      "name": "EditableTitle",
+      "path": "apps/workspace/src/components/ui/editable-title.tsx",
+      "kind": "shared-ui",
+      "summary": "Click-to-edit title (sibling of EditableText). 4 sizes, 3 trigger modes (doubleClick/click/alwaysEdit), Enter/Escape/blur commit.",
+      "usedIn": [],
+      "props": ["value", "onChange", "placeholder", "size", "trigger", "disabled", "className", "inputClassName", "truncate", "ariaLabel"],
+      "createdAt": "2026-07-01",
+      "notes": "Replaces 6+ inlined click-to-edit patterns in project-overview-sidebar, project-dashboard, projects-overview-dashboard, doc-folder-tree, ColumnHeader (via internal use), widget-grid WidgetShell (planned)."
     }
   ]
 }

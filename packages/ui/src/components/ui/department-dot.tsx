@@ -2,6 +2,7 @@
 
 import { forwardRef, type HTMLAttributes } from "react"
 import { cn } from "@qentrah/platform-core/classnames"
+import { ColorDot } from "./color-dot"
 
 type Department = "finance" | "hr" | "marketing" | "sales" | "engineering" | "operations" | "legal" | "support"
 
@@ -25,17 +26,14 @@ const DepartmentDot = forwardRef<HTMLSpanElement, DepartmentDotProps>(
   ({ department, showLabel = false, className, ...props }, ref) => {
     const color = departmentColors[department.toLowerCase()] || "#6b7280"
     return (
-      <span
+      <ColorDot
         ref={ref}
-        className={cn("inline-flex items-center gap-2", className)}
-        {...props}
-      >
-        <span
-          className="inline-block w-2 h-2 rounded-full flex-shrink-0"
-          style={{ backgroundColor: color }}
-        />
-        {showLabel && <span className="text-[13px] text-text-primary">{department}</span>}
-      </span>
+        color={color}
+        size="sm"
+        label={showLabel ? department : undefined}
+        className={className}
+        {...(props as Omit<HTMLAttributes<HTMLSpanElement>, "children">)}
+      />
     )
   }
 )

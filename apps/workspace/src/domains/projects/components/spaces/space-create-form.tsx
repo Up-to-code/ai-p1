@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
+import { ColorSwatch } from "@qentrah/ui";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,17 +133,13 @@ export function SpaceCreateForm({ open, onOpenChange, projectId }: SpaceCreateFo
             <label className="text-sm font-medium">Color</label>
             <div className="flex gap-2">
               {SPACE_COLORS.map((color) => (
-                <button
+                <ColorSwatch
                   key={color}
-                  type="button"
+                  color={color}
+                  selected={values.color === color}
+                  size="md"
                   onClick={() => setValues({ ...values, color })}
-                  className={cn(
-                    "h-6 w-6 rounded-full border-2 transition-all",
-                    values.color === color
-                      ? "border-foreground scale-110"
-                      : "border-transparent hover:scale-105"
-                  )}
-                  style={{ backgroundColor: color }}
+                  ariaLabel={`Color ${color}`}
                 />
               ))}
             </div>

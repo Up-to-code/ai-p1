@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
 import { query } from "../../_generated/server";
-import { evaluateOrganizationCapabilities } from "../../../src/packages/authz";
+// TEMP: Disabled to fix Convex bundling - import { evaluateOrganizationCapabilities } from "../../../src/packages/authz";
 
 type OrganizationAction = "read" | "update";
 type OrganizationPermissionResource =
@@ -145,9 +145,43 @@ export const getCapabilities = query({
   args: { organizationId: v.string() },
   returns: capabilitiesReturnValidator,
   handler: async (_ctx, _args) => {
-    return evaluateOrganizationCapabilities({
-      memberRole: "owner",
+    // TEMP: Stubbed to fix Convex bundling - return all permissions
+    return {
+      canReadOrganization: true,
+      canUpdateOrganization: true,
+      canInviteMembers: true,
+      canUpdateMembers: true,
+      canRemoveMembers: true,
+      canReadRoles: true,
+      canCreateRoles: true,
+      canUpdateRoles: true,
+      canDeleteRoles: true,
+      canReadProjects: true,
+      canCreateProjects: true,
+      canUpdateProjects: true,
+      canDeleteProjects: true,
+      canReadClients: true,
+      canCreateClients: true,
+      canUpdateClients: true,
+      canDeleteClients: true,
+      canReadTasks: true,
+      canCreateTasks: true,
+      canUpdateTasks: true,
+      canDeleteTasks: true,
+      canReadMedia: true,
+      canCreateMedia: true,
+      canUpdateMedia: true,
+      canDeleteMedia: true,
+      canReadApiKeys: true,
+      canCreateApiKeys: true,
+      canUpdateApiKeys: true,
+      canDeleteApiKeys: true,
+      canReadCalendarEvents: true,
+      canCreateCalendarEvents: true,
+      canUpdateCalendarEvents: true,
+      canDeleteCalendarEvents: true,
       isPlatformAdmin: true,
-    });
+      canManageVisibility: true,
+    };
   },
 });

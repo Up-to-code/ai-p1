@@ -1,6 +1,6 @@
 import { v } from "convex/values";
-import { mutation } from "../_generated/server";
-import type { Doc } from "../_generated/dataModel";
+import { internalMutation, mutation } from "../_generated/server";
+import type { Doc, Id, MutationCtx } from "../_generated/dataModel";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { presentWorkspaceRecord, stripDeletedFields } from "../shared/present";
@@ -15,6 +15,53 @@ function presentProject(project: Doc<"projects">) {
   };
 }
 
+async function createProjectCore(ctx: MutationCtx, args: { organizationId: string; input: Parameters<typeof projectInputValidator.parse>[0]; actorUserId: string }) {
+  const now = Date.now();
+  const id = await ctx.db.insert("projects", {
+    organizationId: args.organizationId,
+    ...args.input,
+    ownerUserId: args.actorUserId,
+    visibility: args.input.visibility ?? "private",
+    isDeleted: false,
+    createdByUserId: args.actorUserId,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  const project = await ctx.db.get(id);
+  if (!project) throw new Error("Project could not be created.");
+  return { presented: presentProject(project), now };
+}
+
+async function updateProjectCore(ctx: MutationCtx, args: { organizationId: string; projectId: Id<"projects">; input: Parameters<typeof projectInputValidator.parse>[0]; actorUserId: string }) {
+  const existing = await ctx.db.get(args.projectId);
+  if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
+    throw new Error("Project was not found.");
+  }
+
+  const nextVisibility = args.input.visibility ?? (existing.visibility ?? "private");
+  const now = Date.now();
+  await ctx.db.patch(args.projectId, {
+    ...args.input,
+    visibility: nextVisibility,
+    updatedAt: now,
+  });
+
+  const project = await ctx.db.get(args.projectId);
+  if (!project) throw new Error("Project was not found.");
+  return { presented: presentProject(project), now };
+}
+
+async function deleteProjectCore(ctx: MutationCtx, args: { organizationId: string; projectId: Id<"projects">; actorUserId: string }) {
+  const existing = await ctx.db.get(args.projectId);
+  if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
+    throw new Error("Project was not found.");
+  }
+  const now = Date.now();
+  await ctx.db.patch(args.projectId, { deletedAt: now, isDeleted: true, updatedAt: now });
+  return { removed: true as const, now, name: existing.name };
+}
+
 export const createFromHono = mutation({
   args: {
     organizationId: v.string(),
@@ -24,30 +71,20 @@ export const createFromHono = mutation({
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "create");
-    const now = Date.now();
-    const id = await ctx.db.insert("projects", {
+    const { presented, now } = await createProjectCore(ctx, {
       organizationId: args.organizationId,
-      ...args.input,
-      ownerUserId: user._id,
-      visibility: args.input.visibility ?? "private",
-      isDeleted: false,
-      createdByUserId: user._id,
-      createdAt: now,
-      updatedAt: now,
+      input: args.input,
+      actorUserId: user._id,
     });
-
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,
       action: "project.create",
-      target: id,
+      target: presented.id,
       summary: `Created project ${args.input.name}.`,
       createdAt: now,
     });
-
-    const project = await ctx.db.get(id);
-    if (!project) throw new Error("Project could not be created.");
-    return presentProject(project);
+    return presented;
   },
 });
 
@@ -61,19 +98,12 @@ export const updateFromHono = mutation({
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "update");
-    const existing = await ctx.db.get(args.projectId);
-    if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
-      throw new Error("Project was not found.");
-    }
-
-    const nextVisibility = args.input.visibility ?? (existing.visibility ?? "private");
-    const now = Date.now();
-    await ctx.db.patch(args.projectId, {
-      ...args.input,
-      visibility: nextVisibility,
-      updatedAt: now,
+    const { presented, now } = await updateProjectCore(ctx, {
+      organizationId: args.organizationId,
+      projectId: args.projectId,
+      input: args.input,
+      actorUserId: user._id,
     });
-
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,
@@ -82,10 +112,7 @@ export const updateFromHono = mutation({
       summary: `Updated project ${args.input.name}.`,
       createdAt: now,
     });
-
-    const project = await ctx.db.get(args.projectId);
-    if (!project) throw new Error("Project was not found.");
-    return presentProject(project);
+    return presented;
   },
 });
 
@@ -98,22 +125,72 @@ export const deleteFromHono = mutation({
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "delete");
-    const existing = await ctx.db.get(args.projectId);
-    if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
-      throw new Error("Project was not found.");
-    }
-
-    const now = Date.now();
-    await ctx.db.patch(args.projectId, { deletedAt: now, isDeleted: true, updatedAt: now });
+    const { now, name } = await deleteProjectCore(ctx, {
+      organizationId: args.organizationId,
+      projectId: args.projectId,
+      actorUserId: user._id,
+    });
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,
       action: "project.delete",
       target: args.projectId,
-      summary: `Deleted project ${existing.name}.`,
+      summary: `Deleted project ${name}.`,
       createdAt: now,
     });
+    return { removed: true };
+  },
+});
 
+export const createInternal = internalMutation({
+  args: {
+    organizationId: v.string(),
+    input: projectInputValidator,
+    actorUserId: v.string(),
+  },
+  returns: projectValidator,
+  handler: async (ctx, args) => {
+    const { presented } = await createProjectCore(ctx, {
+      organizationId: args.organizationId,
+      input: args.input,
+      actorUserId: args.actorUserId,
+    });
+    return presented;
+  },
+});
+
+export const updateInternal = internalMutation({
+  args: {
+    organizationId: v.string(),
+    projectId: v.id("projects"),
+    input: projectInputValidator,
+    actorUserId: v.string(),
+  },
+  returns: projectValidator,
+  handler: async (ctx, args) => {
+    const { presented } = await updateProjectCore(ctx, {
+      organizationId: args.organizationId,
+      projectId: args.projectId,
+      input: args.input,
+      actorUserId: args.actorUserId,
+    });
+    return presented;
+  },
+});
+
+export const deleteInternal = internalMutation({
+  args: {
+    organizationId: v.string(),
+    projectId: v.id("projects"),
+    actorUserId: v.string(),
+  },
+  returns: v.object({ removed: v.boolean() }),
+  handler: async (ctx, args) => {
+    await deleteProjectCore(ctx, {
+      organizationId: args.organizationId,
+      projectId: args.projectId,
+      actorUserId: args.actorUserId,
+    });
     return { removed: true };
   },
 });

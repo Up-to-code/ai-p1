@@ -1,5 +1,7 @@
 "use client";
 
+import { ProgressBar } from "@qentrah/our-platform-components";
+
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
@@ -72,12 +74,7 @@ export function BudgetChartWidget() {
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t("utilization")}</span>
           <span className="text-xs font-bold text-foreground">{utilizationPct}%</span>
         </div>
-        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary rounded-full transition-all duration-500"
-            style={{ width: `${Math.min(100, utilizationPct)}%` }}
-          />
-        </div>
+        <ProgressBar value={Math.min(100, utilizationPct)} size="lg" />
       </div>
 
       {/* Bar Chart */}

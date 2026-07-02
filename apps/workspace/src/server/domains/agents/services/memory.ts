@@ -71,7 +71,6 @@ export async function writeMemorySummary(input: {
     status: "completed",
     assistantMessage: "",
     summary: input.summary,
-    messageCount: input.messageCount ?? 2,
   }).catch(() => undefined);
 }
 

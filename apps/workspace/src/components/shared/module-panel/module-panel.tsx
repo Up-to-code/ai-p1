@@ -59,12 +59,12 @@ export interface ModulePanelProps {
 export function ModulePanel({
   open,
   onOpenChange,
-  defaultWidth = 640,
-  defaultHeight = 560,
-  minWidth = 480,
-  maxWidth = 1200,
-  minHeight = 320,
-  maxHeight = 960,
+  defaultWidth = 500,
+  defaultHeight = 450,
+  minWidth = 400,
+  maxWidth = 800,
+  minHeight = 300,
+  maxHeight = 700,
   children,
 }: ModulePanelProps) {
   const [panelWidth, setPanelWidth] = React.useState(defaultWidth)

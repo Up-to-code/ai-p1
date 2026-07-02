@@ -230,6 +230,7 @@ export async function workspaceReadJson<T>(
   try {
     return c.json(await withWorkspaceReadTimeout(label, operation));
   } catch (error) {
+    console.error(`[workspace-read] ${label} failed:`, error);
     return c.json(
       { error: workspaceReadMessage(error) },
       workspaceReadStatus(error),

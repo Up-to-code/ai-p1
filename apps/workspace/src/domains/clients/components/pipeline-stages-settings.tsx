@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ColorSwatch } from "@qentrah/ui";
 import { Plus, Trash2, GripVertical, Check, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -165,13 +166,13 @@ export function PipelineStagesSettings({
                   </div>
                   <div className="flex gap-1 flex-wrap max-w-[120px]">
                     {PRESET_COLORS.map((color) => (
-                      <button
+                      <ColorSwatch
                         key={color}
+                        color={color}
+                        selected={editColor === color}
+                        size="xs"
                         onClick={() => setEditColor(color)}
-                        className={`h-4 w-4 rounded-full border-2 shrink-0 ${
-                          editColor === color ? "border-foreground" : "border-transparent"
-                        }`}
-                        style={{ backgroundColor: color }}
+                        ariaLabel={`Color ${color}`}
                       />
                     ))}
                   </div>
@@ -252,13 +253,13 @@ export function PipelineStagesSettings({
               </div>
               <div className="flex gap-1 flex-wrap max-w-[120px]">
                 {PRESET_COLORS.map((color) => (
-                  <button
+                  <ColorSwatch
                     key={color}
+                    color={color}
+                    selected={newColor === color}
+                    size="xs"
                     onClick={() => setNewColor(color)}
-                    className={`h-4 w-4 rounded-full border-2 shrink-0 ${
-                      newColor === color ? "border-foreground" : "border-transparent"
-                    }`}
-                    style={{ backgroundColor: color }}
+                    ariaLabel={`Color ${color}`}
                   />
                 ))}
               </div>

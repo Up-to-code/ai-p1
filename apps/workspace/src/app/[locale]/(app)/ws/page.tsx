@@ -1,11 +1,15 @@
 "use client";
 
 import { useWorkspaceStore } from "@/domains/workspace/stores/workspace-store";
-import { OverviewView } from "./_pages/overview-view";
+import { TaskTableView } from "@/domains/projects/components/views/task-table-view";
 
 export default function WsPage() {
   const orgId = useWorkspaceStore((s) => s.orgId);
   const projectId = useWorkspaceStore((s) => s.projectId);
 
-  return <OverviewView />;
+  return (
+    <div className="p-4">
+      <TaskTableView projectId={projectId ?? ""} organizationId={orgId ?? ""} />
+    </div>
+  );
 }

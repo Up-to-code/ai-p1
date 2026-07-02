@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { ProgressBar } from "@qentrah/our-platform-components";
 import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import { cn } from "@/lib/utils";
 import { Globe2 } from "lucide-react";
@@ -88,12 +89,7 @@ export function TaskMapView({ projectId, organizationId }: { projectId: string; 
                   <span>Tasks Completed</span>
                   <span className="text-foreground">{country.pct}% ({country.completed}/{country.total})</span>
                 </div>
-                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                  <div
-                    className={cn("h-full rounded-full transition-all", country.color)}
-                    style={{ width: `${country.pct}%` }}
-                  />
-                </div>
+                <ProgressBar value={country.pct} size="md" className={country.color} />
               </div>
             </div>
 

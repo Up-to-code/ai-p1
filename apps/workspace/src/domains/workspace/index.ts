@@ -1,3 +1,4 @@
-// workspace-screen was split into ws/ route pages (board, list, table, calendar, gantt)
-// and ws/layout.tsx (header + tokenbar + overflow container).
-// ws/page.tsx renders the Overview (WidgetGrid).
+// Workspace domain - simplified to table view only
+// Main entry: /ws/table
+// Layout: ws/layout.tsx (header + content)
+// Table view: domains/projects/components/views/task-table-view.tsx

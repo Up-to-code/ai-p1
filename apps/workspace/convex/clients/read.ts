@@ -36,15 +36,18 @@ export async function presentClient(client: Doc<"clients">) {
     ...pii,
     id: client._id,
     visibility: client.visibility ?? "private",
+    ownerUserId: client.ownerUserId ?? "",
+    source: client.source ?? "",
+    createdByUserId: client.createdByUserId ?? "",
     phone: pii.phone ?? client.phone ?? "",
-    contact: pii.email ?? client.email ?? client.phone ?? client.company ?? "",
-    priority: "normal" as const,
-    budget: "",
-    assetInterest: client.notes ?? client.source,
+    contact: client.contact ?? pii.email ?? client.email ?? client.phone ?? client.company ?? "",
+    priority: client.priority ?? "normal",
+    budget: client.budget ?? "",
+    assetInterest: client.assetInterest ?? client.notes ?? client.source ?? "",
     pipelineStage: resolveClientPipelineStage(client),
     pipelineOrder: client.pipelineOrder,
-    added: isoDate(client.createdAt),
-    lastContact: isoDate(client.updatedAt),
+    added: client.added ?? isoDate(client.createdAt),
+    lastContact: client.lastContact ?? isoDate(client.updatedAt),
   };
 }
 
@@ -56,15 +59,18 @@ async function presentClientListItem(client: Doc<"clients">) {
     ...pii,
     id: client._id,
     visibility: client.visibility ?? "private",
+    ownerUserId: client.ownerUserId ?? "",
+    source: client.source ?? "",
+    createdByUserId: client.createdByUserId ?? "",
     phone: pii.phone ?? client.phone ?? "",
-    contact: pii.email ?? client.email ?? client.phone ?? client.company ?? "",
-    priority: "normal" as const,
-    budget: "",
-    assetInterest: client.notes ?? client.source,
+    contact: client.contact ?? pii.email ?? client.email ?? client.phone ?? client.company ?? "",
+    priority: client.priority ?? "normal",
+    budget: client.budget ?? "",
+    assetInterest: client.assetInterest ?? client.notes ?? client.source ?? "",
     pipelineStage: resolveClientPipelineStage(client),
     pipelineOrder: client.pipelineOrder,
-    added: isoDate(client.createdAt),
-    lastContact: isoDate(client.updatedAt),
+    added: client.added ?? isoDate(client.createdAt),
+    lastContact: client.lastContact ?? isoDate(client.updatedAt),
   };
 }
 
@@ -139,8 +145,9 @@ export const listPaged = query({
       .paginate(args.paginationOpts);
 
     return {
-      ...page,
       page: await presentActiveWorkspacePage(page.page, presentClientListItem),
+      isDone: page.isDone,
+      continueCursor: page.continueCursor,
     };
   },
 });

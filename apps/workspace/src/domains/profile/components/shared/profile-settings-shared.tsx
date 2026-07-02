@@ -108,7 +108,7 @@ export function ProfileField({
         id={id}
         type={type}
         autoComplete={autoComplete}
-        className="h-12 rounded-xl border-border bg-card font-medium focus-visible:ring-blue-600/20 dark:border-border dark:bg-card"
+        className="h-12 rounded-xl border-border bg-background font-medium focus-visible:ring-blue-600/20 dark:border-border dark:bg-background"
         aria-invalid={Boolean(error)}
         readOnly={readOnly}
         disabled={disabled}

@@ -3,7 +3,6 @@ import {
   BadgeDollarSign,
   Bot,
   Building2,
-  Inbox,
   Plug,
   Shield,
   UserRound,
@@ -20,6 +19,7 @@ import {
   SettingsIcon,
   StatsIcon,
 } from "../components/clickup-icons";
+import { InboxIcon } from "../components/clickup-icons";
 
 export type SidebarNavItem = {
   name: string;
@@ -28,24 +28,50 @@ export type SidebarNavItem = {
   label?: string;
   /** If true, clicking opens the secondary panel instead of navigating. */
   opensPanel?: boolean;
+  /** Optional group label for organizing items */
+  group?: string;
+};
+
+export type SidebarNavGroup = {
+  id: string;
+  label: string;
+  items: SidebarNavItem[];
 };
 
 /** Static top-section navigation entries (always visible, personal). */
 export const sidebarStaticNav: SidebarNavItem[] = [
   { name: "home", href: "/ws", icon: HomeIcon, label: "Home", opensPanel: true },
-  { name: "inbox", href: "/inbox", icon: Inbox, label: "Inbox" },
+  { name: "inbox", href: "/inbox", icon: InboxIcon, label: "Inbox", opensPanel: true },
 ];
 
 /** Primary workspace-level navigation entries. */
 export const sidebarPrimaryNav: SidebarNavItem[] = [
-  { name: "ai", href: "/ai", icon: Bot, label: "AI" },
-  { name: "spaces", href: "/spaces", icon: FolderIcon, label: "Spaces" },
-  { name: "clients", href: "/clients", icon: UserRound },
-  { name: "opportunities", href: "/opportunities", icon: KanbanIcon },
-  { name: "deals", href: "/deals", icon: BadgeDollarSign },
-  { name: "tasks", href: "/tasks", icon: ListLinesIcon },
-  { name: "calendar", href: "/calendar", icon: CalendarIcon },
-  { name: "docs", href: "/docs", icon: DocumentLinesIcon },
+  { name: "ai", href: "/ai", icon: Bot, label: "AI", group: "workspace" },
+  { name: "clients", href: "/clients", icon: UserRound, group: "crm" },
+  { name: "opportunities", href: "/opportunities", icon: KanbanIcon, group: "crm" },
+  { name: "deals", href: "/deals", icon: BadgeDollarSign, group: "crm" },
+  { name: "tasks", href: "/tasks", icon: ListLinesIcon, group: "productivity" },
+  { name: "calendar", href: "/calendar", icon: CalendarIcon, group: "productivity" },
+  { name: "docs", href: "/docs", icon: DocumentLinesIcon, group: "productivity" },
+];
+
+/** Grouped navigation for sidebar */
+export const sidebarNavGroups: SidebarNavGroup[] = [
+  {
+    id: "workspace",
+    label: "Workspace",
+    items: sidebarPrimaryNav.filter(item => item.group === "workspace"),
+  },
+  {
+    id: "crm",
+    label: "CRM",
+    items: sidebarPrimaryNav.filter(item => item.group === "crm"),
+  },
+  {
+    id: "productivity",
+    label: "Productivity",
+    items: sidebarPrimaryNav.filter(item => item.group === "productivity"),
+  },
 ];
 
 /** Space-level navigation (when a space is selected, no project). */
@@ -72,8 +98,8 @@ export const sidebarComingSoonNav: SidebarNavItem[] = [
 
 /** Workspace settings navigation. */
 export const sidebarWorkspaceNav: SidebarNavItem[] = [
-  { name: "organization", href: "/settings/organization", icon: Building2 },
-  { name: "workspaceSettings", href: "/settings/workspace", icon: SettingsIcon },
+  { name: "organization", href: "/organization", icon: Building2 },
+  { name: "workspaceSettings", href: "/settings", icon: SettingsIcon },
 ];
 
 export const sidebarVisibleThreadLimit = 3;

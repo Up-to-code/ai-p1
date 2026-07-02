@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/shared/crud-ui";
+import { PipelineStageIndicator } from "@qentrah/our-platform-components";
 import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { useScreenDetection } from "@qentrah/ui/qentrah-table";
@@ -102,6 +103,13 @@ export function DealBoard({
             <div className="mb-4 flex items-center justify-between px-2">
               <h3 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{labels[stage]}</h3>
               <span className="text-[10px] font-semibold tabular-nums text-muted-foreground/40">{String(rows.length).padStart(2, "0")}</span>
+            </div>
+            <div className="mb-3 px-2">
+              <PipelineStageIndicator
+                stages={DEAL_STAGES.map((s) => ({ key: s, name: labels[s] }))}
+                currentStageKey={stage}
+                variant="strip"
+              />
             </div>
             <div className="flex-1 space-y-3">
               {rows.map((deal) => {

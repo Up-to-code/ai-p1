@@ -16,6 +16,7 @@ import { WorkOsRecordDrawer } from "@/domains/work-os/components/work-os-record-
 import { useClientOptionsQuery } from "@/domains/clients/api/clients";
 import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
 import { useCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
+import { PageHeader } from "@/components/shared/page-header";
 import {
   createOpportunityRequest,
   deleteOpportunityRequest,
@@ -203,10 +204,21 @@ export function OpportunitiesScreen() {
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-background">
-      <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border bg-card px-5 py-3">
+      <PageHeader
+        title={t("title")}
+        actions={[
+          {
+            label: t("actions.new"),
+            icon: Plus,
+            variant: "primary",
+            onClick: openCreateDrawer,
+          },
+        ]}
+      />
+
+      {/* Toolbar with filters and view toggle */}
+      <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border px-6 py-3">
         <div className="flex items-center gap-3 min-w-0">
-          <h1 className="text-lg font-bold text-foreground truncate">{t("title")}</h1>
-          <div className="h-5 w-px bg-border shrink-0" />
           <HeaderSelect
             value={stage}
             onChange={(value) => setStage(value as OpportunityStage | "all")}
@@ -245,14 +257,10 @@ export function OpportunitiesScreen() {
               <List className="h-3.5 w-3.5" />
             </button>
           </div>
-          <AppPrimaryButton onClick={openCreateDrawer} className="h-8 px-3 text-xs">
-            <Plus className="me-1.5 h-3.5 w-3.5" />
-            {t("actions.new")}
-          </AppPrimaryButton>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-5 md:p-6 lg:p-8">
+      <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto w-full max-w-full">
           {workspaceStatus !== "ready" ? (
             <WorkspaceQueryState status={workspaceStatus} variant="pipeline" />

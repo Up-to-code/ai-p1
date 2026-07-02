@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation } from "../_generated/server";
+import { internalMutation, mutation } from "../_generated/server";
+import type { Id, MutationCtx } from "../_generated/dataModel";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { dealInputValidator, dealValidator } from "./validators";
@@ -8,36 +9,69 @@ function presentDeal<TDeal extends { _id: string }>(deal: TDeal) {
   return { ...deal, id: deal._id };
 }
 
+async function createDealCore(ctx: MutationCtx, args: { organizationId: string; input: Parameters<typeof dealInputValidator.parse>[0]; actorUserId: string }) {
+  const now = Date.now();
+  const ownerUserId = args.input.ownerUserId ?? args.actorUserId;
+  const id = await ctx.db.insert("deals", {
+    organizationId: args.organizationId,
+    ...args.input,
+    ownerUserId,
+    createdByUserId: args.actorUserId,
+    createdAt: now,
+    updatedAt: now,
+    ...(args.input.status === "won" || args.input.status === "lost" ? { closedAt: now } : {}),
+  });
+
+  const deal = await ctx.db.get(id);
+  if (!deal) throw new Error("Deal could not be created.");
+  return { presented: presentDeal(deal), now };
+}
+
+async function updateDealCore(ctx: MutationCtx, args: { organizationId: string; dealId: Id<"deals">; input: Parameters<typeof dealInputValidator.parse>[0]; actorUserId: string }) {
+  const existing = await ctx.db.get(args.dealId);
+  if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Deal was not found.");
+  const now = Date.now();
+  const patch = {
+    ...args.input,
+    ownerUserId: args.input.ownerUserId ?? existing.ownerUserId,
+    updatedAt: now,
+    ...(args.input.status === "won" || args.input.status === "lost" ? { closedAt: existing.closedAt ?? now } : {}),
+  };
+  await ctx.db.patch(args.dealId, patch);
+
+  const deal = await ctx.db.get(args.dealId);
+  if (!deal) throw new Error("Deal was not found.");
+  return { presented: presentDeal(deal), now };
+}
+
+async function deleteDealCore(ctx: MutationCtx, args: { organizationId: string; dealId: Id<"deals">; actorUserId: string }) {
+  const existing = await ctx.db.get(args.dealId);
+  if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Deal was not found.");
+  const now = Date.now();
+  await ctx.db.patch(args.dealId, { deletedAt: now, isDeleted: true, updatedAt: now });
+  return { removed: true as const, now, title: existing.title };
+}
+
 export const createFromHono = mutation({
   args: { organizationId: v.string(), input: dealInputValidator },
   returns: dealValidator,
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
-    const now = Date.now();
-    const ownerUserId = args.input.ownerUserId ?? user._id;
-    const id = await ctx.db.insert("deals", {
+    const { presented, now } = await createDealCore(ctx, {
       organizationId: args.organizationId,
-      ...args.input,
-      ownerUserId,
-      createdByUserId: user._id,
-      createdAt: now,
-      updatedAt: now,
-      ...(args.input.status === "won" || args.input.status === "lost" ? { closedAt: now } : {}),
+      input: args.input,
+      actorUserId: user._id,
     });
-
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,
       action: "deal.create",
-      target: id,
+      target: presented.id,
       summary: `Created deal ${args.input.title}.`,
       createdAt: now,
     });
-
-    const deal = await ctx.db.get(id);
-    if (!deal) throw new Error("Deal could not be created.");
-    return presentDeal(deal);
+    return presented;
   },
 });
 
@@ -47,17 +81,12 @@ export const updateFromHono = mutation({
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
-    const existing = await ctx.db.get(args.dealId);
-    if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Deal was not found.");
-    const now = Date.now();
-    const patch = {
-      ...args.input,
-      ownerUserId: args.input.ownerUserId ?? existing.ownerUserId,
-      updatedAt: now,
-      ...(args.input.status === "won" || args.input.status === "lost" ? { closedAt: existing.closedAt ?? now } : {}),
-    };
-    await ctx.db.patch(args.dealId, patch);
-
+    const { presented, now } = await updateDealCore(ctx, {
+      organizationId: args.organizationId,
+      dealId: args.dealId,
+      input: args.input,
+      actorUserId: user._id,
+    });
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,
@@ -66,10 +95,7 @@ export const updateFromHono = mutation({
       summary: `Updated deal ${args.input.title}.`,
       createdAt: now,
     });
-
-    const deal = await ctx.db.get(args.dealId);
-    if (!deal) throw new Error("Deal was not found.");
-    return presentDeal(deal);
+    return presented;
   },
 });
 
@@ -79,17 +105,58 @@ export const deleteFromHono = mutation({
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
-    const existing = await ctx.db.get(args.dealId);
-    if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Deal was not found.");
-    const now = Date.now();
-    await ctx.db.patch(args.dealId, { deletedAt: now, isDeleted: true, updatedAt: now });
+    const { now, title } = await deleteDealCore(ctx, {
+      organizationId: args.organizationId,
+      dealId: args.dealId,
+      actorUserId: user._id,
+    });
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,
       action: "deal.delete",
       target: args.dealId,
-      summary: `Deleted deal ${existing.title}.`,
+      summary: `Deleted deal ${title}.`,
       createdAt: now,
+    });
+    return { removed: true };
+  },
+});
+
+export const createInternal = internalMutation({
+  args: { organizationId: v.string(), input: dealInputValidator, actorUserId: v.string() },
+  returns: dealValidator,
+  handler: async (ctx, args) => {
+    const { presented } = await createDealCore(ctx, {
+      organizationId: args.organizationId,
+      input: args.input,
+      actorUserId: args.actorUserId,
+    });
+    return presented;
+  },
+});
+
+export const updateInternal = internalMutation({
+  args: { organizationId: v.string(), dealId: v.id("deals"), input: dealInputValidator, actorUserId: v.string() },
+  returns: dealValidator,
+  handler: async (ctx, args) => {
+    const { presented } = await updateDealCore(ctx, {
+      organizationId: args.organizationId,
+      dealId: args.dealId,
+      input: args.input,
+      actorUserId: args.actorUserId,
+    });
+    return presented;
+  },
+});
+
+export const deleteInternal = internalMutation({
+  args: { organizationId: v.string(), dealId: v.id("deals"), actorUserId: v.string() },
+  returns: v.object({ removed: v.boolean() }),
+  handler: async (ctx, args) => {
+    await deleteDealCore(ctx, {
+      organizationId: args.organizationId,
+      dealId: args.dealId,
+      actorUserId: args.actorUserId,
     });
     return { removed: true };
   },

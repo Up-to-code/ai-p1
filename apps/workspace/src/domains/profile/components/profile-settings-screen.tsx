@@ -155,124 +155,129 @@ export function ProfileSettingsScreen() {
         }}
       />
 
-      <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mx-auto max-w-7xl px-6 py-8">
         {activeTab === "profile" && (
-          <ProfileTabPanel
-            register={register}
-            errors={errors}
-            email={account.user.email}
-            labels={{
-              personalTitle: t("sections.personal"),
-              personalDesc: t("sections.personalDesc"),
-              nameLabel: t("form.nameLabel"),
-              emailLabel: t("form.emailLabel"),
-              phoneLabel: t("form.phoneLabel"),
-              phoneTooltip: t("form.phoneTooltip"),
-              rolePermsTitle: t("sections.rolePerms"),
-              rolePermsDesc: t("sections.rolePermsDesc"),
-              roleLabel: t(`roles.${roleKey}`),
-              activeLabel: t("roles.active"),
-              currentRoleLabel: t("roles.currentRole"),
-              permissionsLabel: t("permissions.title"),
-              adminNote: t("roles.adminNote"),
-              permissionLabels: permissionKeys.map((pk) => t(`permissions.${pk}`)),
-              roleColor,
-            }}
-          />
+          <div className="mt-8">
+            <ProfileTabPanel
+              register={register}
+              errors={errors}
+              email={account.user.email}
+              labels={{
+                personalTitle: t("sections.personal"),
+                personalDesc: t("sections.personalDesc"),
+                nameLabel: t("form.nameLabel"),
+                emailLabel: t("form.emailLabel"),
+                phoneLabel: t("form.phoneLabel"),
+                phoneTooltip: t("form.phoneTooltip"),
+                rolePermsTitle: t("sections.rolePerms"),
+                rolePermsDesc: t("sections.rolePermsDesc"),
+                roleLabel: t(`roles.${roleKey}`),
+                currentRoleLabel: t("roles.currentRole"),
+                permissionsLabel: t("permissions.title"),
+                permissionLabels: permissionKeys.map((pk) => t(`permissions.${pk}`)),
+                roleColor,
+              }}
+            />
+          </div>
         )}
 
         {activeTab === "account" && (
-          <AccountTabPanel
-            labels={{
-              title: t("sections.accountData"),
-              desc: t("sections.accountDataDesc"),
-              name: t("account.name"),
-              email: t("account.email"),
-              organization: t("account.organization"),
-              brand: t("account.brand"),
-              defaultBrand: t("account.defaultBrand"),
-              userName: account.user.name,
-              userEmail: account.user.email,
-              organizationName: account.organization.name,
-              brandColor: account.organization.brandColor,
-              organizationInitials: account.organization.initials,
-              organizationLogo: account.organization.logo,
-            }}
-          />
+          <div className="mt-8">
+            <AccountTabPanel
+              labels={{
+                title: t("sections.accountData"),
+                desc: t("sections.accountDataDesc"),
+                name: t("account.name"),
+                email: t("account.email"),
+                organization: t("account.organization"),
+                brand: t("account.brand"),
+                defaultBrand: t("account.defaultBrand"),
+                userName: account.user.name,
+                userEmail: account.user.email,
+                organizationName: account.organization.name,
+                brandColor: account.organization.brandColor,
+                organizationInitials: account.organization.initials,
+                organizationLogo: account.organization.logo,
+              }}
+            />
+          </div>
         )}
 
         {activeTab === "notifications" && (
-          <NotificationsTabPanel
-            notificationPreference={notificationPreference}
-            hasActiveDevice={Boolean(pushDeviceQuery.data?.hasActiveDevice)}
-            isPending={updateNotificationsMutation.isPending || notificationSettingsQuery.isLoading}
-            onToggleEnabled={() =>
-              saveNotificationPreference({
-                ...notificationPreference,
-                enabled: !notificationPreference.enabled,
-              })
-            }
-            onToggleCategory={(category) =>
-              saveNotificationPreference({
-                ...notificationPreference,
-                categories: {
-                  ...notificationPreference.categories,
-                  [category]: !notificationPreference.categories[category],
-                },
-              })
-            }
-            labels={{
-              mobileNotificationsTitle: t("sections.mobileNotifications"),
-              mobileNotificationsDesc: t("sections.mobileNotificationsDesc"),
-              enabled: t("notifications.enabled"),
-              enabledHelp: t("notifications.enabledHelp"),
-              categoryLabel: (category) => t(`notifications.categories.${category}`),
-              categoryHelp: (category) => t(`notifications.categoryHelp.${category}`),
-              mobileDeviceTitle: t("sections.mobileDevice"),
-              mobileDeviceDesc: t("sections.mobileDeviceDesc"),
-              deviceConnected: t("notifications.deviceConnected"),
-              deviceMissing: t("notifications.deviceMissing"),
-              deviceConnectedHelp: t("notifications.deviceConnectedHelp"),
-              deviceMissingHelp: t("notifications.deviceMissingHelp"),
-              on: t("notifications.on"),
-              off: t("notifications.off"),
-              defaultRemindersTitle: t("sections.defaultReminders"),
-              defaultRemindersDesc: t("sections.defaultRemindersDesc"),
-              calendarRule: t("notifications.calendarRule"),
-              taskRule: t("notifications.taskRule"),
-              atStart: t("notifications.atStart"),
-            }}
-          />
+          <div className="mt-8">
+            <NotificationsTabPanel
+              notificationPreference={notificationPreference}
+              hasActiveDevice={Boolean(pushDeviceQuery.data?.hasActiveDevice)}
+              isPending={updateNotificationsMutation.isPending || notificationSettingsQuery.isLoading}
+              onToggleEnabled={() =>
+                saveNotificationPreference({
+                  ...notificationPreference,
+                  enabled: !notificationPreference.enabled,
+                })
+              }
+              onToggleCategory={(category) =>
+                saveNotificationPreference({
+                  ...notificationPreference,
+                  categories: {
+                    ...notificationPreference.categories,
+                    [category]: !notificationPreference.categories[category],
+                  },
+                })
+              }
+              labels={{
+                mobileNotificationsTitle: t("sections.mobileNotifications"),
+                mobileNotificationsDesc: t("sections.mobileNotificationsDesc"),
+                enabled: t("notifications.enabled"),
+                enabledHelp: t("notifications.enabledHelp"),
+                categoryLabel: (category) => t(`notifications.categories.${category}`),
+                categoryHelp: (category) => t(`notifications.categoryHelp.${category}`),
+                mobileDeviceTitle: t("sections.mobileDevice"),
+                mobileDeviceDesc: t("sections.mobileDeviceDesc"),
+                deviceConnected: t("notifications.deviceConnected"),
+                deviceMissing: t("notifications.deviceMissing"),
+                deviceConnectedHelp: t("notifications.deviceConnectedHelp"),
+                deviceMissingHelp: t("notifications.deviceMissingHelp"),
+                on: t("notifications.on"),
+                off: t("notifications.off"),
+                defaultRemindersTitle: t("sections.defaultReminders"),
+                defaultRemindersDesc: t("sections.defaultRemindersDesc"),
+                calendarRule: t("notifications.calendarRule"),
+                taskRule: t("notifications.taskRule"),
+                atStart: t("notifications.atStart"),
+              }}
+            />
+          </div>
         )}
 
         {activeTab === "security" && (
-          <SecurityTabPanel
-            labels={{
-              accountIdentityTitle: t("sections.accountIdentity"),
-              accountIdentityDesc: t("sections.accountIdentityDesc"),
-              fullName: t("security.fullName"),
-              fullNameNote: t("security.fullNameNote"),
-              emailAddress: t("security.emailAddress"),
-              emailNote: t("security.emailNote"),
-              phoneNumber: t("security.phoneNumber"),
-              phoneNote: t("security.phoneNote"),
-              userName: account.user.name,
-              userEmail: account.user.email,
-              userPhone: account.user.profile.phone || "—",
-              accessSecurityTitle: t("sections.accessSecurity"),
-              accessSecurityDesc: t("sections.accessSecurityDesc"),
-              authMethod: t("security.authMethod"),
-              googleAuth: t("security.googleAuth"),
-              googleNote: t("security.googleNote"),
-              manageBtn: t("security.manageBtn"),
-              oauthSafetyNote: t("security.oauthSafetyNote"),
-              activeSessionsTitle: t("sections.activeSessions"),
-              activeSessionsDesc: t("sections.activeSessionsDesc"),
-              thisDevice: t("security.thisDevice"),
-              deviceDetail: t("security.deviceDetail"),
-              current: t("security.current"),
-            }}
-          />
+          <div className="mt-8">
+            <SecurityTabPanel
+              labels={{
+                accountIdentityTitle: t("sections.accountIdentity"),
+                accountIdentityDesc: t("sections.accountIdentityDesc"),
+                fullName: t("security.fullName"),
+                fullNameNote: t("security.fullNameNote"),
+                emailAddress: t("security.emailAddress"),
+                emailNote: t("security.emailNote"),
+                phoneNumber: t("security.phoneNumber"),
+                phoneNote: t("security.phoneNote"),
+                userName: account.user.name,
+                userEmail: account.user.email,
+                userPhone: account.user.profile.phone || "—",
+                accessSecurityTitle: t("sections.accessSecurity"),
+                accessSecurityDesc: t("sections.accessSecurityDesc"),
+                authMethod: t("security.authMethod"),
+                googleAuth: t("security.googleAuth"),
+                googleNote: t("security.googleNote"),
+                manageBtn: t("security.manageBtn"),
+                activeSessionsTitle: t("sections.activeSessions"),
+                activeSessionsDesc: t("sections.activeSessionsDesc"),
+                thisDevice: t("security.thisDevice"),
+                deviceDetail: t("security.deviceDetail"),
+                current: t("security.current"),
+              }}
+            />
+          </div>
         )}
       </div>
     </div>

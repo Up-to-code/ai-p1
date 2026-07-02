@@ -185,6 +185,10 @@ export function useAccountContext() {
   return value;
 }
 
+export function useOptionalAccountContext(): AccountContextValue | null {
+  return useContext(AccountContext);
+}
+
 export function useOrgId(): string | null {
   const account = useAccountContext();
   return account.workspace.status === "ready"

@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useQuery as useConvexQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import { Bell, Bot, Building2, CreditCard, Copy, HelpCircle, KeyRound, LinkIcon, Loader2, Mail, Plus, Save, ShieldCheck, Users } from "lucide-react";
+import { Bell, Building2, CreditCard, Copy, HelpCircle, KeyRound, LinkIcon, Loader2, Mail, Plus, Save, ShieldCheck, Users } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useAccountContext } from "@/domains/auth";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,6 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast";
-import { StatusPill } from "@/components/shared/crud-ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link as LocaleLink } from "@/i18n/routing";
 import {
@@ -47,7 +46,6 @@ import {
   canManageCustomPermissions,
   formatRoleName,
   getInitials,
-  grantableAgentPermissions,
   grantableApiKeyPermissions,
   isOwner,
   memberName,
@@ -331,7 +329,6 @@ export function OrganizationScreen() {
   const tabs: { id: Tab; label: string; icon: typeof Users }[] = [
     { id: "profile", label: t("tabs.profile"), icon: Building2 },
     { id: "members", label: t("tabs.members"), icon: Users },
-    { id: "agentLinks", label: t("tabs.agentLinks"), icon: Bot },
     { id: "apiKeys", label: t("tabs.apiKeys"), icon: KeyRound },
     { id: "notifications", label: t("tabs.notifications"), icon: Bell },
     { id: "billing", label: t("tabs.billing"), icon: CreditCard },
@@ -427,8 +424,8 @@ export function OrganizationScreen() {
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b border-border bg-card">
-        <div className="mx-auto max-w-7xl px-6 py-10">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+        <div className="mx-auto max-w-7xl px-6 py-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             {organizationId ? (
               <OrganizationLogoUploader
                 organizationId={organizationId}
@@ -452,56 +449,60 @@ export function OrganizationScreen() {
                 }}
               />
             ) : (
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[24px] bg-card text-2xl font-black text-muted-foreground">
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[24px] bg-card text-2xl font-semibold text-muted-foreground">
                 {initials}
               </div>
             )}
 
-            <div className="min-w-0 flex-1 space-y-2">
-              <h1 className="truncate text-2xl font-black uppercase tracking-tight text-foreground">
-                {account.organization.name}
-              </h1>
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusPill label={account.organization.status || t("stats.verified")} tone="success" />
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-                  <Users className="h-3 w-3" />
-                  {members.length} {t("stats.members")}
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-                  <Mail className="h-3 w-3" />
-                  {pendingInvitationCount(invitationsQuery.data ?? [])} {t("stats.pendingInvites")}
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-                  <ShieldCheck className="h-3 w-3" />
-                  {availableRoles.length} {t("stats.roles")}
-                </span>
+            <div className="min-w-0 flex-1 space-y-4">
+              <div>
+                <h1 className="text-2xl font-semibold text-foreground">
+                  {account.organization.name}
+                </h1>
+                <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <LocaleLink href={`/${locale}/dashboard`} className="flex items-center gap-2 hover:text-foreground transition-colors">
+                    <span>{t("stats.workspace")}</span>
+                  </LocaleLink>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    <span>{members.length} {t("stats.members")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    <span>{pendingInvitationCount(invitationsQuery.data ?? [])} {t("stats.pendingInvites")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4" />
+                    <span>{availableRoles.length} {t("stats.roles")}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             <Button
               onClick={saveOrg}
               disabled={isBusy || !organizationId || !canUpdateOrganization}
-              className="h-11 shrink-0 rounded-[20px] bg-primary px-6 text-[10px] font-black uppercase tracking-widest text-primary-foreground transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
+              className="h-10 shrink-0 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
             >
-              {isBusy ? <Loader2 className="me-2 h-3.5 w-3.5 animate-spin" /> : <Save className="me-2 h-3.5 w-3.5" />}
+              {isBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
               {t("saveBtn")}
             </Button>
           </div>
 
-          <div className="mt-8 flex items-center gap-1 overflow-x-auto pb-px">
+          <div className="mt-6 flex items-center gap-1 border-b border-border">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveOrganizationTab(tab.id)}
                 className={cn(
-                  "flex items-center gap-2 rounded-t-xl border-b-2 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all duration-150",
+                  "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors",
                     activeTab === tab.id
-                      ? "border-primary bg-muted text-foreground"
-                      : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
+                      ? "border-primary text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
-                <tab.icon className="h-3 w-3" />
+                <tab.icon className="h-4 w-4" />
                 {tab.label}
               </button>
             ))}
@@ -509,7 +510,7 @@ export function OrganizationScreen() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mx-auto max-w-7xl px-6 py-8">
         {activeTab === "profile" && (
           <div className="space-y-8">
             <div>
@@ -536,21 +537,21 @@ export function OrganizationScreen() {
         )}
 
         {activeTab === "members" && (
-          <div className="space-y-8">
+          <div className="space-y-8 mt-8">
             <Section
               title={t("members.title")}
               actions={(
                 <div className="flex flex-wrap gap-2 sm:justify-end">
                   {atMemberLimit ? (
                     <LocaleLink href={`/billing?plan=${upgradePlanIdForInvite}`}>
-                      <Button className="h-9.5 rounded-lg bg-amber-500 text-[9px] font-black uppercase tracking-widest text-white hover:bg-amber-600">
-                        <CreditCard className="me-1.5 h-3.5 w-3.5" />
+                      <Button className="h-9.5 rounded-lg bg-amber-500 text-sm font-medium text-white hover:bg-amber-600">
+                        <CreditCard className="mr-1.5 h-4 w-4" />
                         {t("invites.open")}
                       </Button>
                     </LocaleLink>
                   ) : (
-                    <Button disabled={!canInviteMembers} onClick={() => setInviteDialogOpen(true)} className="h-9.5 rounded-lg bg-primary text-[9px] font-black uppercase tracking-widest text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
-                      <Plus className="me-1.5 h-3.5 w-3.5" />
+                    <Button disabled={!canInviteMembers} onClick={() => setInviteDialogOpen(true)} className="h-9.5 rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+                      <Plus className="mr-1.5 h-4 w-4" />
                       {t("invites.open")}
                     </Button>
                   )}
@@ -559,15 +560,15 @@ export function OrganizationScreen() {
                     variant="outline"
                     disabled={!canOpenCustomPermissions}
                     onClick={() => setCustomPermissionsOpen(true)}
-                    className="h-9.5 rounded-lg text-[9px] font-black uppercase tracking-widest"
+                    className="h-9.5 rounded-lg text-sm font-medium"
                   >
-                    <ShieldCheck className="me-1.5 h-3.5 w-3.5" />
+                    <ShieldCheck className="mr-1.5 h-4 w-4" />
                     {t("roles.manageWorkRoles")}
                   </Button>
                 </div>
               )}
             >
-              <div className="overflow-hidden rounded-2xl border border-border bg-card">
+              <div className="overflow-hidden rounded-2xl border border-border">
                 {membersQuery.isLoading ? (
                   <div className="p-4">
                     <LoadingRow label={t("members.loading")} rows={3} />
@@ -607,7 +608,7 @@ export function OrganizationScreen() {
               {(invitationsQuery.data ?? []).length === 0 && pendingInviteLinks.length === 0 ? (
                 <EmptyState title={t("invites.emptyTitle")} description={t("invites.emptyDesc")} />
               ) : (
-                <div className="overflow-hidden rounded-2xl border border-border bg-card px-5 divide-y divide-border">
+                <div className="overflow-hidden rounded-2xl border border-border px-5 divide-y divide-border">
                   {pendingInviteLinks.map((inviteLink) => (
                     <PendingInviteLinkRow
                       key={inviteLink.id}
@@ -645,51 +646,46 @@ export function OrganizationScreen() {
           </div>
         )}
 
-        {activeTab === "agentLinks" && (
-          <AgentLinksPanel
-            organizationId={organizationId}
-            canRead={canReadAgentLinks}
-            canCreate={canCreateAgentLinks}
-            canDelete={canDeleteAgentLinks}
-            grantablePermissions={grantableAgentPermissions(capabilities)}
-            members={members}
-          />
-        )}
-
         {activeTab === "apiKeys" && (
-          <ApiKeysPanel
-            organizationId={organizationId}
-            canRead={canReadApiKeys}
-            canCreate={canCreateApiKeys}
-            canUpdate={canUpdateApiKeys}
-            canDelete={canDeleteApiKeys}
-            grantablePermissions={grantableApiKeyPermissions(capabilities)}
-          />
+          <div className="mt-8">
+            <ApiKeysPanel
+              organizationId={organizationId}
+              canRead={canReadApiKeys}
+              canCreate={canCreateApiKeys}
+              canUpdate={canUpdateApiKeys}
+              canDelete={canDeleteApiKeys}
+              grantablePermissions={grantableApiKeyPermissions(capabilities)}
+            />
+          </div>
         )}
 
         {activeTab === "notifications" && (
-          <OrganizationNotificationsPanel
-            preference={organizationNotificationPreference}
-            canManage={canManageOrganizationNotifications}
-            loading={organizationNotificationQuery.isLoading || capabilitiesQuery.isLoading}
-            saving={updateOrganizationNotificationsMutation.isPending}
-            onSave={(next) => updateOrganizationNotificationsMutation.mutate(next)}
-          />
+          <div className="mt-8">
+            <OrganizationNotificationsPanel
+              preference={organizationNotificationPreference}
+              canManage={canManageOrganizationNotifications}
+              loading={organizationNotificationQuery.isLoading || capabilitiesQuery.isLoading}
+              saving={updateOrganizationNotificationsMutation.isPending}
+              onSave={(next) => updateOrganizationNotificationsMutation.mutate(next)}
+            />
+          </div>
         )}
 
         {activeTab === "billing" && (
-          <OrganizationBillingPanel
-            organizationId={organizationId}
-            locale={locale as "en" | "ar"}
-            memberCount={members.length}
-          />
+          <div className="mt-8">
+            <OrganizationBillingPanel
+              organizationId={organizationId}
+              locale={locale as "en" | "ar"}
+              memberCount={members.length}
+            />
+          </div>
         )}
       </div>
 
       <Dialog open={inviteDialogOpen} onOpenChange={handleInviteDialogOpenChange}>
         <DialogContent className="max-w-lg rounded-2xl p-6">
           <DialogHeader className="pe-8 text-start">
-            <DialogTitle className="text-lg font-black text-foreground">{t("invites.createTitle")}</DialogTitle>
+            <DialogTitle className="text-lg font-semibold text-foreground">{t("invites.createTitle")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-5">
             <div className="grid grid-cols-2 gap-2 rounded-2xl bg-muted p-1">
@@ -699,8 +695,8 @@ export function OrganizationScreen() {
                   type="button"
                   onClick={() => changeInviteMode(mode)}
                   className={cn(
-                    "rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-colors",
-                    inviteMode === mode ? "bg-card text-foreground" : "text-muted-foreground hover:text-foreground",
+                    "rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+                    inviteMode === mode ? "bg-background text-foreground" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {t(`invites.modes.${mode}`)}
@@ -710,19 +706,19 @@ export function OrganizationScreen() {
             {inviteMode === "link" && createdInviteUrl ? (
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="generatedInviteUrl" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("invites.generatedLinkLabel")}</Label>
+                  <Label htmlFor="generatedInviteUrl" className="text-sm font-medium text-muted-foreground">{t("invites.generatedLinkLabel")}</Label>
                   <Input
                     id="generatedInviteUrl"
                     readOnly
                     dir="ltr"
                     value={createdInviteUrl}
-                    className="h-11 rounded-xl border-border bg-muted text-left font-mono text-xs text-muted-foreground selection:bg-primary selection:text-primary-foreground"
+                    className="h-11 rounded-xl border-border bg-muted text-left font-mono text-sm text-muted-foreground selection:bg-primary selection:text-primary-foreground"
                   />
-                  <p className="text-xs leading-5 text-muted-foreground">{t("invites.generatedLinkHint")}</p>
+                  <p className="text-sm text-muted-foreground">{t("invites.generatedLinkHint")}</p>
                 </div>
                 <DialogFooter className="mx-0 mb-0 mt-2 flex-row flex-wrap justify-start gap-2 rounded-none border-0 bg-transparent p-0 sm:justify-start">
                   <Button type="button" onClick={copyGeneratedInviteLink} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                    <Copy className="me-2 h-4 w-4" />
+                    <Copy className="mr-2 h-4 w-4" />
                     {copiedInviteId === (createdInviteLinkId ?? "created-link") ? t("invites.copied") : t("invites.copy")}
                   </Button>
                   <Button type="button" variant="outline" onClick={resetGeneratedInviteLink}>{t("invites.createAnother")}</Button>
@@ -733,20 +729,20 @@ export function OrganizationScreen() {
                 <>
                   {inviteMode === "email" && (
                     <div className="space-y-2">
-                      <Label htmlFor="inviteEmail" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("invites.emailLabel")}</Label>
+                      <Label htmlFor="inviteEmail" className="text-sm font-medium text-muted-foreground">{t("invites.emailLabel")}</Label>
                       <Input id="inviteEmail" type="email" required value={inviteEmail} onChange={(event) => setInviteEmail(event.target.value)} placeholder={t("invites.emailPlaceholder")} className="h-11 rounded-xl text-start" />
                     </div>
                   )}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Label htmlFor="inviteRole" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("invites.roleLabel")}</Label>
-                      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" aria-label={t("invites.roleHint")} />
+                      <Label htmlFor="inviteRole" className="text-sm font-medium text-muted-foreground">{t("invites.roleLabel")}</Label>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground" aria-label={t("invites.roleHint")} />
                     </div>
                     <Select value={inviteRole} onValueChange={(value) => value && setInviteRole(value)}>
                       <SelectTrigger
                         id="inviteRole"
                         aria-label={t("invites.roleLabel")}
-                        className="h-11 rounded-xl border-border bg-card text-sm font-bold"
+                        className="h-11 rounded-xl border-border bg-background text-sm font-medium"
                       >
                         <SelectValue />
                       </SelectTrigger>
@@ -758,7 +754,7 @@ export function OrganizationScreen() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-xs leading-5 text-muted-foreground">{t("invites.roleHint")}</p>
+                    <p className="text-sm text-muted-foreground">{t("invites.roleHint")}</p>
                   </div>
                   {inviteMode === "link" ? (
                     <div className="space-y-2 pt-1">
@@ -766,12 +762,12 @@ export function OrganizationScreen() {
                         type="button"
                         onClick={generateInviteLink}
                         disabled={inviteLinkMutation.isPending || !canInviteMembers || !organizationId}
-                        className="h-11 w-full rounded-xl bg-primary text-[10px] font-black uppercase tracking-widest text-primary-foreground hover:bg-primary/90"
+                        className="h-11 w-full rounded-xl bg-primary text-sm font-medium text-primary-foreground hover:bg-primary/90"
                       >
-                        {inviteLinkMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <LinkIcon className="me-2 h-4 w-4" />}
+                        {inviteLinkMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LinkIcon className="mr-2 h-4 w-4" />}
                         {t("invites.createLink")}
                       </Button>
-                      <Button type="button" variant="ghost" onClick={() => handleInviteDialogOpenChange(false)} className="h-9 w-full rounded-xl text-[10px] font-black uppercase tracking-widest">
+                      <Button type="button" variant="ghost" onClick={() => handleInviteDialogOpenChange(false)} className="h-9 w-full rounded-xl text-sm font-medium">
                         {t("common.cancel")}
                       </Button>
                     </div>
@@ -784,7 +780,7 @@ export function OrganizationScreen() {
                         disabled={inviteMutation.isPending || !inviteEmail || !canInviteMembers}
                         className="bg-primary text-primary-foreground hover:bg-primary/90"
                       >
-                        {inviteMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Mail className="me-2 h-4 w-4" />}
+                        {inviteMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}
                         {t("invites.sendEmail")}
                       </Button>
                     </DialogFooter>

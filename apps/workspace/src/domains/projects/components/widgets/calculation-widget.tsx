@@ -1,5 +1,7 @@
 "use client";
 
+import { ProgressBar } from "@qentrah/our-platform-components";
+
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useDashboardContext } from "../dashboard-context";
@@ -73,12 +75,7 @@ export function CalculationWidget() {
           <span>COMPLETION RATE</span>
           <span className="text-foreground">{stats.progress}%</span>
         </div>
-        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary rounded-full transition-all duration-500"
-            style={{ width: `${stats.progress}%` }}
-          />
-        </div>
+        <ProgressBar value={stats.progress} size="lg" />
       </div>
     </div>
   );

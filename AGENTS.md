@@ -53,8 +53,15 @@ Fix all bugs in the Qentrah Product Development project in priority waves, from 
 - **Domain-contracts priority split**: `ClientPriority` excludes `"low"` (Convex client table validator excludes it); `TaskPriority` includes `"low"` (Convex task table validator includes it). Separate schemas prevent invalid client priority values.
 - **ClientPipelineStage as `z.string()`**: Changed from `z.enum([...])` to `z.string()` to match Convex `v.string()`. Front-end Zod form schema retains the enum for form validation, but the type is now `string` to avoid mismatches with Convex records where `pipelineStage` is optional and unconstrained.
 - **`domain-schemas.ts` as single source of truth**: Any future Convex validator change must be reflected in `convex/shared/domain-schemas.ts` to keep the MCP tool layer in sync.
+- **Three-Layer Permission System**: Implemented Organization → Space → Project hierarchy based on project management best practices (Asana, Jira, Azure DevOps, Plane). Spaces are first-class entities with many-to-many project relationships. MCP workers respect space/project boundaries through explicit scoping during creation. See `docs/decisions/three-layer-permission-system.md` for full design.
+- **Permission Inheritance**: Permissions cascade downward (Org Owner → Space Admin → Project Admin) with visibility controls at each layer (private/public/request_only for spaces, private/space_members/organization for projects). MCP workers derive permissions from creator's access at time of creation and cannot access resources outside their designated scope.
 
 ## Next Steps
+- **Three-Layer Permission System Implementation**: Implement the new Organization → Space → Project permission system. See detailed design in `docs/decisions/three-layer-permission-system.md`, `docs/decisions/permission-rules-specification.md`, and `docs/decisions/mcp-worker-scoping-design.md`.
+  - Phase 1: Schema changes (spaces, spaceMembers, projectSpaces junction table)
+  - Phase 2: Backend logic (space CRUD, permission checks, MCP scoping)
+  - Phase 3: Frontend UI (space management, MCP scope selection)
+  - Phase 4: Migration (existing data to new schema)
 - **Wave 3 follow-up**: Optionally migrate dashboard layouts (projects-overview, global-projects-dashboard) from localStorage to IndexedDB, replace remaining ad-hoc localStorage usage in clients-filters, integrations-runtime, project-tags-settings.
 - **Wave 4**: MCP Feature Expansion — Document/Folder/Comment/Tag CRUD, Time Tracking module schema + MCP tools. Includes adding missing Convex tables (`milestones`, `taskDependencies`, `piiAccessAudit`) to the data model and running `npx convex codegen` to resolve the 148 remaining `convex/` TypeScript errors.
 - **Wave 5**: Platform Readiness Audit, Engineering Audit Checklist, Competitive Gap Analysis.

@@ -1,6 +1,6 @@
 "use client";
 
-import { PanelLeft, ChevronRight, Menu, PanelRightClose, X, Brain, Zap } from "lucide-react";
+import { PanelLeft, ChevronRight, Menu, PanelRightClose, X, Brain, Zap, Building2, ChevronDown } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useAccountContext } from "@/domains/auth";
 import { useNavigation } from "@/domains/navigation";
@@ -8,15 +8,19 @@ import { useSidebarRail } from "@/components/layout/sidebar";
 import { SpaceSwitcher } from "@/components/layout/space-switcher";
 import { ProjectSwitcher } from "@/components/layout/project-switcher";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 export function TopbarEssential() {
   const pathname = usePathname();
   const account = useAccountContext();
   const { spaceSlug } = useNavigation();
   const { toggleMain, activeRailItem } = useSidebarRail();
+  const [orgSwitcherOpen, setOrgSwitcherOpen] = useState(false);
 
   const secondaryOpen = activeRailItem !== null;
   const isWs = pathname.startsWith("/ws");
+  const organizationDisplayName = account.organization.name || "Organization";
 
   return (
     <div className="flex items-center gap-2">
@@ -41,6 +45,51 @@ export function TopbarEssential() {
       >
         {secondaryOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
       </Button>
+
+      {/* Organization switcher in top bar */}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setOrgSwitcherOpen(!orgSwitcherOpen)}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-accent/50 transition-colors"
+        >
+          <Building2 className="h-4 w-4 text-primary" />
+          <span className="text-sm font-semibold text-foreground">{organizationDisplayName}</span>
+          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", orgSwitcherOpen && "rotate-180")} />
+        </button>
+
+        {orgSwitcherOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setOrgSwitcherOpen(false)} />
+            <div className="absolute left-0 top-full mt-2 z-50 w-64 rounded-xl border border-border bg-card p-3 shadow-xl">
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl text-sm font-black uppercase bg-muted">
+                  {account.organization.logo ? (
+                    <img src={account.organization.logo} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    organizationDisplayName.slice(0, 2).toUpperCase()
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="truncate text-sm font-semibold text-foreground">{organizationDisplayName}</span>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                    <span>{account.organization.type === "company" ? "Business" : "Free"}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent text-sm text-foreground transition-colors"
+                >
+                  <Building2 className="h-4 w-4" />
+                  <span>Switch Organization</span>
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
 
       <SpaceSwitcher />
 

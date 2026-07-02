@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { ColorDot } from "@qentrah/ui";
 import { Link } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
 import {
@@ -449,10 +450,10 @@ export function ClientTableView({
                                     : "text-foreground hover:bg-muted",
                                 )}
                               >
-                                <span className={cn(
-                                  "h-2 w-2 rounded-full",
-                                  option.value === "person" ? "bg-sky-500" : "bg-violet-500",
-                                )} />
+                                <ColorDot
+                                  dotClassName={option.value === "person" ? "bg-sky-500" : "bg-violet-500"}
+                                  size="sm"
+                                />
                                 {option.label}
                               </button>
                             ))}
@@ -493,14 +494,16 @@ export function ClientTableView({
                                     : "text-foreground hover:bg-muted",
                                 )}
                               >
-                                <span className={cn(
-                                  "h-2 w-2 rounded-full",
-                                  option.value === "active" && "bg-emerald-500",
-                                  option.value === "new" && "bg-sky-500",
-                                  option.value === "nurture" && "bg-amber-500",
-                                  option.value === "inactive" && "bg-gray-400",
-                                  option.value === "archived" && "bg-gray-300",
-                                )} />
+                                <ColorDot
+                                  dotClassName={cn(
+                                    option.value === "active" && "bg-emerald-500",
+                                    option.value === "new" && "bg-sky-500",
+                                    option.value === "nurture" && "bg-amber-500",
+                                    option.value === "inactive" && "bg-gray-400",
+                                    option.value === "archived" && "bg-gray-300",
+                                  )}
+                                  size="sm"
+                                />
                                 {option.label}
                               </button>
                             ))}
@@ -541,14 +544,16 @@ export function ClientTableView({
                                     : "text-foreground hover:bg-muted",
                                 )}
                               >
-                                <span className={cn(
-                                  "h-2 w-2 rounded-full",
-                                  option.value === "new" && "bg-gray-400",
-                                  option.value === "qualified" && "bg-[#639922]",
-                                  option.value === "review" && "bg-amber-500",
-                                  option.value === "negotiation" && "bg-[#F0997B]",
-                                  option.value === "closed" && "bg-[#378ADD]",
-                                )} />
+                                <ColorDot
+                                  dotClassName={cn(
+                                    option.value === "new" && "bg-gray-400",
+                                    option.value === "qualified" && "bg-[#639922]",
+                                    option.value === "review" && "bg-amber-500",
+                                    option.value === "negotiation" && "bg-[#F0997B]",
+                                    option.value === "closed" && "bg-[#378ADD]",
+                                  )}
+                                  size="sm"
+                                />
                                 {option.label}
                               </button>
                             ))}

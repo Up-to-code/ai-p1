@@ -24,7 +24,6 @@ export function SecurityTabPanel({
     googleAuth: string;
     googleNote: string;
     manageBtn: string;
-    oauthSafetyNote: string;
     activeSessionsTitle: string;
     activeSessionsDesc: string;
     thisDevice: string;
@@ -55,29 +54,21 @@ export function SecurityTabPanel({
                 onClick: () => window.open("https://myaccount.google.com/security", "_blank"),
               }}
             />
-            <div className="border-s border-blue-300 px-4 py-2 dark:border-blue-500/40">
-              <div className="flex gap-3">
-                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
-                <p className="text-[10px] font-medium leading-relaxed text-blue-800 dark:text-blue-300">
-                  {labels.oauthSafetyNote}
-                </p>
-              </div>
-            </div>
           </div>
         </Section>
 
         <Section title={labels.activeSessionsTitle} description={labels.activeSessionsDesc}>
           <div className="flex items-center justify-between gap-4 border-y border-border py-4 dark:border-border">
             <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-foreground dark:text-foreground">
+              <p className="text-sm font-medium text-foreground">
                 {labels.thisDevice}
               </p>
-              <p className="mt-0.5 text-[9px] font-medium text-muted-foreground">
+              <p className="mt-0.5 text-sm text-muted-foreground">
                 {labels.deviceDetail}
               </p>
             </div>
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               {labels.current}
             </span>
           </div>

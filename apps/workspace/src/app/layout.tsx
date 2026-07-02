@@ -104,8 +104,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${cairo.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="h-full flex flex-col bg-background text-text-primary" suppressHydrationWarning>
+      <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className="h-full flex flex-col bg-background text-text-primary" suppressHydrationWarning>
         <Suspense fallback={null}>
           <NavigationProgress />
         </Suspense>

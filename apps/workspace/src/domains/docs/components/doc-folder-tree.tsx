@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { PopoverMenu } from "@qentrah/our-platform-components";
 import {
   ChevronRight,
   ChevronDown,
@@ -58,7 +59,6 @@ function FolderItem({
   projectId?: string;
 }) {
   const [expanded, setExpanded] = useState(true);
-  const [showActions, setShowActions] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(node.name);
   const isSelected = selectedFolderId === node.id;
@@ -128,50 +128,36 @@ function FolderItem({
           <span className="flex-1 truncate text-xs font-medium">{node.name}</span>
         )}
         <div className="relative">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowActions(!showActions);
-            }}
-            className="opacity-0 group-hover:opacity-100"
-          >
-            <MoreHorizontal className="h-3 w-3" />
-          </Button>
-          {showActions && (
-            <div className="absolute right-0 top-6 z-50 w-36 rounded-xl border border-border bg-background shadow-lg py-1">
+          <PopoverMenu
+            align="right"
+            trigger={
               <Button
                 type="button"
                 variant="ghost"
-                size="xs"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setRenaming(true);
-                  setShowActions(false);
-                }}
-                className="w-full justify-start rounded-none px-3"
+                size="icon-xs"
+                onClick={(e) => e.stopPropagation()}
+                className="opacity-0 group-hover:opacity-100"
+                aria-label="Folder actions"
               >
-                <Pencil className="h-3 w-3" />
-                Rename
+                <MoreHorizontal className="h-3 w-3" />
               </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete();
-                  setShowActions(false);
-                }}
-                className="w-full justify-start rounded-none px-3 text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
-              >
-                <Trash2 className="h-3 w-3" />
-                Delete
-              </Button>
-            </div>
-          )}
+            }
+            items={[
+              {
+                key: "rename",
+                label: "Rename",
+                icon: <Pencil className="h-3 w-3" />,
+                onClick: () => setRenaming(true),
+              },
+              {
+                key: "delete",
+                label: "Delete",
+                icon: <Trash2 className="h-3 w-3" />,
+                destructive: true,
+                onClick: () => handleDelete(),
+              },
+            ]}
+          />
         </div>
       </div>
       {expanded && hasChildren && (

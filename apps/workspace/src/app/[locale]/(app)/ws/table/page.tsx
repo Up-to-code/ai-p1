@@ -7,5 +7,9 @@ export default function WsTableViewPage() {
   const orgId = useWorkspaceStore((s) => s.orgId);
   const projectId = useWorkspaceStore((s) => s.projectId);
 
-  return <TaskTableView projectId={projectId ?? ""} organizationId={orgId ?? ""} />;
+  return (
+    <div className="p-4">
+      <TaskTableView projectId={projectId ?? ""} organizationId={orgId ?? ""} />
+    </div>
+  );
 }

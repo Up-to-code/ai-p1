@@ -1,8 +1,34 @@
-import {
-  BILLING_PLANS,
-  QENTRAH_PLAN,
-  type BillingPlanId,
-} from "../../src/domains/billing/api/billing";
+// Inlined from src/domains/billing/config/plans.config.ts to avoid Next.js import
+const QENTRAH_PLAN_ID = "qentrah_workspace" as const;
+const DODO_PRODUCT_ID = "pdt_0NhGI8pfoyfuPWt0TLZ1x" as const;
+const PRICE_PER_SEAT = 6.99 as const;
+const PLAN_CURRENCY = "USD" as const;
+
+type BillingPlanId = typeof QENTRAH_PLAN_ID;
+
+type BillingPlan = {
+  id: BillingPlanId;
+  dodoProductId: string;
+  name: string;
+  amount: number;
+  currency: string;
+  periodDays: number;
+  checkoutMode: "provider";
+};
+
+const QENTRAH_PLAN: BillingPlan = {
+  id: QENTRAH_PLAN_ID,
+  dodoProductId: DODO_PRODUCT_ID,
+  name: "Qentrah Workspace",
+  amount: PRICE_PER_SEAT,
+  currency: PLAN_CURRENCY,
+  periodDays: 30,
+  checkoutMode: "provider",
+};
+
+const BILLING_PLANS: Record<BillingPlanId, BillingPlan> = {
+  [QENTRAH_PLAN_ID]: QENTRAH_PLAN,
+};
 
 export { BILLING_PLANS, type BillingPlanId };
 

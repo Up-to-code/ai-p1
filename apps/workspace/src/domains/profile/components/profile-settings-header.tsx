@@ -3,12 +3,10 @@
 import {
   Bell,
   Briefcase,
-  CheckCircle2,
   Loader2,
   Lock,
   Mail,
   Save,
-  ShieldCheck,
   Upload,
   User,
 } from "lucide-react";
@@ -67,8 +65,8 @@ export function ProfileSettingsHeader({
 }) {
   return (
     <div className="border-b border-border bg-card">
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <ProfilePictureUploader
             image={userImage}
             initials={initials}
@@ -78,67 +76,71 @@ export function ProfileSettingsHeader({
             labels={avatarLabels}
           />
 
-          <div className="flex-1 min-w-0 space-y-2">
-            <h1 className="text-2xl font-black uppercase tracking-tight text-foreground truncate">
-              {userName}
-            </h1>
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="flex-1 min-w-0 space-y-4">
+            <div>
+              <h1 className="text-2xl font-semibold text-foreground">
+                {userName}
+              </h1>
+              <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  <span className="truncate" title={userEmail}>
+                    {userEmail}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4" />
+                  <span className="truncate" title={organizationName}>
+                    {organizationName}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
               <span
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest",
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium",
                   roleColor,
                 )}
               >
-                <ShieldCheck className="h-3 w-3" />
                 {roleLabel}
               </span>
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
-                <Mail className="h-3 w-3" />
-                <span className="max-w-[16rem] truncate" title={userEmail}>
-                  {userEmail}
-                </span>
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
-                <Briefcase className="h-3 w-3" />
-                <span className="max-w-[16rem] truncate" title={organizationName}>
-                  {organizationName}
-                </span>
-              </span>
-            </div>
-
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {permissionKeys.map((pk) => (
-                <span
-                  key={pk}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-muted dark:bg-muted border border-border dark:border-border text-[9px] font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground"
-                >
-                  <CheckCircle2 className="h-2.5 w-2.5 text-emerald-500 shrink-0" />
-                  {permissionLabel(pk)}
-                </span>
-              ))}
+              {permissionKeys.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {permissionKeys.slice(0, 3).map((pk) => (
+                    <span
+                      key={pk}
+                      className="inline-flex items-center px-2.5 py-1 rounded-md bg-muted text-xs text-muted-foreground"
+                    >
+                      {permissionLabel(pk)}
+                    </span>
+                  ))}
+                  {permissionKeys.length > 3 && (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-muted text-xs text-muted-foreground">
+                      +{permissionKeys.length - 3} more
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
           <Button
             onClick={onSave}
             disabled={isSaving}
-            className="shrink-0 h-11 px-6 rounded-[20px] bg-foreground text-background hover:opacity-90 font-black uppercase tracking-widest text-[10px] dark:hover:bg-muted transition-all active:scale-[0.98] disabled:opacity-50"
+            className="shrink-0 h-10 px-6 rounded-lg bg-foreground text-background hover:bg-foreground/90 font-medium text-sm transition-colors disabled:opacity-50"
           >
             {isSaving ? (
-              <Loader2 className="me-2 h-3.5 w-3.5 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <Save className="me-2 h-3.5 w-3.5" />
+              <Save className="mr-2 h-4 w-4" />
             )}
             {saveLabel}
           </Button>
         </div>
 
-        <p className="mt-4 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-          <Upload className="inline h-2.5 w-2.5 me-1" />
-          {uploadLabel} · {avatarDesc}
-        </p>
-
-        <div className="-mb-px mt-8 flex items-center gap-1 overflow-x-auto border-b border-border dark:border-border">
+        <div className="mt-8 flex items-center gap-1">
           {profileTabs.map((tab) => {
             const TabIcon = tabIcons[tab.icon];
             return (
@@ -147,13 +149,13 @@ export function ProfileSettingsHeader({
                 type="button"
                 onClick={() => onTabChange(tab.id)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all duration-150",
+                  "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors",
                   activeTab === tab.id
-                    ? "border-foreground text-foreground dark:border-foreground text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-secondary-foreground dark:hover:text-muted-foreground",
+                    ? "border-foreground text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
-                <TabIcon className="h-3 w-3" />
+                <TabIcon className="h-4 w-4" />
                 {tabLabels[tab.id]}
               </button>
             );

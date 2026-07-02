@@ -57,6 +57,6 @@ export function buildGlobalSearchNavigationActions(labels: SidebarLabels): Globa
     { id: "automations", label: labels.automations, href: "/automations", icon: Workflow },
     { id: "team", label: labels.team, href: "/team", icon: UsersRound },
     { id: "integrations", label: labels.integrations, href: "/web-apps", icon: Plug },
-    { id: "settings", label: labels.settings, href: "/settings/organization", icon: Settings },
+    { id: "settings", label: labels.settings, href: "/organization", icon: Settings },
   ];
 }

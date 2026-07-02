@@ -21,11 +21,11 @@ export function Section({
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-foreground dark:text-foreground">
+        <h2 className="text-sm font-semibold text-foreground">
           {title}
         </h2>
         {description && (
-          <p className="mt-1 text-[10px] font-medium text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">
             {description}
           </p>
         )}
@@ -48,7 +48,7 @@ export function LockedProfileField({
     <div className="space-y-2">
       <Label
         htmlFor={id}
-        className="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
+        className="text-sm font-medium text-muted-foreground"
       >
         {label}
       </Label>
@@ -91,14 +91,14 @@ export function ProfileField({
       <div className="flex items-center gap-1">
         <Label
           htmlFor={id}
-          className="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
+          className="text-sm font-medium text-muted-foreground"
         >
           {label}
         </Label>
         {tooltip && (
           <Tooltip>
             <TooltipTrigger className="inline-flex cursor-help">
-              <HelpCircle className="w-3 h-3 text-muted-foreground hover:text-secondary-foreground transition-colors" />
+              <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
             </TooltipTrigger>
             <TooltipContent side="top">
               <p>{tooltip}</p>
@@ -110,7 +110,7 @@ export function ProfileField({
         id={id}
         type={type}
         autoComplete={autoComplete}
-        className="h-12 rounded-xl border-border bg-card font-medium focus-visible:ring-blue-600/20 dark:border-border dark:bg-card"
+        className="h-12 rounded-xl border-border bg-background font-medium focus-visible:ring-blue-600/20 dark:border-border dark:bg-background"
         aria-invalid={Boolean(error)}
         readOnly={readOnly}
         disabled={disabled}
@@ -118,7 +118,7 @@ export function ProfileField({
         {...registration}
       />
       {error && (
-        <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider">
+        <p className="text-sm font-medium text-red-600">
           {error}
         </p>
       )}
@@ -129,62 +129,49 @@ export function ProfileField({
 export function RolePermissionsList({
   roleColor,
   roleLabel,
-  activeLabel,
   currentRoleLabel,
   permissionsLabel,
-  adminNote,
   permissionLabels,
 }: {
   roleColor: string;
   roleLabel: string;
-  activeLabel: string;
   currentRoleLabel: string;
   permissionsLabel: string;
-  adminNote: string;
   permissionLabels: string[];
 }) {
   return (
-    <div className="space-y-5 border-y border-border py-5 dark:border-border">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted dark:bg-muted">
-            <ShieldCheck className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground">
-              {currentRoleLabel}
-            </p>
-            <p className="truncate text-sm font-black text-foreground dark:text-foreground">
-              {roleLabel}
-            </p>
-          </div>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted">
+          <ShieldCheck className="h-5 w-5 text-muted-foreground" />
         </div>
-        <span
-          className={cn(
-            "shrink-0 rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-widest",
-            roleColor,
-          )}
-        >
-          {activeLabel}
-        </span>
-      </div>
-      <div>
-        <p className="mb-3 text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground">
-          {permissionsLabel}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {permissionLabels.map((label) => (
-            <span
-              key={label}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-[10px] font-bold text-secondary-foreground dark:border-border dark:text-muted-foreground"
-            >
-              <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-500" />
-              {label}
-            </span>
-          ))}
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-muted-foreground">
+            {currentRoleLabel}
+          </p>
+          <p className="text-sm font-semibold text-foreground">
+            {roleLabel}
+          </p>
         </div>
       </div>
-      <p className="text-[9px] font-medium text-muted-foreground">{adminNote}</p>
+      {permissionLabels.length > 0 && (
+        <div>
+          <p className="mb-3 text-xs font-medium text-muted-foreground">
+            {permissionsLabel}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {permissionLabels.map((label) => (
+              <span
+                key={label}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted px-3 py-1.5 text-sm text-muted-foreground"
+              >
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -208,14 +195,14 @@ export function NotificationSwitchRow({
     <div className="py-5">
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
             <Icon className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-foreground dark:text-foreground">
+            <p className="text-sm font-medium text-foreground">
               {label}
             </p>
-            <p className="mt-1 text-[10px] font-medium text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               {note}
             </p>
           </div>
@@ -227,16 +214,16 @@ export function NotificationSwitchRow({
           disabled={pending}
           onClick={onToggle}
           className={cn(
-            "relative h-7 w-12 shrink-0 rounded-full border transition-colors disabled:opacity-60",
+            "relative h-6 w-11 shrink-0 rounded-full border-2 transition-colors disabled:opacity-60 rtl:flex-row-reverse",
             enabled
-              ? "border-foreground bg-foreground dark:border-foreground dark:bg-white"
-              : "border-border bg-muted dark:border-border dark:bg-muted",
+              ? "border-foreground bg-foreground"
+              : "border-border bg-muted",
           )}
         >
           <span
             className={cn(
-              "absolute top-1 h-5 w-5 rounded-full bg-background shadow-sm transition-transform dark:bg-background",
-              enabled ? "translate-x-5" : "translate-x-1",
+              "absolute top-0.5 h-5 w-5 rounded-full bg-background shadow-sm transition-transform rtl:-translate-x-0.5",
+              enabled ? "ltr:translate-x-5 rtl:translate-x-[-1.25rem]" : "ltr:translate-x-0.5 rtl:translate-x-0.5",
             )}
           />
         </button>

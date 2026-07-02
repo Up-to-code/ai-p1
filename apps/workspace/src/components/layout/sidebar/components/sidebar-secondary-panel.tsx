@@ -7,6 +7,7 @@ import { SidebarChatPanel } from "./sidebar-chat-panel";
 import { SidebarSpacePanel } from "./sidebar-space-panel";
 import { SidebarProjectPanel } from "./sidebar-project-panel";
 import { SidebarIndexPanel } from "./sidebar-index-panel";
+import { SidebarInboxPanel } from "./sidebar-inbox-panel";
 import {
   SidebarTasksPanel,
   SidebarCalendarPanel,
@@ -48,6 +49,7 @@ export function SidebarSecondaryPanel(props: SidebarSecondaryPanelProps) {
         {activeRailItem === "opportunities" && <SidebarOpportunitiesPanel />}
         {activeRailItem === "deals" && <SidebarDealsPanel />}
         {activeRailItem === "docs" && <SidebarDocsPanel />}
+        {activeRailItem === "inbox" && <SidebarInboxPanel />}
       </div>
     </div>
   );

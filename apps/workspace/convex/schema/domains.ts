@@ -3,6 +3,38 @@ import { v } from "convex/values";
 import { workOsCustomFieldValueValidator } from "./validators";
 
 export const domainTables = {
+  spaces: defineTable({
+    organizationId: v.string(),
+    name: v.string(),
+    description: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    color: v.optional(v.string()),
+    slug: v.string(),
+    visibility: v.union(v.literal("private"), v.literal("public"), v.literal("request_only")),
+    defaultProjectVisibility: v.optional(v.union(v.literal("private"), v.literal("space_members"), v.literal("organization"))),
+    allowMemberProjectCreation: v.optional(v.boolean()),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_organization_id", ["organizationId"])
+    .index("by_organization_slug", ["organizationId", "slug"])
+    .index("by_organization_updated", ["organizationId", "updatedAt"]),
+
+  spaceMembers: defineTable({
+    organizationId: v.string(),
+    spaceId: v.id("spaces"),
+    userId: v.string(),
+    role: v.union(v.literal("admin"), v.literal("member"), v.literal("viewer")),
+    addedByUserId: v.string(),
+    addedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_space_id", ["organizationId", "spaceId"])
+    .index("by_user_id", ["organizationId", "userId"])
+    .index("by_space_user", ["organizationId", "spaceId", "userId"]),
+
   projects: defineTable({
     organizationId: v.string(),
     name: v.string(),
@@ -18,7 +50,8 @@ export const domainTables = {
       v.literal("archived"),
     ),
     health: v.union(v.literal("onTrack"), v.literal("atRisk"), v.literal("blocked")),
-    visibility: v.optional(v.union(v.literal("private"), v.literal("team"), v.literal("workspace"))),
+    visibility: v.optional(v.union(v.literal("private"), v.literal("space_members"), v.literal("organization"), v.literal("workspace"), v.literal("team"))),
+    spaceIds: v.optional(v.array(v.id("spaces"))),
     startDate: v.optional(v.string()),
     endDate: v.optional(v.string()),
     budget: v.optional(v.number()),
@@ -45,26 +78,32 @@ export const domainTables = {
     .index("by_organization_deleted_status_updated", ["organizationId", "isDeleted", "status", "updatedAt"])
     .index("by_client", ["organizationId", "clientId"])
     .index("by_opportunity", ["organizationId", "opportunityId"])
+    .index("by_space", ["organizationId", "spaceIds"])
     .index("by_organization_updated", ["organizationId", "updatedAt"])
     .index("by_updated", ["updatedAt"]),
 
   projectSpaces: defineTable({
     organizationId: v.string(),
-    projectId: v.id("projects"),
-    name: v.string(),
-    icon: v.optional(v.string()),
-    color: v.optional(v.string()),
-    visibility: v.union(v.literal("all_members"), v.literal("selected_members")),
+    projectId: v.optional(v.id("projects")),
+    spaceId: v.optional(v.id("spaces")),
+    name: v.optional(v.string()),
+    slug: v.optional(v.string()),
+    visibility: v.optional(v.union(v.literal("private"), v.literal("selected_members"), v.literal("public"))),
     defaultAssigneeIds: v.optional(v.array(v.string())),
-    slug: v.string(),
-    createdByUserId: v.string(),
-    createdAt: v.number(),
-    updatedAt: v.number(),
+    createdByUserId: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
+    isPrimary: v.optional(v.boolean()),
+    addedByUserId: v.optional(v.string()),
+    addedAt: v.optional(v.number()),
     deletedAt: v.optional(v.number()),
   })
+    .index("by_organization_id", ["organizationId"])
     .index("by_project_id", ["organizationId", "projectId"])
-    .index("by_project_slug", ["organizationId", "projectId", "slug"])
-    .index("by_organization_id", ["organizationId"]),
+    .index("by_space_id", ["organizationId", "spaceId"])
+    .index("by_project_space", ["organizationId", "projectId", "spaceId"])
+    .index("by_space_project", ["organizationId", "spaceId", "projectId"])
+    .index("by_project_slug", ["organizationId", "projectId", "slug"]),
 
   clients: defineTable({
     organizationId: v.string(),
@@ -75,6 +114,12 @@ export const domainTables = {
     pipelineStage: v.optional(v.string()),
     pipelineOrder: v.optional(v.number()),
     source: v.string(),
+    contact: v.optional(v.string()),
+    priority: v.optional(v.union(v.literal("low"), v.literal("normal"), v.literal("high"), v.literal("urgent"))),
+    budget: v.optional(v.string()),
+    assetInterest: v.optional(v.string()),
+    added: v.optional(v.string()),
+    lastContact: v.optional(v.string()),
     company: v.optional(v.string()),
     contactName: v.optional(v.string()),
     email: v.optional(v.string()),
@@ -331,4 +376,71 @@ export const domainTables = {
     updatedAt: v.number(),
   })
     .index("by_organization_project", ["organizationId", "projectId"]),
+
+  channels: defineTable({
+    id: v.string(),
+    organizationId: v.string(),
+    name: v.string(),
+    type: v.union(v.literal("organization"), v.literal("project"), v.literal("space"), v.literal("client"), v.literal("dm")),
+    visibility: v.union(v.literal("public"), v.literal("private"), v.literal("dm")),
+    description: v.optional(v.string()),
+    projectId: v.optional(v.string()),
+    projectIds: v.optional(v.array(v.string())),
+    spaceId: v.optional(v.string()),
+    clientId: v.optional(v.string()),
+    memberIds: v.array(v.string()),
+    createdBy: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    unreadCount: v.optional(v.number()),
+    lastMessageAt: v.optional(v.number()),
+  })
+    .index("by_organization", ["organizationId"])
+    .index("by_project", ["projectId"])
+    .index("by_client", ["clientId"])
+    .index("by_type", ["organizationId", "type"]),
+
+  messages: defineTable({
+    id: v.string(),
+    channelId: v.string(),
+    content: v.string(),
+    authorId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    threadId: v.optional(v.string()),
+    replyToId: v.optional(v.string()),
+    reactions: v.optional(v.array(v.object({
+      emoji: v.string(),
+      userIds: v.array(v.string()),
+    }))),
+    mentions: v.optional(v.array(v.object({
+      type: v.string(),
+      id: v.string(),
+      name: v.string(),
+    }))),
+    attachments: v.optional(v.array(v.object({
+      id: v.string(),
+      name: v.string(),
+      url: v.string(),
+      type: v.string(),
+      size: v.number(),
+    }))),
+    isDeleted: v.optional(v.boolean()),
+    editedAt: v.optional(v.number()),
+  })
+    .index("by_channel", ["channelId"])
+    .index("by_channel_created", ["channelId", "createdAt"])
+    .index("by_thread", ["threadId"]),
+
+  threads: defineTable({
+    id: v.string(),
+    channelId: v.string(),
+    parentMessageId: v.string(),
+    messageCount: v.number(),
+    participantIds: v.array(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_channel", ["channelId"])
+    .index("by_parent", ["parentMessageId"]),
 };

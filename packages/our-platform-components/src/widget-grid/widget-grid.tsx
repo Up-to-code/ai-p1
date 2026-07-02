@@ -4,18 +4,8 @@ import { useState, useEffect, useRef, useCallback, type ReactNode } from "react"
 import "gridstack/dist/gridstack.min.css";
 import { GridStack } from "gridstack";
 import { cn } from "@qentrah/platform-core";
-import {
-  GripHorizontal,
-  MoreHorizontal,
-  Plus,
-  Trash2,
-  Pencil,
-  Maximize2,
-  Minimize2,
-  Expand,
-  Search,
-  LayoutGrid,
-} from "lucide-react";
+import { Plus, Search } from "lucide-react";
+import { WidgetShell } from "./widget-shell";
 
 export interface WidgetOption {
   type: string;
@@ -205,6 +195,7 @@ export function WidgetGrid({
                 type="button"
                 onClick={() => onModalClose()}
                 className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+                aria-label="Close add-widget dialog"
               >
                 ✕
               </button>
@@ -278,161 +269,6 @@ export function WidgetGrid({
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function WidgetShell({
-  widget,
-  onRemove,
-  onRename,
-  onResize,
-  children,
-}: {
-  widget: ActiveWidget;
-  onRemove: () => void;
-  onRename: (title: string) => void;
-  onResize: (id: string, dw: number, dh: number) => void;
-  children: ReactNode;
-}) {
-  const [showMenu, setShowMenu] = useState(false);
-  const [isRenaming, setIsRenaming] = useState(false);
-  const [renameValue, setRenameValue] = useState(widget.title);
-
-  return (
-    <div className="grid-stack-item-content rounded-2xl border border-border/80 bg-card overflow-hidden flex flex-col">
-      <div className="drag-handle p-3 border-b border-border/40 bg-muted/20 flex items-center justify-between cursor-move group/hdr">
-        <div className="flex items-center gap-2 min-w-0">
-          <GripHorizontal className="h-4 w-4 text-muted-foreground/30 group-hover/hdr:text-muted-foreground transition-colors shrink-0" />
-          {isRenaming ? (
-            <input
-              value={renameValue}
-              onChange={(e) => setRenameValue(e.target.value)}
-              onBlur={() => {
-                if (renameValue.trim()) onRename(renameValue.trim());
-                setIsRenaming(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  if (renameValue.trim()) onRename(renameValue.trim());
-                  setIsRenaming(false);
-                }
-                if (e.key === "Escape") setIsRenaming(false);
-              }}
-              autoFocus
-              className="text-sm font-bold text-foreground bg-transparent border-b border-primary outline-none w-full"
-            />
-          ) : (
-            <span className="text-sm font-bold text-foreground truncate">{widget.title}</span>
-          )}
-        </div>
-        <div className="flex items-center gap-0.5 shrink-0">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onResize(widget.id, -1, 0);
-            }}
-            className="p-1 text-muted-foreground/40 hover:text-foreground rounded hover:bg-muted/50 transition-colors"
-            title="Decrease width"
-          >
-            <Minimize2 className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onResize(widget.id, 1, 0);
-            }}
-            className="p-1 text-muted-foreground/40 hover:text-foreground rounded hover:bg-muted/50 transition-colors"
-            title="Increase width"
-          >
-            <Maximize2 className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onResize(widget.id, 0, 1);
-            }}
-            className="p-1 text-muted-foreground/40 hover:text-foreground rounded hover:bg-muted/50 transition-colors"
-            title="Increase height"
-          >
-            <Expand className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowMenu(!showMenu);
-            }}
-            className="p-1 text-muted-foreground/40 hover:text-foreground rounded hover:bg-muted/50 transition-colors"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </button>
-          {showMenu && (
-            <div className="absolute right-2 top-10 z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[140px]">
-              <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/40">
-                Size
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  onResize(widget.id, 3 - widget.w, 2 - widget.h);
-                  setShowMenu(false);
-                }}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors"
-              >
-                <LayoutGrid className="h-3 w-3" /> Small
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onResize(widget.id, 6 - widget.w, 4 - widget.h);
-                  setShowMenu(false);
-                }}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors"
-              >
-                <LayoutGrid className="h-3 w-3" /> Medium
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onResize(widget.id, 12 - widget.w, 6 - widget.h);
-                  setShowMenu(false);
-                }}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors"
-              >
-                <LayoutGrid className="h-3 w-3" /> Large
-              </button>
-              <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/40 mt-1">
-                Actions
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsRenaming(true);
-                  setShowMenu(false);
-                }}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors"
-              >
-                <Pencil className="h-3 w-3" /> Rename
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onRemove();
-                  setShowMenu(false);
-                }}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/10 transition-colors"
-              >
-                <Trash2 className="h-3 w-3" /> Remove
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-      <div className="flex-1 overflow-auto bg-background">{children}</div>
     </div>
   );
 }

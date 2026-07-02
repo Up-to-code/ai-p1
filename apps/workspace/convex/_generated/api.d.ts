@@ -57,6 +57,9 @@ import type * as deals_read from "../deals/read.js";
 import type * as deals_validators from "../deals/validators.js";
 import type * as deals_write from "../deals/write.js";
 import type * as http from "../http.js";
+import type * as inbox_read from "../inbox/read.js";
+import type * as inbox_validators from "../inbox/validators.js";
+import type * as inbox_write from "../inbox/write.js";
 import type * as mcp_connectionLifecycle from "../mcp/connectionLifecycle.js";
 import type * as mcp_connectionPermissions from "../mcp/connectionPermissions.js";
 import type * as mcp_connections from "../mcp/connections.js";
@@ -232,6 +235,9 @@ declare const fullApi: ApiFromModules<{
   "deals/validators": typeof deals_validators;
   "deals/write": typeof deals_write;
   http: typeof http;
+  "inbox/read": typeof inbox_read;
+  "inbox/validators": typeof inbox_validators;
+  "inbox/write": typeof inbox_write;
   "mcp/connectionLifecycle": typeof mcp_connectionLifecycle;
   "mcp/connectionPermissions": typeof mcp_connectionPermissions;
   "mcp/connections": typeof mcp_connections;
@@ -378,8 +384,4 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {
-  apiKeys: import("convex-api-keys/_generated/component.js").ComponentApi<"apiKeys">;
-  pushNotifications: import("@convex-dev/expo-push-notifications/_generated/component.js").ComponentApi<"pushNotifications">;
-  dodopayments: import("@dodopayments/convex/_generated/component.js").ComponentApi<"dodopayments">;
-};
+export declare const components: {};

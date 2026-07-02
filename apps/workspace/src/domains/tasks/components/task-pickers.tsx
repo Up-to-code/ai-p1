@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CalendarDays, Check, Flag, UserRound, Search, X, FolderKanban } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { ColorDot } from "@qentrah/ui";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -35,9 +36,7 @@ export function StatusPicker({
             type="button"
             className="inline-flex h-7 items-center gap-2 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
           >
-            <span
-              className={cn("h-2 w-2 rounded-full shrink-0", STATUS_DOT[value])}
-            />
+            <ColorDot dotClassName={STATUS_DOT[value]} size="sm" />
             {t(`statuses.${value}`)}
           </button>
         }
@@ -57,12 +56,10 @@ export function StatusPicker({
             }}
             className={cn(
               "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-semibold transition-colors hover:bg-muted",
-              s === value ? "text-foreground" : "text-text-muted",
+              s === value ? "text-foreground" : "text-muted-foreground",
             )}
           >
-            <span
-              className={cn("h-2 w-2 rounded-full shrink-0", STATUS_DOT[s])}
-            />
+            <ColorDot dotClassName={STATUS_DOT[s]} size="sm" />
             {t(`statuses.${s}`)}
           </button>
         ))}
@@ -111,7 +108,7 @@ export function PriorityPicker({
             }}
             className={cn(
               "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-semibold transition-colors hover:bg-muted",
-              p === value ? "text-foreground" : "text-text-muted",
+              p === value ? "text-foreground" : "text-muted-foreground",
             )}
           >
             <Flag className={cn("h-3 w-3 shrink-0", PRIORITY_COLOR[p])} />
@@ -150,11 +147,11 @@ export function DueDatePicker({
             type="button"
             className="inline-flex h-7 items-center gap-2 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
           >
-            <CalendarDays className="h-3 w-3 shrink-0 text-text-muted" />
+            <CalendarDays className="h-3 w-3 shrink-0 text-muted-foreground" />
             {date ? (
               format(date, "MMM d, yyyy")
             ) : (
-              <span className="text-text-muted">Set due date</span>
+              <span className="text-muted-foreground">Set due date</span>
             )}
           </button>
         }
@@ -166,7 +163,7 @@ export function DueDatePicker({
       >
         <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-card/95 px-4 py-3 backdrop-blur">
           <div className="min-w-0">
-            <div className="text-xs font-black uppercase tracking-[0.16em] text-text-muted">
+            <div className="text-xs font-black uppercase tracking-[0.16em] text-muted-foreground">
               Due date
             </div>
             <div className="mt-1 truncate text-sm font-semibold text-foreground">
@@ -176,7 +173,7 @@ export function DueDatePicker({
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-text-muted transition-colors hover:bg-muted hover:text-foreground"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Close due date picker"
           >
             <X className="h-4 w-4" />
@@ -200,7 +197,7 @@ export function DueDatePicker({
                 )}
               >
                 <span>{item.label}</span>
-                <span className="inline-flex items-center gap-1 text-xs text-text-muted">
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                   {value === item.date.toISOString().slice(0, 10) ? (
                     <Check className="h-3 w-3 text-primary" />
                   ) : null}
@@ -214,17 +211,17 @@ export function DueDatePicker({
                 onChange("");
                 setOpen(false);
               }}
-              className="mt-2 flex min-h-11 w-full items-center rounded-xl px-3 text-left text-sm font-semibold text-text-muted transition-colors hover:bg-muted hover:text-foreground"
+              className="mt-2 flex min-h-11 w-full items-center rounded-xl px-3 text-left text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               Clear date
             </button>
           </div>
           <div className="min-w-0 p-3">
-            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-text-muted">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
               Exact date
             </label>
             <div className="mb-3 flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2 focus-within:ring-2 focus-within:ring-ring/20">
-              <CalendarDays className="h-4 w-4 shrink-0 text-text-muted" />
+              <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
               <input
                 type="date"
                 value={value}
@@ -283,9 +280,9 @@ export function AssigneePicker({
             type="button"
             className="inline-flex h-7 items-center gap-2 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
           >
-            <UserRound className="h-3 w-3 shrink-0 text-text-muted" />
+            <UserRound className="h-3 w-3 shrink-0 text-muted-foreground" />
             {selected?.label ?? (
-              <span className="text-text-muted">Unassigned</span>
+              <span className="text-muted-foreground">Unassigned</span>
             )}
           </button>
         }
@@ -296,12 +293,12 @@ export function AssigneePicker({
         className="w-60 p-1.5 rounded-xl border-border bg-card shadow-none"
       >
         <div className="mb-1.5 flex items-center gap-2 rounded-lg border border-border bg-muted px-2.5 py-1.5">
-          <Search className="h-3 w-3 shrink-0 text-text-muted" />
+          <Search className="h-3 w-3 shrink-0 text-muted-foreground" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t("form.searchPeople")}
-            className="flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-text-muted"
+            className="flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
           />
         </div>
         {value && (
@@ -311,7 +308,7 @@ export function AssigneePicker({
               onChange("");
               setOpen(false);
             }}
-            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-text-muted hover:bg-muted transition-colors"
+            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-muted-foreground hover:bg-muted transition-colors"
           >
             <X className="h-3 w-3" /> {t("form.unassigned")}
           </button>
@@ -326,7 +323,7 @@ export function AssigneePicker({
             }}
             className={cn(
               "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-semibold transition-colors hover:bg-muted",
-              o.id === value ? "text-foreground" : "text-text-muted",
+              o.id === value ? "text-foreground" : "text-muted-foreground",
             )}
           >
             <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[9px] font-black text-primary">
@@ -334,14 +331,14 @@ export function AssigneePicker({
             </div>
             <span className="min-w-0 flex-1 truncate text-left">{o.label}</span>
             {o.helper ? (
-              <span className="max-w-24 truncate text-[10px] font-medium text-text-muted">
+              <span className="max-w-24 truncate text-[10px] font-medium text-muted-foreground">
                 {o.helper}
               </span>
             ) : null}
           </button>
         ))}
         {filtered.length === 0 ? (
-          <div className="px-2.5 py-3 text-xs text-text-muted">
+          <div className="px-2.5 py-3 text-xs text-muted-foreground">
             No organization members found.
           </div>
         ) : null}
@@ -385,9 +382,9 @@ export function ProjectPicker({
             type="button"
             className="inline-flex h-7 items-center gap-2 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
           >
-            <FolderKanban className="h-3 w-3 shrink-0 text-text-muted" />
+            <FolderKanban className="h-3 w-3 shrink-0 text-muted-foreground" />
             {selected?.name ?? (
-              <span className="text-text-muted">{t("form.noProject")}</span>
+              <span className="text-muted-foreground">{t("form.noProject")}</span>
             )}
           </button>
         }
@@ -398,12 +395,12 @@ export function ProjectPicker({
         className="w-60 p-1.5 rounded-xl border-border bg-card shadow-none"
       >
         <div className="mb-1.5 flex items-center gap-2 rounded-lg border border-border bg-muted px-2.5 py-1.5">
-          <Search className="h-3 w-3 shrink-0 text-text-muted" />
+          <Search className="h-3 w-3 shrink-0 text-muted-foreground" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t("form.searchProjects")}
-            className="flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-text-muted"
+            className="flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
           />
         </div>
         {value && (
@@ -413,13 +410,13 @@ export function ProjectPicker({
               onChange("");
               setOpen(false);
             }}
-            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-text-muted hover:bg-muted transition-colors"
+            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-muted-foreground hover:bg-muted transition-colors"
           >
             <X className="h-3 w-3" /> {t("form.noProject")}
           </button>
         )}
         {filtered.length === 0 && (
-          <div className="px-2.5 py-2 text-xs text-text-muted">
+          <div className="px-2.5 py-2 text-xs text-muted-foreground">
             {t("form.noProjects")}
           </div>
         )}
@@ -433,10 +430,10 @@ export function ProjectPicker({
             }}
             className={cn(
               "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-semibold transition-colors hover:bg-muted",
-              o.id === value ? "text-foreground" : "text-text-muted",
+              o.id === value ? "text-foreground" : "text-muted-foreground",
             )}
           >
-            <FolderKanban className="h-3.5 w-3.5 shrink-0 text-text-muted" />
+            <FolderKanban className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             <span className="truncate">{o.name}</span>
           </button>
         ))}

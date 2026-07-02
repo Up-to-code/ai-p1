@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { SidebarPanelLayout } from "./sidebar-panel-layout";
 import { CollapsibleSection } from "./collapsible-section";
+import { IndexPanelSkeleton } from "@/components/loading-ui";
 
 function IndexItem({
   icon: Icon,
@@ -78,6 +79,12 @@ export function SidebarIndexPanel() {
     queryFn: () => listOrganizationMembers(orgId ?? ""),
     enabled: Boolean(orgId),
   });
+
+  const isLoading = tasksQuery === undefined || projectsQuery === undefined || spaces === undefined;
+
+  if (isLoading) {
+    return <IndexPanelSkeleton />;
+  }
 
   return (
     <SidebarPanelLayout title="Home">

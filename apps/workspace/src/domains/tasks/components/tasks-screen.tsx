@@ -9,6 +9,7 @@ import {
   EmptyWorkspace,
   WorkspaceQueryState,
 } from "@/components/shared/crud-ui";
+import { PageHeader } from "@/components/shared/page-header";
 import { usePathname, useRouter } from "@/i18n/routing";
 import { useSearchParams } from "next/navigation";
 import { TaskGroupedList } from "./task-grouped-list";
@@ -36,6 +37,7 @@ import {
   useMemberOptions,
 } from "./task-hooks";
 import { TaskBoardSkeleton } from "./task-board-skeleton";
+import { TaskFilterDropdown } from "./task-filter-dropdown";
 import { taskLog } from "../task-log";
 
 // ─── TasksScreen (split-pane) ─────────────────────────────────────────────────
@@ -190,81 +192,57 @@ export function TasksScreen({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      {/* ── Page header ── */}
-      <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border bg-background/80 backdrop-blur-xl px-8 h-14 sticky top-0 z-10">
-        <div className="flex items-center gap-3 min-w-0">
-          <ListTodo className="h-4 w-4 text-text-muted shrink-0" />
-          <h1 className="text-sm font-semibold text-foreground shrink-0 tracking-tight">
-            {t("title")}
-          </h1>
-          <div className="h-4 w-px bg-border shrink-0" />
-          <div className="inline-flex items-center rounded-xl border border-border bg-card p-0.5 gap-0.5">
-            {statusTabs.map((tab) => (
-              <button
-                key={tab.value}
-                type="button"
-                onClick={() => setStatusFilter(tab.value)}
-                className={cn(
-                  "h-6 rounded-lg px-2.5 text-[11px] font-semibold transition-all",
-                  statusFilter === tab.value
-                    ? "bg-foreground text-background"
-                    : "text-text-muted hover:text-foreground",
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="flex h-8 items-center gap-2 rounded-xl border border-border bg-card px-3 focus-within:ring-2 focus-within:ring-ring/20">
-            <Search className="h-3.5 w-3.5 text-text-muted" />
+      <PageHeader
+        title={t("title")}
+        tabs={statusTabs.map(tab => ({ value: tab.value, label: tab.label }))}
+        activeTab={statusFilter}
+        onTabChange={(value) => setStatusFilter(value as TaskStatus | "all")}
+        actions={[
+          {
+            label: t("add"),
+            icon: Plus,
+            variant: "primary",
+            onClick: createNewTask,
+          },
+        ]}
+      />
+
+      {/* Toolbar with search and filters */}
+      <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border bg-background/80 backdrop-blur-xl px-6 h-12">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 items-center gap-2 rounded-lg border border-border bg-card px-3 focus-within:ring-2 focus-within:ring-ring/20">
+            <Search className="h-3.5 w-3.5 text-muted-foreground" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={common("search")}
-              className="h-full w-32 bg-transparent text-xs font-medium text-foreground outline-none placeholder:text-text-muted"
+              className="h-full w-32 bg-transparent text-xs font-medium text-foreground outline-none placeholder:text-muted-foreground"
             />
           </div>
-          <select
+          <TaskFilterDropdown
             value={ownership}
-            onChange={(event) =>
-              setOwnership(event.target.value as OwnershipFilter)
-            }
-            className="h-8 rounded-xl border border-border bg-card px-2.5 text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-ring/20"
-          >
-            {ownershipFilters.map((f) => (
-              <option key={f} value={f}>
-                {f === "all"
-                  ? t("filters.all")
-                  : f === "assignedToMe"
-                    ? t("filters.assignedToMe")
-                    : t("filters.sentByMe")}
-              </option>
-            ))}
-          </select>
+            options={ownershipFilters.map((f) => ({
+              value: f,
+              label: f === "all"
+                ? t("filters.all")
+                : f === "assignedToMe"
+                  ? t("filters.assignedToMe")
+                  : t("filters.sentByMe"),
+            }))}
+            onChange={(value) => setOwnership(value as OwnershipFilter)}
+            placeholder={t("filters.all")}
+          />
           {!projectId && projectList.length > 0 && (
-            <select
+            <TaskFilterDropdown
               value={projectFilter}
-              onChange={(e) => setProjectFilter(e.target.value)}
-              className="h-8 rounded-xl border border-border bg-card px-2.5 text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-ring/20"
-            >
-              <option value="">{t("filters.allProjects")}</option>
-              {projectList.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: "", label: t("filters.allProjects") },
+                ...projectList.map((p) => ({ value: p.id, label: p.name })),
+              ]}
+              onChange={setProjectFilter}
+              placeholder={t("filters.allProjects")}
+            />
           )}
-          <button
-            type="button"
-            onClick={createNewTask}
-            className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            {t("actions.new")}
-          </button>
         </div>
       </div>
 
@@ -318,7 +296,7 @@ export function TasksScreen({
         {/* Task document modal */}
         {selectedTask && organizationId && (
           <div className={cn(
-            "fixed inset-0 z-40 flex items-center justify-center modal-overlay-animate-in",
+            "fixed inset-0 z-[100] flex items-center justify-center modal-overlay-animate-in",
           )}>
             <button
               type="button"
@@ -327,10 +305,10 @@ export function TasksScreen({
               onClick={() => setSelectedId(null)}
             />
             <div className={cn(
-              "relative z-10 overflow-hidden border border-border bg-background flex flex-col modal-content-animate-in",
+              "relative z-10 overflow-hidden border border-border bg-background flex flex-col modal-content-animate-in resize overflow-auto",
               isModalFullscreen
-                ? "w-screen h-screen rounded-none border-0"
-                : "w-[90vw] h-[90vh] rounded-2xl",
+                ? "w-screen h-screen rounded-none border-0 resize-none"
+                : "w-[800px] h-[600px] min-w-[400px] min-h-[300px] rounded-2xl",
             )}>
               <TaskEditor
                 key={selectedTask.id}

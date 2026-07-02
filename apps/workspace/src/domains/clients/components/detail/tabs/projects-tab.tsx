@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { ProgressBar } from "@qentrah/our-platform-components";
 import { type Client } from "../../../store/clients.types";
 import { useQuery as useConvexQuery } from "convex/react";
 import { api as convexApi } from "@convex/_generated/api";
@@ -340,12 +341,11 @@ export function ProjectsTab({ client, organizationId }: ProjectsTabProps) {
                     placeholder="0%"
                     className="font-bold text-xs"
                   />
-                  <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden shrink-0 hidden sm:block">
-                    <div 
-                      className="h-full bg-primary rounded-full transition-all duration-300" 
-                      style={{ width: `${project.progress || 0}%` }}
-                    />
-                  </div>
+                  <ProgressBar
+                    value={project.progress || 0}
+                    size="md"
+                    className="hidden sm:block"
+                  />
                 </div>
 
                 {/* Actions */}

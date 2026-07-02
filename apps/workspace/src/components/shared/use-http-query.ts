@@ -9,6 +9,7 @@ import {
   type PagedResponse, type IndexedPagedResponse, type IndexedInfinitePage,
   type PagedStatus, type HttpQueryStatus,
 } from "./http-pagination";
+import { useOptionalAccountContext } from "@/domains/auth";
 
 export type { PagedResponse, IndexedPagedResponse, IndexedInfinitePage, PagedStatus, HttpQueryStatus };
 export { HttpTimeoutError, HttpRequestError, fetchJson, normalizeErrorMessage, isHttpTimeoutError } from "./fetch-json";
@@ -17,6 +18,25 @@ export { makeUrl, debugFor, placeholderForSameOrganization } from "./make-url";
 export { emptyPagedResponse, normalizePagedResponse, normalizeIndexedPagedResponse } from "./http-pagination";
 
 type HttpData<T> = T extends (...args: never[]) => unknown ? never : T;
+
+type WorkspaceContextSnapshot = {
+  organizationId?: string | null;
+  workspaceStatus?: string;
+  isConvexAuthPending?: boolean;
+  isConvexAuthenticated?: boolean;
+};
+
+function readWorkspaceContext(): WorkspaceContextSnapshot | undefined {
+  const ctx = useOptionalAccountContext();
+  if (!ctx) return undefined;
+  const ws = ctx.workspace;
+  return {
+    organizationId: ws.organizationId ?? null,
+    workspaceStatus: ws.status,
+    isConvexAuthPending: ws.isConvexAuthPending,
+    isConvexAuthenticated: ws.isConvexAuthenticated,
+  };
+}
 
 export function useHttpQueryResult<T>(
   key: readonly unknown[],
@@ -202,7 +222,7 @@ export function useHttpIndexedPagedQuery<T, TStats>(
     isFetching: query.isFetching,
     refetch: query.refetch,
     timedOut: query.isError && isHttpTimeoutError(query.error),
-    debug: debugFor(queryKey, url),
+    debug: debugFor(queryKey, url, readWorkspaceContext()),
     loadMore,
   };
 }

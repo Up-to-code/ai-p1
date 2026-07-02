@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { LegendItem } from "@qentrah/ui";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useProjectsIndexQuery } from "../../api/projects";
 import { useAccountContext } from "@/domains/auth";
@@ -92,11 +93,7 @@ export function ProjectStatusWidget() {
       </div>
       <div className="flex flex-wrap justify-center gap-3 mt-3 pt-3 border-t border-border/40">
         {chartData.map((item) => (
-          <div key={item.name} className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.fill }} />
-            <span className="text-[10px] font-semibold text-muted-foreground">{item.name}</span>
-            <span className="text-[10px] font-bold text-foreground">{item.value}</span>
-          </div>
+          <LegendItem key={item.name} color={item.fill} label={item.name} value={item.value} />
         ))}
       </div>
     </div>

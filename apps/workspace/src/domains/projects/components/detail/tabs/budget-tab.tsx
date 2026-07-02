@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
+import { ProgressBar } from "@qentrah/our-platform-components";
 import { type Project } from "../../../store/projects.types";
 import { type ProjectFormValues } from "../../../validation/project.schema";
 import { useTasksQuery } from "@/domains/tasks/api/tasks";
@@ -82,24 +83,18 @@ export function BudgetTab({ project, onUpdate }: BudgetTabProps) {
                 <span className="text-muted-foreground">Time Progress</span>
                 <span className="font-bold text-foreground">{Math.round(stats.timeProgress)}%</span>
               </div>
-              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-muted-foreground/40 rounded-full transition-all duration-500"
-                  style={{ width: `${stats.timeProgress}%` }}
-                />
-              </div>
+              <ProgressBar
+                value={stats.timeProgress}
+                size="lg"
+                fillClassName="bg-muted-foreground/40"
+              />
             </div>
             <div>
               <div className="flex items-center justify-between text-xs mb-1.5">
                 <span className="text-muted-foreground">Budget Spent</span>
                 <span className="font-bold text-foreground">{Math.round(stats.progress)}%</span>
               </div>
-              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary rounded-full transition-all duration-500"
-                  style={{ width: `${stats.progress}%` }}
-                />
-              </div>
+              <ProgressBar value={stats.progress} size="lg" />
             </div>
           </div>
 

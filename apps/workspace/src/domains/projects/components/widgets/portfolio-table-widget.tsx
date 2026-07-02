@@ -1,6 +1,7 @@
 "use client";
 
 import { Folder, Settings2, Calendar, Flag, UserPlus, MoreHorizontal, Plus } from "lucide-react";
+import { ProgressBar } from "@qentrah/our-platform-components";
 import { cn } from "@/lib/utils";
 
 const mockTableData = [
@@ -51,12 +52,12 @@ export function PortfolioTableWidget() {
               <td className="py-3 px-4 text-muted-foreground text-[13px]">{row.color}</td>
               <td className="py-3 px-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-1.5 w-24 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-indigo-500 rounded-full" 
-                      style={{ width: row.total > 0 ? `${(row.progress / row.total) * 100}%` : '0%' }}
-                    />
-                  </div>
+                  <ProgressBar
+                    value={row.total > 0 ? (row.progress / row.total) * 100 : 0}
+                    size="md"
+                    className="w-24"
+                    fillClassName="bg-indigo-500"
+                  />
                   <span className="text-[11px] font-medium text-muted-foreground">
                     {row.progress}/{row.total}
                   </span>

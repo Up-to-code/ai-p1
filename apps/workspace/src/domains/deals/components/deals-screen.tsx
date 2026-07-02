@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowLeft, BadgeDollarSign, Trash2 } from "lucide-react";
+import { ArrowLeft, BadgeDollarSign, Trash2, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAccountContext } from "@/domains/auth";
-import { AppDataTable, AppPageHeader, AppPageShell, AppSection, type AppDataTableColumn } from "@/components/shared";
+import { AppDataTable, AppPageShell, AppSection, type AppDataTableColumn } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { WorkspaceQueryState, StatusPill, EmptyWorkspace, DetailNotFoundState, DeleteRecordDialog } from "@/components/shared/crud-ui";
 import { Link, useRouter } from "@/i18n/routing";
@@ -20,6 +20,7 @@ import type { Deal, DealFormValues, DealPriority, DealStage } from "../store/dea
 import { DEAL_PRIORITIES, EMPTY_DEAL_FORM } from "../config/deals.config";
 import { dealStages, stageTone, priorityTone, formatValue, formFromDeal, matchesDealSearch } from "../lib/deal-view-model";
 import { WorkOsRecordDrawer } from "@/domains/work-os/components/work-os-record-drawer";
+import { PageHeader } from "@/components/shared/page-header";
 
 const emptyForm = EMPTY_DEAL_FORM;
 
@@ -51,6 +52,18 @@ export function DealsWorkspace() {
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-background">
+      <PageHeader
+        title={t("title")}
+        actions={[
+          {
+            label: t("actions.new"),
+            icon: Plus,
+            variant: "primary",
+            onClick: openCreateDrawer,
+          },
+        ]}
+      />
+
       <DealsToolbar
         stage={stage}
         search={search}
@@ -61,7 +74,7 @@ export function DealsWorkspace() {
         onViewChange={setView}
         onNewDeal={openCreateDrawer}
       />
-      <div className="flex-1 overflow-auto p-5 md:p-6 lg:p-8">
+      <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto w-full max-w-full">
           {workspaceStatus !== "ready" ? (
             <WorkspaceQueryState status={workspaceStatus} variant="pipeline" />
@@ -177,10 +190,16 @@ export function DealDetailScreen({ id }: { id: string }) {
 
   return (
     <AppPageShell maxWidth="wide" contentClassName="space-y-8">
-      <AppPageHeader
+      <PageHeader
         title={deal?.title ?? ""}
-        context={<Link href="/deals" className="inline-flex h-10 items-center rounded-xl border border-border bg-white px-4 text-xs font-bold text-foreground hover:bg-muted/50 dark:border-white/10 dark:bg-white/5"><ArrowLeft className="me-2 h-4 w-4" />{common("back")}</Link>}
-        actions={deal ? <Button type="button" variant="outline" disabled={busyId === deal.id} className="h-10 rounded-xl text-xs font-bold text-red-600" onClick={remove}><Trash2 className="me-2 h-4 w-4" />{common("delete")}</Button> : null}
+        actions={deal ? [{
+          label: common("delete"),
+          icon: Trash2,
+          variant: "destructive",
+          onClick: remove,
+          disabled: busyId === deal.id,
+        }] : []}
+        leftContent={<Link href="/deals" className="inline-flex h-10 items-center rounded-xl border border-border bg-white px-4 text-xs font-bold text-foreground hover:bg-muted/50 dark:border-white/10 dark:bg-white/5"><ArrowLeft className="me-2 h-4 w-4" />{common("back")}</Link>}
       />
       {workspaceStatus !== "ready" ? (
         <WorkspaceQueryState status={workspaceStatus} variant="detail" />

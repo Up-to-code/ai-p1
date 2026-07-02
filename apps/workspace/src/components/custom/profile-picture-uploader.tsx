@@ -254,10 +254,10 @@ export function ProfilePictureUploader({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="absolute -bottom-2 -end-2 flex h-8 w-8 items-center justify-center rounded-xl bg-card transition-transform hover:scale-105 active:scale-95"
+          className="absolute -bottom-2 -end-2 flex h-8 w-8 items-center justify-center rounded-xl bg-foreground text-background transition-transform hover:scale-105 active:scale-95 dark:bg-foreground dark:text-background"
           aria-label={uploadLabel}
         >
-          <Camera className="h-3.5 w-3.5 text-white dark:text-foreground" />
+          <Camera className="h-3.5 w-3.5" />
         </button>
         {image && (
           <button

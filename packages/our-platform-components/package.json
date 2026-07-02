@@ -21,6 +21,14 @@
       "types": "./dist/pipeline/index.d.ts",
       "import": "./dist/pipeline/index.js"
     },
+    "./popover-menu": {
+      "types": "./dist/popover-menu/index.d.ts",
+      "import": "./dist/popover-menu/index.js"
+    },
+    "./feedback": {
+      "types": "./dist/feedback/index.d.ts",
+      "import": "./dist/feedback/index.js"
+    },
     "./widget-grid": {
       "types": "./dist/widget-grid/index.d.ts",
       "import": "./dist/widget-grid/index.js"

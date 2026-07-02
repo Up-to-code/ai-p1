@@ -73,21 +73,21 @@ export function NotificationsTabPanel({
           <div className="border-y border-border py-5 dark:border-border">
             <div className="flex items-center justify-between gap-4">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted dark:bg-muted">
-                  <Smartphone className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted">
+                  <Smartphone className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] text-foreground dark:text-foreground">
+                  <p className="text-sm font-medium text-foreground">
                     {hasActiveDevice ? labels.deviceConnected : labels.deviceMissing}
                   </p>
-                  <p className="mt-1 text-[10px] font-medium text-muted-foreground">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {hasActiveDevice ? labels.deviceConnectedHelp : labels.deviceMissingHelp}
                   </p>
                 </div>
               </div>
               <span
                 className={cn(
-                  "shrink-0 rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-widest",
+                  "shrink-0 rounded-lg border px-3 py-1.5 text-sm font-medium",
                   hasActiveDevice
                     ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
                     : "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400",
@@ -105,9 +105,9 @@ export function NotificationsTabPanel({
               <span
                 key={rule.id}
                 className={cn(
-                  "rounded-full border px-3 py-1 text-[10px] font-bold",
+                  "rounded-lg border px-3 py-1.5 text-sm",
                   rule.enabled
-                    ? "border-border text-secondary-foreground dark:border-border dark:text-muted-foreground"
+                    ? "border-border text-foreground dark:border-border dark:text-foreground"
                     : "border-border text-muted-foreground line-through dark:border-border dark:text-muted-foreground",
                 )}
               >

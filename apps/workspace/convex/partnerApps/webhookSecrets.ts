@@ -1,4 +1,9 @@
-import { partnerAppsRuntimeConfig } from "../../src/packages/config/partner-apps";
+"use node";
+
+function getWebhookSecretEncryptionKey() {
+  const secret = process.env.PARTNER_WEBHOOK_SECRET_ENCRYPTION_KEY?.trim() ?? "";
+  return secret;
+}
 
 export function bytesToHex(bytes: Uint8Array) {
   return Array.from(bytes)
@@ -16,7 +21,7 @@ function hexToBytes(hex: string) {
 }
 
 async function webhookSecretEncryptionKey() {
-  const secret = partnerAppsRuntimeConfig.webhookSecretEncryptionKey.trim();
+  const secret = getWebhookSecretEncryptionKey();
   if (!secret) return null;
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(secret));
   return await crypto.subtle.importKey(
