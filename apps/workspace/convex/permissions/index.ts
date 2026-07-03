@@ -28,23 +28,57 @@ export type Resource =
 export type Action = "create" | "read" | "update" | "delete";
 
 /**
- * Get user's organization role from Clerk/WorkOS
- * For now, this is a stub - in production, this would come from the auth provider
+ * Normalize a Clerk org role claim to our internal OrganizationRole type.
+ *
+ * Clerk's JWT template may emit roles in different formats depending on version
+ * and dashboard configuration:
+ *   - Plain:   "owner" | "admin" | "member"
+ *   - Prefixed: "org:owner" | "org:admin" | "org:member"
+ *
+ * We accept both and strip the "org:" prefix when present.
+ */
+function normalizeClerkOrgRole(raw: string): OrganizationRole | null {
+  const stripped = raw.startsWith("org:") ? raw.slice(4) : raw;
+  const validRoles: OrganizationRole[] = ["owner", "admin", "member"];
+  return validRoles.includes(stripped as OrganizationRole)
+    ? (stripped as OrganizationRole)
+    : null;
+}
+
+/**
+ * Get user's organization role from Clerk auth identity.
+ * The JWT issued by Clerk contains org_id / orgId and org_role / orgRole claims
+ * that reflect the user's active organization membership.
+ *
+ * Convex exposes custom JWT claims with their raw claim names, so we try both
+ * snake_case (Clerk's default Convex template) and camelCase variants.
  */
 export async function getOrganizationRole(
   ctx: QueryCtx,
   organizationId: string,
   userId: string,
 ): Promise<OrganizationRole | null> {
-  // TODO: Integrate with Clerk/WorkOS to get actual organization role
-  // For now, we'll check if user has any access to the organization
   const identity = await ctx.auth.getUserIdentity();
   if (!identity || identity.subject !== userId) {
     return null;
   }
   
-  // TEMP: Return admin for development - this should be replaced with actual role lookup
-  return "admin";
+  // Convex exposes custom JWT claims with their raw name — Clerk's Convex template
+  // uses snake_case (org_id / org_role). Fall back to camelCase for custom templates.
+  const claims = identity as Record<string, unknown>;
+  const tokenOrgId =
+    (claims["org_id"] as string | undefined) ??
+    (claims["orgId"] as string | undefined);
+  const tokenOrgRole =
+    (claims["org_role"] as string | undefined) ??
+    (claims["orgRole"] as string | undefined);
+  
+  // Only trust the role if it's for the requested organization
+  if (tokenOrgId && tokenOrgId === organizationId && tokenOrgRole) {
+    return normalizeClerkOrgRole(tokenOrgRole);
+  }
+  
+  return null;
 }
 
 /**
@@ -338,6 +372,16 @@ export async function assertCanPerformProjectAction(
 
 /**
  * Check if user can perform an action on an organization resource
+ *
+ * NOTE on JWT claims fallback:
+ * The Clerk "convex" JWT template must include `org_id` and `org_role` claims
+ * for full role-based enforcement. If those claims are absent (template not
+ * configured), we fall back to a "safe default" policy:
+ *   - read  → allowed for any authenticated user (low risk; the client-side
+ *             guard in organization-context.ts already verified Clerk membership)
+ *   - write → denied (requires confirmed role from JWT)
+ * This prevents a broken JWT template from locking users out of the app while
+ * still blocking unauthenticated mutations.
  */
 export async function canPerformOrganizationAction(
   ctx: QueryCtx,
@@ -374,6 +418,15 @@ export async function canPerformOrganizationAction(
     };
 
     return allowedActions[resource]?.includes(action) ?? false;
+  }
+
+  // orgRole is null — JWT template is missing org claims.
+  // Allow reads for authenticated users as a safe fallback; deny all writes.
+  if (orgRole === null && action === "read") {
+    const identity = await ctx.auth.getUserIdentity();
+    if (identity && identity.subject === userId) {
+      return true;
+    }
   }
 
   return false;

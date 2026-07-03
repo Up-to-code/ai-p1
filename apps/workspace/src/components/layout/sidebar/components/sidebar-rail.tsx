@@ -117,14 +117,14 @@ export function SidebarRail() {
 
       {/* Level 2: Domain Navigation with Groups */}
       <div className="flex-1 overflow-y-auto py-2">
-        {sidebarNavGroups.map((group) => (
-          <div key={group.id} className="flex flex-col gap-1 px-2 mb-4">
-            {/* Group Label */}
-            <div className="px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70">
-              {group.label}
-            </div>
-            
-            {/* Group Items */}
+        {sidebarNavGroups.map((group, groupIndex) => (
+          <div key={group.id} className="flex flex-col gap-1 px-2">
+            {/* Divider between groups — skipped before the first group */}
+            {groupIndex > 0 && (
+              <div className="mx-auto my-2 h-px w-6 rounded-full bg-border/60" />
+            )}
+
+            {/* Group Items — icons only */}
             {group.items.map((item) => {
               const Icon = item.icon;
               const isActive = item.href ? pathname.startsWith(item.href) : false;
@@ -154,11 +154,9 @@ export function SidebarRail() {
           </div>
         ))}
 
-        {/* Level 3: Coming Soon */}
-        <div className="flex flex-col gap-1 px-2 mt-4">
-          <div className="px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70">
-            Coming Soon
-          </div>
+        {/* Level 3: Coming Soon — divider + disabled icons, no label */}
+        <div className="flex flex-col gap-1 px-2">
+          <div className="mx-auto my-2 h-px w-6 rounded-full bg-border/60" />
           {sidebarComingSoonNav.map((item) => {
             const Icon = item.icon;
             return (
@@ -166,7 +164,7 @@ export function SidebarRail() {
                 <button
                   type="button"
                   disabled
-                  className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground/50 cursor-not-allowed"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground/30 cursor-not-allowed"
                 >
                   <Icon className="h-[18px] w-[18px] shrink-0" />
                 </button>

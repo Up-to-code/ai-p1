@@ -15,6 +15,8 @@ type ClerkAuthUser = {
   image: string | null;
   createdAt: number;
   updatedAt: number;
+  orgId: string | null;
+  orgRole: string | null;
 };
 
 function identityToUser(identity: Awaited<ReturnType<GenericCtx["auth"]["getUserIdentity"]>>): ClerkAuthUser {
@@ -35,25 +37,14 @@ function identityToUser(identity: Awaited<ReturnType<GenericCtx["auth"]["getUser
     image: identity.pictureUrl ?? null,
     createdAt: 0,
     updatedAt: 0,
+    orgId: (identity as Record<string, unknown>)["org_id"] as string | null
+      ?? (identity as Record<string, unknown>)["orgId"] as string | null
+      ?? null,
+    orgRole: (identity as Record<string, unknown>)["org_role"] as string | null
+      ?? (identity as Record<string, unknown>)["orgRole"] as string | null
+      ?? null,
   };
 }
-
-const clerkOrganizationApi = {
-  hasPermission: async () => ({ success: true }),
-  addMember: async () => ({ success: true }),
-  listMembers: async () => ({ members: [] }),
-  listInvitations: async () => ({ invitations: [] }),
-  listRoles: async () => ({ roles: [] }),
-  updateOrganization: async (input: { body?: unknown }) => input.body ?? null,
-  inviteMember: async () => ({ success: true }),
-  cancelInvitation: async () => ({ success: true }),
-  updateMemberRole: async (input: { body?: unknown }) => input.body ?? null,
-  removeMember: async () => ({ success: true }),
-  createRole: async (input: { body?: unknown }) => input.body ?? null,
-  updateRole: async (input: { body?: unknown }) => input.body ?? null,
-  deleteRole: async () => ({ success: true }),
-  acceptInvitation: async () => ({ success: true }),
-};
 
 export const clerkAuthComponent = {
   getAuthUser: async (ctx: GenericCtx) => identityToUser(await ctx.auth.getUserIdentity()),
@@ -62,7 +53,7 @@ export const clerkAuthComponent = {
     return identity ? identityToUser(identity) : null;
   },
   getAuth: async (_createAuth: unknown, _ctx: GenericCtx) => ({
-    auth: { api: clerkOrganizationApi },
+    auth: { api: {} },
     headers: new Headers(),
   }),
   clientApi: () => ({
@@ -70,6 +61,8 @@ export const clerkAuthComponent = {
   }),
 };
 
-export const createAuth = () => ({ api: clerkOrganizationApi });
+export const createAuth = () => ({ api: {} });
 export const options = {};
 export const getAuthUser = clerkAuthComponent.getAuthUser;
+
+export type { ClerkAuthUser };
