@@ -16,5 +16,5 @@ Sentry.init({
   integrations: [
     nodeProfilingIntegration(),
     Sentry.consoleLoggingIntegration({ levels: ["warn", "error"] }),
-  ],
+  ] as any,
 });

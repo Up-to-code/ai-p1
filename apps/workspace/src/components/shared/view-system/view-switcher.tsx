@@ -116,7 +116,7 @@ export function ViewSwitcherTabs({
                   <span
                     role="button"
                     aria-label="Remove view"
-                    onClick={(e) => {
+                    onClick={(e: React.MouseEvent) => {
                       e.stopPropagation();
                       onRemoveView(view.id);
                     }}

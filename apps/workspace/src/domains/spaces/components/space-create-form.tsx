@@ -148,7 +148,7 @@ export function SpaceCreateForm({ open, onOpenChange }: SpaceCreateFormProps) {
             <label className="text-sm font-medium">Visibility</label>
             <Select
               value={values.visibility}
-              onValueChange={(value) => {
+              onValueChange={(value: string | null) => {
                 setValues({
                   ...values,
                   visibility: value as any,

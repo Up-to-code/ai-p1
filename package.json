@@ -45,6 +45,8 @@
   "dependencies": {
     "@alloc/quick-lru": "^5.2.0",
     "@sentry/nextjs": "^8.54.0",
+    "extend": "^3.0.2",
+    "is-plain-obj": "^4.1.0",
     "next": "16.3.0-canary.32",
     "require-in-the-middle": "^8.0.1",
     "stacktrace-parser": "^0.1.11"

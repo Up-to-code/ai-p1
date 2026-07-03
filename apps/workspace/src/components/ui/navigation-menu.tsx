@@ -1,17 +1,31 @@
+import * as React from "react"
 import { NavigationMenu as NavigationMenuPrimitive } from "@base-ui/react/navigation-menu"
 import { cva } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+
+const PrimitiveRoot = NavigationMenuPrimitive.Root as React.ComponentType<any>
+const PrimitiveList = NavigationMenuPrimitive.List as React.ComponentType<any>
+const PrimitiveItem = NavigationMenuPrimitive.Item as React.ComponentType<any>
+const PrimitivePortal = NavigationMenuPrimitive.Portal as React.ComponentType<any>
+const PrimitivePositioner = NavigationMenuPrimitive.Positioner as React.ComponentType<any>
+const PrimitivePopup = NavigationMenuPrimitive.Popup as React.ComponentType<any>
+const PrimitiveViewport = NavigationMenuPrimitive.Viewport as React.ComponentType<any>
+const PrimitiveLink = NavigationMenuPrimitive.Link as React.ComponentType<any>
 
 function NavigationMenu({
   align = "start",
   className,
   children,
   ...props
-}: NavigationMenuPrimitive.Root.Props &
-  Pick<NavigationMenuPrimitive.Positioner.Props, "align">) {
+}: {
+  align?: string
+  className?: string
+  children?: React.ReactNode
+  [key: string]: unknown
+}) {
   return (
-    <NavigationMenuPrimitive.Root
+    <PrimitiveRoot
       data-slot="navigation-menu"
       className={cn(
         "group/navigation-menu relative flex max-w-max flex-1 items-center justify-center",
@@ -21,16 +35,19 @@ function NavigationMenu({
     >
       {children}
       <NavigationMenuPositioner align={align} />
-    </NavigationMenuPrimitive.Root>
+    </PrimitiveRoot>
   )
 }
 
 function NavigationMenuList({
   className,
   ...props
-}: React.ComponentPropsWithRef<typeof NavigationMenuPrimitive.List>) {
+}: {
+  className?: string
+  [key: string]: unknown
+}) {
   return (
-    <NavigationMenuPrimitive.List
+    <PrimitiveList
       data-slot="navigation-menu-list"
       className={cn(
         "group flex flex-1 list-none items-center justify-center gap-0",
@@ -44,9 +61,12 @@ function NavigationMenuList({
 function NavigationMenuItem({
   className,
   ...props
-}: React.ComponentPropsWithRef<typeof NavigationMenuPrimitive.Item>) {
+}: {
+  className?: string
+  [key: string]: unknown
+}) {
   return (
-    <NavigationMenuPrimitive.Item
+    <PrimitiveItem
       data-slot="navigation-menu-item"
       className={cn("relative", className)}
       {...props}
@@ -65,10 +85,17 @@ function NavigationMenuPositioner({
   align = "start",
   alignOffset = 0,
   ...props
-}: NavigationMenuPrimitive.Positioner.Props) {
+}: {
+  className?: string
+  side?: string
+  sideOffset?: number
+  align?: string
+  alignOffset?: number
+  [key: string]: unknown
+}) {
   return (
-    <NavigationMenuPrimitive.Portal>
-      <NavigationMenuPrimitive.Positioner
+    <PrimitivePortal>
+      <PrimitivePositioner
         side={side}
         sideOffset={sideOffset}
         align={align}
@@ -79,20 +106,23 @@ function NavigationMenuPositioner({
         )}
         {...props}
       >
-        <NavigationMenuPrimitive.Popup className="data-[ending-style]:easing-[ease] xs:w-(--popup-width) relative h-(--popup-height) w-(--popup-width) origin-(--transform-origin) rounded-lg bg-popover text-popover-foreground shadow ring-1 ring-foreground/10 transition-[opacity,transform,width,height,scale,translate] duration-[0.35s] ease-[cubic-bezier(0.22,1,0.36,1)] outline-none data-ending-style:scale-90 data-ending-style:opacity-0 data-ending-style:duration-150 data-starting-style:scale-90 data-starting-style:opacity-0">
-          <NavigationMenuPrimitive.Viewport className="relative size-full overflow-hidden" />
-        </NavigationMenuPrimitive.Popup>
-      </NavigationMenuPrimitive.Positioner>
-    </NavigationMenuPrimitive.Portal>
+        <PrimitivePopup className="data-[ending-style]:easing-[ease] xs:w-(--popup-width) relative h-(--popup-height) w-(--popup-width) origin-(--transform-origin) rounded-lg bg-popover text-popover-foreground shadow ring-1 ring-foreground/10 transition-[opacity,transform,width,height,scale,translate] duration-[0.35s] ease-[cubic-bezier(0.22,1,0.36,1)] outline-none data-ending-style:scale-90 data-ending-style:opacity-0 data-ending-style:duration-150 data-starting-style:scale-90 data-starting-style:opacity-0">
+          <PrimitiveViewport className="relative size-full overflow-hidden" />
+        </PrimitivePopup>
+      </PrimitivePositioner>
+    </PrimitivePortal>
   )
 }
 
 function NavigationMenuLink({
   className,
   ...props
-}: NavigationMenuPrimitive.Link.Props) {
+}: {
+  className?: string
+  [key: string]: unknown
+}) {
   return (
-    <NavigationMenuPrimitive.Link
+    <PrimitiveLink
       data-slot="navigation-menu-link"
       className={cn(
         "flex items-center gap-2 rounded-lg p-2 text-sm transition-all outline-none hover:bg-muted focus:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-1 in-data-[slot=navigation-menu-content]:rounded-md data-active:bg-muted/50 data-active:hover:bg-muted data-active:focus:bg-muted [&_svg:not([class*='size-'])]:size-4",

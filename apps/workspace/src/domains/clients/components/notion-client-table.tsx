@@ -351,7 +351,7 @@ export function NotionClientTable({
                       {client.pipelineStage !== "closed" && (
                         <button
                           type="button"
-                          onClick={(e) => {
+                          onClick={(e: React.MouseEvent) => {
                             e.stopPropagation();
                             updateClientField(client, "pipelineStage", "closed");
                           }}
@@ -363,7 +363,7 @@ export function NotionClientTable({
                       )}
                       <button
                         type="button"
-                        onClick={(e) => {
+                        onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
                           router.push(`/clients/${client.id}/edit`);
                         }}
@@ -374,7 +374,7 @@ export function NotionClientTable({
                       </button>
                       <button
                         type="button"
-                        onClick={(e) => {
+                        onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
                           setDeleting(client);
                         }}

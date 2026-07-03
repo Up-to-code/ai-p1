@@ -181,7 +181,7 @@ export function SpaceSettings({ open, onOpenChange, space }: SpaceSettingsProps)
             <label className="text-sm font-medium">Visibility</label>
             <Select
               value={values.visibility}
-              onValueChange={(value) => {
+              onValueChange={(value: string | null) => {
                 setValues({
                   ...values,
                   visibility: value as any,

@@ -267,7 +267,7 @@ export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
                       </h3>
                       <button
                         type="button"
-                        onClick={(e) => {
+                        onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
                           handleDeleteNote(note.id);
                         }}

@@ -318,7 +318,7 @@ export function CreateChannelWizard({
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="space">Space</Label>
-                  <Select value={spaceId} onValueChange={(value) => { setSpaceId(value ?? ""); setSelectedProjectIds([]); }} disabled={isLoading}>
+                  <Select value={spaceId} onValueChange={(value: string | null) => { setSpaceId(value ?? ""); setSelectedProjectIds([]); }} disabled={isLoading}>
                     <SelectTrigger id="space" className="h-12">
                       <SelectValue placeholder="Select a space" />
                     </SelectTrigger>
@@ -441,7 +441,7 @@ export function CreateChannelWizard({
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="project">Project</Label>
-                  <Select value={projectId} onValueChange={(value) => { setProjectId(value ?? ""); setSpaceId(""); }} disabled={isLoading}>
+                  <Select value={projectId} onValueChange={(value: string | null) => { setProjectId(value ?? ""); setSpaceId(""); }} disabled={isLoading}>
                     <SelectTrigger id="project" className="h-12">
                       <SelectValue placeholder="Select a project" />
                     </SelectTrigger>
@@ -457,7 +457,7 @@ export function CreateChannelWizard({
                 {projectId && (
                   <div>
                     <Label htmlFor="sub-space">Space (Optional)</Label>
-                    <Select value={spaceId} onValueChange={(value) => setSpaceId(value ?? "")} disabled={isLoading}>
+                    <Select value={spaceId} onValueChange={(value: string | null) => setSpaceId(value ?? "")} disabled={isLoading}>
                       <SelectTrigger id="sub-space" className="h-12">
                         <SelectValue placeholder="Select a space within the project" />
                       </SelectTrigger>
@@ -541,7 +541,7 @@ export function CreateChannelWizard({
               </div>
               <div>
                 <Label htmlFor="client">Client</Label>
-                <Select value={clientId} onValueChange={(value) => setClientId(value ?? "")} disabled={isLoading}>
+                <Select value={clientId} onValueChange={(value: string | null) => setClientId(value ?? "")} disabled={isLoading}>
                   <SelectTrigger id="client" className="h-12">
                     <SelectValue placeholder="Select a client" />
                   </SelectTrigger>

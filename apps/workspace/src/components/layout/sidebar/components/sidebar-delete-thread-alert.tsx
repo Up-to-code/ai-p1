@@ -40,7 +40,7 @@ export function SidebarDeleteThreadAlert({
           <AlertDialogCancel disabled={deleting}>{tThreads("cancel")}</AlertDialogCancel>
           <AlertDialogAction
             disabled={deleting}
-            onClick={(event) => {
+            onClick={(event: React.MouseEvent) => {
               event.preventDefault();
               onConfirm();
             }}

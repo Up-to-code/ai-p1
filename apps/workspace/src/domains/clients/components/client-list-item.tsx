@@ -179,7 +179,7 @@ export function ClientListItem({
           {client.pipelineStage !== "closed" && onMarkClosed && (
             <button
               type="button"
-              onClick={(e) => {
+              onClick={(e: React.MouseEvent) => {
                 e.preventDefault()
                 e.stopPropagation()
                 onMarkClosed(client)
@@ -193,7 +193,7 @@ export function ClientListItem({
           )}
           <button
             type="button"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent) => {
               e.preventDefault()
               e.stopPropagation()
               router.push(`/clients/${client.id}/edit`)
@@ -206,7 +206,7 @@ export function ClientListItem({
           {onDelete && (
             <button
               type="button"
-              onClick={(e) => {
+              onClick={(e: React.MouseEvent) => {
                 e.preventDefault()
                 e.stopPropagation()
                 onDelete(client)

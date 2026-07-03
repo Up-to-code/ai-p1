@@ -88,7 +88,7 @@ export function MemberPicker({ value, onChange }: MemberPickerProps) {
                       {s.label}
                       <button
                         type="button"
-                        onClick={(e) => {
+                        onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
                           remove(s.id);
                         }}

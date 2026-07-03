@@ -69,7 +69,7 @@ export function DocRowActions({
               type="button"
               variant="ghost"
               size="icon-xs"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
               aria-label="Document actions"
             >
               <MoreHorizontal className="h-3.5 w-3.5" />

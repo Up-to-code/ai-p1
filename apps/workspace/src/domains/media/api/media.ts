@@ -101,7 +101,7 @@ export async function uploadAndAttachMedia(params: {
   const uploaded = await uploadFiles(endpoint, {
     files: params.files,
     input: { organizationId: params.organizationId },
-  });
+  } as any);
 
   return Promise.all(
     uploaded.map((upload, index) =>

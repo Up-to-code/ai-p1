@@ -68,7 +68,7 @@ export function BadgeSelect<TValue extends string>({
       )}
       <Select
         value={value}
-        onValueChange={(next) => onChange(next as TValue)}
+        onValueChange={(next: string | null) => { if (next) onChange(next as TValue); }}
         disabled={disabled}
       >
         <SelectTrigger

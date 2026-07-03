@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { brandDomainUrl, brandLabel, brandProductName } from "@qentrah/brand-identity";
+import { brandLabel, brandProductName } from "@qentrah/brand-identity";
 import { type Locale } from "@/lib/content";
 
-const siteUrl = brandDomainUrl("root");
+const siteUrl = "https://www.qentrah.com";
 
 type PageMeta = {
   title: string;

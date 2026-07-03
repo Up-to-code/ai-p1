@@ -65,7 +65,7 @@ export function ProjectStatusPicker({
   const resolvedLabels = { ...STATUS_LABELS, ...labels };
 
   return (
-    <Select value={value} onValueChange={(v) => v && onChange(v)}>
+    <Select value={value} onValueChange={(v: string | null) => v && onChange(v)}>
       <Tooltip>
         <TooltipTrigger render={<span className="inline-flex" />}>
           <SelectTrigger className="h-9 w-auto rounded-xl border border-border bg-background/50 px-3 text-sm font-semibold focus:ring-1 focus:ring-ring dark:border-white/10 dark:bg-white/5">
@@ -109,7 +109,7 @@ export function ProjectHealthPicker({
   const resolvedLabels = { ...HEALTH_LABELS, ...labels };
 
   return (
-    <Select value={value} onValueChange={(v) => v && onChange(v)}>
+    <Select value={value} onValueChange={(v: string | null) => v && onChange(v)}>
       <Tooltip>
         <TooltipTrigger render={<span className="inline-flex" />}>
           <SelectTrigger className="h-9 w-auto rounded-xl border border-border bg-background/50 px-3 text-sm font-semibold focus:ring-1 focus:ring-ring dark:border-white/10 dark:bg-white/5">

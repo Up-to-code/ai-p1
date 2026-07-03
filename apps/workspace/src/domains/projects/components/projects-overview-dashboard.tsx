@@ -86,7 +86,7 @@ function WidgetShell({
             trigger={
               <button
                 type="button"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e: React.MouseEvent) => e.stopPropagation()}
                 className="p-1 text-muted-foreground/40 hover:text-foreground rounded hover:bg-muted/50 transition-colors"
                 aria-label="Widget options"
               >

@@ -67,7 +67,7 @@ export function ShareInviteDialog({
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               {t("permission")}
             </Label>
-            <Select value={permission} onValueChange={(value) => value && onPermissionChange(value)}>
+            <Select value={permission} onValueChange={(value: string | null) => value && onPermissionChange(value)}>
               <SelectTrigger className="h-10 rounded-lg">
                 <SelectValue />
               </SelectTrigger>

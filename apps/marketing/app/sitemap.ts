@@ -6,7 +6,7 @@ export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
-  const baseUrl = "https://qentrah.com";
+  const baseUrl = "https://www.qentrah.com";
 
   const staticEntries: MetadataRoute.Sitemap = allLocalizedMarketingPaths().map(({ path, url }) => ({
     url,

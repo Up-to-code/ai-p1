@@ -112,7 +112,7 @@ export function CreateChannelModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="type">Type</Label>
-              <Select value={type} onValueChange={(value) => value && setType(value as ChannelType)} disabled={isLoading}>
+              <Select value={type} onValueChange={(value: string | null) => value && setType(value as ChannelType)} disabled={isLoading}>
                 <SelectTrigger id="type">
                   <SelectValue />
                 </SelectTrigger>
@@ -127,7 +127,7 @@ export function CreateChannelModal({
 
             <div className="space-y-2">
               <Label htmlFor="visibility">Visibility</Label>
-              <Select value={visibility} onValueChange={(value) => value && setVisibility(value as ChannelVisibility)} disabled={isLoading}>
+              <Select value={visibility} onValueChange={(value: string | null) => value && setVisibility(value as ChannelVisibility)} disabled={isLoading}>
                 <SelectTrigger id="visibility">
                   <SelectValue />
                 </SelectTrigger>
@@ -143,7 +143,7 @@ export function CreateChannelModal({
           {type === "project" && projects.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="project">Project</Label>
-              <Select value={projectId} onValueChange={(value) => value && setProjectId(value)} disabled={isLoading}>
+              <Select value={projectId} onValueChange={(value: string | null) => value && setProjectId(value)} disabled={isLoading}>
                 <SelectTrigger id="project">
                   <SelectValue placeholder="Select a project" />
                 </SelectTrigger>
@@ -161,7 +161,7 @@ export function CreateChannelModal({
           {type === "client" && clients.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="client">Client</Label>
-              <Select value={clientId} onValueChange={(value) => value && setClientId(value)} disabled={isLoading}>
+              <Select value={clientId} onValueChange={(value: string | null) => value && setClientId(value)} disabled={isLoading}>
                 <SelectTrigger id="client">
                   <SelectValue placeholder="Select a client" />
                 </SelectTrigger>

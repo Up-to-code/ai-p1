@@ -144,7 +144,7 @@ export function EditableSelect<T extends string>({
                   <div className="h-px bg-border my-1" />
                   <button
                     type="button"
-                    onClick={(e) => {
+                    onClick={(e: React.MouseEvent) => {
                       e.preventDefault();
                       setIsEditingColors(true);
                     }}

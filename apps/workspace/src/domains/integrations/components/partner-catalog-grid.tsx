@@ -116,7 +116,7 @@ export function PartnerCatalogGrid({
             <DropdownMenuGroup>
               <DropdownMenuLabel>{t('catalog.filter')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup value={filter} onValueChange={(value) => setFilter(value as PartnerCatalogFilter)}>
+              <DropdownMenuRadioGroup value={filter} onValueChange={(value: string | null) => setFilter(value as PartnerCatalogFilter)}>
                 {partnerCatalogFilters.map((value) => (
                   <DropdownMenuRadioItem key={value} value={value} className="py-2 text-sm font-semibold">
                     {t(`catalog.filters.${value}`)}

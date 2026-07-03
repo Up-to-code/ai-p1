@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
-import { brandDomainUrl } from "@qentrah/brand-identity";
 
-const siteUrl = brandDomainUrl("root");
+const siteUrl = "https://www.qentrah.com";
 
 export default function robots(): MetadataRoute.Robots {
   return {

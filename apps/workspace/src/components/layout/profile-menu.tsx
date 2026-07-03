@@ -104,7 +104,7 @@ export function ProfileMenu() {
 
           <DropdownMenuItem 
             className="py-2 cursor-pointer"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent) => {
               e.preventDefault();
               setTheme(isDark ? "light" : "dark");
             }}
@@ -147,7 +147,7 @@ export function ProfileMenu() {
             <AlertDialogAction
               variant="destructive"
               disabled={isLoggingOut}
-              onClick={(event) => {
+              onClick={(event: React.MouseEvent) => {
                 event.preventDefault();
                 handleLogout();
               }}

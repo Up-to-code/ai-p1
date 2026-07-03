@@ -93,7 +93,7 @@ export function TaskTableToolbar({
   return (
     <div className="flex items-center justify-between gap-2 px-3 py-1.5 bg-card border-b border-border">
       <div className="flex items-center gap-1.5">
-        <Select value={groupBy} onValueChange={(v) => onGroupByChange((v ?? "none") as GroupByValue)}>
+        <Select value={groupBy} onValueChange={(v: string | null) => onGroupByChange((v ?? "none") as GroupByValue)}>
           <SelectTrigger
             className="h-7 px-2.5 text-[11px] font-medium text-muted-foreground border-transparent bg-transparent hover:bg-muted hover:text-foreground"
             size="sm"
@@ -145,7 +145,7 @@ export function TaskTableToolbar({
           </PopoverContent>
         </Popover>
 
-        <Select value={sortBy} onValueChange={(v) => onSortByChange(v ?? "updated")}>
+        <Select value={sortBy} onValueChange={(v: string | null) => onSortByChange(v ?? "updated")}>
           <SelectTrigger
             className="h-7 px-2.5 text-[11px] font-medium text-muted-foreground border-transparent bg-transparent hover:bg-muted hover:text-foreground"
             size="sm"

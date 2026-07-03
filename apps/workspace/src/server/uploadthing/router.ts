@@ -19,26 +19,26 @@ const f = createUploadthing();
 const uploadRouter = {
   profilePicture: f(imageUploadPolicy)
     .middleware(({ req }) => requireSignedInUploadUser(req))
-    .onUploadComplete(({ file }) => uploadedImage(file)),
+    .onUploadComplete(({ file }) => uploadedImage(file as any)),
   organizationLogo: f(imageUploadPolicy)
     .middleware(({ req }) => requireSignedInUploadUser(req))
-    .onUploadComplete(({ file }) => uploadedImage(file)),
+    .onUploadComplete(({ file }) => uploadedImage(file as any)),
   projectMedia: f(mediaUploadPolicy)
     .input(organizationUploadInputSchema)
-    .middleware(({ req, input }) => requireOrganizationMediaUploadAccess(req, input, "project"))
-    .onUploadComplete(({ file, metadata }) => uploadedResourceMedia(file, metadata)),
+    .middleware(({ req, input }) => requireOrganizationMediaUploadAccess(req, input as any, "project"))
+    .onUploadComplete(({ file, metadata }) => uploadedResourceMedia(file as any, metadata)),
   assetMedia: f(mediaUploadPolicy)
     .input(organizationUploadInputSchema)
-    .middleware(({ req, input }) => requireOrganizationMediaUploadAccess(req, input, "asset"))
-    .onUploadComplete(({ file, metadata }) => uploadedResourceMedia(file, metadata)),
+    .middleware(({ req, input }) => requireOrganizationMediaUploadAccess(req, input as any, "asset"))
+    .onUploadComplete(({ file, metadata }) => uploadedResourceMedia(file as any, metadata)),
   clientMedia: f(mediaUploadPolicy)
     .input(organizationUploadInputSchema)
-    .middleware(({ req, input }) => requireOrganizationMediaUploadAccess(req, input, "client"))
-    .onUploadComplete(({ file, metadata }) => uploadedResourceMedia(file, metadata)),
+    .middleware(({ req, input }) => requireOrganizationMediaUploadAccess(req, input as any, "client"))
+    .onUploadComplete(({ file, metadata }) => uploadedResourceMedia(file as any, metadata)),
   agentMessageAttachment: f(agentMessageAttachmentUploadPolicy)
     .input(organizationUploadInputSchema)
-    .middleware(({ req, input }) => requireAgentMessageAttachmentUploadAccess(req, input))
-    .onUploadComplete(({ file, metadata }) => uploadedResourceMedia(file, metadata)),
+    .middleware(({ req, input }) => requireAgentMessageAttachmentUploadAccess(req, input as any))
+    .onUploadComplete(({ file, metadata }) => uploadedResourceMedia(file as any, metadata)),
 } satisfies FileRouter;
 
 export type UploadRouter = typeof uploadRouter;

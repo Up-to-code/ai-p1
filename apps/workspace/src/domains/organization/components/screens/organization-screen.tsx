@@ -738,7 +738,7 @@ export function OrganizationScreen() {
                       <Label htmlFor="inviteRole" className="text-sm font-medium text-muted-foreground">{t("invites.roleLabel")}</Label>
                       <HelpCircle className="h-4 w-4 text-muted-foreground" aria-label={t("invites.roleHint")} />
                     </div>
-                    <Select value={inviteRole} onValueChange={(value) => value && setInviteRole(value)}>
+                    <Select value={inviteRole} onValueChange={(value: string | null) => value && setInviteRole(value)}>
                       <SelectTrigger
                         id="inviteRole"
                         aria-label={t("invites.roleLabel")}

@@ -7,27 +7,34 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 
-function Dialog({ ...props }: DialogPrimitive.Root.Props) {
-  return <DialogPrimitive.Root data-slot="dialog" {...props} />
+const PrimitiveRoot = DialogPrimitive.Root as React.ComponentType<any>
+const PrimitivePortal = DialogPrimitive.Portal as React.ComponentType<any>
+const PrimitiveBackdrop = DialogPrimitive.Backdrop as React.ComponentType<any>
+const PrimitivePopup = DialogPrimitive.Popup as React.ComponentType<any>
+const PrimitiveClose = DialogPrimitive.Close as React.ComponentType<any>
+const PrimitiveTitle = DialogPrimitive.Title as React.ComponentType<any>
+const PrimitiveDescription = DialogPrimitive.Description as React.ComponentType<any>
+
+function Dialog({ children, open, onOpenChange, ...props }: { children?: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void; [key: string]: unknown }) {
+  return <PrimitiveRoot data-slot="dialog" open={open} onOpenChange={onOpenChange} {...props}>{children}</PrimitiveRoot>
 }
 
-function DialogPortal({ ...props }: DialogPrimitive.Portal.Props) {
-  return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
+function DialogPortal({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) {
+  return <PrimitivePortal data-slot="dialog-portal">{children}</PrimitivePortal>
 }
 
 function DialogOverlay({
   className,
   ...props
-}: DialogPrimitive.Backdrop.Props) {
+}: { className?: string; [key: string]: unknown }) {
   return (
-    <DialogPrimitive.Backdrop
-      data-slot="dialog-overlay"
-      className={cn(
-        "fixed inset-0 isolate z-[100] bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
-        className
-      )}
-      {...props}
-    />
+    <div className={cn("fixed inset-0 isolate z-[100]", className)}>
+      <PrimitiveBackdrop
+        data-slot="dialog-overlay"
+        className="h-full w-full bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0"
+        {...props}
+      />
+    </div>
   )
 }
 
@@ -38,16 +45,12 @@ function DialogContent({
   overlayClassName,
   showCloseButton = true,
   ...props
-}: DialogPrimitive.Popup.Props & {
-  containerClassName?: string
-  overlayClassName?: string
-  showCloseButton?: boolean
-}) {
+}: { className?: string; containerClassName?: string; overlayClassName?: string; showCloseButton?: boolean; children?: React.ReactNode; [key: string]: unknown }) {
   return (
     <DialogPortal>
       <DialogOverlay className={overlayClassName} />
       <div className={cn("fixed inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none", containerClassName)}>
-        <DialogPrimitive.Popup
+        <PrimitivePopup
           data-slot="dialog-content"
           className={cn(
             "relative z-50 grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none pointer-events-auto data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
@@ -57,7 +60,7 @@ function DialogContent({
         >
           {children}
           {showCloseButton && (
-            <DialogPrimitive.Close
+            <PrimitiveClose
               data-slot="dialog-close"
               render={
                 <Button
@@ -69,21 +72,23 @@ function DialogContent({
             >
               <XIcon />
               <span className="sr-only">Close</span>
-            </DialogPrimitive.Close>
+            </PrimitiveClose>
           )}
-        </DialogPrimitive.Popup>
+        </PrimitivePopup>
       </div>
     </DialogPortal>
   )
 }
 
-function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
+function DialogHeader({ className, children, ...props }: { className?: string; children?: React.ReactNode; [key: string]: unknown }) {
   return (
     <div
       data-slot="dialog-header"
       className={cn("flex flex-col gap-2", className)}
       {...props}
-    />
+    >
+      {children}
+    </div>
   )
 }
 
@@ -92,9 +97,7 @@ function DialogFooter({
   showCloseButton = false,
   children,
   ...props
-}: React.ComponentProps<"div"> & {
-  showCloseButton?: boolean
-}) {
+}: { className?: string; showCloseButton?: boolean; children?: React.ReactNode; [key: string]: unknown }) {
   return (
     <div
       data-slot="dialog-footer"
@@ -106,40 +109,41 @@ function DialogFooter({
     >
       {children}
       {showCloseButton && (
-        <DialogPrimitive.Close render={<Button variant="outline" />}>
+        <PrimitiveClose render={<Button variant="outline" />}>
           Close
-        </DialogPrimitive.Close>
+        </PrimitiveClose>
       )}
     </div>
   )
 }
 
-function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
+function DialogTitle({ className, children, ...props }: { className?: string; children?: React.ReactNode; [key: string]: unknown }) {
   return (
-    <DialogPrimitive.Title
+    <PrimitiveTitle
       data-slot="dialog-title"
       className={cn(
         "font-heading text-base leading-none font-medium",
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </PrimitiveTitle>
   )
 }
 
-function DialogDescription({
-  className,
-  ...props
-}: DialogPrimitive.Description.Props) {
+function DialogDescription({ className, children, ...props }: { className?: string; children?: React.ReactNode; [key: string]: unknown }) {
   return (
-    <DialogPrimitive.Description
+    <PrimitiveDescription
       data-slot="dialog-description"
       className={cn(
         "text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </PrimitiveDescription>
   )
 }
 

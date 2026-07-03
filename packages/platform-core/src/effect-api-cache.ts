@@ -62,15 +62,15 @@ export function createMemoryCacheService(): CacheService {
         Cache.make<string, unknown, unknown>({
           capacity: policy.capacity ?? 500,
           timeToLive: Duration.millis(policy.ttlMs),
-          lookup: (key) => {
+          lookup: (key: string) => {
             const loader = loaders.get(key);
             return loader ? loader() : Effect.fail(new Internal("Cache loader is no longer available."));
           },
         }),
       );
-      caches.set(policyKey, cache);
+      caches.set(policyKey, cache!);
     }
-    return cache;
+    return cache!;
   };
 
   return {
@@ -84,7 +84,7 @@ export function createMemoryCacheService(): CacheService {
           assertCachePolicySafe(key, policy);
           return buildCacheKey(key);
         },
-        catch: (error) => normalizeApiError(error, "Invalid cache policy."),
+        catch: (error: unknown) => normalizeApiError(error, "Invalid cache policy."),
       });
       const cache = yield* Effect.promise(() => getCache(policy));
       loaders.set(cacheKey, compute as CacheLoader);
@@ -94,14 +94,14 @@ export function createMemoryCacheService(): CacheService {
         })),
       );
     }),
-    invalidate: (key) => Effect.gen(function* () {
+    invalidate: (key: CacheKeyParts) => Effect.gen(function* () {
       const cacheKey = buildCacheKey(key);
       const resolvedCaches = yield* Effect.promise(() => Promise.all(caches.values()));
-      yield* Effect.all(resolvedCaches.map((cache) => cache.invalidate(cacheKey)), { discard: true });
+      yield* Effect.all(resolvedCaches.map((cache: any) => cache.invalidate(cacheKey)), { discard: true });
     }),
     invalidateAll: () => Effect.gen(function* () {
       const resolvedCaches = yield* Effect.promise(() => Promise.all(caches.values()));
-      yield* Effect.all(resolvedCaches.map((cache) => cache.invalidateAll), { discard: true });
+      yield* Effect.all(resolvedCaches.map((cache: any) => cache.invalidateAll), { discard: true });
     }),
   };
 }

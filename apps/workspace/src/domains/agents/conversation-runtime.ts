@@ -40,9 +40,10 @@ export async function uploadAgentAttachments(organizationId: string, files: File
   const uploaded = await uploadFiles("agentMessageAttachment", {
     files,
     input: { organizationId },
-  });
+  } as any);
 
-  return uploaded.map((file, index): AgentChatAttachment => {
+  return uploaded.map((f, index): AgentChatAttachment => {
+    const file = f as any;
     const fallback = files[index];
     const serverData = file.serverData;
     const mimeType = serverData?.mimeType || file.type || fallback?.type || "application/octet-stream";

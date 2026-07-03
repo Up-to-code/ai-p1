@@ -55,12 +55,12 @@ function Calendar({
           defaultClassNames.nav
         ),
         button_previous: cn(
-          buttonVariants({ variant: buttonVariant }),
+          buttonVariants({ variant: buttonVariant as any }),
           "size-(--cell-size) p-0 select-none aria-disabled:opacity-[0.4]",
           defaultClassNames.button_previous
         ),
         button_next: cn(
-          buttonVariants({ variant: buttonVariant }),
+          buttonVariants({ variant: buttonVariant as any }),
           "size-(--cell-size) p-0 select-none aria-disabled:opacity-[0.4]",
           defaultClassNames.button_next
         ),

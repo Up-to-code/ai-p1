@@ -40,7 +40,7 @@ export function IntegrationsScreen() {
       />
       <div className="relative">
         <div className="opacity-40 blur-[8px] pointer-events-none select-none grayscale-[0.2] transition-all">
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} className="space-y-6">
+          <Tabs value={activeTab} onValueChange={(value: string | null) => setActiveTab(value as typeof activeTab)} className="space-y-6">
             <AppTabsList tabs={[
               { value: "overview", label: t('tabs.overview') },
               { value: "catalog", label: t('tabs.catalog') }, 

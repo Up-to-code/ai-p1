@@ -69,7 +69,7 @@ export function SpaceList({ currentSpaceSlug, onSpaceSelect }: SpaceListProps) {
             />
             <button
               type="button"
-              onClick={(e) => {
+              onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 setSettingsSpace(space);
               }}

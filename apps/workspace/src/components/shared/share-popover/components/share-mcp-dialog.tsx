@@ -67,7 +67,7 @@ export function ShareMcpDialog({
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               {t("preset")}
             </Label>
-            <Select value={preset} onValueChange={(value) => value && onPresetChange(value)}>
+            <Select value={preset} onValueChange={(value: string | null) => value && onPresetChange(value)}>
               <SelectTrigger className="h-10 rounded-lg">
                 <SelectValue />
               </SelectTrigger>

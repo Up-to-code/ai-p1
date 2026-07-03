@@ -91,7 +91,7 @@ function FolderItem({
             type="button"
             variant="ghost"
             size="icon-xs"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               setExpanded(!expanded);
             }}
@@ -122,7 +122,7 @@ function FolderItem({
             }}
             autoFocus
             className="flex-1 bg-transparent text-sm font-medium outline-none border-b border-primary"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
           />
         ) : (
           <span className="flex-1 truncate text-xs font-medium">{node.name}</span>
@@ -135,7 +135,7 @@ function FolderItem({
                 type="button"
                 variant="ghost"
                 size="icon-xs"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e: React.MouseEvent) => e.stopPropagation()}
                 className="opacity-0 group-hover:opacity-100"
                 aria-label="Folder actions"
               >

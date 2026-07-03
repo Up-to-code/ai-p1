@@ -119,8 +119,14 @@ export function ModulePanel({
 
 // ─── Portal ───────────────────────────────────────────────────────────────────
 
-export function ModulePanelPortal(props: DialogPrimitive.Portal.Props) {
-  return <DialogPrimitive.Portal data-slot="module-portal" {...props} />
+export function ModulePanelPortal({
+  children,
+  ...props
+}: {
+  children?: React.ReactNode
+  [key: string]: unknown
+}) {
+  return <DialogPrimitive.Portal data-slot="module-portal" {...(props as any)}>{children}</DialogPrimitive.Portal>
 }
 
 // ─── Overlay ──────────────────────────────────────────────────────────────────
@@ -128,7 +134,10 @@ export function ModulePanelPortal(props: DialogPrimitive.Portal.Props) {
 export function ModulePanelOverlay({
   className,
   ...props
-}: DialogPrimitive.Backdrop.Props) {
+}: {
+  className?: string
+  [key: string]: unknown
+}) {
   return (
     <DialogPrimitive.Backdrop
       data-slot="module-overlay"
@@ -136,7 +145,7 @@ export function ModulePanelOverlay({
         "fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className,
       )}
-      {...props}
+      {...(props as any)}
     />
   )
 }
@@ -198,8 +207,11 @@ export function ModulePanelResizeHandle() {
 
 // ─── Content ──────────────────────────────────────────────────────────────────
 
-export interface ModulePanelContentProps extends DialogPrimitive.Popup.Props {
+export interface ModulePanelContentProps {
   containerClassName?: string
+  className?: string
+  children?: React.ReactNode
+  [key: string]: unknown
 }
 
 export function ModulePanelContent({
@@ -251,7 +263,7 @@ export function ModulePanelContent({
                   height: Math.min(ctx.panelHeight, effectiveMaxHeight),
                 }
           }
-          {...props}
+          {...(props as any)}
         >
           {children}
           <ModulePanelResizeHandle />
@@ -303,8 +315,13 @@ export function ModulePanelHeader({
 
 export function ModulePanelTitle({
   className,
+  children,
   ...props
-}: DialogPrimitive.Title.Props) {
+}: {
+  className?: string
+  children?: React.ReactNode
+  [key: string]: unknown
+}) {
   return (
     <DialogPrimitive.Title
       data-slot="module-title"
@@ -312,8 +329,10 @@ export function ModulePanelTitle({
         "font-heading text-base font-medium text-foreground truncate",
         className,
       )}
-      {...props}
-    />
+      {...(props as any)}
+    >
+      {children}
+    </DialogPrimitive.Title>
   )
 }
 
@@ -321,14 +340,21 @@ export function ModulePanelTitle({
 
 export function ModulePanelDescription({
   className,
+  children,
   ...props
-}: DialogPrimitive.Description.Props) {
+}: {
+  className?: string
+  children?: React.ReactNode
+  [key: string]: unknown
+}) {
   return (
     <DialogPrimitive.Description
       data-slot="module-description"
       className={cn("text-sm text-muted-foreground", className)}
-      {...props}
-    />
+      {...(props as any)}
+    >
+      {children}
+    </DialogPrimitive.Description>
   )
 }
 
@@ -423,15 +449,19 @@ export function ModulePanelFooter({
 
 // ─── Convenience: Close Button ────────────────────────────────────────────────
 
+const DialogCloseAny = DialogPrimitive.Close as React.ComponentType<any>
+
 export function ModulePanelCloseButton({
   className,
+  children,
   ...props
-}: Omit<
-  React.ComponentPropsWithoutRef<typeof Button>,
-  "children" | "variant" | "size"
->) {
+}: {
+  className?: string
+  children?: React.ReactNode
+  [key: string]: unknown
+}) {
   return (
-    <DialogPrimitive.Close
+    <DialogCloseAny
       data-slot="module-close"
       render={
         <Button
@@ -442,12 +472,14 @@ export function ModulePanelCloseButton({
             className,
           )}
           {...props}
-        />
+        >
+          {children || <XIcon className="h-4 w-4" />}
+        </Button>
       }
     >
-      <XIcon className="h-4 w-4" />
+      {children || <XIcon className="h-4 w-4" />}
       <span className="sr-only">Close</span>
-    </DialogPrimitive.Close>
+    </DialogCloseAny>
   )
 }
 
@@ -456,10 +488,10 @@ export function ModulePanelCloseButton({
 export function ModulePanelFullscreenToggle({
   className,
   ...props
-}: Omit<
-  React.ComponentPropsWithoutRef<typeof Button>,
-  "children" | "onClick"
->) {
+}: {
+  className?: string
+  [key: string]: unknown
+}) {
   const ctx = useModulePanel()
   return (
     <Button

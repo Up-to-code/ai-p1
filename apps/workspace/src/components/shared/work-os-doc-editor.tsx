@@ -739,15 +739,16 @@ export function WorkOsDocEditor({
         const [uploaded] = await uploadFiles("projectMedia", {
           files: Array.from(files),
           input: { organizationId: documentContext?.organizationId || "" },
-        });
-        if (!uploaded?.url) return;
+        } as any);
+        const uploadedData = uploaded as any;
+        if (!uploadedData?.url) return;
         if (mode === "image") {
           editor
             .chain()
             .focus()
             .setImage({
-              src: uploaded.url,
-              alt: uploaded.name || "Uploaded image",
+              src: uploadedData.url,
+              alt: uploadedData.name || "Uploaded image",
             })
             .updateAttributes("image", { width: "100%" })
             .run();
@@ -756,7 +757,7 @@ export function WorkOsDocEditor({
             .chain()
             .focus()
             .insertContent(
-              `<p><a href="${uploaded.url}" target="_blank" rel="noreferrer">📎 ${uploaded.name || "Attached file"}</a></p>`,
+              `<p><a href="${uploadedData.url}" target="_blank" rel="noreferrer">📎 ${uploadedData.name || "Attached file"}</a></p>`,
             )
             .run();
         }

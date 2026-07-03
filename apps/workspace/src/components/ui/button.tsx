@@ -1,7 +1,10 @@
+import * as React from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+
+const PrimitiveButton = ButtonPrimitive as React.ComponentType<any>
 
 const buttonVariants = cva(
   "group/button inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-[0.4] aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -46,14 +49,17 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  children,
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: { className?: string; variant?: string; size?: string; children?: React.ReactNode; [key: string]: unknown }) {
   return (
-    <ButtonPrimitive
+    <PrimitiveButton
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
+      className={cn(buttonVariants({ variant: variant as any, size: size as any, className }))}
+      {...(props as any)}
+    >
+      {children}
+    </PrimitiveButton>
   )
 }
 

@@ -212,7 +212,7 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
               </div>
               <Select
                 value={selectedRole}
-                onValueChange={(value) => value && setValue("inviteRole", value, { shouldValidate: true })}
+                onValueChange={(value: string | null) => value && setValue("inviteRole", value, { shouldValidate: true })}
                 disabled={isBusy || availableRoles.length === 0}
               >
                 <SelectTrigger

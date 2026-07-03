@@ -260,7 +260,7 @@ export function TasksTimelineTab({ project, organizationId, spaceId }: TasksTime
                           .map((s) => (
                             <button
                               key={s.value}
-                              onClick={(e) => {
+                              onClick={(e: React.MouseEvent) => {
                                 e.stopPropagation();
                                 handleStatusChange(task, s.value);
                               }}

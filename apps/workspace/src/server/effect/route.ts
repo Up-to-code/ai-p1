@@ -50,7 +50,7 @@ export function routePromise<TValue>(
 ): Effect.Effect<TValue, ApiRuntimeError> {
   return Effect.tryPromise({
     try: run,
-    catch: (error) => normalizeApiError(error, fallbackError),
+    catch: (error: unknown) => normalizeApiError(error, fallbackError),
   });
 }
 
@@ -60,7 +60,7 @@ export function routeSync<TValue>(
 ): Effect.Effect<TValue, ApiRuntimeError> {
   return Effect.try({
     try: run,
-    catch: (error) => normalizeApiError(error, fallbackError),
+    catch: (error: unknown) => normalizeApiError(error, fallbackError),
   });
 }
 

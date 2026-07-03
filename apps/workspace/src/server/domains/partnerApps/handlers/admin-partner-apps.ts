@@ -26,7 +26,7 @@ export async function handleSyncOAuthClientRuntimeFromPartners(c: Context) {
 export async function handleListApprovedPartnerAppsCatalog(c: Context) {
   return runEffectRoute(
     c,
-    routePromise(() => listApprovedPartnerApps(), fallbackError).pipe(Effect.map((apps) => ({ apps }))),
+    routePromise(() => listApprovedPartnerApps(), fallbackError).pipe(Effect.map((apps: any) => ({ apps }))),
     { fallbackError },
   );
 }

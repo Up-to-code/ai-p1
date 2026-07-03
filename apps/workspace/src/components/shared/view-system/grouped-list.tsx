@@ -143,7 +143,7 @@ function DefaultRow({
           key={col.key}
           className={cn("px-2 py-0.5 truncate", col.className)}
           style={{ width: col.width ?? "auto", flex: col.width ? undefined : 1, textAlign: col.align }}
-          onClick={(e) => {
+          onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onCellClick?.(item, col);
           }}
@@ -202,7 +202,7 @@ function DefaultRow({
                   : "text-muted-foreground hover:text-foreground"
               )}
               aria-label={action.label}
-              onClick={(e) => { e.stopPropagation(); action.onClick(item); }}
+              onClick={(e: React.MouseEvent) => { e.stopPropagation(); action.onClick(item); }}
             >
               {action.icon}
             </button>
@@ -351,7 +351,7 @@ export function GroupedList({
                   {allowInlineCreate && !inlineGroup && (
                     <button
                       className="ml-auto flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent) => {
                         e.stopPropagation();
                         setInlineGroup(stage.key);
                       }}

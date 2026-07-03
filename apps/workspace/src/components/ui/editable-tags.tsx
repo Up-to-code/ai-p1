@@ -221,7 +221,7 @@ export function EditableTags({
           {isModalOpen && (
             <>
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}>
-                <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+                <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-semibold text-foreground">Create New Tag</h3>
                     <button

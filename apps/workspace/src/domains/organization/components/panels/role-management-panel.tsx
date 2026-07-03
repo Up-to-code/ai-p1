@@ -193,7 +193,7 @@ export function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "
             </div>
             <div className="space-y-2">
               <Label htmlFor="roleTemplate" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("roles.templateSelect")}</Label>
-              <Select value={templateId} onValueChange={(value) => value && applyTemplate(value)}>
+              <Select value={templateId} onValueChange={(value: string | null) => value && applyTemplate(value)}>
                 <SelectTrigger
                   id="roleTemplate"
                   size="sm"

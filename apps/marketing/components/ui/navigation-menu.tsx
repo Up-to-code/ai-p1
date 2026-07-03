@@ -1,112 +1,100 @@
+"use client"
+
+import * as React from "react"
 import { NavigationMenu as NavigationMenuPrimitive } from "@base-ui/react/navigation-menu"
-import { cva } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+
+const R = NavigationMenuPrimitive.Root as unknown as React.ComponentType<Record<string, unknown>>
+const L = NavigationMenuPrimitive.List as unknown as React.ComponentType<Record<string, unknown>>
+const I = NavigationMenuPrimitive.Item as unknown as React.ComponentType<Record<string, unknown>>
+const Lk = NavigationMenuPrimitive.Link as unknown as React.ComponentType<Record<string, unknown>>
+const T = NavigationMenuPrimitive.Trigger as unknown as React.ComponentType<Record<string, unknown>>
+const P = NavigationMenuPrimitive.Popup as unknown as React.ComponentType<Record<string, unknown>>
+const Pos = NavigationMenuPrimitive.Positioner as unknown as React.ComponentType<Record<string, unknown>>
 
 function NavigationMenu({
   align = "start",
   className,
   children,
   ...props
-}: NavigationMenuPrimitive.Root.Props &
-  Pick<NavigationMenuPrimitive.Positioner.Props, "align">) {
-  return (
-    <NavigationMenuPrimitive.Root
-      data-slot="navigation-menu"
-      className={cn(
-        "group/navigation-menu relative flex max-w-max flex-1 items-center justify-center",
-        className
-      )}
-      {...props}
-    >
-      {children}
-      <NavigationMenuPositioner align={align} />
-    </NavigationMenuPrimitive.Root>
+}: { className?: string; children?: React.ReactNode; align?: string; [key: string]: unknown }) {
+  return React.createElement(
+    R,
+    { ...props, className: cn("group/navigation-menu relative flex max-w-max flex-1 items-center justify-center", className), "data-slot": "navigation-menu" },
+    React.createElement(Pos, { align },
+      React.createElement(L, { className: cn("group/navigation-menu-list flex flex-1 list-none items-center justify-center gap-1", className) },
+        children,
+      ),
+    ),
   )
 }
 
 function NavigationMenuList({
   className,
+  children,
   ...props
-}: React.ComponentPropsWithRef<typeof NavigationMenuPrimitive.List>) {
-  return (
-    <NavigationMenuPrimitive.List
-      data-slot="navigation-menu-list"
-      className={cn(
-        "group flex flex-1 list-none items-center justify-center gap-0",
-        className
-      )}
-      {...props}
-    />
+}: { className?: string; children?: React.ReactNode; [key: string]: unknown }) {
+  return React.createElement(
+    L,
+    { ...props, className: cn("group/navigation-menu-list flex flex-1 list-none items-center justify-center gap-1", className) },
+    children,
   )
 }
 
 function NavigationMenuItem({
   className,
+  children,
   ...props
-}: React.ComponentPropsWithRef<typeof NavigationMenuPrimitive.Item>) {
-  return (
-    <NavigationMenuPrimitive.Item
-      data-slot="navigation-menu-item"
-      className={cn("relative", className)}
-      {...props}
-    />
-  )
-}
-
-const navigationMenuTriggerStyle = cva(
-  "group/navigation-menu-trigger inline-flex h-9 w-max items-center justify-center rounded-lg px-2.5 py-1.5 text-sm font-medium transition-all outline-none hover:bg-muted focus:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-[0.4] data-popup-open:bg-muted/50 data-popup-open:hover:bg-muted data-open:bg-muted/50 data-open:hover:bg-muted data-open:focus:bg-muted"
-)
-
-function NavigationMenuPositioner({
-  className,
-  side = "bottom",
-  sideOffset = 8,
-  align = "start",
-  alignOffset = 0,
-  ...props
-}: NavigationMenuPrimitive.Positioner.Props) {
-  return (
-    <NavigationMenuPrimitive.Portal>
-      <NavigationMenuPrimitive.Positioner
-        side={side}
-        sideOffset={sideOffset}
-        align={align}
-        alignOffset={alignOffset}
-        className={cn(
-          "isolate z-50 h-(--positioner-height) w-(--positioner-width) max-w-(--available-width) transition-[top,left,right,bottom] duration-[0.35s] ease-[cubic-bezier(0.22,1,0.36,1)] data-instant:transition-none data-[side=bottom]:before:top-[-10px] data-[side=bottom]:before:right-0 data-[side=bottom]:before:left-0",
-          className
-        )}
-        {...props}
-      >
-        <NavigationMenuPrimitive.Popup className="data-[ending-style]:easing-[ease] xs:w-(--popup-width) relative h-(--popup-height) w-(--popup-width) origin-(--transform-origin) rounded-lg bg-popover text-popover-foreground shadow ring-1 ring-foreground/10 transition-[opacity,transform,width,height,scale,translate] duration-[0.35s] ease-[cubic-bezier(0.22,1,0.36,1)] outline-none data-ending-style:scale-90 data-ending-style:opacity-0 data-ending-style:duration-150 data-starting-style:scale-90 data-starting-style:opacity-0">
-          <NavigationMenuPrimitive.Viewport className="relative size-full overflow-hidden" />
-        </NavigationMenuPrimitive.Popup>
-      </NavigationMenuPrimitive.Positioner>
-    </NavigationMenuPrimitive.Portal>
+}: { className?: string; children?: React.ReactNode; [key: string]: unknown }) {
+  return React.createElement(
+    I,
+    { ...props, className: cn("relative", className), "data-slot": "navigation-menu-item" },
+    children,
   )
 }
 
 function NavigationMenuLink({
   className,
+  children,
   ...props
-}: NavigationMenuPrimitive.Link.Props) {
-  return (
-    <NavigationMenuPrimitive.Link
-      data-slot="navigation-menu-link"
-      className={cn(
-        "flex items-center gap-2 rounded-lg p-2 text-sm transition-all outline-none hover:bg-muted focus:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-1 in-data-[slot=navigation-menu-content]:rounded-md data-active:bg-muted/50 data-active:hover:bg-muted data-active:focus:bg-muted [&_svg:not([class*='size-'])]:size-4",
-        className
-      )}
-      {...props}
-    />
+}: { className?: string; children?: React.ReactNode; [key: string]: unknown }) {
+  return React.createElement(
+    Lk,
+    { ...props, className: cn("flex h-9 w-max items-center justify-center rounded-md px-4 py-1.5 text-sm font-medium outline-hidden select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50", className) },
+    children,
+  )
+}
+
+function NavigationMenuTrigger({
+  className,
+  children,
+  ...props
+}: { className?: string; children?: React.ReactNode; [key: string]: unknown }) {
+  return React.createElement(
+    T,
+    { ...props, className: cn("flex h-9 w-max items-center justify-center gap-1 rounded-md px-4 py-1.5 text-sm font-medium outline-hidden select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-popup-open:bg-accent data-popup-open:text-accent-foreground", className) },
+    children,
+  )
+}
+
+function NavigationMenuContent({
+  className,
+  children,
+  ...props
+}: { className?: string; children?: React.ReactNode; [key: string]: unknown }) {
+  return React.createElement(
+    P,
+    { ...props, className: cn("left-0 top-0 w-full bg-popover p-2 text-popover-foreground data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 md:absolute md:w-auto md:rounded-lg md:shadow-lg md:ring-1 md:ring-foreground/10", className) },
+    children,
   )
 }
 
 export {
   NavigationMenu,
+  NavigationMenuList,
   NavigationMenuItem,
   NavigationMenuLink,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
+  NavigationMenuTrigger,
+  NavigationMenuContent,
 }

@@ -52,7 +52,7 @@ export function TaskEditModal({ taskId, open, onClose }: TaskEditModalProps) {
   });
 
   return (
-    <Sheet open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
+    <Sheet open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) onClose(); }}>
       <SheetContent
         side="right"
         showCloseButton={false}

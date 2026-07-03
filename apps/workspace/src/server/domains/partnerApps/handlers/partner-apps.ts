@@ -21,7 +21,7 @@ const fallbackError = "Partner app action failed.";
 export async function handleListPartnerApps(c: Context) {
   return runEffectRoute(
     c,
-    routePromise(() => listPartnerApps(), fallbackError).pipe(Effect.map((apps) => ({ apps }))),
+    routePromise(() => listPartnerApps(), fallbackError).pipe(Effect.map((apps: any) => ({ apps }))),
     { fallbackError },
   );
 }
@@ -48,7 +48,7 @@ export async function handleListPartnerConnections(c: Context) {
   return runEffectRoute(
     c,
     routePromise(() => listPartnerConnections(org.organizationId), fallbackError).pipe(
-      Effect.map((connections) => ({ connections })),
+      Effect.map((connections: any) => ({ connections })),
     ),
     { fallbackError },
   );

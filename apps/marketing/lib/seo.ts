@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { brandDomainUrl, brandIdentity, brandLabel } from "@qentrah/brand-identity";
+import { brandIdentity, brandLabel } from "@qentrah/brand-identity";
 
 import { getContent, getMarketingMessages, locales, type LegalBlockBody, type Locale } from "@/lib/content";
 import { publicSeoLinks } from "@/lib/public-links";
 
-const siteUrl = brandDomainUrl("root");
+const siteUrl = "https://www.qentrah.com";
 
 const localeLanguages = {
   ar: "/ar",
@@ -238,8 +238,6 @@ function legalDescription(body: LegalBlockBody) {
 const marketingSitemapPaths = [
   "",
   "pricing",
-  "dashboard",
-  "partners",
   "docs",
   "billing",
   "privacy",

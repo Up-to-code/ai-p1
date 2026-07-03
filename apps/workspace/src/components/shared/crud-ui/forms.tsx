@@ -235,7 +235,7 @@ export function SelectField<TValue extends string>({
 }) {
   return (
     <FormField id={id} label={label} error={error} className={className}>
-      <Select value={value} onValueChange={(val) => onChange(val as TValue)}>
+      <Select value={value} onValueChange={(val: string | null) => { if (val) onChange(val as TValue); }}>
         <SelectTrigger id={id} className="h-11 rounded-xl border-border bg-muted/50 px-4 text-sm font-bold shadow-none transition-all focus:border-ring focus:bg-card focus:ring-4 focus:ring-ring rtl:text-right">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>

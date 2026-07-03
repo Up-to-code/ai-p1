@@ -173,7 +173,7 @@ function TabRenameInput({
         if (e.key === "Escape") onCancel();
         e.stopPropagation();
       }}
-      onClick={(e) => e.stopPropagation()}
+      onClick={(e: React.MouseEvent) => e.stopPropagation()}
       className="w-24 min-w-0 rounded border border-border bg-background px-1 py-0 text-[11px] font-bold text-foreground outline-none focus:border-foreground/30"
     />
   );
@@ -382,7 +382,7 @@ export function ProjectOverviewSidebar({
                       : "opacity-0 group-hover/tab:opacity-60 group-hover/tab:hover:opacity-100",
                   )}
                   title="Tab options"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e: React.MouseEvent) => e.stopPropagation()}
                 >
                   <MoreHorizontal className="h-3 w-3" />
                 </DropdownMenuTrigger>
@@ -419,7 +419,7 @@ export function ProjectOverviewSidebar({
                 <button
                   type="button"
                   title="Close tab"
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     closeTab(tab.id);
                   }}

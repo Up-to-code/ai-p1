@@ -95,7 +95,7 @@ export function TokenBar<T extends TokenOption>({
                         >
                           <Link
                             href={getItemHref?.(item.id) ?? "#"}
-                            onClick={(e) => { if (!getItemHref?.(item.id)) { e.preventDefault(); onItemSelect(item.id); } }}
+                            onClick={(e: React.MouseEvent) => { if (!getItemHref?.(item.id)) { e.preventDefault(); onItemSelect(item.id); } }}
                             className={cn(
                               "group inline-flex items-center gap-1.5 transition-all",
                               variant === "default" ? [
@@ -122,7 +122,7 @@ export function TokenBar<T extends TokenOption>({
                                 role="button"
                                 aria-label={`Remove ${item.label}`}
                                 onPointerDown={(e) => e.stopPropagation()} // Prevent drag when clicking remove
-                                onClick={(e) => {
+                                onClick={(e: React.MouseEvent) => {
                                   e.stopPropagation();
                                   onItemRemove(item.id);
                                 }}

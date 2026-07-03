@@ -75,7 +75,7 @@ function PickerFolderItem({
             type="button"
             variant="ghost"
             size="icon-xs"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               setExpanded(!expanded);
             }}

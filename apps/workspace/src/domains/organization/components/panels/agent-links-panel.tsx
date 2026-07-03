@@ -429,7 +429,7 @@ export function AgentLinksPanel({
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("modal.startWith")}</Label>
-                  <Select value={presetId} onValueChange={(value) => {
+                  <Select value={presetId} onValueChange={(value: string | null) => {
                     if (value) applyPreset(value);
                   }}>
                     <SelectTrigger className="h-11 rounded-xl border-border bg-card text-sm font-bold">
@@ -447,8 +447,8 @@ export function AgentLinksPanel({
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("modal.expiry")}</Label>
-                  <Select value={agentExpiry} onValueChange={(value) => {
-                    if (value) setAgentExpiry(value);
+                  <Select value={agentExpiry} onValueChange={(value: string | null) => {
+                    if (value) setAgentExpiry(value as OrganizationApiKeyExpiry);
                   }}>
                     <SelectTrigger className="h-11 rounded-xl border-border bg-card text-sm font-bold">
                       <SelectValue />
