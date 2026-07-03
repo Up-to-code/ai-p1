@@ -143,10 +143,6 @@
       "uploadRetry": "إعادة المحاولة",
       "legalTitle": "البيانات القانونية والسجل",
       "legalDesc": "احفظ بيانات السجل التي يجب أن تظهر في مساحة المشروع. اترك الحقول غير المعروفة فارغة بدل القيم الوهمية.",
-      "regaAuthorizationNoLabel": "ترخيص فال",
-      "regaAuthorizationNoPlaceholder": "رقم الترخيص",
-      "regaExpiresAtLabel": "انتهاء الترخيص",
-      "regaExpiresAtPlaceholder": "اختر تاريخ الانتهاء",
       "planNumberLabel": "رقم المخطط",
       "planNumberPlaceholder": "المخطط / البلوك",
       "plotNumberLabel": "رقم القطعة",
@@ -168,7 +164,6 @@
       "projectPriceValuePlaceholder": "EGP 5.8M",
       "addProjectPrice": "إضافة سعر",
       "removeProjectPrice": "إزالة السعر",
-      "regaExpiresAtHelp": "تاريخ انتهاء ترخيص المشروع أو رخصة الإعلان.",
       "previewTitle": "معاينة المشروع",
       "previewCity": "المدينة",
       "previewName": "اسم المشروع",
@@ -1768,11 +1763,6 @@
       "planNo": "مرجع الخطة",
       "plotNo": "مرجع السجل",
       "postalIdentity": "هوية خارجية"
-    },
-    "rega": {
-      "title": "التفويض",
-      "authNo": "مرجع التفويض",
-      "expires": "تنتهي في: {date}"
     },
     "inventory": {
       "title": "موارد المشروع",

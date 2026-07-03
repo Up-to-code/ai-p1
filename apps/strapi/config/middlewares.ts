@@ -33,7 +33,7 @@ export default [
       origin: [
         "http://localhost:1337",
         "http://localhost:3005",
-        // Add your production marketing domain here, e.g. "https://qentrah.com"
+        // Add your production marketing domain here, e.g. "https://www.qentrah.com"
       ],
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
       headers: ["Content-Type", "Authorization", "Origin", "Accept"],

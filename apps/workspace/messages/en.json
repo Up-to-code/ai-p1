@@ -144,10 +144,6 @@
       "uploadRetry": "Retry",
       "legalTitle": "Legal and registry",
       "legalDesc": "Store project registry values that must appear in the workspace. Leave unknown fields empty instead of using placeholders.",
-      "regaAuthorizationNoLabel": "REGA authorization",
-      "regaAuthorizationNoPlaceholder": "Authorization number",
-      "regaExpiresAtLabel": "REGA expiry",
-      "regaExpiresAtPlaceholder": "Pick expiry date",
       "planNumberLabel": "Plan number",
       "planNumberPlaceholder": "Plan / block",
       "plotNumberLabel": "Plot number",
@@ -169,7 +165,6 @@
       "projectPriceValuePlaceholder": "EGP 5.8M",
       "addProjectPrice": "Add price",
       "removeProjectPrice": "Remove price",
-      "regaExpiresAtHelp": "The expiry date for the project authorization or listing license.",
       "previewTitle": "Project preview",
       "previewCity": "City",
       "previewName": "Project name",
@@ -1786,11 +1781,6 @@
       "planNo": "Plan reference",
       "plotNo": "Record reference",
       "postalIdentity": "External identity"
-    },
-    "rega": {
-      "title": "Authorization",
-      "authNo": "Authorization reference",
-      "expires": "Expires: {date}"
     },
     "inventory": {
       "title": "Project resources",

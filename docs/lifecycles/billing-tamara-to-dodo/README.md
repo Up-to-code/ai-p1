@@ -18,7 +18,7 @@ Replace the legacy Tamara BNPL billing integration with DodoPayments subscriptio
 Migration completed. All billing systems now use DodoPayments with $7/user/month (Good), $19/user/month (Better), Custom (Contact Sales) pricing in USD.
 
 ## Key Changes
-1. Plan IDs: `saudi_monthly`/`saudi_yearly` → `good_monthly`/`good_yearly`/`better_monthly`/`better_yearly`/`custom_monthly`/`custom_yearly`
+1. Plan IDs: migrated from legacy naming to `good_monthly`/`good_yearly`/`better_monthly`/`better_yearly`/`custom_monthly`/`custom_yearly`
 2. Currency: SAR → USD
 3. Payment provider: Tamara BNPL → DodoPayments subscriptions
 4. Webhook handling: Tamara webhooks → DodoPayments webhooks

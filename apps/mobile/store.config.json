@@ -36,9 +36,9 @@
           "operations",
           "ai"
         ],
-        "marketingUrl": "https://qentrah.com",
-        "supportUrl": "https://qentrah.com/contact",
-        "privacyPolicyUrl": "https://qentrah.com/privacy"
+        "marketingUrl": "https://www.qentrah.com",
+        "supportUrl": "https://www.qentrah.com/contact",
+        "privacyPolicyUrl": "https://www.qentrah.com/privacy"
       },
       "ar-SA": {
         "title": "Qentrah",
@@ -52,9 +52,9 @@
           "عمليات",
           "ذكاء اصطناعي"
         ],
-        "marketingUrl": "https://qentrah.com/ar",
-        "supportUrl": "https://qentrah.com/ar/contact",
-        "privacyPolicyUrl": "https://qentrah.com/ar/privacy"
+        "marketingUrl": "https://www.qentrah.com/ar",
+        "supportUrl": "https://www.qentrah.com/ar/contact",
+        "privacyPolicyUrl": "https://www.qentrah.com/ar/privacy"
       },
       "fr-FR": {
         "title": "Qentrah",
@@ -68,9 +68,9 @@
           "operations",
           "ia"
         ],
-        "marketingUrl": "https://qentrah.com/fr",
-        "supportUrl": "https://qentrah.com/fr/contact",
-        "privacyPolicyUrl": "https://qentrah.com/fr/privacy"
+        "marketingUrl": "https://www.qentrah.com/fr",
+        "supportUrl": "https://www.qentrah.com/fr/contact",
+        "privacyPolicyUrl": "https://www.qentrah.com/fr/privacy"
       }
     },
     "release": {

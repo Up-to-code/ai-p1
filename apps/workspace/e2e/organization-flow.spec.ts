@@ -218,7 +218,6 @@ test.describe("organization business flow", () => {
     const agentDialog = page.getByRole("dialog", { name: "رابط وكيل جديد" });
     await expect(agentDialog).toBeVisible();
     await expect(agentDialog.getByLabel("الاسم")).toHaveValue("مشغل العملاء");
-    await expect(agentDialog.getByText("العقارات", { exact: true })).toBeVisible();
     await expect(agentDialog.getByText("ماذا يجب أن يعرف هذا الوكيل؟")).toBeVisible();
     for (const englishText of ["New agent link", "Client operator", "Apartments", "Make agent link", "What should this agent know"]) {
       await expect(agentDialog.getByText(englishText, { exact: false })).toHaveCount(0);

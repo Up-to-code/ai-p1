@@ -27,8 +27,7 @@ describe("project flow source", () => {
     expect(source).toContain("compactProjectDetailRows(optionalCoreDetailRows)");
     expect(source).toContain("projectLocationLabel(project)");
     expect(source).toContain("ProjectMetaPill icon={Layers3}");
-    expect(source).not.toContain("REGA-8829-01");
-    expect(source).not.toContain("42.8M SAR");
+
   });
 
   it("aligns project create/edit with media and documents tabs", () => {
@@ -39,7 +38,6 @@ describe("project flow source", () => {
     expect(source).toContain("pendingDocumentFiles");
     expect(source).toContain("files: pendingMediaFiles");
     expect(source).toContain("files: pendingDocumentFiles");
-    expect(source).toContain("regaAuthorizationNo");
     expect(source).toContain("allowedKinds={[\"document\"]}");
     expect(source).not.toContain("previewChecklist");
     expect(source).toContain("ProjectPricingSection");

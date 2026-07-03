@@ -18,7 +18,7 @@ export const brandIdentity = {
   envPrefix: "QENTRAH",
   themeStorageKey: "qentrah-theme",
   domains: {
-    root: "qentrah.com",
+    root: "www.qentrah.com",
     workspace: "app.qentrah.com",
     partners: "partners.qentrah.com",
     admin: "admin.qentrah.com",

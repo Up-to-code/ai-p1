@@ -44,7 +44,7 @@ export function getWorkspaceAuthRedirect({
 }): string | null {
   if (isAuthHandoffPending) return null;
   if (!isSignedIn) {
-    return `https://qentrah.com/${locale}`;
+    return `https://www.qentrah.com/${locale}`;
   }
   if (workspaceStatus === "noOrganization" || workspaceStatus === "organizationAccessDenied") return `/${locale}/choose-org`;
   return null;

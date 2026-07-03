@@ -46,7 +46,7 @@
   "bugs": {
     "url": "https://github.com/Up-to-code/anan-0.1.2/issues"
   },
-  "homepage": "https://qentrah.com",
+  "homepage": "https://www.qentrah.com",
   "peerDependencies": {
     "react":     "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
