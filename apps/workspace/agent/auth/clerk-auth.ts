@@ -15,7 +15,22 @@ export const clerkAuth: AuthFn = async (event) => {
 
     const userId = session.userId;
     const organizationId = session.orgId ?? session.orgSlug;
-    const token = "getToken" in session ? await session.getToken() : null;
+    const organizationIdStr = organizationId ? String(organizationId) : "";
+
+    // Server-side org header validation: X-Organization-Id must match JWT org
+    const headerOrgId = event.headers.get("x-organization-id");
+    if (headerOrgId && organizationIdStr && headerOrgId !== organizationIdStr) {
+      return null;
+    }
+
+    let token = null;
+    if ("getToken" in session) {
+      try {
+        token = await session.getToken({ template: "convex" });
+      } catch {
+        token = await session.getToken();
+      }
+    }
 
     return {
       principalId: userId,
@@ -23,7 +38,7 @@ export const clerkAuth: AuthFn = async (event) => {
       authenticator: "clerk",
       attributes: {
         userId,
-        organizationId: organizationId ? String(organizationId) : "",
+        organizationId: organizationIdStr,
         role: String(session.orgRole ?? "member"),
         convexToken: token ?? "",
       },

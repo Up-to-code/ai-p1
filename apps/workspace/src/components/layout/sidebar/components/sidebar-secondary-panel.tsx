@@ -14,6 +14,7 @@ import {
   SidebarClientsPanel,
   SidebarOpportunitiesPanel,
   SidebarDealsPanel,
+  SidebarTheoriesPanel,
   SidebarDocsPanel,
 } from "./sidebar-domain-panels";
 export function SidebarSecondaryPanel() {
@@ -39,6 +40,7 @@ export function SidebarSecondaryPanel() {
         {activeRailItem === "clients" && <SidebarClientsPanel />}
         {activeRailItem === "opportunities" && <SidebarOpportunitiesPanel />}
         {activeRailItem === "deals" && <SidebarDealsPanel />}
+        {activeRailItem === "theories" && <SidebarTheoriesPanel />}
         {activeRailItem === "docs" && <SidebarDocsPanel />}
         {activeRailItem === "inbox" && <SidebarInboxPanel />}
       </div>

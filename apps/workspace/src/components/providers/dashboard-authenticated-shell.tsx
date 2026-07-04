@@ -14,9 +14,26 @@ import { Sidebar, SidebarRailProvider } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-loading";
 import { NavigationProvider } from "@/domains/navigation";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { QuickChatProvider } from "@/components/layout/quick-chat-context";
+import { QuickChatPanel } from "@/components/layout/quick-chat-panel";
+import { useQuickChat } from "@/components/layout/quick-chat-context";
 
 export interface DashboardAuthenticatedShellProps {
   children: ReactNode;
+}
+
+function QuickChatToggleWrapper() {
+  const { isOpen } = useQuickChat();
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <ResizableHandle withHandle />
+      <QuickChatPanel />
+    </>
+  );
 }
 
 export function DashboardAuthenticatedShell({
@@ -134,6 +151,7 @@ export function DashboardAuthenticatedShell({
   return (
     <ToastProvider>
       <SidebarRailProvider>
+        <QuickChatProvider>
         <NavigationProvider>
           <div className="flex h-screen flex-col overflow-hidden bg-background text-text-primary">
             {/* Full-width header */}
@@ -143,16 +161,23 @@ export function DashboardAuthenticatedShell({
             <div className="flex min-h-0 flex-1 overflow-hidden">
               <Sidebar />
 
-              <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
-                <div className="flex min-h-0 flex-1 overflow-hidden">
-                  <div className="flex min-h-0 flex-1 flex-col outline-none">
-                    {children}
+              <ResizablePanelGroup orientation="horizontal">
+                {/* Main content */}
+                <ResizablePanel className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
+                  <div className="flex min-h-0 flex-1 overflow-hidden">
+                    <div className="flex min-h-0 flex-1 flex-col outline-none">
+                      {children}
+                    </div>
                   </div>
-                </div>
-              </div>
+                </ResizablePanel>
+
+                {/* Quick Chat Panel — appears on the right side */}
+                <QuickChatToggleWrapper />
+              </ResizablePanelGroup>
             </div>
           </div>
         </NavigationProvider>
+        </QuickChatProvider>
       </SidebarRailProvider>
       {showNoOrganizationModal && <NoOrganizationModal />}
     </ToastProvider>

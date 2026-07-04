@@ -9,8 +9,8 @@ let workspaceServer = null;
 
 function getDesktopIconPath() {
   return app.isPackaged
-    ? path.join(process.resourcesPath, "standalone", "apps", "workspace", "public", "app-icon-512.png")
-    : path.join(__dirname, "..", "public", "app-icon-512.png");
+    ? path.join(process.resourcesPath, "standalone", "apps", "workspace", "public", "logo.ico")
+    : path.join(__dirname, "..", "public", "logo.ico");
 }
 
 function getFreePort() {

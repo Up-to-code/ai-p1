@@ -2,7 +2,7 @@ import { brandDomainUrl, brandIdentity, brandLabel, brandProductName } from "@qe
 
 const rootUrl = brandDomainUrl("root");
 const workspaceUrl = brandDomainUrl("workspace");
-const logoUrl = `${workspaceUrl}/app-icon-512.png`;
+const logoUrl = `${workspaceUrl}/logo.ico`;
 const trustedKeywords = [
   "مساحة عمل تشغيلية",
   "إدارة العملاء",

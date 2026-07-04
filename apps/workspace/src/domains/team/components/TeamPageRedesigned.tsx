@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from "next-intl";
-import { Plus, Users, Mail, Shield, Crown, UserCog, Trash2, MoreVertical } from "lucide-react";
+import { Plus, Users, Mail, Shield, Crown, UserCog, Trash2, EllipsisVertical } from "lucide-react";
 import { QentrahTable, type QentrahColumnDef } from "@qentrah/ui";
 import { DomainHeader, type HeaderAction } from "@/components/shared/domain/DomainHeader";
 import { type ViewMode } from "@/components/shared/view-system/ViewSwitcher";
@@ -181,7 +181,7 @@ export function TeamPageRedesigned() {
               className="h-7 w-7"
               disabled={!canRemove}
             >
-              <MoreVertical className="h-3.5 w-3.5 text-muted-foreground" />
+              <EllipsisVertical className="h-3.5 w-3.5 text-muted-foreground" />
             </Button>
           </div>
         );

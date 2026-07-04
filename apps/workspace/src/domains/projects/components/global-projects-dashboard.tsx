@@ -7,6 +7,7 @@ import { PortfolioTableWidget } from "./widgets/portfolio-table-widget";
 import { cn } from "@/lib/utils";
 import { logger } from "@/lib/logger";
 import { GripHorizontal, MoreHorizontal } from "lucide-react";
+import { getItem, setItem } from "@/domains/storage";
 
 export function GlobalProjectsDashboard() {
   const gridRef = useRef<GridStack | null>(null);
@@ -26,23 +27,23 @@ export function GlobalProjectsDashboard() {
       resizable: { handles: "se, sw, ne, nw" },
     }, containerRef.current);
 
-    // Load saved layout from localStorage
-    const savedLayout = localStorage.getItem(`global-projects-dashboard`);
-    
-    if (savedLayout && gridRef.current) {
-      try {
-        const layout = JSON.parse(savedLayout);
-        gridRef.current.load(layout);
-      } catch (e) {
-        logger.error("projects_dashboard.layout_parse_failed", { error: e });
+    // Load saved layout from IndexedDB
+    getItem("layouts", "global-projects-dashboard").then((entry) => {
+      if (entry && gridRef.current) {
+        try {
+          const layout = entry.value as unknown as Record<string, unknown>[];
+          gridRef.current!.load(layout);
+        } catch (e) {
+          logger.error("projects_dashboard.layout_parse_failed", { error: e });
+        }
       }
-    }
+    });
 
     // Save layout on change
     gridRef.current.on("change", () => {
       if (gridRef.current) {
         const layout = gridRef.current.save(false);
-        localStorage.setItem(`global-projects-dashboard`, JSON.stringify(layout));
+        setItem("layouts", "global-projects-dashboard", layout as unknown as Record<string, unknown>);
       }
     });
 

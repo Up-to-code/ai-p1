@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { X } from "lucide-react";
+import { PanelRightClose } from "lucide-react";
 import { useSidebarRail } from "../sidebar-rail-context";
 
 type SidebarPanelLayoutProps = {
@@ -27,7 +27,7 @@ export function SidebarPanelLayout({ title, navbarActions, header, footer, child
             onClick={closeAll}
             className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            <X className="h-4 w-4" />
+            <PanelRightClose className="h-4 w-4" />
           </button>
         </div>
       </div>

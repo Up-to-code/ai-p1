@@ -7,6 +7,6 @@ export default eveChannel({
   cors: {
     origin: process.env.APP_URL ?? "*",
     methods: ["GET", "POST"],
-    allowedHeaders: ["authorization", "content-type"],
+    allowedHeaders: ["authorization", "content-type", "x-organization-id"],
   },
 });

@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/popover";
 import { SidebarPanelLayout } from "./sidebar-panel-layout";
 import { SpacesPanelSkeleton } from "@/components/loading-ui";
+import { SpaceCreateForm } from "@/domains/spaces";
 
 function SpaceItem({
   space,
@@ -68,10 +69,12 @@ function AllSpacesView({
   spaceList,
   spaceSlug,
   onSelect,
+  onCreateNewSpace,
 }: {
   spaceList: { id: string; name: string; slug: string; color?: string }[];
   spaceSlug: string | null;
   onSelect: (slug: string) => void;
+  onCreateNewSpace?: () => void;
 }) {
   const [hoveredSpace, setHoveredSpace] = useState<string | null>(null);
 
@@ -79,7 +82,15 @@ function AllSpacesView({
     return (
       <div className="flex flex-col items-center justify-center px-4 py-12">
         <Layers className="mb-2 h-8 w-8 text-text-muted/40" strokeWidth={1.5} />
-        <p className="text-xs font-semibold text-text-muted">No spaces yet</p>
+        <p className="text-xs font-semibold text-text-muted mb-3">No spaces yet</p>
+        <button
+          type="button"
+          onClick={() => onCreateNewSpace?.()}
+          className="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Create New Space
+        </button>
       </div>
     );
   }
@@ -108,6 +119,16 @@ function AllSpacesView({
           </div>
         );
       })}
+      <div className="border-t border-border/50 mt-1 pt-1">
+        <button
+          type="button"
+          onClick={() => onCreateNewSpace?.()}
+          className="flex w-full items-center gap-3 px-4 py-2 text-start text-sm font-medium text-muted-foreground hover:bg-accent/30 hover:text-foreground transition-colors"
+        >
+          <Plus className="h-3.5 w-3.5 shrink-0" />
+          <span>Create New Space</span>
+        </button>
+      </div>
     </div>
   );
 }
@@ -257,6 +278,8 @@ export function SidebarSpacePanel() {
 
   const activeSpace = spaceSlug ? spaceList.find((s) => s.slug === spaceSlug) ?? null : null;
 
+  const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
+
   function handleSpaceSelect(slug: string) {
     setSpace(slug);
   }
@@ -268,21 +291,30 @@ export function SidebarSpacePanel() {
   }
 
   return (
-    <SidebarPanelLayout
-      title={showActiveView && activeSpace ? activeSpace.name : t("spaces")}
-      navbarActions={<CreateMenu orgId={orgId} canCreate={canCreate} />}
-    >
-      {showActiveView && activeSpace ? (
-        <ActiveSpaceView
-          activeSpace={activeSpace}
-          spaceSlug={spaceSlug}
-          level={level}
-          onSelect={handleSpaceSelect}
-          orgId={orgId}
-        />
-      ) : (
-        <AllSpacesView spaceList={spaceList} spaceSlug={spaceSlug} onSelect={handleSpaceSelect} />
-      )}
-    </SidebarPanelLayout>
+    <>
+      <SidebarPanelLayout
+        title={showActiveView && activeSpace ? activeSpace.name : t("spaces")}
+        navbarActions={<CreateMenu orgId={orgId} canCreate={canCreate} />}
+      >
+        {showActiveView && activeSpace ? (
+          <ActiveSpaceView
+            activeSpace={activeSpace}
+            spaceSlug={spaceSlug}
+            level={level}
+            onSelect={handleSpaceSelect}
+            orgId={orgId}
+          />
+        ) : (
+          <AllSpacesView
+            spaceList={spaceList}
+            spaceSlug={spaceSlug}
+            onSelect={handleSpaceSelect}
+            onCreateNewSpace={() => setCreateSpaceOpen(true)}
+          />
+        )}
+      </SidebarPanelLayout>
+
+      <SpaceCreateForm open={createSpaceOpen} onOpenChange={setCreateSpaceOpen} />
+    </>
   );
 }

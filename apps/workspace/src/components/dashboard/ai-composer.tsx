@@ -77,14 +77,30 @@ export default function AiComposer({
     onPlanModeChange?.(nextMode === "plan");
   };
 
-  // Auto-resize textarea
+  // Auto-resize textarea — runs on every value change AND on first mount
+  // We intentionally DON'T set height:"auto" when the textarea hasn't been
+  // painted yet (scrollHeight===0) to avoid the collapse-to-0 flash.
   useEffect(() => {
     const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
-    }
+    if (!textarea) return;
+    if (textarea.scrollHeight === 0) return; // not painted yet — skip
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
   }, [value]);
+
+  // Force correct height on first paint via layout effect
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    // scrollHeight is available after first browser layout
+    const raf = requestAnimationFrame(() => {
+      if (!textareaRef.current) return;
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+    });
+    return () => cancelAnimationFrame(raf);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // GSAP border spin when sending
   useEffect(() => {

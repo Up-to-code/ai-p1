@@ -51,6 +51,9 @@ Fix all bugs in the Qentrah Product Development project in priority waves, from 
 - **postinstall.mjs**: Added root-level patch check before applying (skips when no `.patch` files).
 - **AiComposer Fixes**: Changed `DropdownMenuTrigger asChild` → `render` prop (Base UI API). Fixes nested `<button>` hydration error and `asChild` DOM leak.
 - **Final TS Status**: 0 errors in workspace `src/`. 231 pre-existing errors in `.test.ts` files (vitest `.not` property).
+- **Org-Level Eve Sandbox**: Per-org Eve Client (`Map<string, Client>`), `X-Organization-Id` header injected via `headers()`, validated server-side in `clerk-auth.ts` (mismatch → 401). Threads scoped by org in IndexedDB (`thread:${orgId}:${id}` keys). Sidebar passes `orgId` to all thread operations. Role injection via `agent/instructions/user-role.ts`. Clean `/ai` redirect on deleted thread. `restoreAttempted` guard in `useEveChat`.
+- **Nitro Worker Bug Investigation**: Confirmed resolved — compiled worker at `.eve/nitro/dev/index.mjs` imports `convertDataContentToBase64String` from root's `ai@7.0.14` via absolute file URL. 3 active sandbox processes running. Transient cache issue, no action needed.
+- **Wave 3 Follow-up: localStorage → IndexedDB Migration**: Created `useIndexedDbConfig` hook. Migrated `projects-overview-dashboard.tsx`, `global-projects-dashboard.tsx`, `use-dashboard-persistence.ts`, `clients-screens.tsx`, `integrations-runtime.ts`, `project-tags-settings.tsx`. All use `layouts`/`cache` stores in the existing IndexedDB adapter. 0 new TS errors.
 
 ### Blocked
 - (none)
@@ -72,9 +75,6 @@ Fix all bugs in the Qentrah Product Development project in priority waves, from 
 - **Base UI `render` prop over `asChild`**: `@base-ui/react/menu` doesn't support `asChild` (Radix API). Uses `render` prop for custom trigger elements. Using `asChild` causes nested `<button>` + `asChild` DOM leak.
 
 ## Next Steps
-- **Eve Migration Follow-up**: Remove agent tables from Convex schema (still importing `agentTables` in `convex/schema.ts`). Run real Eve dev server to test AI chat end-to-end.
-- **Investigate Eve Nitro worker failure**: The `ai` package v6.0.177 no longer exports `convertDataContentToBase64String`. This causes Eve's [env-runner] Nitro worker to fail after 3 retries. May require `ai` version downgrade or Eve update to fix. The Eve dev server starts and logs `[DEV] server listening...`, but the production build worker is broken.
-- **Wave 3 follow-up**: Optionally migrate dashboard layouts (projects-overview, global-projects-dashboard) from localStorage to IndexedDB, replace remaining ad-hoc localStorage usage in clients-filters, integrations-runtime, project-tags-settings.
 - **Wave 4**: MCP Feature Expansion — Document/Folder/Comment/Tag CRUD, Time Tracking module schema + MCP tools. Includes adding missing Convex tables (`milestones`, `taskDependencies`, `piiAccessAudit`) to the data model and running `npx convex codegen` to resolve remaining `convex/` TypeScript errors.
 - **Wave 5**: Platform Readiness Audit, Engineering Audit Checklist, Competitive Gap Analysis.
 - Update Qentrah MCP tasks to reflect completion.
@@ -129,3 +129,9 @@ Fix all bugs in the Qentrah Product Development project in priority waves, from 
 - `apps/workspace/scripts/eve-esm-init.mjs`: Loader entry point — calls `register()` with loader path derived from `import.meta.url`
 - `apps/workspace/agent/auth/clerk-auth.ts`: Clerk auth handler for Eve (moved from `channels/auth.ts` to avoid Eve auto-discovery as channel)
 - `apps/workspace/agent/channels/eve.ts`: Eve channel config — imports `clerkAuth` from `../auth/clerk-auth`
+- `apps/workspace/src/domains/eve/client.ts`: Per-org Eve Client factory (`Map<string, Client>`)
+- `apps/workspace/src/domains/eve/hooks/use-eve-chat.ts`: `organizationId` option, `restoreAttempted` guard
+- `apps/workspace/src/domains/eve/threads-store.ts`: Org-scoped IndexedDB thread storage (`thread:${orgId}:${id}`)
+- `apps/workspace/agent/auth/clerk-auth.ts`: Server-side `X-Organization-Id` header vs JWT validation
+- `apps/workspace/agent/instructions/user-role.ts`: Dynamic instruction injecting user role
+- `apps/workspace/src/domains/storage/use-indexeddb-config.ts`: Async IndexedDB-backed config hook

@@ -6,7 +6,7 @@ import { publicSeoLinks } from "@/lib/public-links";
 const rootUrl = brandDomainUrl("root");
 const workspaceUrl = brandDomainUrl("workspace");
 const partnersUrl = brandDomainUrl("partners");
-const logoUrl = `${rootUrl}/app-icon-512.png`;
+const logoUrl = `${rootUrl}/logo.ico`;
 
 import Script from "next/script";
 

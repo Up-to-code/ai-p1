@@ -14,5 +14,5 @@ Disallow: /sign-in
 Disallow: /sign-up
 Disallow: /sign-out
 
-# Sitemap location (update if you have a sitemap)
-# Sitemap: https://www.qentrah.com/sitemap.xml
+# Sitemap location
+Sitemap: https://www.qentrah.com/sitemap.xml

@@ -272,7 +272,7 @@ export function pageMetadata(locale: Locale, page: string): Metadata {
       url: `/${locale}${page === "home" ? "" : `/${page}`}`,
       images: [
         {
-          url: "/app-icon-512.png",
+          url: "/logo.ico",
           width: 512,
           height: 512,
           alt: `${brand} logo`,
@@ -283,7 +283,7 @@ export function pageMetadata(locale: Locale, page: string): Metadata {
       card: "summary_large_image",
       title,
       description: meta.ogDescription ?? description,
-      images: ["/app-icon-512.png"],
+      images: ["/logo.ico"],
     },
     robots: {
       index: true,

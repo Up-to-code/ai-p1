@@ -1,18 +1,19 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
-import { Loader2, Search, FileText, Folder, Users, ListTodo, Calendar, MoreHorizontal, Check } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Loader2, FileText } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { isRtlLocale } from "@/lib/i18n/locale";
 import { useRouter } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
+import { useQuickChat } from "@/components/layout/quick-chat-context";
 import { useAuthSession } from "@/domains/auth";
 import { useClientsPagedQuery } from "@/domains/clients/api/clients";
 import type { Project } from "@/domains/projects/store/projects.types";
 import { useProjectsPagedQuery } from "@/domains/projects/api/projects";
+import { useDocSearchQuery } from "@/domains/docs/api/docs";
 import { useDebouncedValue } from "@/components/shared/use-http-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { buildGlobalSearchNavigationActions, globalSearchPageSize } from "./config/search-navigation.config";
 import {
   matchesNavigationAction,
@@ -21,29 +22,14 @@ import {
   toProjectSearchResult,
 } from "./lib/search-utils";
 import { useGlobalSearchFocus, useGlobalSearchShortcuts } from "./hooks/use-global-search-shortcuts";
-import { SearchGroup, SearchRow } from "./components/search-rows";
+import { AiChatsPill } from "./components/ai-chats-pill";
+import { AskAiButton } from "./components/ask-ai-button";
+import { CmdRow } from "./components/cmd-row";
+import { SearchFilterTabs, type FilterTab } from "./components/search-filter-tabs";
+import { SearchResultsSkeleton } from "./components/search-results-skeleton";
+import { InlineAiAnswer } from "./components/inline-ai-answer";
 
-type SearchTab = "all" | "documents" | "files" | "clients" | "tasks" | "calendar";
-
-const searchTabs: { id: SearchTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: "all", label: "All", icon: Search },
-  { id: "documents", label: "Documents", icon: FileText },
-  { id: "files", label: "Files", icon: Folder },
-  { id: "clients", label: "Clients", icon: Users },
-  { id: "tasks", label: "Tasks", icon: ListTodo },
-  { id: "calendar", label: "Calendar", icon: Calendar },
-];
-
-const availableApps = [
-  { id: "documents", label: "Documents", enabled: true },
-  { id: "files", label: "Files", enabled: true },
-  { id: "clients", label: "Clients", enabled: true },
-  { id: "tasks", label: "Tasks", enabled: true },
-  { id: "calendar", label: "Calendar", enabled: true },
-  { id: "projects", label: "Projects", enabled: true },
-  { id: "opportunities", label: "Opportunities", enabled: false },
-  { id: "deals", label: "Deals", enabled: false },
-];
+const AI_TRIGGER_DELAY_MS = 2500;
 
 export function WorkspaceGlobalSearch() {
   const locale = useLocale();
@@ -57,259 +43,330 @@ export function WorkspaceGlobalSearch() {
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<SearchTab>("all");
-  const [showAppsSettings, setShowAppsSettings] = useState(false);
+  const [activeTab, setActiveTab] = useState<FilterTab>("all");
+  const [aiQuery, setAiQuery] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const debouncedQuery = useDebouncedValue(query.trim(), 250);
-  const hasQuery = debouncedQuery.length > 0;
+  const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const searchOrganizationId = hasQuery ? organizationId : undefined;
-  const projectsQuery = useProjectsPagedQuery(searchOrganizationId, { search: debouncedQuery });
-  const clientsQuery = useClientsPagedQuery(searchOrganizationId, { search: debouncedQuery });
+  const debouncedQuery = useDebouncedValue(query.trim(), 300);
+  const hasQuery = debouncedQuery.length > 0;
+  const { toggle: toggleQuickChat } = useQuickChat();
+
+  // ── Data queries — only fire when relevant tab is active ─────────────────
+  const searchOrgId = hasQuery ? organizationId : undefined;
+
+  // Projects + clients always available on "all" tab
+  const projectsQuery = useProjectsPagedQuery(
+    activeTab === "all" ? searchOrgId : undefined,
+    { search: debouncedQuery },
+  );
+  const clientsQuery = useClientsPagedQuery(
+    (activeTab === "all" || activeTab === "clients") ? searchOrgId : undefined,
+    { search: debouncedQuery },
+  );
+  // Docs only on "all" or "documents" tab
+  const docsQuery = useDocSearchQuery(
+    (activeTab === "all" || activeTab === "documents") ? searchOrgId : undefined,
+    debouncedQuery,
+  );
 
   const navigationActions = useMemo(
     () =>
       buildGlobalSearchNavigationActions({
-        dashboard: tSidebar("dashboard"),
-        clients: tSidebar("clients"),
+        dashboard:     tSidebar("dashboard"),
+        clients:       tSidebar("clients"),
         opportunities: tSidebar("opportunities"),
-        projects: tSidebar("projects"),
-        tasks: tSidebar("tasks"),
-        calendar: tSidebar("calendar"),
-        automations: tSidebar("automations"),
-        team: tSidebar("team"),
-        integrations: tSidebar("integrations"),
-        settings: tSidebar("settings"),
+        projects:      tSidebar("projects"),
+        tasks:         tSidebar("tasks"),
+        calendar:      tSidebar("calendar"),
+        automations:   tSidebar("automations"),
+        team:          tSidebar("team"),
+        integrations:  tSidebar("integrations"),
+        settings:      tSidebar("settings"),
       }),
     [tSidebar],
   );
 
-  const filteredActions = useMemo(() => {
-    const normalizedQuery = normalizeSearchText(query);
-    return navigationActions.filter((action) => matchesNavigationAction(action, normalizedQuery)).slice(0, 6);
-  }, [navigationActions, query]);
+  // Nav rows: shown on "all" tab only, filtered by query text
+  const filteredNav = useMemo(() => {
+    if (activeTab !== "all") return [];
+    const q = normalizeSearchText(query);
+    // When no query, show all nav items
+    if (!q) return navigationActions;
+    return navigationActions.filter((a) => matchesNavigationAction(a, q));
+  }, [navigationActions, query, activeTab]);
 
   const projectResults = useMemo(
-    () => (projectsQuery.results as Project[]).slice(0, globalSearchPageSize).map(toProjectSearchResult),
-    [projectsQuery.results],
+    () =>
+      activeTab === "all"
+        ? (projectsQuery.results as Project[]).slice(0, globalSearchPageSize).map(toProjectSearchResult)
+        : [],
+    [projectsQuery.results, activeTab],
   );
+
   const clientResults = useMemo(
-    () => clientsQuery.results.slice(0, globalSearchPageSize).map(toClientSearchResult),
-    [clientsQuery.results],
+    () =>
+      (activeTab === "all" || activeTab === "clients")
+        ? clientsQuery.results.slice(0, globalSearchPageSize).map(toClientSearchResult)
+        : [],
+    [clientsQuery.results, activeTab],
   );
 
-  const isSearching =
-    hasQuery && [projectsQuery.queryStatus, clientsQuery.queryStatus].some((status) => status === "loading");
-  const hasSearchError =
-    hasQuery && [projectsQuery.queryStatus, clientsQuery.queryStatus].some((status) => status === "error");
-  const hasResults = projectResults.length > 0 || clientResults.length > 0;
+  const docResults = useMemo(
+    () =>
+      (activeTab === "all" || activeTab === "documents") && docsQuery.data
+        ? docsQuery.data.slice(0, globalSearchPageSize)
+        : [],
+    [docsQuery.data, activeTab],
+  );
 
-  useGlobalSearchShortcuts(open, () => setOpen((value) => !value), () => setOpen(true));
+  // ── Loading / error state — scoped to active tab's queries ───────────────
+  const relevantStatuses: string[] = [];
+  if (activeTab === "all") {
+    relevantStatuses.push(projectsQuery.queryStatus, clientsQuery.queryStatus);
+  }
+  if (activeTab === "clients") relevantStatuses.push(clientsQuery.queryStatus);
+  if (activeTab === "all" || activeTab === "documents") {
+    if (docsQuery.isLoading) relevantStatuses.push("loading");
+  }
+
+  const isLoading  = hasQuery && (relevantStatuses.some((s) => s === "loading") || docsQuery.isLoading);
+  const hasError   = hasQuery && relevantStatuses.some((s) => s === "error");
+  const hasResults =
+    filteredNav.length > 0 ||
+    projectResults.length > 0 ||
+    clientResults.length > 0 ||
+    docResults.length > 0;
+
+  // ── AI trigger: 2.5s delay after no-results, reset on every query change ─
+  useEffect(() => {
+    if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
+    setAiQuery(null);
+  }, [debouncedQuery, activeTab]);
+
+  useEffect(() => {
+    if (!hasQuery || isLoading || hasResults || hasError || aiQuery) return;
+    aiTimerRef.current = setTimeout(() => setAiQuery(debouncedQuery), AI_TRIGGER_DELAY_MS);
+    return () => { if (aiTimerRef.current) clearTimeout(aiTimerRef.current); };
+  }, [hasQuery, isLoading, hasResults, hasError, aiQuery, debouncedQuery]);
+
+  // ── Shortcuts & focus ────────────────────────────────────────────────────
+  useGlobalSearchShortcuts(open, () => setOpen((v) => !v), () => setOpen(true));
   useGlobalSearchFocus(open, inputRef);
 
-  function goTo(href: string) {
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  const goTo = useCallback((href: string) => {
     setOpen(false);
     setQuery("");
     router.push(href);
-  }
+  }, [router]);
 
-  function toggleApp(appId: string) {
-    const app = availableApps.find(a => a.id === appId);
-    if (app) {
-      app.enabled = !app.enabled;
-    }
-  }
+  const closeDialog = useCallback(() => {
+    setOpen(false);
+    setQuery("");
+    setAiQuery(null);
+    setActiveTab("all");
+  }, []);
+
+  const handleAskAi = useCallback(() => {
+    if (!query.trim()) return;
+    setAiQuery(query.trim());
+  }, [query]);
+
+  const handleContinueWithAi = useCallback((q: string) => {
+    closeDialog();
+    router.push(`/ai?q=${encodeURIComponent(q)}`);
+  }, [closeDialog, router]);
+
+  // ── Render logic ─────────────────────────────────────────────────────────
+  const showInlineAi = Boolean(aiQuery);
+  const showResults  = !showInlineAi && hasResults;
+  const showSkeleton = !showInlineAi && isLoading && !hasResults;
+
+  // Tab-specific stubs (shown when tab is active, query present, not loading, no results)
+  const showStub = !showInlineAi && !showSkeleton && !hasResults && hasQuery && !isLoading;
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="group flex min-w-0 items-center gap-2 rounded-[16px] border border-border/50 bg-muted/50 px-3 py-2 text-start text-text-muted transition-all hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-      >
-        <Search className="h-4 w-4 shrink-0" />
-        <span className="hidden truncate text-sm font-medium md:inline-block">{t("searchAnything")}</span>
-        <span className="hidden rounded-md border border-border/50 px-1.5 py-0.5 text-[10px] font-bold text-text-muted lg:inline-block">
-          {t("searchShortcut")}
-        </span>
-      </button>
+      {/* ── Topbar trigger ──────────────────────────────────────────────── */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="group flex min-w-0 items-center gap-2 rounded-[14px] border border-border/50 bg-secondary/70 px-3 py-1.5 text-start text-text-muted transition-all hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+        >
+          {/* Brand logo instead of Lucide Search */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/ai/logo.png"
+            alt=""
+            width={15}
+            height={15}
+            className="h-[15px] w-[15px] shrink-0 object-contain opacity-60 transition-opacity group-hover:opacity-100"
+          />
+          <span className="hidden truncate text-[13px] font-medium md:inline-block">{t("searchAnything")}</span>
+          <span className="hidden rounded-md border border-border/50 px-1.5 py-0.5 text-[10px] font-bold text-text-muted lg:inline-block">
+            {t("searchShortcut")}
+          </span>
+        </button>
+        <AiChatsPill onClick={toggleQuickChat} />
+      </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      {/* ── Command palette ──────────────────────────────────────────────── */}
+      <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); }}>
         <DialogContent
           className={cn(
-            "max-w-3xl gap-0 overflow-hidden rounded-[24px] border-border/50 bg-background p-0 text-text-primary shadow-none",
+            "max-w-[680px] gap-0 overflow-hidden rounded-2xl border border-border/30 bg-card p-0 text-text-primary shadow-2xl",
             isRtl && "font-cairo",
           )}
           containerClassName="items-start pt-[12vh]"
-          overlayClassName="bg-black/25 dark:bg-black/55"
+          overlayClassName="bg-black/20 dark:bg-black/30 backdrop-blur-[1px]"
           showCloseButton={false}
         >
           <DialogHeader className="sr-only">
             <DialogTitle>{t("searchTitle")}</DialogTitle>
           </DialogHeader>
 
-          {/* Search input */}
-          <div className="flex items-center gap-3 border-b border-border/50 px-4 py-3">
-            <Search className="h-5 w-5 shrink-0 text-text-muted" />
+          {/* Input row */}
+          <div className="flex items-center gap-2.5 px-4 py-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/ai/logo.png"
+              alt=""
+              width={16}
+              height={16}
+              className="h-4 w-4 shrink-0 object-contain opacity-50"
+            />
             <input
               ref={inputRef}
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={t("searchAnything")}
-              className="h-10 min-w-0 flex-1 bg-transparent text-sm font-bold text-text-primary outline-none placeholder:text-text-muted"
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search, run a command, or ask a question..."
+              className="min-w-0 flex-1 bg-transparent text-[14px] font-medium text-text-primary outline-none placeholder:text-text-muted"
             />
-            {isSearching && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-text-muted" />}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowAppsSettings(!showAppsSettings)}
-              className="h-8 w-8 shrink-0"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
+            {isLoading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-text-muted" />}
+            <AskAiButton onClick={handleAskAi} disabled={!query.trim()} />
           </div>
 
-          {/* Tabs */}
-          <div className="flex items-center gap-1 border-b border-border/50 px-2">
-            {searchTabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 transition-colors",
-                    activeTab === tab.id
-                      ? "border-primary text-foreground"
-                      : "border-transparent text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
+          {/* Filter tabs */}
+          <SearchFilterTabs active={activeTab} onChange={setActiveTab} />
 
-          {/* Apps settings */}
-          {showAppsSettings && (
-            <div className="border-b border-border/50 bg-muted/30 px-4 py-3">
-              <p className="text-xs font-semibold text-muted-foreground mb-2">Search in these apps:</p>
-              <div className="flex flex-wrap gap-2">
-                {availableApps.map((app) => (
-                  <button
-                    key={app.id}
-                    type="button"
-                    onClick={() => toggleApp(app.id)}
-                    className={cn(
-                      "flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors",
-                      app.enabled
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-background text-muted-foreground hover:bg-muted",
-                    )}
-                  >
-                    {app.enabled && <Check className="h-3 w-3" />}
-                    {app.label}
-                  </button>
-                ))}
+          {/* Results area */}
+          <div className="max-h-[58vh] overflow-y-auto">
+
+            {/* Inline AI answer */}
+            {showInlineAi && (
+              <InlineAiAnswer
+                key={aiQuery!}
+                query={aiQuery!}
+                organizationId={organizationId}
+                onContinue={handleContinueWithAi}
+              />
+            )}
+
+            {/* Skeleton while loading */}
+            {showSkeleton && (
+              <div className="p-2">
+                {(activeTab === "all" || activeTab === "documents") && (
+                  <SearchResultsSkeleton label="Documents" rows={3} />
+                )}
+                {(activeTab === "all" || activeTab === "clients") && (
+                  <SearchResultsSkeleton label="Clients" rows={3} />
+                )}
+                {activeTab === "all" && (
+                  <SearchResultsSkeleton label="Projects" rows={2} />
+                )}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Results */}
-          <div className="max-h-[62vh] overflow-y-auto p-2">
-            {activeTab === "all" && (
+            {/* Real results */}
+            {showResults && (
+              <div className="p-2">
+                {/* Navigation — "all" tab only */}
+                {filteredNav.length > 0 && (
+                  <section className="pb-2">
+                    <p className="px-3 pb-1.5 pt-2 text-[10px] font-black uppercase tracking-[0.18em] text-text-muted">
+                      Navigation
+                    </p>
+                    {filteredNav.map((action) => (
+                      <CmdRow
+                        key={action.id}
+                        icon={action.icon}
+                        label={action.label}
+                        hint={action.href}
+                        onClick={() => goTo(action.href)}
+                      />
+                    ))}
+                  </section>
+                )}
+
+                {/* Documents */}
+                {docResults.length > 0 && (
+                  <section className="pb-2">
+                    <p className="px-3 pb-1.5 pt-2 text-[10px] font-black uppercase tracking-[0.18em] text-text-muted">
+                      Documents
+                    </p>
+                    {docResults.map((doc) => (
+                      <CmdRow
+                        key={doc._id}
+                        icon={FileText}
+                        label={doc.title || "Untitled"}
+                        hint={doc.updatedAt ? new Date(doc.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : undefined}
+                        onClick={() => goTo(`/docs?docId=${doc._id}`)}
+                      />
+                    ))}
+                  </section>
+                )}
+
+                {/* Projects */}
+                {projectResults.length > 0 && (
+                  <section className="pb-2">
+                    <p className="px-3 pb-1.5 pt-2 text-[10px] font-black uppercase tracking-[0.18em] text-text-muted">
+                      {t("searchProjects")}
+                    </p>
+                    {projectResults.map((r) => (
+                      <CmdRow key={r.id} icon={r.icon} label={r.title} hint={r.description} onClick={() => goTo(r.href)} />
+                    ))}
+                  </section>
+                )}
+
+                {/* Clients */}
+                {clientResults.length > 0 && (
+                  <section className="pb-2">
+                    <p className="px-3 pb-1.5 pt-2 text-[10px] font-black uppercase tracking-[0.18em] text-text-muted">
+                      {t("searchClients")}
+                    </p>
+                    {clientResults.map((r) => (
+                      <CmdRow key={r.id} icon={r.icon} label={r.title} hint={r.description} onClick={() => goTo(r.href)} />
+                    ))}
+                  </section>
+                )}
+              </div>
+            )}
+
+            {/* Tab-specific stubs for unimplemented tabs */}
+            {showStub && (
               <>
-                <SearchGroup title={t("searchNavigation")}>
-                  {filteredActions.map((action) => (
-                    <SearchRow
-                      key={action.id}
-                      icon={action.icon}
-                      title={action.label}
-                      description={action.href}
-                      onClick={() => goTo(action.href)}
-                    />
-                  ))}
-                </SearchGroup>
-
-                {hasQuery && (
-                  <>
-                    {hasSearchError && (
-                      <p className="mx-2 my-2 rounded-xl border border-amber-500/30 px-3 py-2 text-xs font-bold text-amber-700 dark:text-amber-300">
-                        {t("searchError")}
-                      </p>
-                    )}
-                    <SearchGroup title={t("searchProjects")}>
-                      {projectResults.map((result) => (
-                        <SearchRow
-                          key={result.id}
-                          icon={result.icon}
-                          title={result.title}
-                          description={result.description}
-                          onClick={() => goTo(result.href)}
-                        />
-                      ))}
-                    </SearchGroup>
-                    <SearchGroup title={t("searchClients")}>
-                      {clientResults.map((result) => (
-                        <SearchRow
-                          key={result.id}
-                          icon={result.icon}
-                          title={result.title}
-                          description={result.description}
-                          onClick={() => goTo(result.href)}
-                        />
-                      ))}
-                    </SearchGroup>
-                    {!isSearching && !hasResults && !hasSearchError && (
-                      <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">{t("searchNoResults")}</p>
-                    )}
-                  </>
+                {activeTab === "tasks" && (
+                  <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">Tasks search coming soon</p>
+                )}
+                {activeTab === "calendar" && (
+                  <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">Calendar search coming soon</p>
+                )}
+                {activeTab === "files" && (
+                  <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">Files search coming soon</p>
+                )}
+                {(activeTab === "all" || activeTab === "documents" || activeTab === "clients") && (
+                  <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">{t("searchNoResults")}</p>
                 )}
               </>
             )}
 
-            {activeTab === "clients" && (
-              <SearchGroup title={t("searchClients")}>
-                {hasQuery ? (
-                  clientResults.map((result) => (
-                    <SearchRow
-                      key={result.id}
-                      icon={result.icon}
-                      title={result.title}
-                      description={result.description}
-                      onClick={() => goTo(result.href)}
-                    />
-                  ))
-                ) : (
-                  <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">Type to search clients</p>
-                )}
-              </SearchGroup>
-            )}
-
-            {activeTab === "documents" && (
-              <SearchGroup title="Documents">
-                <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">Documents search coming soon</p>
-              </SearchGroup>
-            )}
-
-            {activeTab === "files" && (
-              <SearchGroup title="Files">
-                <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">Files search coming soon</p>
-              </SearchGroup>
-            )}
-
-            {activeTab === "tasks" && (
-              <SearchGroup title="Tasks">
-                <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">Tasks search coming soon</p>
-              </SearchGroup>
-            )}
-
-            {activeTab === "calendar" && (
-              <SearchGroup title="Calendar">
-                <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">Calendar search coming soon</p>
-              </SearchGroup>
+            {/* Error */}
+            {hasError && !showInlineAi && (
+              <p className="mx-3 my-2 rounded-xl border border-amber-500/30 px-3 py-2 text-xs font-bold text-amber-700 dark:text-amber-300">
+                {t("searchError")}
+              </p>
             )}
           </div>
         </DialogContent>

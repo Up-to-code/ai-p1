@@ -10,5 +10,6 @@ export {
 } from "./adapters/indexeddb-adapter";
 
 export { useLocalConfig } from "./use-local-config";
+export { useIndexedDbConfig } from "./use-indexeddb-config";
 export { useConvexConfig } from "./use-convex-config";
 export { useFallbackConfig } from "./use-fallback-config";

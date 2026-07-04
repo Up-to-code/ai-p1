@@ -15,6 +15,7 @@
     "desktop:dist": "npm run desktop:assets && npm run desktop:build:web && electron-builder --mac dmg",
     "dev:stop": "node scripts/dev-stop.mjs",
     "dev:next": "NODE_OPTIONS=\"--import \\\"$PWD/scripts/eve-esm-init.mjs\\\"\" next dev",
+    "dev:eve": "NODE_OPTIONS=\"--import \\\"$PWD/scripts/eve-esm-init.mjs\\\"\" eve dev --no-ui",
     "dev:hono": "next dev",
     "dev:convex": "convex dev",
     "dev:convex:once": "convex dev --once",

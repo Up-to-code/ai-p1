@@ -12,6 +12,8 @@ import { ProjectHealthWidget } from "./widgets/project-health-widget";
 import { RecentProjectsWidget } from "./widgets/recent-projects-widget";
 import { BudgetOverviewWidget } from "./widgets/budget-overview-widget";
 import { AddProjectWidgetModal, type ProjectWidgetOption } from "./add-project-widget-modal";
+import { getItem, setItem, removeItem } from "@/domains/storage";
+import { logger } from "@/lib/logger";
 
 interface ActiveWidget {
   id: string;
@@ -134,13 +136,16 @@ export function ProjectsOverviewDashboard({
   const [containerKey, setContainerKey] = useState(0);
 
   useEffect(() => {
-    const saved = localStorage.getItem("projects-overview-widgets");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as ActiveWidget[];
-        if (parsed.length > 0) setWidgets(parsed);
-      } catch { /* ignore */ }
-    }
+    getItem("layouts", "projects-overview-widgets").then((entry) => {
+      if (entry) {
+        try {
+          const parsed = entry.value as unknown as ActiveWidget[];
+          if (parsed.length > 0) setWidgets(parsed);
+        } catch {
+          logger.error("projects_dashboard.widgets_parse_failed", { error: entry.value });
+        }
+      }
+    });
   }, []);
 
   const initGrid = useCallback(() => {
@@ -165,7 +170,7 @@ export function ProjectsOverviewDashboard({
     gridRef.current.on("change", () => {
       if (gridRef.current) {
         const layout = gridRef.current.save(false);
-        localStorage.setItem("projects-overview-layout", JSON.stringify(layout));
+        setItem("layouts", "projects-overview-layout", layout as unknown as Record<string, unknown>);
       }
     });
 
@@ -185,8 +190,8 @@ export function ProjectsOverviewDashboard({
 
     // Reset to defaults
     setWidgets(DEFAULT_WIDGETS);
-    localStorage.setItem("projects-overview-widgets", JSON.stringify(DEFAULT_WIDGETS));
-    localStorage.removeItem("projects-overview-layout");
+    setItem("layouts", "projects-overview-widgets", DEFAULT_WIDGETS as unknown as Record<string, unknown>);
+    removeItem("layouts", "projects-overview-layout");
 
     // Force reinitialization
     setIsReady(false);
@@ -203,7 +208,7 @@ export function ProjectsOverviewDashboard({
   const handleRemoveWidget = (widgetId: string) => {
     const updated = widgets.filter((w) => w.id !== widgetId);
     setWidgets(updated);
-    localStorage.setItem("projects-overview-widgets", JSON.stringify(updated));
+    setItem("layouts", "projects-overview-widgets", updated as unknown as Record<string, unknown>);
     const el = containerRef.current?.querySelector(`[gs-id="${widgetId}"]`);
     if (el && gridRef.current) gridRef.current.removeWidget(el as HTMLElement);
   };
@@ -211,7 +216,7 @@ export function ProjectsOverviewDashboard({
   const handleRenameWidget = (widgetId: string, title: string) => {
     const updated = widgets.map((w) => (w.id === widgetId ? { ...w, title } : w));
     setWidgets(updated);
-    localStorage.setItem("projects-overview-widgets", JSON.stringify(updated));
+    setItem("layouts", "projects-overview-widgets", updated as unknown as Record<string, unknown>);
   };
 
   const handleAddWidget = (option: ProjectWidgetOption) => {
@@ -224,7 +229,7 @@ export function ProjectsOverviewDashboard({
     };
     const updated = [...widgets, newWidget];
     setWidgets(updated);
-    localStorage.setItem("projects-overview-widgets", JSON.stringify(updated));
+    setItem("layouts", "projects-overview-widgets", updated as unknown as Record<string, unknown>);
     onWidgetModalClose?.();
   };
 

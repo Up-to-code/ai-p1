@@ -72,7 +72,7 @@ export default clerkMiddleware(async (auth, request) => {
 
 export const config = {
   matcher: [
-    // Match all routes except static files
-    "/((?!_next/static|_next/image|favicon.ico|eve/|_eve_internal/).*)",
+    // Match all routes except static files and public assets
+    "/((?!_next/static|_next/image|favicon.ico|ai/|images/|icons/|eve/|_eve_internal/).*)",
   ],
 };

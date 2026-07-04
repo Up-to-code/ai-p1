@@ -35,6 +35,7 @@ import { useUrlListState } from "@/components/shared/use-url-list-state";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { ClientForm } from "./client-form";
+import { getItem, setItem } from "@/domains/storage";
 import { ClientSheet } from "./client-sheet";
 import { useUpcomingCalendarEventsQuery } from "@/domains/calendar/api/calendar";
 import {
@@ -55,29 +56,26 @@ export function ClientsWorkspace({ initialView = "list" }: { initialView?: "cale
   const [deleting, setDeleting] = useState<Client | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  // Load saved filters from localStorage on mount
+  // Load saved filters from IndexedDB on mount
   useEffect(() => {
     if (typeof window === "undefined") return;
-    try {
-      const saved = localStorage.getItem("clients-filters");
-      if (saved) {
-        const { filter: savedFilter, stageFilter: savedStage } = JSON.parse(saved);
-        if (savedFilter && clientFilters.includes(savedFilter)) setFilter(savedFilter);
-        if (savedStage && clientStageFilters.includes(savedStage)) setStageFilter(savedStage);
+    getItem("layouts", "clients-filters").then((entry) => {
+      if (entry) {
+        try {
+          const saved = entry.value as { filter: string; stageFilter: string };
+          if (saved.filter && clientFilters.includes(saved.filter as typeof clientFilters[number])) setFilter(saved.filter as typeof clientFilters[number]);
+          if (saved.stageFilter && clientStageFilters.includes(saved.stageFilter as typeof clientStageFilters[number])) setStageFilter(saved.stageFilter as typeof clientStageFilters[number]);
+        } catch (e) {
+          logger.error("clients.filters_read_failed", { error: e });
+        }
       }
-    } catch (e) {
-      logger.error("clients.filters_read_failed", { error: e });
-    }
+    });
   }, []);
 
-  // Save filters to localStorage when they change
+  // Save filters to IndexedDB when they change
   useEffect(() => {
     if (typeof window === "undefined") return;
-    try {
-      localStorage.setItem("clients-filters", JSON.stringify({ filter, stageFilter }));
-    } catch (e) {
-      logger.error("clients.filters_save_failed", { error: e });
-    }
+    setItem("layouts", "clients-filters", { filter, stageFilter } as unknown as Record<string, unknown>);
   }, [filter, stageFilter]);
 
   useUrlListState({

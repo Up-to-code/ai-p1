@@ -38,11 +38,11 @@ export const metadata: Metadata = {
     icon: [
       { url: "/logo.ico", type: "image/x-icon" },
       { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/app-icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/app-icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/logo.ico", sizes: "192x192", type: "image/x-icon" },
+      { url: "/logo.ico", sizes: "512x512", type: "image/x-icon" },
     ],
     shortcut: [{ url: "/logo.ico", type: "image/x-icon" }],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    apple: [{ url: "/logo.ico", sizes: "180x180", type: "image/x-icon" }],
   },
   applicationName: brand,
   creator: brand,
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
       "One workspace for clients, opportunities, projects, and tasks. AI that operates your business. Built for marketing, creative, design, and service agencies.",
     images: [
       {
-        url: "/app-icon-512.png",
+        url: "/logo.ico",
         width: 512,
         height: 512,
         alt: "Qentrah - AI Client Operations Platform",
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     title: "Qentrah: Operating System for Agencies",
     description:
       "One workspace for clients, opportunities, projects, and tasks. AI that operates your business.",
-    images: ["/app-icon-512.png"],
+    images: ["/logo.ico"],
   },
   robots: {
     index: true,

@@ -103,6 +103,19 @@ export interface CalendarEventInput {
   tags?: string[];
 }
 
+// ── Theories (matches convex/theories/validators.ts) ───
+
+export type TheorySource = "ai_generated" | "user_created";
+
+export interface TheoryInput {
+  title: string;
+  content: string;
+  isPrivate: boolean;
+  source: TheorySource;
+  category?: string;
+  tags?: string[];
+}
+
 // ── Tasks (matches convex validators) ──────────────────
 
 export type TaskStatus = "todo" | "inProgress" | "waiting" | "done" | "canceled";

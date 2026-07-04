@@ -2,10 +2,15 @@
 
 import { Client } from "eve/client";
 
-let client: Client | null = null;
+const clients = new Map<string, Client>();
 
-export function getEveClient(): Client {
-  if (client) return client;
-  client = new Client({ host: "" });
+export function getEveClient(orgId: string): Client {
+  const existing = clients.get(orgId);
+  if (existing) return existing;
+  const client = new Client({
+    host: "",
+    headers: () => ({ "X-Organization-Id": orgId }),
+  });
+  clients.set(orgId, client);
   return client;
 }

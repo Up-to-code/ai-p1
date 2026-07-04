@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const seoTitle = post.seo?.title ?? post.title;
   const seoDescription = post.seo?.description ?? post.excerpt;
-  const ogImage = post.seo?.ogImage?.url ?? post.heroImage?.url ?? `${siteUrl}/app-icon-512.png`;
+  const ogImage = post.seo?.ogImage?.url ?? post.heroImage?.url ?? `${siteUrl}/logo.ico`;
 
   return {
     title: seoTitle,

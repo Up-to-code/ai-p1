@@ -136,6 +136,16 @@ export const organizationTables = {
     .index("by_key_id", ["keyId"])
     .index("by_status_updated", ["status", "updatedAt"]),
 
+  memories: defineTable({
+    organizationId: v.string(),
+    userId: v.string(),
+    key: v.string(),
+    value: v.string(),
+    updatedAt: v.number(),
+  })
+    .index("by_org_user", ["organizationId", "userId"])
+    .index("by_org_user_key", ["organizationId", "userId", "key"]),
+
   organizationPartnerConnections: defineTable({
     organizationId: v.string(),
     partnersAppId: v.string(),

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MoreVertical, Reply, Smile, Paperclip, Edit2, Trash2, Check } from "lucide-react";
+import { Reply, Smile, Paperclip, Edit2, Trash2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";

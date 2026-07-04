@@ -21,5 +21,5 @@ Disallow: /clients
 Disallow: /calendar
 Disallow: /settings
 
-# Sitemap location (update if you have a sitemap)
-# Sitemap: https://app.qentrah.com/sitemap.xml
+# Sitemap location
+Sitemap: https://app.qentrah.com/sitemap.xml

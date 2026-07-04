@@ -13,7 +13,7 @@ export function organizationSchema(locale: Locale): JsonLd {
     "@type": "Organization",
     name: brand,
     url: siteUrl,
-    logo: `${siteUrl}/app-icon-512.png`,
+    logo: `${siteUrl}/logo.ico`,
     description:
       locale === "ar"
         ? "منصة قنطرة لإدارة الأعمال والشراكات"
@@ -54,7 +54,7 @@ export function articleSchema(post: StrapiBlogPost, locale: Locale): JsonLd {
     "@type": "BlogPosting",
     headline: post.title,
     description: post.excerpt,
-    image: post.heroImage ? post.heroImage.url : `${siteUrl}/app-icon-512.png`,
+    image: post.heroImage ? post.heroImage.url : `${siteUrl}/logo.ico`,
     datePublished: post.publishedAt,
     dateModified: post.publishedAt,
     author: {
@@ -66,7 +66,7 @@ export function articleSchema(post: StrapiBlogPost, locale: Locale): JsonLd {
     publisher: {
       "@type": "Organization",
       name: brand,
-      logo: { "@type": "ImageObject", url: `${siteUrl}/app-icon-512.png` },
+      logo: { "@type": "ImageObject", url: `${siteUrl}/logo.ico` },
     },
     mainEntityOfPage: {
       "@type": "WebPage",

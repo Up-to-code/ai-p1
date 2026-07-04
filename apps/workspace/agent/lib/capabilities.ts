@@ -126,45 +126,30 @@ export function hasCapability(
 }
 
 export const toolToCapability: Record<string, [Resource, Action]> = {
-  "organization-info": ["organization", "read"],
-  "organization-update-identity": ["organization", "update"],
-  "organization-update-profile": ["organization", "update"],
-  "members-update-role": ["member", "update"],
-  "members-remove": ["member", "delete"],
-  "invitations-create": ["member", "create"],
-  "invitations-cancel": ["member", "delete"],
-  "roles-list": ["role", "read"],
-  "roles-create": ["role", "create"],
-  "roles-update": ["role", "update"],
-  "roles-delete": ["role", "delete"],
-  "clients-list": ["client", "read"],
-  "clients-get": ["client", "read"],
-  "clients-create": ["client", "create"],
-  "clients-update": ["client", "update"],
-  "clients-delete": ["client", "delete"],
-  "deals-list": ["deal", "read"],
-  "deals-get": ["deal", "read"],
-  "deals-create": ["deal", "create"],
-  "deals-update": ["deal", "update"],
-  "deals-delete": ["deal", "delete"],
-  "projects-list": ["project", "read"],
-  "projects-get": ["project", "read"],
-  "projects-create": ["project", "create"],
-  "projects-update": ["project", "update"],
-  "projects-delete": ["project", "delete"],
-  "calendar-list-today": ["calendar", "read"],
-  "calendar-list-range": ["calendar", "read"],
-  "calendar-list-month": ["calendar", "read"],
-  "calendar-get": ["calendar", "read"],
-  "calendar-create": ["calendar", "create"],
-  "calendar-update": ["calendar", "update"],
-  "calendar-delete": ["calendar", "delete"],
-  "tasks-list": ["task", "read"],
-  "tasks-get": ["task", "read"],
-  "tasks-create": ["task", "create"],
-  "tasks-update": ["task", "update"],
-  "tasks-complete": ["task", "update"],
-  "tasks-delete": ["task", "delete"],
-  "media-list": ["media", "read"],
-  "media-attach-url": ["media", "create"],
+  // Root agent tools only — domain tools are handled by subagents
+  "workspace-search": ["task", "read"],
 };
+
+export const subagentToResource: Record<string, Resource> = {
+  tasks: "task",
+  projects: "project",
+  clients: "client",
+  deals: "deal",
+  calendar: "calendar",
+  docs: "client",
+  spaces: "project",
+  team: "member",
+  media: "media",
+  notifications: "calendar",
+  organization: "organization",
+};
+
+export function hasSubagentAccess(
+  permissions: Permission[],
+  subagent: string,
+): boolean {
+  const resource = subagentToResource[subagent];
+  if (!resource) return false;
+  const permission = permissions.find((p) => p.resource === resource);
+  return permission ? permission.actions.length > 0 : false;
+}

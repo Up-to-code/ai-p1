@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState, useEffect } from "react";
+import { getItem, setItem } from "@/domains/storage";
 
 interface DashboardConfig {
   widgetConfig: string;
@@ -35,20 +36,20 @@ export function useDashboardPersistence(
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingRef = useRef<DashboardConfig | null>(null);
 
-  // Load from localStorage on mount
+  // Load from IndexedDB on mount
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(`project-dashboard-${projectId}`);
-      if (raw) {
-        const parsed = JSON.parse(raw) as DashboardConfig;
-        setConfig(parsed);
+    getItem("layouts", `project-dashboard-${projectId}`).then((entry) => {
+      if (entry) {
+        try {
+          setConfig(entry.value as unknown as DashboardConfig);
+        } catch {
+          setConfig({ widgetConfig: "[]", layout: "[]" });
+        }
       } else {
         setConfig({ widgetConfig: "[]", layout: "[]" });
       }
-    } catch {
-      setConfig({ widgetConfig: "[]", layout: "[]" });
-    }
-    setIsLoaded(true);
+      setIsLoaded(true);
+    });
   }, [projectId]);
 
   // Debounced sync to server
@@ -83,8 +84,8 @@ export function useDashboardPersistence(
       setConfig((prev) => {
         if (!prev) return prev;
         const next = { ...prev, ...partial };
-        // Write to localStorage immediately
-        localStorage.setItem(`project-dashboard-${projectId}`, JSON.stringify(next));
+        // Write to IndexedDB immediately
+        setItem("layouts", `project-dashboard-${projectId}`, next as unknown as Record<string, unknown>);
         // Debounce server sync
         triggerSync(next);
         return next;

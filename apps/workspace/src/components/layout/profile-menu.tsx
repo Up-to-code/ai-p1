@@ -2,7 +2,7 @@
 
 import { useTransition, useState } from "react";
 import { Link, useRouter, usePathname } from "@/i18n/routing";
-import {   LogOut, Building, Settings, MoreHorizontal, Moon, Sun, Globe } from "lucide-react";
+import { LogOut, User, Building, Settings, Moon, Sun, Globe, LayoutDashboard, Briefcase } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useTheme } from "@/components/providers/theme-provider";
 import {
@@ -71,7 +71,7 @@ export function ProfileMenu() {
           align="end"
           collisionPadding={12}
           sideOffset={8}
-          className="w-[260px] max-w-[calc(100vw-24px)] rounded-xl shadow-sm border-border p-2 bg-popover"
+          className="w-[280px] max-w-[calc(100vw-24px)] rounded-xl border-border p-2 bg-popover"
         >
           {/* User Info Header */}
           <div className="flex items-center gap-3 px-2 py-2 mb-1">
@@ -91,45 +91,71 @@ export function ProfileMenu() {
           
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem render={<Link href="/organization" />} className="py-2">
-            <Building className="h-4 w-4 mr-2" />
-            Organization
+          {/* Profile */}
+          <DropdownMenuItem render={<Link href="/profile" />} className="py-2 rounded-lg">
+            <User className="h-4 w-4 me-2" />
+            <span>Profile</span>
           </DropdownMenuItem>
-          <DropdownMenuItem render={<Link href="/settings" />} className="py-2">
-            <Settings className="h-4 w-4 mr-2" />
-            Settings
+
+          {/* Views — localized */}
+          <DropdownMenuItem render={<Link href="/ws" />} className="py-2 rounded-lg">
+            <LayoutDashboard className="h-4 w-4 me-2" />
+            <span>{locale === "ar" ? "العروض" : "Views"}</span>
+          </DropdownMenuItem>
+
+          {/* Workspaces — localized */}
+          <DropdownMenuItem render={<Link href="/organization" />} className="py-2 rounded-lg">
+            <Briefcase className="h-4 w-4 me-2" />
+            <span>{locale === "ar" ? "مساحات العمل" : "Workspaces"}</span>
           </DropdownMenuItem>
           
           <DropdownMenuSeparator />
 
+          {/* Organization */}
+          <DropdownMenuItem render={<Link href="/organization" />} className="py-2 rounded-lg">
+            <Building className="h-4 w-4 me-2" />
+            <span>Organization</span>
+          </DropdownMenuItem>
+
+          {/* Settings */}
+          <DropdownMenuItem render={<Link href="/settings" />} className="py-2 rounded-lg">
+            <Settings className="h-4 w-4 me-2" />
+            <span>Settings</span>
+          </DropdownMenuItem>
+          
+          <DropdownMenuSeparator />
+
+          {/* Theme toggle */}
           <DropdownMenuItem 
-            className="py-2 cursor-pointer"
+            className="py-2 rounded-lg cursor-pointer"
             onClick={(e: React.MouseEvent) => {
               e.preventDefault();
               setTheme(isDark ? "light" : "dark");
             }}
           >
-            {isDark ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
-            {isDark ? "Light Mode" : "Dark Mode"}
+            {isDark ? <Sun className="h-4 w-4 me-2" /> : <Moon className="h-4 w-4 me-2" />}
+            <span>{isDark ? "Light Mode" : "Dark Mode"}</span>
           </DropdownMenuItem>
 
+          {/* Language toggle */}
           <DropdownMenuItem 
             render={<Link href={pathname} locale={nextLocale} />} 
-            className="py-2"
+            className="py-2 rounded-lg"
           >
-            <Globe className="h-4 w-4 mr-2" />
-            {languageLabel}
+            <Globe className="h-4 w-4 me-2" />
+            <span>{languageLabel}</span>
           </DropdownMenuItem>
           
           <DropdownMenuSeparator />
           
+          {/* Logout */}
           <DropdownMenuItem
             variant="destructive"
-            className="py-2"
+            className="py-2 rounded-lg"
             onClick={() => setLogoutOpen(true)}
           >
-            <LogOut className="h-4 w-4 mr-2" />
-            {t("logout")}
+            <LogOut className="h-4 w-4 me-2" />
+            <span>{t("logout")}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

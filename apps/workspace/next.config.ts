@@ -52,7 +52,9 @@ const nextConfig: NextConfig = {
 };
 
 const nextIntlConfig = withNextIntl(nextConfig);
-const eveConfig = withEve(nextIntlConfig);
+const eveConfig = withEve(nextIntlConfig, {
+  devServerTimeoutMs: 300_000, // 5 min — microsandbox sandbox runner can be slow to cold-start
+});
 
 export default uploadSentrySourceMaps ? withSentryConfig(eveConfig, {
   org: uploadSentrySourceMaps ? process.env.SENTRY_ORG : undefined,

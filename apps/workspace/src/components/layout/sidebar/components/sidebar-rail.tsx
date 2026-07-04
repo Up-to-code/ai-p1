@@ -9,7 +9,7 @@ import { isRtlLocale } from "@/lib/i18n/locale";
 import { useAuthSession } from "@/domains/auth";
 import { useTheme } from "@/components/providers/theme-provider";
 import { useQuery } from "@tanstack/react-query";
-import { Pencil, Plus, Users, Building2 } from "lucide-react";
+import { Pencil, Plus, Users, Building2, PanelRight } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import {
@@ -36,7 +36,7 @@ export function SidebarRail() {
   const pathname = usePathname();
   const { isDark: isDarkMode } = useTheme();
   const session = useAuthSession();
-  const { activeRailItem, openRailItem, closeAll } = useSidebarRail();
+  const { activeRailItem, openRailItem, closeAll, toggleMain } = useSidebarRail();
 
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [orgSwitcherOpen, setOrgSwitcherOpen] = useState(false);
@@ -173,6 +173,22 @@ export function SidebarRail() {
           })}
         </div>
       </div>
+
+      {/* Sidebar toggle — only shown when secondary panel is closed */}
+      {activeRailItem === null && (
+        <div className="flex flex-col gap-1 px-2 pb-1">
+          <NavTooltip label="Open sidebar">
+            <button
+              type="button"
+              onClick={toggleMain}
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              aria-label="Open secondary panel"
+            >
+              <PanelRight className="h-[18px] w-[18px] shrink-0" />
+            </button>
+          </NavTooltip>
+        </div>
+      )}
 
       {/* Level 4: User Profile */}
       <div className="flex flex-col gap-1 p-2 border-t border-sidebar-border">

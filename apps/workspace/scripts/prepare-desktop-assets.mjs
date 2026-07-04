@@ -7,11 +7,19 @@ import sharp from "sharp";
 const appRoot = process.cwd();
 const buildDir = path.join(appRoot, "build");
 const iconsetDir = path.join(buildDir, "icon.iconset");
+const sourceIconSvg = path.join(appRoot, "public", "logo-dark-mood.svg");
 const sourceIcon1024 = path.join(appRoot, "public", "app-icon-1024.png");
 const sourceIcon512 = path.join(appRoot, "public", "app-icon-512.png");
-const sourceIcon = existsSync(sourceIcon1024) ? sourceIcon1024 : sourceIcon512;
+const sourceIcon = existsSync(sourceIconSvg) ? sourceIconSvg : (existsSync(sourceIcon1024) ? sourceIcon1024 : sourceIcon512);
 const dmgBackgroundSvg = path.join(buildDir, "dmg-background.svg");
 const dmgBackgroundPng = path.join(buildDir, "dmg-background.png");
+
+// Convert SVG to PNG if needed
+let workingIcon = sourceIcon;
+if (sourceIcon.endsWith('.svg')) {
+  workingIcon = path.join(buildDir, "icon-temp.png");
+  await sharp(sourceIcon).resize(1024, 1024).png().toFile(workingIcon);
+}
 
 function run(command, args) {
   return new Promise((resolve, reject) => {
@@ -46,11 +54,11 @@ const iconSizes = [
 ];
 
 for (const [height, width, filename] of iconSizes) {
-  await run("sips", ["-z", height, width, sourceIcon, "--out", path.join(iconsetDir, filename)]);
+  await run("sips", ["-z", height, width, workingIcon, "--out", path.join(iconsetDir, filename)]);
 }
 
 await run("iconutil", ["-c", "icns", iconsetDir, "-o", path.join(buildDir, "icon.icns")]);
-await run("sips", ["-s", "format", "png", sourceIcon, "--out", path.join(buildDir, "icon.png")]);
+await run("sips", ["-s", "format", "png", workingIcon, "--out", path.join(buildDir, "icon.png")]);
 
 const dmgBackground = `<svg width="660" height="400" viewBox="0 0 660 400" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="660" height="400" fill="#121212"/>

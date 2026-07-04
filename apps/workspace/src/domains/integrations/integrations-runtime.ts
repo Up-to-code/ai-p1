@@ -8,6 +8,7 @@ import { logger } from "@/lib/logger";
 import type { PartnerCatalogFilter } from "./store/integrations.view-model";
 import type { PartnerCatalogApp, PartnerConnection } from "./store/integrations.types";
 import { MOCK_MAC_APPS, createMockConnection, createICloudConnection } from "./mock-data";
+import { getItem, setItem, removeItem } from "@/domains/storage";
 
 type Fetcher = typeof fetch;
 
@@ -21,60 +22,49 @@ type PartnerConnectionsPayload = {
 
 export const partnerCatalogFilters: PartnerCatalogFilter[] = ["all", "connected", "available"];
 
-function getLocalConnections(organizationId: string): PartnerConnection[] {
+async function getLocalConnections(organizationId: string): Promise<PartnerConnection[]> {
   if (typeof window === "undefined") return [];
   try {
-    const data = localStorage.getItem(`qentrah_mock_connections_${organizationId}`);
-    return data ? JSON.parse(data) : [];
+    const entry = await getItem("cache", `mock_connections_${organizationId}`);
+    return entry ? (entry.value as unknown as PartnerConnection[]) : [];
   } catch {
     return [];
   }
 }
 
-function saveLocalConnection(organizationId: string, connection: PartnerConnection) {
+async function saveLocalConnection(organizationId: string, connection: PartnerConnection) {
   if (typeof window === "undefined") return;
   try {
-    const current = getLocalConnections(organizationId);
+    const current = await getLocalConnections(organizationId);
     if (!current.some((c) => c.partnersAppId === connection.partnersAppId)) {
-      localStorage.setItem(
-        `qentrah_mock_connections_${organizationId}`,
-        JSON.stringify([...current, connection]),
-      );
+      await setItem("cache", `mock_connections_${organizationId}`, [...current, connection] as unknown as Record<string, unknown>);
     }
   } catch (e) {
     logger.error("integrations.save_connection_failed", { error: e });
   }
 }
 
-function removeLocalConnection(organizationId: string, connectionId: string) {
+async function removeLocalConnection(organizationId: string, connectionId: string) {
   if (typeof window === "undefined") return;
   try {
-    const current = getLocalConnections(organizationId);
-    localStorage.setItem(
-      `qentrah_mock_connections_${organizationId}`,
-      JSON.stringify(current.filter((c) => c.id !== connectionId)),
-    );
+    const current = await getLocalConnections(organizationId);
+    await setItem("cache", `mock_connections_${organizationId}`, current.filter((c) => c.id !== connectionId) as unknown as Record<string, unknown>);
   } catch (e) {
     logger.error("integrations.remove_connection_failed", { error: e });
   }
 }
 
-function updateLocalConnectionStatus(
+async function updateLocalConnectionStatus(
   organizationId: string,
   connectionId: string,
   status: "active" | "paused" | "revoked",
 ) {
   if (typeof window === "undefined") return;
   try {
-    const current = getLocalConnections(organizationId);
-    localStorage.setItem(
-      `qentrah_mock_connections_${organizationId}`,
-      JSON.stringify(
-        current.map((c) =>
-          c.id === connectionId ? { ...c, status, effectiveStatus: status } : c,
-        ),
-      ),
-    );
+    const current = await getLocalConnections(organizationId);
+    await setItem("cache", `mock_connections_${organizationId}`, current.map((c) =>
+      c.id === connectionId ? { ...c, status, effectiveStatus: status } : c,
+    ) as unknown as Record<string, unknown>);
   } catch (e) {
     logger.error("integrations.update_connection_failed", { error: e });
   }
@@ -114,9 +104,9 @@ export async function updatePartnerConnectionStatus(
 ) {
   if (connectionId === "conn-mac-icloud" || connectionId.startsWith("mock-")) {
     if (connectionId === "conn-mac-icloud") {
-      saveLocalConnection(organizationId, createICloudConnection(organizationId));
+      await saveLocalConnection(organizationId, createICloudConnection(organizationId));
     }
-    updateLocalConnectionStatus(organizationId, connectionId, status);
+    await updateLocalConnectionStatus(organizationId, connectionId, status);
     return;
   }
 
@@ -141,7 +131,7 @@ export async function createPartnerConnectionGrant(
   if (input.partnersAppId.startsWith("mac-")) {
     const matchedApp = MOCK_MAC_APPS.find((a) => a.id === input.partnersAppId);
     if (matchedApp) {
-      saveLocalConnection(organizationId, createMockConnection(organizationId, matchedApp));
+      await saveLocalConnection(organizationId, createMockConnection(organizationId, matchedApp));
       return;
     }
   }
@@ -165,9 +155,9 @@ export async function revokePartnerConnection(
       const conn = createICloudConnection(organizationId);
       conn.status = "revoked";
       conn.effectiveStatus = "revoked";
-      saveLocalConnection(organizationId, conn);
+      await saveLocalConnection(organizationId, conn);
     }
-    updateLocalConnectionStatus(organizationId, connectionId, "revoked");
+    await updateLocalConnectionStatus(organizationId, connectionId, "revoked");
     return;
   }
 
@@ -180,11 +170,11 @@ export async function revokePartnerConnection(
   );
 }
 
-function mergeConnections(
+async function mergeConnections(
   organizationId: string,
   apiConnections?: PartnerConnection[],
-): PartnerConnection[] {
-  const localItems = getLocalConnections(organizationId);
+): Promise<PartnerConnection[]> {
+  const localItems = await getLocalConnections(organizationId);
 
   const iCloudRevoked = localItems.some(
     (c) => c.partnersAppId === "mac-icloud-sync" && c.status === "revoked",
@@ -234,9 +224,9 @@ export function usePartnerConnections(organizationId?: string | null) {
 
       try {
         const items = await fetchPartnerConnections(organizationId);
-        return mergeConnections(organizationId, items);
+        return await mergeConnections(organizationId, items);
       } catch {
-        return mergeConnections(organizationId);
+        return await mergeConnections(organizationId);
       }
     },
     enabled: Boolean(organizationId),

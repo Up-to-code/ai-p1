@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import { usePathname } from "@/i18n/routing";
 
-export type RailItemId = "home" | "ws" | "ai" | "spaces" | "tasks" | "calendar" | "clients" | "opportunities" | "deals" | "docs" | "inbox" | null;
+export type RailItemId = "home" | "ws" | "ai" | "spaces" | "tasks" | "calendar" | "clients" | "opportunities" | "deals" | "theories" | "docs" | "inbox" | null;
 
 interface SidebarRailContextType {
   isMainVisible: boolean;
@@ -23,6 +23,7 @@ const pathnameToRailItem: Record<string, RailItemId> = {
   "/clients": "clients",
   "/opportunities": "opportunities",
   "/deals": "deals",
+  "/theories": "theories",
   "/docs": "docs",
 };
 

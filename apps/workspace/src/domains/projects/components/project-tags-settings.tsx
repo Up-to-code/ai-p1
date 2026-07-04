@@ -1,32 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
 import { useAuthSession } from "@/domains/auth";
 import { Plus, Trash2, Tag, FolderKanban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { getItem, setItem } from "@/domains/storage";
 
 const STORAGE_KEY = "qentrah-project-tags-vocabulary";
-
-function loadVocabulary(): string[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveVocabulary(tags: string[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tags));
-  } catch {
-    // ignore
-  }
-}
 
 export function ProjectTagsSettings() {
   const session = useAuthSession();
@@ -45,14 +28,23 @@ export function ProjectTagsSettings() {
     return Array.from(set).sort();
   }, [projects]);
 
-  const [vocabulary, setVocabulary] = useState<string[]>(() => {
-    const stored = loadVocabulary();
-    // Merge stored with used tags so we don't lose any
-    const merged = new Set([...stored, ...usedTags]);
-    return Array.from(merged).sort();
-  });
-
+  const [vocabulary, setVocabulary] = useState<string[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [newTag, setNewTag] = useState("");
+
+  useEffect(() => {
+    getItem("cache", STORAGE_KEY).then((entry) => {
+      const stored = entry ? (entry.value as unknown as string[]) : [];
+      const merged = new Set([...stored, ...usedTags]);
+      setVocabulary(Array.from(merged).sort());
+      setIsLoaded(true);
+    });
+  }, [usedTags]);
+
+  async function persist(next: string[]) {
+    setVocabulary(next);
+    await setItem("cache", STORAGE_KEY, next as unknown as Record<string, unknown>);
+  }
 
   function addTag() {
     const tag = newTag.trim();
@@ -61,23 +53,20 @@ export function ProjectTagsSettings() {
       return;
     }
     const next = [...vocabulary, tag].sort();
-    setVocabulary(next);
-    saveVocabulary(next);
+    persist(next);
     setNewTag("");
   }
 
   function removeTag(tag: string) {
     const next = vocabulary.filter((t) => t !== tag);
-    setVocabulary(next);
-    saveVocabulary(next);
+    persist(next);
   }
 
   function renameTag(oldTag: string, newTag: string) {
     const trimmed = newTag.trim();
     if (!trimmed || trimmed === oldTag || vocabulary.includes(trimmed)) return;
     const next = vocabulary.map((t) => (t === oldTag ? trimmed : t)).sort();
-    setVocabulary(next);
-    saveVocabulary(next);
+    persist(next);
   }
 
   const projectCount = useMemo(() => {

@@ -18,6 +18,7 @@ import { handleCreateClientTask, handleDeleteClientTask, handleUpdateClientTask 
 import { handleAssignTasksToProject } from "@/server/domains/clientTasks/handlers/assign-to-project";
 import { handleCreateFollowUp, handleDeleteFollowUp, handleMarkFollowUpComplete, handleUpdateFollowUp } from "@/server/domains/clientFollowUps/handlers/follow-ups";
 import { handleCreateCalendarEvent, handleDeleteCalendarEvent, handleUpdateCalendarEvent } from "@/server/domains/calendar/handlers/calendar";
+import { handleCreateTheory, handleUpdateTheory, handleDeleteTheory } from "@/server/domains/theories/handlers/theories";
 import { handleCreateDoc, handleUpdateDoc, handleDeleteDoc, handleMoveDoc } from "@/server/domains/docs/handlers/docs";
 import { handleCreateDocFolder, handleRenameDocFolder, handleDeleteDocFolder } from "@/server/domains/docs/handlers/doc-folders";
 
@@ -102,6 +103,10 @@ crudSubRouter.patch("/:organizationId/client-follow-ups/:followUpId/complete", h
 crudSubRouter.post("/:organizationId/calendar-events", handleCreateCalendarEvent);
 crudSubRouter.patch("/:organizationId/calendar-events/:eventId", handleUpdateCalendarEvent);
 crudSubRouter.delete("/:organizationId/calendar-events/:eventId", handleDeleteCalendarEvent);
+
+crudSubRouter.post("/:organizationId/theories", handleCreateTheory);
+crudSubRouter.patch("/:organizationId/theories/:theoryId", handleUpdateTheory);
+crudSubRouter.delete("/:organizationId/theories/:theoryId", handleDeleteTheory);
 
 crudSubRouter.post("/:organizationId/docs", handleCreateDoc);
 crudSubRouter.patch("/:organizationId/docs/:docId", handleUpdateDoc);
