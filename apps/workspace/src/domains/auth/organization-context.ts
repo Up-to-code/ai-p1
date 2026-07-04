@@ -1,12 +1,10 @@
 "use client";
 
-import { createContext, createElement, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { useAuth, useOrganization, useUser } from "@clerk/nextjs";
+import { createContext, createElement, useContext, useMemo, type ReactNode } from "react";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { accountInitials, clerkMembershipOrganizationIds } from "./lib/account-normalizers";
-
-const ORG_LOAD_TIMEOUT_MS = 8_000;
 
 export interface OrganizationContext {
   id: string | null;
@@ -34,21 +32,12 @@ const OrganizationContextImpl = createContext<OrganizationContext | null>(null);
 export function OrganizationProvider({ children }: { children: ReactNode }) {
   const auth = useAuth();
   const userQuery = useUser();
-  const organizationQuery = useOrganization();
   const convexAuth = useConvexAuth();
-  const [orgLoadTimedOut, setOrgLoadTimedOut] = useState(false);
 
-  // If useOrganization() hangs (e.g., user has no org memberships),
-  // time out after ORG_LOAD_TIMEOUT_MS so the shell doesn't show
-  // an infinite loading state.
-  useEffect(() => {
-    if (organizationQuery.isLoaded || orgLoadTimedOut) return;
-    const timer = setTimeout(() => setOrgLoadTimedOut(true), ORG_LOAD_TIMEOUT_MS);
-    return () => clearTimeout(timer);
-  }, [organizationQuery.isLoaded, orgLoadTimedOut]);
-
-  const organizationId = auth.orgId ?? organizationQuery.organization?.id ?? null;
-  const isOrganizationPending = !organizationQuery.isLoaded && !orgLoadTimedOut;
+  // Use auth.orgId as the primary source — it's available immediately from the session
+  // without waiting for useOrganization() to resolve.
+  const organizationId = auth.orgId ?? null;
+  const isOrganizationPending = !auth.isLoaded;
   const isConvexAuthenticated = convexAuth.isAuthenticated;
 
   const membershipOrganizationIds = useMemo(
@@ -65,35 +54,58 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     [organizationId, hasLoadedMemberships, membershipOrganizationIds],
   );
 
+  // Additional safety check: if user has no memberships at all, don't query
+  const hasAnyMemberships = membershipOrganizationIds.length > 0;
+
+  // Wrap the query in a try-catch to prevent permission errors from crashing the app
   const organizationProfile = useQuery(
     api.organizations.profile.read.getProfile,
-    organizationId && isConvexAuthenticated && !hasOrganizationAccessDenied ? { organizationId } : "skip",
+    // Only query if we have an organization ID, are authenticated in Convex, 
+    // user is loaded, AND the organizationId is actually in the user's membership list.
+    // This prevents queries when users are on choose-org page without any org or when auth.orgId doesn't match actual memberships.
+    organizationId && isConvexAuthenticated && hasLoadedMemberships && membershipOrganizationIds.includes(organizationId) ? { organizationId } : "skip",
   );
 
-  const clerkOrganization = organizationQuery.organization;
-  const organizationName = organizationProfile?.name?.trim() || clerkOrganization?.name?.trim() || "Workspace";
+  // Derive org metadata from the Clerk membership list for the active org
+  const clerkOrganizationFromMemberships = useMemo(() => {
+    const memberships = userQuery.user?.organizationMemberships;
+    if (!memberships || !organizationId) return null;
+    const data = Array.isArray(memberships) ? memberships : (memberships as unknown as { data?: Array<{ organization: { id: string; name?: string; slug?: string; imageUrl?: string } }> }).data ?? [];
+    const match = data.find((m) => {
+      const org = m.organization as unknown as { id: string };
+      return org?.id === organizationId;
+    });
+    return match?.organization ?? null;
+  }, [userQuery.user?.organizationMemberships, organizationId]);
+
+  const organizationName = organizationProfile?.name?.trim()
+    || (clerkOrganizationFromMemberships as Record<string, unknown> | null)?.name as string | undefined
+    || "Workspace";
 
   const value = useMemo<OrganizationContext>(
-    () => ({
-      id: organizationId,
-      name: organizationName,
-      legalName: organizationProfile?.legalName,
-      type: organizationProfile?.type,
-      email: organizationProfile?.email,
-      phone: organizationProfile?.phone,
-      website: organizationProfile?.website,
-      address: organizationProfile?.address,
-      logo: organizationProfile?.logo ?? clerkOrganization?.imageUrl ?? null,
-      slug: clerkOrganization?.slug ?? organizationId,
-      initials: accountInitials(organizationName),
-      brandColor: organizationProfile?.brandColor,
-      isPending: isOrganizationPending,
-      hasAccessDenied: hasOrganizationAccessDenied,
-      memberships: {
-        organizationIds: membershipOrganizationIds,
-        hasAccessToOrganization: (orgId: string) => membershipOrganizationIds.includes(orgId),
-      },
-    }),
+    () => {
+      const clerkOrg = clerkOrganizationFromMemberships as Record<string, unknown> | null;
+      return {
+        id: organizationId,
+        name: organizationName,
+        legalName: organizationProfile?.legalName,
+        type: organizationProfile?.type,
+        email: organizationProfile?.email,
+        phone: organizationProfile?.phone,
+        website: organizationProfile?.website,
+        address: organizationProfile?.address,
+        logo: organizationProfile?.logo ?? (clerkOrg?.imageUrl as string | undefined) ?? null,
+        slug: (clerkOrg?.slug as string | undefined) ?? organizationId,
+        initials: accountInitials(organizationName),
+        brandColor: organizationProfile?.brandColor,
+        isPending: isOrganizationPending,
+        hasAccessDenied: hasOrganizationAccessDenied,
+        memberships: {
+          organizationIds: membershipOrganizationIds,
+          hasAccessToOrganization: (orgId: string) => membershipOrganizationIds.includes(orgId),
+        },
+      };
+    },
     [
       organizationId,
       organizationName,
@@ -105,8 +117,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       organizationProfile?.address,
       organizationProfile?.logo,
       organizationProfile?.brandColor,
-      clerkOrganization?.imageUrl,
-      clerkOrganization?.slug,
+      clerkOrganizationFromMemberships,
       isOrganizationPending,
       hasOrganizationAccessDenied,
       membershipOrganizationIds,

@@ -1,0 +1,25 @@
+# Allow all crawlers to access the site
+User-agent: *
+
+# Disallow Next.js static assets and build files
+Disallow: /_next/static/
+Disallow: /_next/image
+
+# Disallow API routes
+Disallow: /api/
+
+# Disallow authentication and account management
+Disallow: /auth/
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /sign-out
+
+# Disallow workspace app routes (these are authenticated and should not be indexed)
+Disallow: /inbox
+Disallow: /projects
+Disallow: /clients
+Disallow: /calendar
+Disallow: /settings
+
+# Sitemap location (update if you have a sitemap)
+# Sitemap: https://app.qentrah.com/sitemap.xml

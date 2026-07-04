@@ -38,9 +38,9 @@ describe("deriveWorkspaceStatus", () => {
 });
 
 describe("getWorkspaceAuthRedirect", () => {
-  it("sends signed-out users to localized sign-in", () => {
+  it("sends signed-out users to the marketing site", () => {
     expect(getWorkspaceAuthRedirect({ isSignedIn: false, workspaceStatus: "ready", locale: "ar" })).toBe(
-      "/ar/sign-in?callbackURL=%2Far%2Fchoose-org",
+      "https://www.qentrah.com/ar",
     );
   });
 

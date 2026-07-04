@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { evaluateAgentToolRisk } from "@/server/domains/agents/policies/risk-policy";
+import { evaluateAgentToolRisk } from "./risk-policy";
 import {
   getRegistryTool,
   type McpAdapter,
@@ -12,6 +12,7 @@ export type McpPermissionResource =
   | "organization"
   | "member"
   | "role"
+  | "space"
   | "client"
   | "project"
   | "deal"
@@ -143,6 +144,79 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     action: "delete",
     inputSchema: { roleId: id },
     destructive: true,
+  },
+  {
+    name: "spaces_list",
+    title: "List spaces",
+    description: "List all spaces in the organization.",
+    resource: "space",
+    action: "read",
+  },
+  {
+    name: "spaces_get",
+    title: "Get space",
+    description: "Get details of a specific space by ID or slug.",
+    resource: "space",
+    action: "read",
+    inputSchema: { spaceId: id, slug: z.string().optional() },
+  },
+  {
+    name: "spaces_create",
+    title: "Create space",
+    description: "Create a new space in the organization.",
+    resource: "space",
+    action: "create",
+    inputSchema: { name: id, slug: z.string(), description: maybeText, icon: maybeText, color: maybeText, visibility: z.enum(["private", "public", "request_only"]).optional() },
+  },
+  {
+    name: "spaces_update",
+    title: "Update space",
+    description: "Update an existing space's name, slug, description, or visibility.",
+    resource: "space",
+    action: "update",
+    inputSchema: { spaceId: id, name: maybeText, slug: z.string().optional(), description: maybeText, icon: maybeText, color: maybeText, visibility: z.enum(["private", "public", "request_only"]).optional() },
+  },
+  {
+    name: "spaces_delete",
+    title: "Delete space",
+    description: "Delete a space. Only organization owners can delete spaces.",
+    resource: "space",
+    action: "delete",
+    inputSchema: { spaceId: id },
+    destructive: true,
+  },
+  {
+    name: "space_members_list",
+    title: "List space members",
+    description: "List all members of a space.",
+    resource: "space",
+    action: "read",
+    inputSchema: { spaceId: id },
+  },
+  {
+    name: "space_members_add",
+    title: "Add space member",
+    description: "Add a user to a space with a specific role.",
+    resource: "space",
+    action: "update",
+    inputSchema: { spaceId: id, userId: id, role: z.enum(["admin", "member", "viewer"]) },
+  },
+  {
+    name: "space_members_remove",
+    title: "Remove space member",
+    description: "Remove a user from a space.",
+    resource: "space",
+    action: "delete",
+    inputSchema: { spaceId: id, userId: id },
+    destructive: true,
+  },
+  {
+    name: "space_members_update_role",
+    title: "Update space member role",
+    description: "Update a user's role in a space.",
+    resource: "space",
+    action: "update",
+    inputSchema: { spaceId: id, userId: id, role: z.enum(["admin", "member", "viewer"]) },
   },
   {
     name: "clients_list",

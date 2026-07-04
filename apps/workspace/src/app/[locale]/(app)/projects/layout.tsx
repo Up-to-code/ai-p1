@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export default function ProjectsLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-background p-6">
+    <div className="flex h-full flex-col overflow-hidden bg-background px-6">
       {children}
     </div>
   );

@@ -136,7 +136,7 @@ export function ClientsPageRedesigned() {
 
   if (workspaceStatus !== "ready") {
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-full">
         <DomainHeader
           domain="Clients"
           currentSection="All Clients"
@@ -154,7 +154,7 @@ export function ClientsPageRedesigned() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-full">
         <DomainHeader
           domain="Clients"
           currentSection="All Clients"
@@ -172,7 +172,7 @@ export function ClientsPageRedesigned() {
 
   if (clients.length === 0) {
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-full">
         <DomainHeader
           domain="Clients"
           currentSection="All Clients"
@@ -189,7 +189,7 @@ export function ClientsPageRedesigned() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-full">
       <DomainHeader
         domain="Clients"
         currentSection={`${clients.length} client${clients.length !== 1 ? "s" : ""}`}

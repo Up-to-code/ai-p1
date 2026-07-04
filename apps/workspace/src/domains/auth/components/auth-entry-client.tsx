@@ -7,7 +7,7 @@ import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-load
 import { useHeadlessClerkAuth } from "../hooks/use-headless-clerk-auth";
 
 function resolveTarget(callbackURL: string | null | undefined, locale: string): string {
-  if (!callbackURL) return `/${locale}/ws`;
+  if (!callbackURL) return `/${locale}/choose-org`;
 
   // callbackURL may be locale-prefixed (e.g. "/en/choose-org") or bare.
   if (callbackURL.startsWith("/")) return callbackURL;
@@ -55,6 +55,10 @@ export function AuthEntryClient({ callbackURL, locale, mode }: AuthEntryClientPr
       onCredentialsSubmit={auth.submitCredentials}
       onSocialSignIn={auth.signInWithSocial}
       onVerifyCode={auth.verifyCode}
+      onForgotPassword={auth.startForgotPassword}
+      onVerifyResetCode={auth.verifyResetCode}
+      onSubmitNewPassword={auth.submitNewPassword}
+      onGoBack={auth.goBack}
       pendingProvider={auth.pendingProvider}
       phase={auth.phase}
     />

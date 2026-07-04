@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuthSession } from "@/domains/auth";
-import { DashboardChat } from "@/components/dashboard/dashboard-chat";
+import { EveDashboardChat } from "@/components/dashboard/eve-dashboard-chat";
 
 export function DashboardScreen() {
   const session = useAuthSession();
@@ -10,5 +10,5 @@ export function DashboardScreen() {
       ? (session.workspace.organizationId ?? undefined)
       : undefined;
 
-  return <DashboardChat organizationId={organizationId} />;
+  return <EveDashboardChat organizationId={organizationId} />;
 }

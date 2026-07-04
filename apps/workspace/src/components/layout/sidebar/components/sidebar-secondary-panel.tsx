@@ -16,16 +16,7 @@ import {
   SidebarDealsPanel,
   SidebarDocsPanel,
 } from "./sidebar-domain-panels";
-import type { AgentThread } from "../lib/types";
-
-type SidebarSecondaryPanelProps = {
-  threads: AgentThread[] | undefined;
-  activeThreadId?: string;
-  deletingThreadId: string | null;
-  onDeleteRequest: (thread: AgentThread) => void;
-};
-
-export function SidebarSecondaryPanel(props: SidebarSecondaryPanelProps) {
+export function SidebarSecondaryPanel() {
   const { activeRailItem } = useSidebarRail();
   const { level } = useNavigation();
 
@@ -40,7 +31,7 @@ export function SidebarSecondaryPanel(props: SidebarSecondaryPanelProps) {
     >
       <div className="flex h-full w-72 min-w-72 flex-col overflow-hidden">
         {activeRailItem === "home" && <SidebarIndexPanel />}
-        {activeRailItem === "ai" && <SidebarChatPanel {...props} />}
+        {activeRailItem === "ai" && <SidebarChatPanel />}
         {activeRailItem === "spaces" && !showProject && <SidebarSpacePanel />}
         {showProject && <SidebarProjectPanel />}
         {activeRailItem === "tasks" && <SidebarTasksPanel />}

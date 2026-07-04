@@ -28,16 +28,18 @@ export function TaskFilterDropdown({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 rounded-lg px-3 text-xs font-semibold text-foreground min-w-[140px] justify-between"
-        >
-          <span className="truncate">{selectedOption?.label || placeholder}</span>
-          <ChevronDown className="h-3.5 w-3.5 ml-2 shrink-0" />
-        </Button>
-      </PopoverTrigger>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 rounded-lg px-3 text-xs font-semibold text-foreground min-w-[140px] justify-between"
+          >
+            <span className="truncate">{selectedOption?.label || placeholder}</span>
+            <ChevronDown className="h-3.5 w-3.5 ml-2 shrink-0" />
+          </Button>
+        }
+      />
       <PopoverContent
         align="start"
         sideOffset={4}

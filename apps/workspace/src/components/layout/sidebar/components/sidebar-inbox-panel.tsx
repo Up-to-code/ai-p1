@@ -1,9 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Hash, Plus, Lock, Users, Search, MoreHorizontal, ChevronDown, ChevronRight, Layers } from "lucide-react";
-import { InboxIcon } from "./clickup-icons";
+import { useSearchParams } from "next/navigation";
+import {
+  Hash,
+  Plus,
+  Lock,
+  Users,
+  MoreHorizontal,
+  ChevronDown,
+  ChevronRight,
+  Building2,
+  Edit2,
+  Trash2,
+  Settings,
+  Search,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthSession } from "@/domains/auth";
 import { useInboxState, useCreateChannelMutation } from "@/domains/inbox";
@@ -14,102 +27,184 @@ import { CreateChannelWizard } from "@/domains/inbox/components/create-channel-w
 import { getOrganizationCapabilities, listOrganizationMembers } from "@/domains/organization/api";
 import type { OrganizationMember } from "@/domains/organization/api/types";
 import { SidebarPanelLayout } from "./sidebar-panel-layout";
-// import { InboxPanelSkeleton } from "@/components/loading-ui";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import type { ChannelType, ChannelVisibility } from "@/domains/inbox/types/inbox.types";
+
+// ─── Channel item ────────────────────────────────────────────────────────────
 
 function ChannelItem({
   channel,
   isActive,
-  onSelect,
+  isOwner,
+  onEdit,
+  onDelete,
 }: {
-  channel: { id: string; name: string; type: ChannelType; visibility: ChannelVisibility; unreadCount?: number };
+  channel: {
+    id: string;
+    name: string;
+    type: ChannelType;
+    visibility: ChannelVisibility;
+    unreadCount?: number;
+  };
   isActive: boolean;
-  onSelect: (channelId: string) => void;
+  isOwner: boolean;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const ChannelIcon =
+    channel.visibility === "private"
+      ? Lock
+      : channel.type === "dm"
+        ? Users
+        : Hash;
+
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(channel.id)}
-      className={cn(
-        "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-start transition-colors group",
-        isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-      )}
-    >
-      <div className="flex h-6 w-6 shrink-0 items-center justify-center">
-        {channel.visibility === "private" ? (
-          <Lock className="h-4 w-4" />
-        ) : channel.visibility === "dm" ? (
-          <Users className="h-4 w-4" />
-        ) : (
-          <Hash className="h-4 w-4" />
+    <div className="group relative">
+      <WorkspaceLink
+        href="/inbox"
+        extraParams={{ channel: channel.id }}
+        className={cn(
+          "flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-start transition-colors",
+          isActive
+            ? "bg-accent text-accent-foreground"
+            : "text-muted-foreground hover:bg-accent/40 hover:text-foreground",
         )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="truncate text-sm font-medium">{channel.name}</span>
-          {channel.unreadCount && channel.unreadCount > 0 && (
-            <Badge variant="destructive" className="h-5 px-1.5 text-xs">
-              {channel.unreadCount}
-            </Badge>
-          )}
-        </div>
-      </div>
-      <button
-        type="button"
-        className="invisible group-hover:visible flex h-6 w-6 items-center justify-center rounded hover:bg-accent/50"
       >
-        <MoreHorizontal className="h-4 w-4" />
-      </button>
-    </button>
+        <ChannelIcon className="h-3.5 w-3.5 shrink-0 opacity-60" />
+        <span className="flex-1 truncate text-[13px] font-medium">{channel.name}</span>
+        {channel.unreadCount && channel.unreadCount > 0 ? (
+          <Badge
+            variant="destructive"
+            className="h-4 min-w-[16px] px-1 text-[10px] tabular-nums"
+          >
+            {channel.unreadCount > 99 ? "99+" : channel.unreadCount}
+          </Badge>
+        ) : null}
+      </WorkspaceLink>
+
+      {/* Per-channel context menu — visible on row hover */}
+      {isOwner && (
+        <Popover open={menuOpen} onOpenChange={setMenuOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              className={cn(
+                "absolute right-1.5 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded transition-opacity",
+                menuOpen
+                  ? "opacity-100 bg-accent"
+                  : "opacity-0 group-hover:opacity-100 hover:bg-accent",
+              )}
+              aria-label="Channel options"
+            >
+              <MoreHorizontal className="h-3.5 w-3.5" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side="right" align="start" className="w-40 p-1">
+            <button
+              type="button"
+              onClick={() => { setMenuOpen(false); onEdit?.(channel.id); }}
+              className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+            >
+              <Edit2 className="h-3.5 w-3.5" /> Edit
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMenuOpen(false); onDelete?.(channel.id); }}
+              className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Delete
+            </button>
+            <div className="my-1 border-t border-border" />
+            <button
+              type="button"
+              className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+            >
+              <Settings className="h-3.5 w-3.5" /> Settings
+            </button>
+          </PopoverContent>
+        </Popover>
+      )}
+    </div>
   );
 }
 
+// ─── Collapsible section ─────────────────────────────────────────────────────
+
 function ChannelSection({
   title,
-  icon: Icon,
   channels,
   activeChannelId,
-  onChannelSelect,
   isCollapsed,
   onToggle,
+  currentUserId,
+  onEditChannel,
+  onDeleteChannel,
 }: {
   title: string;
-  icon: any;
-  channels: Array<{ id: string; name: string; type: ChannelType; visibility: ChannelVisibility; unreadCount?: number }>;
+  channels: Array<{
+    id: string;
+    name: string;
+    type: ChannelType;
+    visibility: ChannelVisibility;
+    unreadCount?: number;
+    createdBy: string;
+  }>;
   activeChannelId: string | null;
-  onChannelSelect: (channelId: string) => void;
   isCollapsed: boolean;
   onToggle: () => void;
+  currentUserId: string;
+  onEditChannel?: (id: string) => void;
+  onDeleteChannel?: (id: string) => void;
 }) {
   if (channels.length === 0) return null;
 
+  const totalUnread = channels.reduce((n, c) => n + (c.unreadCount ?? 0), 0);
+
   return (
-    <div className="mb-4">
+    <div className="mb-2">
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center gap-2 px-2 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+        className="flex w-full items-center gap-1.5 rounded px-1 py-1 text-left transition-colors hover:bg-accent/30"
       >
         {isCollapsed ? (
-          <ChevronRight className="h-3 w-3" />
+          <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
         ) : (
-          <ChevronDown className="h-3 w-3" />
+          <ChevronDown className="h-3 w-3 text-muted-foreground/60" />
         )}
-        <Icon className="h-3 w-3" />
-        <span>{title}</span>
+        <span className="flex-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          {title}
+        </span>
+        {isCollapsed && totalUnread > 0 && (
+          <Badge variant="destructive" className="h-4 px-1 text-[10px]">
+            {totalUnread}
+          </Badge>
+        )}
       </button>
+
       {!isCollapsed && (
-        <div className="mt-1 space-y-0.5">
-          {channels.map((channel) => (
+        <div className="mt-0.5 space-y-0.5 pl-1">
+          {channels.map((ch) => (
             <ChannelItem
-              key={channel.id}
-              channel={channel}
-              isActive={activeChannelId === channel.id}
-              onSelect={onChannelSelect}
+              key={ch.id}
+              channel={ch}
+              isActive={activeChannelId === ch.id}
+              isOwner={ch.createdBy === currentUserId}
+              onEdit={onEditChannel}
+              onDelete={onDeleteChannel}
             />
           ))}
         </div>
@@ -118,149 +213,70 @@ function ChannelSection({
   );
 }
 
-function CreateChannelButton({
-  orgId,
-  canCreate,
-  projects,
-  clients,
-  spaces,
-  members,
-}: {
-  orgId?: string;
-  canCreate: boolean;
-  projects: Array<{ id: string; name: string }>;
-  clients: Array<{ id: string; name: string }>;
-  spaces: Array<{ id: string; name: string }>;
-  members: Array<{ id: string; name: string; email?: string }>;
-}) {
-  const [open, setOpen] = useState(false);
-  const createChannelMutation = useCreateChannelMutation(orgId);
-
-  if (!canCreate) return null;
-
-  const handleCreateChannel = async (data: {
-    name: string;
-    type: ChannelType;
-    visibility: ChannelVisibility;
-    description?: string;
-    projectId?: string;
-    projectIds?: string[];
-    clientId?: string;
-    spaceId?: string;
-    memberIds?: string[];
-    dmUserId?: string;
-  }) => {
-    try {
-      await createChannelMutation.mutateAsync(data);
-    } catch (error) {
-      throw error; // Let the wizard handle the error display
-    }
-  };
-
-  return (
-    <>
-      <Button
-        onClick={() => setOpen(true)}
-        className="flex h-7 w-7 items-center justify-center rounded-lg p-0"
-        variant="ghost"
-        size="sm"
-      >
-        <Plus className="h-3.5 w-3.5" />
-      </Button>
-      <CreateChannelWizard
-        open={open}
-        onOpenChange={setOpen}
-        onCreateChannel={handleCreateChannel}
-        isLoading={createChannelMutation.isPending}
-        projects={projects}
-        clients={clients}
-        spaces={spaces}
-        members={members}
-      />
-    </>
-  );
-}
+// ─── Main panel ──────────────────────────────────────────────────────────────
 
 export function SidebarInboxPanel() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const session = useAuthSession();
   const { orgId, channels, isLoadingChannels } = useInboxState();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
-  const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
-  const [capabilities, setCapabilities] = useState<import("@/domains/organization/api/types").OrganizationCapabilities | null>(null);
+
+  const [search, setSearch] = useState("");
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [capabilities, setCapabilities] = useState<
+    import("@/domains/organization/api/types").OrganizationCapabilities | null
+  >(null);
   const [members, setMembers] = useState<Array<{ id: string; name: string; email?: string }>>([]);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
-  // Sync with URL parameter for channel selection
+  const activeChannelId = searchParams.get("channel");
+  const currentUserId = session.user?.id ?? "";
+  const orgIdForQuery =
+    session.workspace.status === "ready"
+      ? (session.workspace.organizationId ?? undefined)
+      : undefined;
+
   useEffect(() => {
-    const channelId = searchParams.get("channel");
-    if (channelId && channels.find((c) => c.id === channelId)) {
-      setActiveChannelId(channelId);
-    } else if (!activeChannelId && channels.length > 0) {
-      // Auto-select first channel if none selected
-      setActiveChannelId(channels[0].id);
-    }
-  }, [channels, activeChannelId, searchParams]);
-
-  const handleChannelSelect = (channelId: string) => {
-    setActiveChannelId(channelId);
-    // Update URL to reflect channel selection
-    router.push(`/inbox?channel=${channelId}`);
-  };
-
-  const orgIdForQuery = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
-
-  // Fetch capabilities
-  useEffect(() => {
-    if (orgIdForQuery) {
-      getOrganizationCapabilities(orgIdForQuery).then(setCapabilities);
-    }
-  }, [orgIdForQuery]);
-
-  // Fetch members
-  useEffect(() => {
-    if (orgIdForQuery) {
-      listOrganizationMembers(orgIdForQuery).then((membersData) => {
-        setMembers(membersData.map((m: OrganizationMember) => ({
+    if (!orgIdForQuery) return;
+    getOrganizationCapabilities(orgIdForQuery).then(setCapabilities);
+    listOrganizationMembers(orgIdForQuery).then((data) =>
+      setMembers(
+        data.map((m: OrganizationMember) => ({
           id: m.userId,
           name: m.user?.name || m.user?.email || m.userId,
           email: m.user?.email,
-        })));
-      });
-    }
+        })),
+      ),
+    );
   }, [orgIdForQuery]);
 
   const canCreateChannels = capabilities?.canCreateProjects ?? false;
+  const createChannelMutation = useCreateChannelMutation(orgId ?? undefined);
 
   const projectsResult = useProjectsIndexQuery(orgIdForQuery);
   const projects = projectsResult?.results ?? [];
-
   const clientsResult = useClientsIndexQuery(orgIdForQuery);
   const clients = clientsResult?.results ?? [];
-
   const spaces = useWorkspaceSpacesQuery(orgIdForQuery) ?? [];
 
-  const filteredChannels = channels.filter((channel) =>
-    channel.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  const toggle = (section: string) =>
+    setCollapsed((prev) => ({ ...prev, [section]: !prev[section] }));
+
+  // Filter channels by search
+  const filtered = search.trim()
+    ? channels.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()))
+    : channels;
+
+  const globalChannels = filtered.filter(
+    (c) => c.type === "organization" || c.type === "dm" || c.type === "space" || c.type === "project",
   );
-
-  const organizationChannels = filteredChannels.filter((c) => c.type === "organization");
-  const spaceChannels = filteredChannels.filter((c) => c.type === "space");
-  const projectChannels = filteredChannels.filter((c) => c.type === "project");
-  const clientChannels = filteredChannels.filter((c) => c.type === "client");
-  const dmChannels = filteredChannels.filter((c) => c.type === "dm");
-
-  const toggleSection = (section: string) => {
-    setCollapsedSections((prev) => ({ ...prev, [section]: !prev[section] }));
-  };
+  const clientChannels = filtered.filter((c) => c.type === "client");
 
   if (isLoadingChannels) {
     return (
       <SidebarPanelLayout title="Inbox" navbarActions={null}>
-        <div className="flex flex-col gap-3 px-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-10 w-full animate-pulse rounded-lg bg-muted" />
+        <div className="flex flex-col gap-2">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="h-8 w-full animate-pulse rounded-md bg-muted" />
           ))}
         </div>
       </SidebarPanelLayout>
@@ -268,111 +284,99 @@ export function SidebarInboxPanel() {
   }
 
   return (
-    <SidebarPanelLayout
-      title="Inbox"
-      navbarActions={
-        <CreateChannelButton
-          orgId={orgId ?? undefined}
-          canCreate={canCreateChannels}
-          projects={projects}
-          clients={clients}
-          spaces={spaces}
-          members={members}
-        />
-      }
-    >
-      <div className="flex flex-col">
-        {/* Search */}
-        <div className="px-4 mb-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search channels..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-8 text-sm"
-            />
-          </div>
-        </div>
-
-        {/* Channel list */}
-        <div className="flex-1 overflow-auto px-4">
-          <ChannelSection
-            title="Organization"
-            icon={Hash}
-            channels={organizationChannels}
-            activeChannelId={activeChannelId}
-            onChannelSelect={handleChannelSelect}
-            isCollapsed={collapsedSections.org}
-            onToggle={() => toggleSection("org")}
+    <>
+      <SidebarPanelLayout
+        title="Inbox"
+        navbarActions={
+          canCreateChannels ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              title="New channel"
+              onClick={() => setWizardOpen(true)}
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          ) : null
+        }
+      >
+        {/* Inline search — always visible */}
+        <div className="relative mb-3">
+          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Filter channels…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-md border border-border bg-muted/40 pl-8 pr-7 py-1.5 text-[13px] text-foreground placeholder:text-muted-foreground/60 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-colors"
           />
-
-          <ChannelSection
-            title="Spaces"
-            icon={Layers}
-            channels={spaceChannels}
-            activeChannelId={activeChannelId}
-            onChannelSelect={handleChannelSelect}
-            isCollapsed={collapsedSections.spaces}
-            onToggle={() => toggleSection("spaces")}
-          />
-
-          <ChannelSection
-            title="Projects"
-            icon={Hash}
-            channels={projectChannels}
-            activeChannelId={activeChannelId}
-            onChannelSelect={handleChannelSelect}
-            isCollapsed={collapsedSections.projects}
-            onToggle={() => toggleSection("projects")}
-          />
-
-          <ChannelSection
-            title="Clients"
-            icon={Hash}
-            channels={clientChannels}
-            activeChannelId={activeChannelId}
-            onChannelSelect={handleChannelSelect}
-            isCollapsed={collapsedSections.clients}
-            onToggle={() => toggleSection("clients")}
-          />
-
-          <ChannelSection
-            title="Direct Messages"
-            icon={Users}
-            channels={dmChannels}
-            activeChannelId={activeChannelId}
-            onChannelSelect={handleChannelSelect}
-            isCollapsed={collapsedSections.dms}
-            onToggle={() => toggleSection("dms")}
-          />
-
-          {filteredChannels.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <InboxIcon className="h-8 w-8 text-muted-foreground/40 mb-2" />
-              <p className="text-sm text-muted-foreground">No channels found</p>
-            </div>
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
           )}
         </div>
 
-        {/* Quick links */}
-        <div className="px-4 py-3 border-t border-border/50">
-          <WorkspaceLink
-            href="/inbox"
-            className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-accent/30 hover:text-foreground"
-          >
-            <InboxIcon className="h-4 w-4" />
-            <span>All Messages</span>
-          </WorkspaceLink>
-          <WorkspaceLink
-            href="/inbox?filter=unread"
-            className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-accent/30 hover:text-foreground"
-          >
-            <InboxIcon className="h-4 w-4" />
-            <span>Unread</span>
-          </WorkspaceLink>
-        </div>
-      </div>
-    </SidebarPanelLayout>
+        {/* Channel sections */}
+        <ChannelSection
+          title="Channels"
+          channels={globalChannels}
+          activeChannelId={activeChannelId}
+          isCollapsed={collapsed.global ?? false}
+          onToggle={() => toggle("global")}
+          currentUserId={currentUserId}
+          onEditChannel={(id) => console.log("edit", id)}
+          onDeleteChannel={(id) => console.log("delete", id)}
+        />
+
+        <ChannelSection
+          title="Clients"
+          channels={clientChannels}
+          activeChannelId={activeChannelId}
+          isCollapsed={collapsed.clients ?? false}
+          onToggle={() => toggle("clients")}
+          currentUserId={currentUserId}
+          onEditChannel={(id) => console.log("edit", id)}
+          onDeleteChannel={(id) => console.log("delete", id)}
+        />
+
+        {filtered.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <Hash className="mb-2 h-8 w-8 text-muted-foreground/30" />
+            <p className="text-xs text-muted-foreground">
+              {search ? "No channels match your search" : "No channels yet"}
+            </p>
+            {canCreateChannels && !search && (
+              <button
+                type="button"
+                onClick={() => setWizardOpen(true)}
+                className="mt-3 text-xs font-medium text-primary hover:underline"
+              >
+                Create the first channel
+              </button>
+            )}
+          </div>
+        )}
+      </SidebarPanelLayout>
+
+      {/* Channel wizard — rendered at root level so it isn't clipped by the panel */}
+      <CreateChannelWizard
+        open={wizardOpen}
+        onOpenChange={setWizardOpen}
+        onCreateChannel={async (data) => {
+          await createChannelMutation.mutateAsync(data);
+        }}
+        isLoading={createChannelMutation.isPending}
+        projects={projects}
+        clients={clients}
+        spaces={spaces}
+        members={members}
+      />
+    </>
   );
 }

@@ -23,7 +23,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const isOrganizationPending = organizationContext?.isPending ?? false;
   const hasOrganizationAccessDenied = organizationContext?.hasAccessDenied ?? false;
   const isConvexAuthenticated = convexAuth.isAuthenticated;
-  const isConvexAuthPending = !convexAuth.isLoading ? false : convexAuth.isLoading;
+  const isConvexAuthPending = convexAuth.isLoading;
 
   const workspaceStatus = useMemo(
     () =>

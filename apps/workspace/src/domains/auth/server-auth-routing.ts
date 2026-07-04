@@ -17,7 +17,9 @@ export async function redirectAuthenticatedUserFromAuthEntry(locale: string, cal
     redirect(target);
   }
 
-  redirect(localizedPath(locale, "/ws"));
+  // Default to organization selection page after auth
+  // The choose-org page will redirect to /ws if user already has an org
+  redirect(localizedPath(locale, "/choose-org"));
 }
 
 export async function redirectInvalidChooseOrganizationAccess(locale: string) {

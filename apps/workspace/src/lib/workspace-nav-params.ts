@@ -40,6 +40,12 @@ export const PERSISTENT_PARAMS: PersistentParamConfig[] = [
     skipPaths: [],
   },
   {
+    // Eve agent session state — base64-encoded JSON managed by useEveChat.
+    // Must survive all navigations so the AI chat doesn't reset.
+    key: "state",
+    skipPaths: [],
+  },
+  {
     // Active space filter — carried so space context survives navigation
     // within a project. Cleared when switching projects or going global.
     key: "space",

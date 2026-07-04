@@ -66,7 +66,7 @@ function ToastView({
   const Icon = config.icon;
 
   return (
-    <div className="flex w-full items-start gap-3 rounded-lg border border-border/60 bg-background p-3 shadow-popover">
+    <div className="flex w-full items-start gap-3 rounded-lg border border-border/60 bg-secondary p-3 shadow-popover">
       <div
         className={cn(
           "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border",

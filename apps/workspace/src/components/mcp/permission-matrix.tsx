@@ -5,7 +5,7 @@ import { Search, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MCP_MODULES, MCP_ACTIONS, type QuickRoleId } from "@/server/domains/agents/constants/quick-roles";
+import { MCP_MODULES, MCP_ACTIONS, type QuickRoleId } from "./constants/quick-roles";
 
 export interface PermissionMatrixProps {
   permissions: Record<string, string[]>;
@@ -221,7 +221,7 @@ export interface QuickRoleSelectorProps {
 }
 
 export function QuickRoleSelector({ selectedRole, onRoleSelect, disabled }: QuickRoleSelectorProps) {
-  const { QUICK_ROLES, getQuickRolesByCategory } = require("@/server/domains/agents/constants/quick-roles");
+  const { QUICK_ROLES, getQuickRolesByCategory } = require("./constants/quick-roles");
   
   const basicRoles = getQuickRolesByCategory("basic");
   const operationalRoles = getQuickRolesByCategory("operational");

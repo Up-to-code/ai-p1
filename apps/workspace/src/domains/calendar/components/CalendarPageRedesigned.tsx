@@ -100,7 +100,7 @@ export function CalendarPageRedesigned() {
 
   const actions = [
     {
-      label: t("actions.new"),
+      label: t("add"),
       icon: <Plus className="w-4 h-4" />,
       onClick: () => {},
       variant: "primary" as const,
@@ -111,7 +111,7 @@ export function CalendarPageRedesigned() {
 
   if (workspaceStatus !== "ready") {
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-full">
         <DomainHeader
           domain="Calendar"
           currentSection="Schedule"
@@ -129,7 +129,7 @@ export function CalendarPageRedesigned() {
 
   if (isQueryBlocked) {
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-full">
         <DomainHeader
           domain="Calendar"
           currentSection="Schedule"

@@ -1,12 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, Loader2, Mic, Paperclip } from "lucide-react";
+import { ArrowUp, Loader2, Mic, Paperclip, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
+import gsap from "gsap";
 import AIMotionLogo from "@/components/ui/ai-motion/ai-motion-logo";
 import { AiAttachmentChips, type PendingAttachment } from "./ai-attachment-chips";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from "@/components/ui/dropdown-menu";
 
 type AiComposerProps = {
   value: string;
@@ -15,6 +23,29 @@ type AiComposerProps = {
   isSending?: boolean;
   layout?: "landing" | "thread";
   placeholder?: string;
+  mode?: ComposerMode;
+  onModeChange?: (v: ComposerMode) => void;
+  planMode?: boolean;
+  onPlanModeChange?: (v: boolean) => void;
+};
+
+export type ComposerMode = "ai" | "work" | "plan";
+
+function modeBorderGradient(mode: ComposerMode): string {
+  switch (mode) {
+    case "plan":
+      return "conic-gradient(from var(--angle, 0deg), #F9724F 0deg, #EF4444 60deg, #F59E0B 120deg, #F97316 180deg, #EF4444 240deg, #F9724F 300deg, #F9724F 360deg) border-box";
+    case "work":
+      return "conic-gradient(from var(--angle, 0deg), #0C7DF3 0deg, #45C5F9 60deg, #F2488B 120deg, #F9724F 180deg, #EF4444 220deg, #834DF1 280deg, #0C7DF3 360deg) border-box";
+    default:
+      return "conic-gradient(from var(--angle, 0deg), #0C7DF3 0deg, #45C5F9 48deg, #3446EC 95deg, #834DF1 145deg, #DF3FDD 190deg, #F2488B 238deg, #F9724F 292deg, #EBA7E7 330deg, #0C7DF3 360deg) border-box";
+  }
+}
+
+const modeClassNames: Record<ComposerMode, string> = {
+  ai: "border-blue-500/40 bg-blue-500/10 text-blue-500 dark:text-[#45C5F9] hover:bg-blue-500/15",
+  work: "border-[#0C7DF3]/40 bg-[#0C7DF3]/10 text-[#0C7DF3] dark:text-[#45C5F9] hover:bg-[#0C7DF3]/15",
+  plan: "border-[#EF4444]/40 bg-[#EF4444]/10 text-[#EF4444] dark:text-[#F9724F] hover:bg-[#EF4444]/15",
 };
 
 export default function AiComposer({
@@ -24,6 +55,10 @@ export default function AiComposer({
   isSending = false,
   layout = "thread",
   placeholder,
+  mode,
+  onModeChange,
+  planMode = false,
+  onPlanModeChange,
 }: AiComposerProps) {
   const t = useTranslations("Assistant");
   const locale = useLocale();
@@ -35,6 +70,12 @@ export default function AiComposer({
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const borderRef = useRef<HTMLDivElement>(null);
+  const selectedMode: ComposerMode = mode ?? (planMode ? "plan" : "ai");
+  const setSelectedMode = (nextMode: ComposerMode) => {
+    onModeChange?.(nextMode);
+    onPlanModeChange?.(nextMode === "plan");
+  };
 
   // Auto-resize textarea
   useEffect(() => {
@@ -44,6 +85,25 @@ export default function AiComposer({
       textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
     }
   }, [value]);
+
+  // GSAP border spin when sending
+  useEffect(() => {
+    const el = borderRef.current;
+    if (!el) return;
+    if (isSending) {
+      const ctx = gsap.context(() => {
+        gsap.to(el, {
+          "--angle": "360deg",
+          duration: 3.2,
+          ease: "none",
+          repeat: -1,
+        });
+      });
+      return () => ctx.revert();
+    } else {
+      gsap.set(el, { "--angle": "0deg" });
+    }
+  }, [isSending]);
 
   const handleFileSelect = (files: FileList | File[]) => {
     const newAttachments = Array.from(files).map((file) => ({
@@ -68,27 +128,22 @@ export default function AiComposer({
     if (!trimmedText && pendingAttachments.length === 0) return;
     if (isSending) return;
 
-    const files = pendingAttachments.map((attachment) => attachment.file);
+    const currentAttachments = pendingAttachments;
+    const files = currentAttachments.map((attachment) => attachment.file);
 
-    setPendingAttachments((prev) =>
-      prev.map((attachment) => ({ ...attachment, status: "uploading" as const, error: undefined })),
-    );
+    // Clear input immediately
+    onChange("");
+    setPendingAttachments([]);
+
+    // Revoke object URLs
+    currentAttachments.forEach((attachment) => {
+      if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
+    });
 
     try {
       await onSend(trimmedText, files);
-
-      onChange("");
-      setPendingAttachments((prev) => {
-        prev.forEach((attachment) => {
-          if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
-        });
-        return [];
-      });
     } catch (error) {
-      const message = error instanceof Error ? error.message : t("sendFailed");
-      setPendingAttachments((prev) =>
-        prev.map((attachment) => ({ ...attachment, status: "error" as const, error: message })),
-      );
+      // Log but don't restore UI
     }
   };
 
@@ -105,7 +160,7 @@ export default function AiComposer({
     <div
       className={cn(
         "w-full transition-all",
-        layout === "landing" ? "mx-auto max-w-3xl" : "px-3 sm:px-4",
+        layout === "landing" ? "mx-auto max-w-[64rem]" : "",
       )}
       onDragEnter={(e) => { e.preventDefault(); setIsDraggingFiles(true); }}
       onDragOver={(e) => { e.preventDefault(); }}
@@ -117,13 +172,19 @@ export default function AiComposer({
       }}
     >
       <div
+        ref={borderRef}
         className={cn(
-          "relative flex flex-col overflow-hidden rounded-[20px] border bg-card transition-all duration-300",
-          "border-border text-text-primary",
-          "focus-within:border-[var(--q-user-bubble)] focus-within:ring-2 focus-within:ring-[var(--q-user-bubble)]/10",
-          isDraggingFiles && "border-[var(--q-user-bubble)] bg-surface-elevated ring-2 ring-[var(--q-user-bubble)]/10",
+          "relative flex flex-col overflow-hidden rounded-[22px] border border-transparent bg-background/92 shadow-[0_18px_60px_rgba(12,18,35,0.14)] backdrop-blur-xl transition-all duration-300",
+          "text-text-primary dark:bg-background/88",
+          isDraggingFiles && "bg-surface-elevated",
+          "focus-within:ring-2 focus-within:ring-[#0C7DF3]/10",
         )}
+        style={{
+          background:
+            `linear-gradient(var(--background), var(--background)) padding-box, ${modeBorderGradient(selectedMode)}`,
+        }}
       >
+
         <input
           ref={fileInputRef}
           type="file"
@@ -199,20 +260,59 @@ export default function AiComposer({
                 )}
               >
                 {isRecording ? (
-                  <AIMotionLogo state="matching" size="compact" className="scale-[0.25]" />
+                  <AIMotionLogo state="matching" size="compact" />
                 ) : (
                   <Mic className="h-3.5 w-3.5" />
                 )}
               </button>
+
+              {(onModeChange || onPlanModeChange) && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={
+                      <button
+                        type="button"
+                        disabled={isSending}
+                        className={cn(
+                          "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-all active:scale-95 disabled:opacity-50",
+                          modeClassNames[selectedMode],
+                        )}
+                      >
+                        <span>{selectedMode}</span>
+                        <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+                      </button>
+                    }
+                  />
+                  <DropdownMenuContent align="start" sideOffset={6}>
+                    <DropdownMenuRadioGroup
+                      value={selectedMode}
+                      onValueChange={(val: string) => setSelectedMode(val as ComposerMode)}
+                    >
+                      <DropdownMenuRadioItem value="ai" className="text-xs font-semibold">
+                        <span className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full bg-blue-500" />
+                          AI
+                        </span>
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="work" className="text-xs font-semibold">
+                        <span className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full bg-sky-500" />
+                          Work
+                        </span>
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="plan" className="text-xs font-semibold">
+                        <span className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full bg-red-500" />
+                          Plan
+                        </span>
+                      </DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
 
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-              {isSending && (
-                <div className="flex min-w-0 items-center gap-2 px-1 sm:px-2">
-                   <AIMotionLogo state="thinking" size="compact" className="scale-[0.3]" />
-                   <span className="hidden truncate text-[10px] font-black uppercase tracking-widest text-text-muted sm:block">{t("processing")}</span>
-                </div>
-              )}
               <button
                 onClick={() => void handleSubmit()}
                 disabled={isSending || !isTyping}

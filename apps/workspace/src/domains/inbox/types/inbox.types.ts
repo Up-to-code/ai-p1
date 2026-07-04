@@ -42,7 +42,7 @@ export interface MessageReaction {
 }
 
 export interface MessageMention {
-  type: "user" | "task" | "client" | "deal" | "project";
+  type: "user" | "task" | "client" | "deal" | "project" | "document" | "file";
   id: string;
   name: string;
 }

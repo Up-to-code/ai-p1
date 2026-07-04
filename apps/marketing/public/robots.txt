@@ -1,0 +1,18 @@
+# Allow all crawlers to access the site
+User-agent: *
+
+# Disallow Next.js static assets and build files
+Disallow: /_next/static/
+Disallow: /_next/image
+
+# Disallow API routes (if any public ones exist)
+Disallow: /api/
+
+# Disallow authentication and account management
+Disallow: /auth/
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /sign-out
+
+# Sitemap location (update if you have a sitemap)
+# Sitemap: https://www.qentrah.com/sitemap.xml

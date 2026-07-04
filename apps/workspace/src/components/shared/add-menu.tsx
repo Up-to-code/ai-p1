@@ -31,11 +31,13 @@ export function AddMenu({
 }: AddMenuProps) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <Button className={className ?? "h-9 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm"}>
-          {triggerLabel}
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <Button className={className ?? "h-9 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm"}>
+            {triggerLabel}
+          </Button>
+        }
+      />
       <DropdownMenuContent align={align} className="w-48 rounded-xl border border-border bg-card shadow-xl p-1.5">
         {items.map((item, i) => (
           <DropdownMenuItem

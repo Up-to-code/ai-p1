@@ -2,7 +2,6 @@ import { defineSchema } from "convex/server";
 import { organizationTables } from "./schema/organization";
 import { billingTables } from "./schema/billing";
 import { partnerTables } from "./schema/partner";
-import { agentTables } from "./schema/agents";
 import { userTables } from "./schema/users";
 import { domainTables } from "./schema/domains";
 import { customFieldTables } from "./schema/custom_fields";
@@ -16,7 +15,6 @@ export default defineSchema({
   ...organizationTables,
   ...billingTables,
   ...partnerTables,
-  ...agentTables,
   ...userTables,
   ...domainTables,
   ...customFieldTables,

@@ -1,11 +1,40 @@
-export default function AuthLayout({
+import { ClerkProvider } from "@clerk/nextjs";
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
+import { LocaleDocumentAttrs } from "@/components/i18n/locale-document-attrs";
+import { UiLocalizer } from '@/components/i18n/ui-localizer';
+import { BackendProviders } from "@/components/providers/backend-providers";
+import { ToastProvider } from "@/components/ui/toast";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
+
+export default async function AuthLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
+  const messages = await getMessages();
+
   return (
-    <div className="relative w-full">
-      {children}
-    </div>
+    <ClerkProvider>
+      <NextIntlClientProvider messages={messages}>
+        <BackendProviders>
+          <ThemeProvider>
+            <TooltipProvider>
+              <ToastProvider>
+                <LocaleDocumentAttrs locale={locale} />
+                <UiLocalizer />
+                <div className="relative w-full">
+                  {children}
+                </div>
+              </ToastProvider>
+            </TooltipProvider>
+          </ThemeProvider>
+        </BackendProviders>
+      </NextIntlClientProvider>
+    </ClerkProvider>
   );
 }

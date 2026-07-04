@@ -36,8 +36,8 @@ import {
 } from "../../settings-view-model";
 import { LoadingRow, NoOrganizationState, OrganizationSettingsSkeleton, RoleRow, Section, WorkRoleGrid } from "../shared";
 import { PermissionMatrix, QuickRoleSelector } from "@/components/mcp/permission-matrix";
-import type { QuickRoleId } from "@/server/domains/agents/constants/quick-roles";
-import { QUICK_ROLES } from "@/server/domains/agents/constants/quick-roles";
+import type { QuickRoleId } from "@/components/mcp/constants/quick-roles";
+import { QUICK_ROLES } from "@/components/mcp/constants/quick-roles";
 
 export function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "drawer" }) {
   const t = useTranslations("Organization");

@@ -169,7 +169,7 @@ export function DocsPageRedesigned({
 
   if (workspaceStatus !== "ready") {
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-full">
         <DomainHeader
           domain="Documents"
           currentSection="All Documents"
@@ -187,7 +187,7 @@ export function DocsPageRedesigned({
 
   if (tableData.length === 0) {
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-full">
         <DomainHeader
           domain="Documents"
           currentSection="All Documents"
@@ -204,7 +204,7 @@ export function DocsPageRedesigned({
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-full">
       <DomainHeader
         domain="Documents"
         currentSection={`${tableData.length} item${tableData.length !== 1 ? "s" : ""}`}

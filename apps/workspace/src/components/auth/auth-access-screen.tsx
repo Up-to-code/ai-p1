@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, ArrowRight, ChevronLeft, KeyRound, Loader2, Mail, UserRound } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, ChevronLeft, KeyRound, Loader2, Mail, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { FormEvent, useState } from "react";
 import { brandDomainUrl } from "@qentrah/brand-identity";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "@/i18n/routing";
 import type { AuthFlowPhase, ClerkSocialProvider } from "@/domains/auth/hooks/use-headless-clerk-auth";
+import { AnimatedSphere } from "@/components/auth";
 
 type AuthAccessScreenProps = {
   mode: "sign-in" | "sign-up";
@@ -21,9 +22,12 @@ type AuthAccessScreenProps = {
   onCredentialsSubmit: (input: { emailAddress: string; firstName?: string; lastName?: string; password: string }) => void;
   onSocialSignIn: (provider: ClerkSocialProvider) => void;
   onVerifyCode: (code: string) => void;
+  onForgotPassword: (emailAddress: string) => void;
+  onVerifyResetCode: (code: string) => void;
+  onSubmitNewPassword: (password: string) => void;
+  onGoBack: () => void;
 };
 
-const authVideoUrl = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/agentic-hero-9yW3wnTNMfn2U6lsVhTTZSJFEvAoSj.mp4";
 const isAppleAuthEnabled = process.env.NEXT_PUBLIC_ENABLE_APPLE_AUTH === "true";
 
 function GoogleMark() {
@@ -91,6 +95,18 @@ function PendingSpinner() {
   return <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />;
 }
 
+function ErrorBanner({ message }: { message: string }) {
+  return (
+    <div
+      className="flex gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold leading-5 text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200"
+      role="alert"
+    >
+      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+      <p>{message}</p>
+    </div>
+  );
+}
+
 export function AuthAccessScreen({
   error,
   isPending,
@@ -98,6 +114,10 @@ export function AuthAccessScreen({
   onCredentialsSubmit,
   onSocialSignIn,
   onVerifyCode,
+  onForgotPassword,
+  onVerifyResetCode,
+  onSubmitNewPassword,
+  onGoBack,
   pendingProvider,
   phase,
 }: AuthAccessScreenProps) {
@@ -105,26 +125,71 @@ export function AuthAccessScreen({
   const locale = useLocale();
   const isAr = locale === "ar";
   const isSignUp = mode === "sign-up";
+
   const [emailAddress, setEmailAddress] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
-  const isEmailPending = isPending && !pendingProvider;
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [forgotEmail, setForgotEmail] = useState("");
 
-  function handleCredentialsSubmit(event: FormEvent<HTMLFormElement>) {
+  const isEmailPending = isPending && !pendingProvider;
+  const isForgotFlow = phase === "forgot-password" || phase === "reset-code" || phase === "new-password";
+
+  async function handleCredentialsSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onCredentialsSubmit({ emailAddress, firstName, lastName, password });
+    await onCredentialsSubmit({ emailAddress, firstName, lastName, password });
   }
 
-  function handleVerifySubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleVerifySubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onVerifyCode(verificationCode);
+    await onVerifyCode(verificationCode);
+  }
+
+  async function handleForgotPasswordSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await onForgotPassword(forgotEmail || emailAddress);
+  }
+
+  async function handleVerifyResetCodeSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await onVerifyResetCode(resetCode);
+  }
+
+  async function handleNewPasswordSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await onSubmitNewPassword(newPassword);
   }
 
   return (
-    <main className="min-h-svh overflow-x-hidden bg-[oklch(97.5%_0.006_255)] text-foreground dark:bg-[oklch(8.5%_0.012_255)] lg:grid lg:min-h-screen lg:grid-cols-2">
-      <section className={`flex min-h-svh flex-col px-4 py-5 sm:px-8 lg:min-h-screen lg:px-12 lg:py-8 ${isAr ? "lg:[grid-column:2]" : "lg:[grid-column:1]"}`}>
+    <main className="relative min-h-screen overflow-hidden bg-[oklch(97.5%_0.006_255)] text-foreground dark:bg-[oklch(8.5%_0.012_255)]">
+      {/* Animated Sphere Background */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] lg:w-[800px] lg:h-[800px] opacity-30 pointer-events-none dark-invert-canvas">
+        <AnimatedSphere />
+      </div>
+
+      {/* Grid Lines Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={`h-${i}`}
+            className="absolute h-px bg-foreground/10"
+            style={{ top: `${12.5 * (i + 1)}%`, left: 0, right: 0 }}
+          />
+        ))}
+        {[...Array(12)].map((_, i) => (
+          <div
+            key={`v-${i}`}
+            className="absolute w-px bg-foreground/10"
+            style={{ left: `${8.33 * (i + 1)}%`, top: 0, bottom: 0 }}
+          />
+        ))}
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 flex min-h-screen flex-col px-4 py-5 sm:px-8">
         <div className="flex items-center justify-between gap-4">
           <AuthBrandLockup />
           <Link
@@ -142,52 +207,75 @@ export function AuthAccessScreen({
 
             <div className="space-y-3">
               <h1 className="text-[32px] font-semibold leading-tight tracking-0 text-foreground sm:text-4xl rtl:leading-[1.25]">
-                {isSignUp ? t("createAccount") : t("title")}
+                {phase === "forgot-password"
+                  ? t("forgotPasswordTitle")
+                  : phase === "reset-code"
+                  ? t("resetCodeTitle")
+                  : phase === "new-password"
+                  ? t("newPasswordTitle")
+                  : isSignUp
+                  ? t("createAccount")
+                  : t("title")}
               </h1>
               <p className="max-w-sm text-sm font-medium leading-6 text-text-secondary">
-                {isSignUp ? t("createAccountDesc") : t("description")}
+                {phase === "forgot-password"
+                  ? t("forgotPasswordHelp")
+                  : phase === "reset-code"
+                  ? t("resetCodeHelp")
+                  : phase === "new-password"
+                  ? t("newPasswordHelp")
+                  : isSignUp
+                  ? t("createAccountDesc")
+                  : t("description")}
               </p>
             </div>
 
-            <div className={`mt-8 grid gap-3 ${isAppleAuthEnabled ? "sm:grid-cols-2" : ""}`}>
-              <Button
-                className="h-12 rounded-2xl border-border bg-white text-sm font-bold text-foreground hover:bg-muted/50 dark:border-white/10 dark:bg-white/5"
-                disabled={isPending}
-                onClick={() => onSocialSignIn("google")}
-                type="button"
-                variant="outline"
-              >
-                {isPending && pendingProvider === "google" ? <PendingSpinner /> : <GoogleMark />}
-                <span className="min-w-0 truncate">
-                  {isPending && pendingProvider === "google" ? t("connectingGoogle") : t("google")}
-                </span>
-              </Button>
-              {isAppleAuthEnabled ? (
-                <Button
-                  className="h-12 rounded-2xl border-border bg-white text-sm font-bold text-foreground hover:bg-muted/50 dark:border-white/10 dark:bg-white/5"
-                  disabled={isPending}
-                  onClick={() => onSocialSignIn("apple")}
-                  type="button"
-                  variant="outline"
-                >
-                  {isPending && pendingProvider === "apple" ? <PendingSpinner /> : <span className="text-lg leading-none"></span>}
-                  <span className="min-w-0 truncate">
-                    {isPending && pendingProvider === "apple" ? t("connectingApple") : t("apple")}
+            {/* Social sign-in buttons — hidden during forgot password flow */}
+            {!isForgotFlow ? (
+              <>
+                <div className={`mt-8 grid gap-3 ${isAppleAuthEnabled ? "sm:grid-cols-2" : ""}`}>
+                  <Button
+                    className="h-12 rounded-2xl border-border bg-white text-sm font-bold text-foreground hover:bg-muted/50 dark:border-white/10 dark:bg-white/5"
+                    disabled={isPending}
+                    onClick={() => onSocialSignIn("google")}
+                    type="button"
+                    variant="outline"
+                  >
+                    {isPending && pendingProvider === "google" ? <PendingSpinner /> : <GoogleMark />}
+                    <span className="min-w-0 truncate">
+                      {isPending && pendingProvider === "google" ? t("connectingGoogle") : t("google")}
+                    </span>
+                  </Button>
+                  {isAppleAuthEnabled ? (
+                    <Button
+                      className="h-12 rounded-2xl border-border bg-white text-sm font-bold text-foreground hover:bg-muted/50 dark:border-white/10 dark:bg-white/5"
+                      disabled={isPending}
+                      onClick={() => onSocialSignIn("apple")}
+                      type="button"
+                      variant="outline"
+                    >
+                      {isPending && pendingProvider === "apple" ? <PendingSpinner /> : <span className="text-lg leading-none"></span>}
+                      <span className="min-w-0 truncate">
+                        {isPending && pendingProvider === "apple" ? t("connectingApple") : t("apple")}
+                      </span>
+                    </Button>
+                  ) : null}
+                </div>
+
+                <div className="my-6 flex items-center gap-3">
+                  <span className="h-px flex-1 bg-border" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.08em] text-text-secondary">
+                    {t("or")}
                   </span>
-                </Button>
-              ) : null}
-            </div>
+                  <span className="h-px flex-1 bg-border" />
+                </div>
+              </>
+            ) : (
+              <div className="mt-8" />
+            )}
 
-            <div className="my-6 flex items-center gap-3">
-              <span className="h-px flex-1 bg-border" />
-              <span className="text-[10px] font-black uppercase tracking-[0.08em] text-text-secondary">
-                {t("or")}
-              </span>
-              <span className="h-px flex-1 bg-border" />
-            </div>
-            <div id="clerk-captcha" className="empty:hidden" />
-
-            {phase === "credentials" ? (
+            {/* ── Credentials form (initial / credentials / sso phases) ── */}
+            {(phase === "initial" || phase === "credentials" || phase === "sso") ? (
               <form className="space-y-4" onSubmit={handleCredentialsSubmit}>
                 {isSignUp ? (
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -229,6 +317,7 @@ export function AuthAccessScreen({
                     </div>
                   </div>
                 ) : null}
+
                 <div className="space-y-2">
                   <Label htmlFor="auth-email" className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary">
                     {t("emailLabel")}
@@ -248,10 +337,25 @@ export function AuthAccessScreen({
                     />
                   </div>
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="auth-password" className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary">
-                    {t("passwordLabel")}
-                  </Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="auth-password" className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary">
+                      {t("passwordLabel")}
+                    </Label>
+                    {!isSignUp ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setForgotEmail(emailAddress);
+                          onForgotPassword(emailAddress);
+                        }}
+                        className="text-xs font-semibold text-primary hover:underline"
+                      >
+                        {t("forgotPassword")}
+                      </button>
+                    ) : null}
+                  </div>
                   <div className="relative">
                     <KeyRound className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
                     <Input
@@ -267,12 +371,12 @@ export function AuthAccessScreen({
                     />
                   </div>
                 </div>
-                {error ? (
-                  <div className="flex gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold leading-5 text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200" role="alert">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                    <p>{error}</p>
-                  </div>
-                ) : null}
+
+                {error ? <ErrorBanner message={error} /> : null}
+
+                {/* Required by Clerk for Smart CAPTCHA on sign-up flows */}
+                <div id="clerk-captcha" />
+
                 <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={isPending} type="submit">
                   {isEmailPending ? (
                     <>
@@ -287,7 +391,9 @@ export function AuthAccessScreen({
                   )}
                 </Button>
               </form>
-            ) : (
+
+            ) : phase === "mfa" ? (
+              /* ── MFA / email verification code ── */
               <form className="space-y-4" onSubmit={handleVerifySubmit}>
                 <div className="space-y-2">
                   <Label htmlFor="auth-code" className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary">
@@ -305,10 +411,7 @@ export function AuthAccessScreen({
                   />
                 </div>
                 {error ? (
-                  <div className="flex gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold leading-5 text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200" role="alert">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                    <p>{error}</p>
-                  </div>
+                  <ErrorBanner message={error} />
                 ) : (
                   <p className="text-sm font-medium leading-6 text-text-secondary">
                     {t("verificationSecondFactorHelp")}
@@ -328,79 +431,141 @@ export function AuthAccessScreen({
                   )}
                 </Button>
               </form>
-            )}
 
-            <LegalAgreement isAr={isAr} />
+            ) : phase === "forgot-password" ? (
+              /* ── Forgot password — enter email ── */
+              <form className="space-y-4" onSubmit={handleForgotPasswordSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email" className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary">
+                    {t("emailLabel")}
+                  </Label>
+                  <div className="relative">
+                    <Mail className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
+                    <Input
+                      autoComplete="email"
+                      className="h-12 rounded-2xl ps-11 text-start"
+                      id="reset-email"
+                      inputMode="email"
+                      onChange={(event) => setForgotEmail(event.target.value)}
+                      placeholder={t("emailPlaceholder")}
+                      required
+                      type="email"
+                      value={forgotEmail || emailAddress}
+                    />
+                  </div>
+                </div>
+                {error ? <ErrorBanner message={error} /> : null}
+                <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={isPending} type="submit">
+                  {isEmailPending ? (
+                    <>
+                      <PendingSpinner />
+                      {t("sendingResetCode")}
+                    </>
+                  ) : (
+                    <>
+                      {t("sendResetCode")}
+                      <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                    </>
+                  )}
+                </Button>
+                <button
+                  type="button"
+                  onClick={onGoBack}
+                  className="flex w-full items-center justify-center gap-2 text-sm font-semibold text-text-secondary hover:text-foreground"
+                >
+                  <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+                  {t("backToSignIn")}
+                </button>
+              </form>
 
-            <p className="mt-5 text-center text-sm font-semibold text-text-secondary">
-              {isSignUp ? t("hasAccount") : t("noAccount")}{" "}
-              <Link className="text-primary hover:underline" href={isSignUp ? "/sign-in" : "/sign-up"}>
-                {isSignUp ? t("signInLink") : t("signUpLink")}
-              </Link>
-            </p>
-          </div>
-        </div>
-      </section>
+            ) : phase === "reset-code" ? (
+              /* ── Forgot password — verify emailed reset code ── */
+              <form className="space-y-4" onSubmit={handleVerifyResetCodeSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="reset-code" className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary">
+                    {t("verificationCodeLabel")}
+                  </Label>
+                  <Input
+                    autoComplete="one-time-code"
+                    className="h-12 rounded-2xl text-center text-lg font-black tracking-[0.16em]"
+                    id="reset-code"
+                    inputMode="numeric"
+                    onChange={(event) => setResetCode(event.target.value)}
+                    placeholder={t("verificationCodePlaceholder")}
+                    required
+                    value={resetCode}
+                  />
+                </div>
+                {error ? <ErrorBanner message={error} /> : null}
+                <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={isPending} type="submit">
+                  {isEmailPending ? (
+                    <>
+                      <PendingSpinner />
+                      {t("verifyingCode")}
+                    </>
+                  ) : (
+                    <>
+                      {t("verifyCode")}
+                      <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                    </>
+                  )}
+                </Button>
+              </form>
 
-      <section
-        className={`relative hidden min-h-screen overflow-hidden bg-[var(--auth-visual-base)] text-[var(--auth-visual-text)] [--auth-visual-base:var(--q-bg-secondary)] [--auth-visual-copy:color-mix(in_srgb,var(--q-text-primary)_62%,transparent)] [--auth-visual-logo-bg:color-mix(in_srgb,var(--q-bg-secondary)_75%,transparent)] [--auth-visual-logo-border:color-mix(in_srgb,var(--q-text-primary)_10%,transparent)] [--auth-visual-text:var(--q-text-primary)] dark:[--auth-visual-base:var(--q-bg)] dark:[--auth-visual-copy:color-mix(in_srgb,var(--q-text-primary)_62%,transparent)] dark:[--auth-visual-logo-bg:color-mix(in_srgb,var(--q-card)_76%,transparent)] dark:[--auth-visual-logo-border:color-mix(in_srgb,var(--q-text-primary)_12%,transparent)] dark:[--auth-visual-text:var(--q-text-primary)] lg:block ${isAr ? "lg:[grid-column:1] lg:[grid-row:1]" : "lg:[grid-column:2] lg:[grid-row:1]"}`}
-      >
-        <video
-          aria-hidden="true"
-          autoPlay
-          className="absolute inset-0 h-full w-full scale-105 object-cover transition-opacity dark:opacity-45"
-          loop
-          muted
-          playsInline
-          src={authVideoUrl}
-        />
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0"
-          style={{
-            height: "68%",
-            background:
-              "linear-gradient(to top, var(--auth-visual-base) 0%, var(--auth-visual-base) 18%, color-mix(in srgb, var(--auth-visual-base) 86%, transparent) 36%, color-mix(in srgb, var(--auth-visual-base) 50%, transparent) 56%, color-mix(in srgb, var(--auth-visual-base) 15%, transparent) 76%, transparent 100%)",
-          }}
-        />
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0"
-          style={{
-            height: "28%",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-            maskImage: "linear-gradient(to top, black 0%, transparent 100%)",
-            WebkitMaskImage: "linear-gradient(to top, black 0%, transparent 100%)",
-          }}
-        />
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0"
-          style={{
-            height: "48%",
-            backdropFilter: "blur(4px)",
-            WebkitBackdropFilter: "blur(4px)",
-            maskImage: "linear-gradient(to top, black 0%, transparent 100%)",
-            WebkitMaskImage: "linear-gradient(to top, black 0%, transparent 100%)",
-          }}
-        />
+            ) : phase === "new-password" ? (
+              /* ── Forgot password — set new password ── */
+              <form className="space-y-4" onSubmit={handleNewPasswordSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password" className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary">
+                    {t("newPasswordLabel")}
+                  </Label>
+                  <div className="relative">
+                    <KeyRound className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
+                    <Input
+                      autoComplete="new-password"
+                      className="h-12 rounded-2xl ps-11 text-start"
+                      id="new-password"
+                      minLength={8}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                      placeholder={t("passwordPlaceholder")}
+                      required
+                      type="password"
+                      value={newPassword}
+                    />
+                  </div>
+                </div>
+                {error ? <ErrorBanner message={error} /> : null}
+                <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={isPending} type="submit">
+                  {isEmailPending ? (
+                    <>
+                      <PendingSpinner />
+                      {t("settingPassword")}
+                    </>
+                  ) : (
+                    <>
+                      {t("setNewPassword")}
+                      <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                    </>
+                  )}
+                </Button>
+              </form>
 
-        <div className="relative z-10 flex min-h-screen flex-col justify-between p-10">
-          <AuthBrandLockup className="[&>span]:text-[var(--auth-visual-text)]" />
-
-          <div className="max-w-xl pb-6">
-            {t("visualEyebrow") ? (
-              <p className="mb-5 max-w-sm text-[10px] font-black uppercase leading-5 tracking-[0.08em] text-[var(--q-accent)]">
-                {t("visualEyebrow")}
-              </p>
             ) : null}
-            <h2 className="max-w-[14ch] text-5xl font-light leading-none tracking-0 xl:text-6xl rtl:leading-[1.16]">
-              {t("visualTitle")}
-            </h2>
-            <p className="mt-6 max-w-md text-base font-medium leading-8 text-[var(--auth-visual-copy)]">
-              {t("visualDescription")}
-            </p>
+
+            {!isForgotFlow ? (
+              <>
+                <LegalAgreement isAr={isAr} />
+                <p className="mt-5 text-center text-sm font-semibold text-text-secondary">
+                  {isSignUp ? t("hasAccount") : t("noAccount")}{" "}
+                  <Link className="text-primary hover:underline" href={isSignUp ? "/sign-in" : "/sign-up"}>
+                    {isSignUp ? t("signInLink") : t("signUpLink")}
+                  </Link>
+                </p>
+              </>
+            ) : null}
           </div>
         </div>
-      </section>
+      </div>
     </main>
   );
 }

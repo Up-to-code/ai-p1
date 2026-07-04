@@ -8,11 +8,6 @@
  * @module
  */
 
-import type * as agents_confirmations from "../agents/confirmations.js";
-import type * as agents_read from "../agents/read.js";
-import type * as agents_readSurface from "../agents/readSurface.js";
-import type * as agents_validators from "../agents/validators.js";
-import type * as agents_write from "../agents/write.js";
 import type * as apiKeys from "../apiKeys.js";
 import type * as auth from "../auth.js";
 import type * as billing_creditSurface from "../billing/creditSurface.js";
@@ -133,7 +128,6 @@ import type * as projects_rollup from "../projects/rollup.js";
 import type * as projects_validators from "../projects/validators.js";
 import type * as projects_write from "../projects/write.js";
 import type * as requireAuth from "../requireAuth.js";
-import type * as schema_agents from "../schema/agents.js";
 import type * as schema_billing from "../schema/billing.js";
 import type * as schema_custom_fields from "../schema/custom_fields.js";
 import type * as schema_docs from "../schema/docs.js";
@@ -182,11 +176,6 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  "agents/confirmations": typeof agents_confirmations;
-  "agents/read": typeof agents_read;
-  "agents/readSurface": typeof agents_readSurface;
-  "agents/validators": typeof agents_validators;
-  "agents/write": typeof agents_write;
   apiKeys: typeof apiKeys;
   auth: typeof auth;
   "billing/creditSurface": typeof billing_creditSurface;
@@ -307,7 +296,6 @@ declare const fullApi: ApiFromModules<{
   "projects/validators": typeof projects_validators;
   "projects/write": typeof projects_write;
   requireAuth: typeof requireAuth;
-  "schema/agents": typeof schema_agents;
   "schema/billing": typeof schema_billing;
   "schema/custom_fields": typeof schema_custom_fields;
   "schema/docs": typeof schema_docs;

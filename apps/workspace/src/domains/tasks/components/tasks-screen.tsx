@@ -198,7 +198,7 @@ export function TasksScreen({
         onTabChange={(value) => setStatusFilter(value as TaskStatus | "all")}
         actions={[
           {
-            label: t("add"),
+            label: t("actions.new"),
             icon: Plus,
             variant: "primary",
             onClick: createNewTask,

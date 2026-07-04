@@ -1,98 +1,66 @@
 import createMiddleware from 'next-intl/middleware';
-import { clerkMiddleware } from "@clerk/nextjs/server";
-import { NextResponse, type NextRequest } from "next/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import * as Sentry from "@sentry/nextjs";
-import { brandDomainUrl } from "@qentrah/brand-identity";
+import { NextResponse } from "next/server";
 import { routing } from './i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
 
-const protectedRouteSegments = new Set([
-  "activity",
-  "billing",
-  "calendar",
-  "clients",
-  "dashboard",
-  "integrations",
-  "onboarding",
-  "organization",
-  "profile",
-  "projects",
-  "settings",
-  "team",
-  "usage",
-  "web-apps",
-  "ws",
+// Create route matcher for protected routes
+const isProtectedRoute = createRouteMatcher([
+  '/(ar|en)/ai/:path*',
+  '/(ar|en)/inbox/:path*',
+  '/(ar|en)/dashboard/:path*',
+  '/(ar|en)/projects/:path*',
+  '/(ar|en)/tasks/:path*',
+  '/(ar|en)/calendar/:path*',
+  '/(ar|en)/clients/:path*',
+  '/(ar|en)/docs/:path*',
+  '/(ar|en)/settings/:path*',
+  '/(ar|en)/organization/:path*',
+  '/(ar|en)/ws/:path*',
 ]);
 
-const AUTH_ROUTE_REGEX = /^\/(ar|en)\/(sign-in|sign-up|sso-callback)(\/.*)?$/;
+// Create route matcher for public routes (auth pages)
+const isPublicRoute = createRouteMatcher([
+  '/(ar|en)/sign-in(.*)',
+  '/(ar|en)/sign-up(.*)',
+  '/(ar|en)/sso-callback(.*)',
+]);
 
-function isAuthRoute(pathname: string) {
-  return AUTH_ROUTE_REGEX.test(pathname);
-}
-
-function isProtectedRoute(request: NextRequest) {
-  const [locale, segment] = request.nextUrl.pathname.split("/").filter(Boolean);
-  return (locale === "ar" || locale === "en") && protectedRouteSegments.has(segment ?? "");
-}
-
-function isApiRoute(request: NextRequest) {
-  return request.nextUrl.pathname.startsWith("/api/");
-}
-
-function getRouteMetric(pathname: string) {
-  const segments = pathname
-    .split("/")
-    .filter(Boolean)
-    .slice(0, 3)
-    .map((segment, index) => {
-      if (index === 0 && (segment === "ar" || segment === "en")) {
-        return ":locale";
-      }
-
-      return /^\d+$|^[a-f0-9]{8,}$|^[A-Za-z0-9_-]{16,}$/.test(segment)
-        ? ":id"
-        : segment;
-    });
-
-  return segments.length > 0 ? `/${segments.join("/")}` : "/";
-}
-
-export default clerkMiddleware(async (auth, request: NextRequest) => {
+export default clerkMiddleware(async (auth, request) => {
   const startedAt = Date.now();
-  const route = getRouteMetric(request.nextUrl.pathname);
-  const locale = request.nextUrl.pathname.split("/").filter(Boolean)[0] ?? routing.defaultLocale;
+  const route = request.nextUrl.pathname;
+  const requestForMetrics = request;
 
   try {
-    // Skip auth for API routes
-    if (isApiRoute(request)) {
+    // Eve agent routes pass through without auth
+    if (route.startsWith("/eve/") || route.startsWith("/_eve_internal/")) {
       return NextResponse.next();
     }
 
-    // Get auth state
-    const { userId } = await auth();
+    // Localized Eve routes rewrite to the non-localized path
+    const localizedEveMatch = route.match(/^\/(ar|en)(\/(?:eve|_eve_internal)\/.*)$/);
+    if (localizedEveMatch) {
+      const url = request.nextUrl.clone();
+      url.pathname = localizedEveMatch[2];
+      return NextResponse.rewrite(url);
+    }
 
-    // Handle auth routes (sign-in, sign-up, sso-callback)
-    if (isAuthRoute(request.nextUrl.pathname)) {
-      if (userId) {
-        // User is authenticated, redirect to workspace.
-        // The DashboardAppWrapper will show a modal if no organization exists.
-        return NextResponse.redirect(new URL(`/${locale}/ws`, request.url));
-      }
-      // Not signed in, allow access to auth pages
+    // Public auth routes — pass through to next-intl
+    if (isPublicRoute(request)) {
       return intlMiddleware(request);
     }
 
-    // Handle protected routes
+    // Protected routes — use auth.protect() for v5 auto-redirect
     if (isProtectedRoute(request)) {
-      await auth.protect({
-        unauthenticatedUrl: new URL(`/${locale}`, brandDomainUrl("root")).toString(),
-      });
+      await auth.protect();
     }
 
+    // All other routes
     return intlMiddleware(request);
   } finally {
-    const attributes = { route, method: request.method };
+    const attributes = { route, method: requestForMetrics.method };
 
     Sentry.metrics.count("next.proxy.requests", 1, { attributes });
     Sentry.metrics.distribution("next.proxy.duration", Date.now() - startedAt, {
@@ -104,11 +72,7 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
 
 export const config = {
   matcher: [
-    "/",
-    "/(ar|en)/:path*",
-    "/mcp-docs",
-    "/mcp-docs/:path*",
-    "/api/v1/:path*",
-    "/api/uploadthing",
+    // Match all routes except static files
+    "/((?!_next/static|_next/image|favicon.ico|eve/|_eve_internal/).*)",
   ],
 };

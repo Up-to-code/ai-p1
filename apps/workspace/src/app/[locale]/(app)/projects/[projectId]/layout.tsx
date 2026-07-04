@@ -1,11 +1,12 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ProjectDetailLayout } from "@/domains/projects/components/detail/project-detail-layout";
 import { EditProjectForm } from "@/domains/projects/components/edit-project-form";
 import { useProjectQuery } from "@/domains/projects/api/projects";
 import { useAuthSession } from "@/domains/auth";
+import { useRouter } from "@/i18n/routing";
 
 export default function ProjectLayout({
   params,
@@ -16,7 +17,7 @@ export default function ProjectLayout({
   const pathname = usePathname();
   const isEditMode = pathname.endsWith("/edit");
 
-  // For edit page, render standalone form
+  // For edit page, render standalone modal form
   if (isEditMode) {
     return <EditPageWrapper projectId={projectId} />;
   }
@@ -27,8 +28,11 @@ export default function ProjectLayout({
 
 function EditPageWrapper({ projectId }: { projectId: string }) {
   const session = useAuthSession();
-  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId : undefined;
+  const router = useRouter();
+  const orgId =
+    session.workspace.status === "ready" ? session.workspace.organizationId : undefined;
   const project = useProjectQuery(orgId ?? undefined, projectId);
+  const [isOpen, setIsOpen] = useState(true);
 
   if (project === undefined) {
     return (
@@ -46,9 +50,17 @@ function EditPageWrapper({ projectId }: { projectId: string }) {
     );
   }
 
+  function handleClose() {
+    setIsOpen(false);
+    router.push(`/projects/${projectId}/overview`);
+  }
+
   return (
-    <div className="mx-auto max-w-3xl px-6 py-12">
-      <EditProjectForm project={project} />
-    </div>
+    <EditProjectForm
+      project={project}
+      isOpen={isOpen}
+      onSuccess={() => setIsOpen(false)}
+      onCancel={handleClose}
+    />
   );
 }

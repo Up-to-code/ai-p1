@@ -94,21 +94,23 @@ export function ViewSwitcher<T extends string = string>({
 
       {activeView && (
         <DropdownMenu>
-          <DropdownMenuTrigger>
-            <button
-              type="button"
-              className={cn(
-                "flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                triggerClassName
-              )}
-              aria-label="Add view"
-            >
-              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="h-3.5 w-3.5">
-                <line x1="7" y1="3" x2="7" y2="11" />
-                <line x1="3" y1="7" x2="11" y2="7" />
-              </svg>
-            </button>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+            render={
+              <button
+                type="button"
+                className={cn(
+                  "flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                  triggerClassName
+                )}
+                aria-label="Add view"
+              >
+                <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="h-3.5 w-3.5">
+                  <line x1="7" y1="3" x2="7" y2="11" />
+                  <line x1="3" y1="7" x2="11" y2="7" />
+                </svg>
+              </button>
+            }
+          />
           <DropdownMenuContent align="start" className="w-56 rounded-xl border border-border bg-card shadow-xl p-1.5">
             {views.map((view) => (
               <DropdownMenuItem

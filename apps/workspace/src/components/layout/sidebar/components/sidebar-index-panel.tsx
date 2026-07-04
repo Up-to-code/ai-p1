@@ -66,18 +66,25 @@ export function SidebarIndexPanel() {
     : undefined;
   const currentUserId = session.user?.id;
 
-  const tasksQuery = useTasksQuery(orgId);
+  // Don't query if organization access is denied
+  const tasksQuery = session.status === "access_denied"
+    ? undefined
+    : useTasksQuery(orgId);
   const tasks = tasksQuery?.data ?? [];
 
-  const projectsQuery = useProjectsIndexQuery(orgId);
+  const projectsQuery = session.status === "access_denied"
+    ? undefined
+    : useProjectsIndexQuery(orgId);
   const projects = projectsQuery?.results ?? [];
 
-  const spaces = useWorkspaceSpacesQuery(orgId) ?? [];
+  const spaces = session.status === "access_denied"
+    ? []
+    : useWorkspaceSpacesQuery(orgId) ?? [];
 
   const { data: members } = useQuery({
     queryKey: ["organization-members-summary", orgId],
     queryFn: () => listOrganizationMembers(orgId ?? ""),
-    enabled: Boolean(orgId),
+    enabled: Boolean(orgId) && session.status !== "access_denied",
   });
 
   const isLoading = tasksQuery === undefined || projectsQuery === undefined || spaces === undefined;

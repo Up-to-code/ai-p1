@@ -40,11 +40,13 @@ export function ProjectListView() {
           </p>
         </div>
         <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Button className="h-9 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm">
-              {t("add")}
-            </Button>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+            render={
+              <Button className="h-9 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm">
+                {t("add")}
+              </Button>
+            }
+          />
           <DropdownMenuContent align="end" className="w-48 rounded-xl border border-border bg-card shadow-xl p-1.5">
             <DropdownMenuItem
               onClick={() => setIsCreateModalOpen(true)}

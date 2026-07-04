@@ -111,7 +111,7 @@ export function CalendarScreen() {
             title={headerLabel}
             actions={[
               {
-                label: t("actions.new"),
+                label: t("add"),
                 icon: Plus,
                 variant: "primary",
                 onClick: () => {},

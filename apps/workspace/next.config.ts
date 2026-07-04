@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 import path from "node:path";
 import createNextIntlPlugin from "next-intl/plugin";
+import { withEve } from "eve/next";
 
 const withNextIntl = createNextIntlPlugin();
 const appRoot = path.resolve();
@@ -51,8 +52,9 @@ const nextConfig: NextConfig = {
 };
 
 const nextIntlConfig = withNextIntl(nextConfig);
+const eveConfig = withEve(nextIntlConfig);
 
-export default uploadSentrySourceMaps ? withSentryConfig(nextIntlConfig, {
+export default uploadSentrySourceMaps ? withSentryConfig(eveConfig, {
   org: uploadSentrySourceMaps ? process.env.SENTRY_ORG : undefined,
   project: uploadSentrySourceMaps ? process.env.SENTRY_PROJECT : undefined,
   authToken: uploadSentrySourceMaps ? process.env.SENTRY_AUTH_TOKEN : undefined,
@@ -66,4 +68,4 @@ export default uploadSentrySourceMaps ? withSentryConfig(nextIntlConfig, {
   tunnelRoute: "/monitoring",
   telemetry: false,
   silent: !process.env.CI,
-}) : nextIntlConfig;
+}) : eveConfig;

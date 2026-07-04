@@ -16,7 +16,7 @@ export function SidebarPanelLayout({ title, navbarActions, header, footer, child
   const { closeAll } = useSidebarRail();
 
   return (
-    <div className="flex h-full flex-col bg-card">
+    <div className="flex h-full flex-col bg-secondary">
       {/* Navbar — title + actions + close */}
       <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
         <span className="truncate text-sm font-semibold text-foreground">{title}</span>

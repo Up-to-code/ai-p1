@@ -200,14 +200,16 @@ function CreateMenu({ orgId, canCreate }: { orgId?: string; canCreate: boolean }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger>
-        <button
-          type="button"
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-accent/50 hover:text-text-primary"
-        >
-          <Plus className="h-3.5 w-3.5" />
-        </button>
-      </PopoverTrigger>
+      <PopoverTrigger
+        render={
+          <button
+            type="button"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-accent/50 hover:text-text-primary"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+        }
+      />
       <PopoverContent side="bottom" align="end" sideOffset={4} className="w-48 p-1.5">
         <div className="flex flex-col gap-0.5">
           <WorkspaceLink

@@ -15,7 +15,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
     <div className="flex h-full bg-background">
       <div className="flex flex-1 flex-col min-h-0">
         <WorkspaceHeader />
-        <div className="flex-1 min-h-0 overflow-auto p-6">
+        <div className="flex-1 min-h-0 overflow-auto px-6">
           <WorkspaceSearchView />
           {children}
         </div>

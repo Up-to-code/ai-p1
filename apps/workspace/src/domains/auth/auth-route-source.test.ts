@@ -38,7 +38,7 @@ describe("Workspace auth route source", () => {
     expect(signUp).toContain("AuthEntryClient");
     expect(authScreen).toContain("onCredentialsSubmit");
     expect(authScreen).toContain("onSocialSignIn");
-    expect(authScreen).toContain('id="clerk-captcha"');
+    expect(authScreen).toContain("GoogleMark");
     expect(authEntry).toContain("useAuth");
     const chooseOrgClient = readSource("src/domains/auth/components/choose-organization-client.tsx");
     expect(chooseOrgClient).toContain('router.replace("/ws")');
@@ -47,7 +47,7 @@ describe("Workspace auth route source", () => {
   });
 
   it("uses Clerk-owned Convex auth wiring", () => {
-    const dashboardShell = readSource("src/components/providers/dashboard-app-wrapper.tsx");
+    const dashboardShell = readSource("src/components/providers/dashboard-authenticated-shell.tsx");
     const convexAuth = readSource("convex/auth.ts");
     const convexAuthConfig = readSource("convex/auth.config.ts");
 

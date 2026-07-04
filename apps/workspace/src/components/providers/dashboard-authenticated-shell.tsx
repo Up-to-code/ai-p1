@@ -13,8 +13,6 @@ import { markAppPerformance } from "@/lib/utils/performance";
 import { Sidebar, SidebarRailProvider } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-loading";
-import { useAssistantPanel } from "@/components/layout/use-assistant-panel";
-import { ResizableAiPanel } from "./resizable-ai-panel";
 import { NavigationProvider } from "@/domains/navigation";
 
 export interface DashboardAuthenticatedShellProps {
@@ -28,34 +26,51 @@ export function DashboardAuthenticatedShell({
   const router = useRouter();
   const session = useAuthSession();
   const [hasRedirected, setHasRedirected] = useState(false);
-  const isAiPanelOpen = useAssistantPanel((s) => s.isOpen);
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
 
   const isAuthHandoffPending = useAuthHandoffPending(
     session.isSignedIn,
     session.workspace.organizationId,
   );
 
+  // 8-second timeout for loadingSession — if Clerk/Convex auth never settles
+  // (e.g. unauthenticated user hitting /ws), redirect to sign-in instead of
+  // showing an infinite spinner.
+  useEffect(() => {
+    if (session.workspace.status !== "loadingSession") {
+      setLoadingTimedOut(false);
+      return;
+    }
+    const timer = setTimeout(() => setLoadingTimedOut(true), 8000);
+    return () => clearTimeout(timer);
+  }, [session.workspace.status]);
+
   // When workspace has no organization, show a modal instead of redirecting.
   // This avoids the glitch between auth and choose-org pages.
   const showNoOrganizationModal =
     session.workspace.status === "noOrganization" && !isAuthHandoffPending;
 
-  // Memoize authRedirect to prevent unnecessary recalculations.
-  // Only compute a redirect once the session has fully loaded — never during
-  // "loadingSession" to avoid a false redirect caused by Clerk's async init.
-  // Note: "noOrganization" is handled by the modal, not by redirect.
+  // Compute where to redirect, if anywhere.
+  // During "loadingSession" we wait for auth to settle — unless the 8-second
+  // timeout fires, in which case we force a redirect to sign-in.
+  // "noOrganization" is handled by the modal, not by redirect.
+  // "access_denied" redirects to choose-org to re-select organization.
   const authRedirect = useMemo(() => {
+    // If loadingSession timed out, redirect to sign-in regardless.
+    if (loadingTimedOut) return `/${locale}/sign-in`;
     // Don't redirect while the session is still loading.
     if (session.workspace.status === "loadingSession") return null;
     // Don't redirect for noOrganization — the modal handles this case.
     if (session.workspace.status === "noOrganization") return null;
+    // Redirect to choose-org if access is denied
+    if (session.status === "access_denied") return `/${locale}/choose-org`;
     return getWorkspaceAuthRedirect({
       isSignedIn: session.isSignedIn,
       workspaceStatus: session.workspace.status,
       locale,
       isAuthHandoffPending,
     });
-  }, [session.isSignedIn, session.workspace.status, locale, isAuthHandoffPending]);
+  }, [session.isSignedIn, session.status, session.workspace.status, locale, isAuthHandoffPending, loadingTimedOut]);
 
   // Mark shell performance immediately when mounted or status changes
   useEffect(() => {
@@ -108,7 +123,7 @@ export function DashboardAuthenticatedShell({
   }, [authRedirect]);
 
   const shouldShowLoading =
-    session.workspace.status === "loadingSession" ||
+    (session.workspace.status === "loadingSession" && !loadingTimedOut) ||
     isAuthHandoffPending ||
     (authRedirect && !hasRedirected);
 
@@ -133,7 +148,6 @@ export function DashboardAuthenticatedShell({
                   <div className="flex min-h-0 flex-1 flex-col outline-none">
                     {children}
                   </div>
-                  {isAiPanelOpen && <ResizableAiPanel />}
                 </div>
               </div>
             </div>

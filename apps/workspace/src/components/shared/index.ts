@@ -41,3 +41,9 @@ export {
 export { TokenBar, AddTokenModal } from "./token-bar";
 export type { TokenOption, TokenBarProps } from "./token-bar";
 export * from "./entity-header";
+export { MessageSuggestions } from "./message-suggestions";
+export type { MessageSuggestionsProps } from "./message-suggestions";
+export { parseSuggestions } from "./message-suggestions/parse-suggestions";
+export type { ParsedSuggestions } from "./message-suggestions/parse-suggestions";
+export { PlanCard } from "./plan-card";
+export type { PlanCardProps } from "./plan-card";

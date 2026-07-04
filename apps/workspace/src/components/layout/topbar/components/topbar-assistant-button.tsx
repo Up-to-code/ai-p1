@@ -1,31 +1,27 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { useAssistantPanel } from "@/components/layout/use-assistant-panel";
 import { cn } from "@/lib/utils";
+import { workspaceModeHref } from "@/domains/dashboard/store/dashboard.store";
 
-/** Toggles the workspace AI assistant side panel from the topbar. */
+/** Navigates to the AI chat page from the topbar. */
 export function TopbarAssistantButton() {
   const t = useTranslations("Topbar.assistant");
-  const { togglePanel, isOpen: isAiPanelOpen } = useAssistantPanel();
+  const router = useRouter();
 
   return (
     <div className="relative">
-      {isAiPanelOpen && (
-        <div className="pointer-events-none absolute -inset-[2px] rounded-lg bg-gradient-to-r from-[var(--q-agent-purple)] via-[var(--q-data-cyan)] to-[var(--q-agent-purple)] bg-[length:200%_100%] motion-safe:animate-[border-rotate_3s_linear_infinite]" />
-      )}
       <Button
         variant="ghost"
         size="sm"
-        onClick={togglePanel}
+        onClick={() => router.push(workspaceModeHref("ai"))}
         className={cn(
           "relative flex items-center gap-1.5 px-2 py-1 transition-colors",
-          isAiPanelOpen
-            ? "bg-[var(--q-user-bubble)]/10 text-[var(--q-user-bubble)] hover:bg-[var(--q-user-bubble)]/20"
-            : "text-text-muted hover:bg-accent hover:text-text-primary",
+          "text-text-muted hover:bg-accent hover:text-text-primary",
         )}
-        aria-label={isAiPanelOpen ? t("close") : t("open")}
+        aria-label={t("open")}
       >
         <svg
           width="16"

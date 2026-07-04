@@ -30,16 +30,18 @@ export function DocCreateDropdown({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger>
-        <Button
-          variant="module"
-          size="sm"
-          className="h-9 rounded-lg px-4 text-sm font-medium"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          {t("actions.newDoc")}
-        </Button>
-      </PopoverTrigger>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="module"
+            size="sm"
+            className="h-9 rounded-lg px-4 text-sm font-medium"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {t("actions.newDoc")}
+          </Button>
+        }
+      />
       <PopoverContent
         align="end"
         sideOffset={4}

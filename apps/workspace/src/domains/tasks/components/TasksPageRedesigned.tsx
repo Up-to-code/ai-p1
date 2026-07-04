@@ -179,7 +179,7 @@ export function TasksPageRedesigned({
 
   const actions: HeaderAction[] = [
     {
-      label: t("add"),
+      label: t("actions.new"),
       icon: <Plus className="w-4 h-4" />,
       onClick: async () => {
         if (!organizationId) return;
@@ -207,7 +207,7 @@ export function TasksPageRedesigned({
 
   if (workspaceStatus !== "ready") {
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-full">
         <DomainHeader
           domain="Tasks"
           currentSection="All Tasks"
@@ -225,7 +225,7 @@ export function TasksPageRedesigned({
 
   if (filteredTasks.length === 0) {
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-full">
         <DomainHeader
           domain="Tasks"
           currentSection="All Tasks"
@@ -242,7 +242,7 @@ export function TasksPageRedesigned({
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-full">
       <DomainHeader
         domain="Tasks"
         currentSection={`${filteredTasks.length} task${filteredTasks.length !== 1 ? "s" : ""}`}
