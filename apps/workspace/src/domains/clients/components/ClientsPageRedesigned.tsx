@@ -235,7 +235,7 @@ export function ClientsPageRedesigned() {
               stages={[
                 {
                   key: "all",
-                  name: t("filters.all"),
+                  name: t("toolbar.filters.all"),
                   color: "#9CA3AF",
                   order: 0,
                 }

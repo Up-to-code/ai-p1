@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Reply, Smile, Paperclip, Edit2, Trash2, Check } from "lucide-react";
+import { Reply, Smile, Paperclip, Edit2, Trash2, Check, Search, Filter, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,9 @@ export function MessageList({
   isLoading = false,
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
+  const [reverseOrder, setReverseOrder] = useState(false);
   const session = useAuthSession();
 
   // Fetch organization members for user info
@@ -57,9 +59,15 @@ export function MessageList({
   );
 
   useEffect(() => {
-    // Scroll to bottom (where newest messages are) when messages change
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    // Scroll to bottom or top depending on reverse order
+    if (messagesContainerRef.current) {
+      if (reverseOrder) {
+        messagesContainerRef.current.scrollTop = 0;
+      } else {
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+      }
+    }
+  }, [messages, reverseOrder]);
 
   const commonEmojis = ["👍", "❤️", "😂", "🎉", "🔥", "👀", "🚀", "💯"];
 
@@ -100,173 +108,304 @@ export function MessageList({
 
   if (isLoading) {
     return (
-      <div className="flex-1 overflow-auto p-4 space-y-4">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="flex gap-3">
-            <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-muted" />
-            <div className="flex-1 space-y-2">
-              <div className="h-4 w-32 animate-pulse rounded bg-muted" />
-              <div className="h-16 w-full animate-pulse rounded-lg bg-muted" />
+      <div className="flex flex-col h-full">
+        {/* Action toolbar at top */}
+        <div className="shrink-0 border-b border-border/50 px-4 py-2 flex items-center gap-2 bg-background">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
+            title="Search messages"
+          >
+            <Search className="h-3.5 w-3.5 mr-1.5" />
+            Search
+          </Button>
+          <div className="h-4 w-px bg-border/50 mx-1" />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
+            title="Filter messages"
+          >
+            <Filter className="h-3.5 w-3.5 mr-1.5" />
+            Filter
+          </Button>
+          <div className="h-4 w-px bg-border/50 mx-1" />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
+            title="Reverse message order"
+            onClick={() => setReverseOrder(!reverseOrder)}
+          >
+            <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
+            {reverseOrder ? 'Newest first' : 'Oldest first'}
+          </Button>
+          <div className="flex-1" />
+          <span className="text-[12px] text-muted-foreground">
+            Loading...
+          </span>
+        </div>
+
+        {/* Loading skeleton */}
+        <div className="flex-1 overflow-auto p-4 space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex gap-3">
+              <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-muted" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+                <div className="h-16 w-full animate-pulse rounded-lg bg-muted" />
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     );
   }
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="text-center">
-          <div className="text-4xl mb-4">💬</div>
-          <p className="text-sm text-muted-foreground">No messages yet. Start the conversation!</p>
+      <div className="flex flex-col h-full">
+        {/* Action toolbar at top */}
+        <div className="shrink-0 border-b border-border/50 px-4 py-2 flex items-center gap-2 bg-background">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
+            title="Search messages"
+          >
+            <Search className="h-3.5 w-3.5 mr-1.5" />
+            Search
+          </Button>
+          <div className="h-4 w-px bg-border/50 mx-1" />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
+            title="Filter messages"
+          >
+            <Filter className="h-3.5 w-3.5 mr-1.5" />
+            Filter
+          </Button>
+          <div className="h-4 w-px bg-border/50 mx-1" />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
+            title="Reverse message order"
+            onClick={() => setReverseOrder(!reverseOrder)}
+          >
+            <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
+            {reverseOrder ? 'Newest first' : 'Oldest first'}
+          </Button>
+          <div className="flex-1" />
+          <span className="text-[12px] text-muted-foreground">
+            0 messages
+          </span>
+        </div>
+
+        {/* Empty state */}
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center">
+            <div className="text-4xl mb-4">💬</div>
+            <p className="text-sm text-muted-foreground">No messages yet. Start the conversation!</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-auto p-6 space-y-4">
-      {messages.slice().reverse().map((message, index) => {
-        const isOwn = message.authorId === currentUserId;
-        const isHovered = hoveredMessageId === message.id;
-        const reversedIndex = messages.length - 1 - index;
-        const showAvatar = reversedIndex === 0 || messages[reversedIndex - 1].authorId !== message.authorId;
-        const userName = getUserName(message.authorId);
-        const userAvatar = getUserAvatar(message.authorId);
+    <div className="flex flex-col h-full">
+      {/* Action toolbar at top */}
+      <div className="shrink-0 border-b border-border/50 px-4 py-2 flex items-center gap-2 bg-background">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
+          title="Search messages"
+        >
+          <Search className="h-3.5 w-3.5 mr-1.5" />
+          Search
+        </Button>
+        <div className="h-4 w-px bg-border/50 mx-1" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
+          title="Filter messages"
+        >
+          <Filter className="h-3.5 w-3.5 mr-1.5" />
+          Filter
+        </Button>
+        <div className="h-4 w-px bg-border/50 mx-1" />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
+          title="Reverse message order"
+          onClick={() => setReverseOrder(!reverseOrder)}
+        >
+          <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
+          {reverseOrder ? 'Newest first' : 'Oldest first'}
+        </Button>
+        <div className="flex-1" />
+        <span className="text-[12px] text-muted-foreground">
+          {messages.length} {messages.length === 1 ? 'message' : 'messages'}
+        </span>
+      </div>
 
-        return (
-          <div
-            key={message.id}
-            className="group relative hover:bg-muted/30 rounded-lg px-2 py-1 -mx-2"
-            onMouseEnter={() => setHoveredMessageId(message.id)}
-            onMouseLeave={() => setHoveredMessageId(null)}
-          >
-            <div className="flex gap-3">
-              {/* Avatar */}
-              {showAvatar ? (
-                <Avatar className="h-10 w-10 shrink-0 mt-0.5">
-                  {userAvatar ? (
-                    <AvatarImage src={userAvatar} alt={userName} />
-                  ) : null}
-                  <AvatarFallback className="text-xs font-semibold bg-primary text-primary-foreground">
-                    {userName.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              ) : (
-                <div className="h-10 w-10 shrink-0" />
-              )}
+      {/* Scrollable message list */}
+      <div ref={messagesContainerRef} className="flex-1 overflow-auto p-6 space-y-4">
+        {(reverseOrder ? [...messages].reverse() : messages).map((message, index, array) => {
+          const isOwn = message.authorId === currentUserId;
+          const isHovered = hoveredMessageId === message.id;
+          const showAvatar = index === 0 || array[index - 1]?.authorId !== message.authorId;
+          const userName = getUserName(message.authorId);
+          const userAvatar = getUserAvatar(message.authorId);
 
-              {/* Message content */}
-              <div className="flex-1 min-w-0">
-                {/* Header */}
-                {showAvatar && (
-                  <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-sm font-semibold text-foreground">
-                      {userName}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatTime(message.createdAt)}
-                    </span>
-                    {message.editedAt && (
-                      <span className="text-xs text-muted-foreground italic">
-                        (edited)
+          return (
+            <div
+              key={message.id}
+              className="group relative hover:bg-muted/30 rounded-lg px-2 py-1 -mx-2"
+              onMouseEnter={() => setHoveredMessageId(message.id)}
+              onMouseLeave={() => setHoveredMessageId(null)}
+            >
+              <div className="flex gap-3">
+                {/* Avatar */}
+                {showAvatar ? (
+                  <Avatar className="h-10 w-10 shrink-0 mt-0.5">
+                    {userAvatar ? (
+                      <AvatarImage src={userAvatar} alt={userName} />
+                    ) : null}
+                    <AvatarFallback className="text-xs font-semibold bg-primary text-primary-foreground">
+                      {userName.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <div className="h-10 w-10 shrink-0" />
+                )}
+
+                {/* Message content */}
+                <div className="flex-1 min-w-0">
+                  {/* Header */}
+                  {showAvatar && (
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className="text-sm font-semibold text-foreground">
+                        {userName}
                       </span>
-                    )}
-                  </div>
-                )}
-
-                {/* Content - with mention rendering */}
-                <MentionRenderer
-                  content={message.content}
-                  mentions={message.mentions}
-                />
-
-                {/* Reactions */}
-                {message.reactions && message.reactions.length > 0 && (
-                  <div className="flex gap-1 mt-2 flex-wrap">
-                    {message.reactions.map((reaction, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => onReaction?.(message.id, reaction.emoji)}
-                        className="flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs hover:bg-accent transition-colors border border-border/50"
-                      >
-                        <span className="text-sm">{reaction.emoji}</span>
-                        <span className="text-muted-foreground font-medium">{reaction.userIds.length}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Action buttons - always visible on hover */}
-              {isHovered && (
-                <div className="absolute right-2 top-1 flex gap-1 bg-background/95 backdrop-blur rounded-md border border-border/50 p-1 shadow-sm">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onReply?.(message.id)}
-                    className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-                    title="Reply"
-                  >
-                    <Reply className="h-3.5 w-3.5" />
-                  </Button>
-                  {isOwn && (
-                    <>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onEdit?.(message.id, message.content)}
-                        className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-                        title="Edit"
-                      >
-                        <Edit2 className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onDelete?.(message.id)}
-                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                        title="Delete"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </>
+                      <span className="text-xs text-muted-foreground">
+                        {formatTime(message.createdAt)}
+                      </span>
+                      {message.editedAt && (
+                        <span className="text-xs text-muted-foreground italic">
+                          (edited)
+                        </span>
+                      )}
+                    </div>
                   )}
-                  <div className="relative group/reaction">
+
+                  {/* Content - with mention rendering */}
+                  <MentionRenderer
+                    content={message.content}
+                    mentions={message.mentions}
+                  />
+
+                  {/* Reactions */}
+                  {message.reactions && message.reactions.length > 0 && (
+                    <div className="flex gap-1 mt-2 flex-wrap">
+                      {message.reactions.map((reaction, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => onReaction?.(message.id, reaction.emoji)}
+                          className="flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs hover:bg-accent transition-colors border border-border/50"
+                        >
+                          <span className="text-sm">{reaction.emoji}</span>
+                          <span className="text-muted-foreground font-medium">{reaction.userIds.length}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Action buttons - always visible on hover */}
+                {isHovered && (
+                  <div className="absolute right-2 top-1 flex gap-1 bg-background/95 backdrop-blur rounded-md border border-border/50 p-1 shadow-sm">
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
+                      onClick={() => onReply?.(message.id)}
                       className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-                      title="Add reaction"
+                      title="Reply"
                     >
-                      <Smile className="h-3.5 w-3.5" />
+                      <Reply className="h-3.5 w-3.5" />
                     </Button>
-                    <div className="absolute top-full right-0 mt-1 flex gap-1 bg-background border border-border rounded-lg p-1.5 shadow-lg opacity-0 invisible group-hover/reaction:opacity-100 group-hover/reaction:visible transition-all z-10">
-                      {commonEmojis.map((emoji) => (
-                        <button
-                          key={emoji}
+                    {isOwn && (
+                      <>
+                        <Button
                           type="button"
-                          onClick={() => onReaction?.(message.id, emoji)}
-                          className="text-lg hover:bg-accent rounded p-1 transition-colors"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onEdit?.(message.id, message.content)}
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                          title="Edit"
                         >
-                          {emoji}
-                        </button>
-                      ))}
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onDelete?.(message.id)}
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </>
+                    )}
+                    <div className="relative group/reaction">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                        title="Add reaction"
+                      >
+                        <Smile className="h-3.5 w-3.5" />
+                      </Button>
+                      <div className="absolute top-full right-0 mt-1 flex gap-1 bg-background border border-border rounded-lg p-1.5 shadow-lg opacity-0 invisible group-hover/reaction:opacity-100 group-hover/reaction:visible transition-all z-10">
+                        {commonEmojis.map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => onReaction?.(message.id, emoji)}
+                            className="text-lg hover:bg-accent rounded p-1 transition-colors"
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
-      <div ref={messagesEndRef} />
+          );
+        })}
+        <div ref={messagesEndRef} />
+      </div>
     </div>
   );
 }

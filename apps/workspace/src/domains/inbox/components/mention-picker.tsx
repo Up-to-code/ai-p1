@@ -2,13 +2,16 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, User, CheckSquare, FileText, Paperclip, Loader2, Lock } from "lucide-react";
+import { Search, User, CheckSquare, FileText, Paperclip, Loader2, Lock, Calendar, Building2, DollarSign, FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { listOrganizationMembers, getOrganizationCapabilities } from "@/domains/organization/api";
 import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import { useDocsQuery } from "@/domains/docs/api/docs";
 import { useAuthSession } from "@/domains/auth";
+import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
+import { useClientsIndexQuery } from "@/domains/clients/api/clients";
+import { useOpportunitiesQuery } from "@/domains/opportunities/api/opportunities";
 import type { MessageMention } from "../types/inbox.types";
 
 interface MentionPickerProps {
@@ -18,7 +21,7 @@ interface MentionPickerProps {
   onClose: () => void;
 }
 
-type MentionCategory = "users" | "tasks" | "documents" | "files";
+type MentionCategory = "users" | "tasks" | "documents" | "files" | "projects" | "clients" | "deals" | "events";
 
 interface MentionItem {
   id: string;
@@ -35,7 +38,7 @@ export function MentionPicker({
   onClose,
 }: MentionPickerProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<MentionCategory | "all">("all");
+  const [selectedCategory, setSelectedCategory] = useState<MentionCategory>("users");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const session = useAuthSession();
@@ -67,6 +70,10 @@ export function MentionPicker({
   const canMentionTasks = capabilities?.canViewTasks ?? true;
   const canMentionDocs = capabilities?.canViewDocs ?? true;
   const canMentionFiles = capabilities?.canViewMedia ?? true;
+  const canMentionProjects = capabilities?.canViewProjects ?? true;
+  const canMentionClients = capabilities?.canViewClients ?? true;
+  const canMentionDeals = capabilities?.canViewDeals ?? true;
+  const canMentionEvents = capabilities?.canViewCalendar ?? true;
 
   // Fetch users
   const [users, setUsers] = useState<Array<{ id: string; name: string; email?: string }>>([]);
@@ -102,12 +109,24 @@ export function MentionPicker({
   });
   const documents = Array.isArray(docsResult) ? docsResult : [];
 
+  // Fetch projects
+  const projectsResult = useProjectsIndexQuery(organizationId);
+  const projects = projectsResult?.results ?? [];
+
+  // Fetch clients
+  const clientsResult = useClientsIndexQuery(organizationId);
+  const clients = clientsResult?.results ?? [];
+
+  // Fetch deals
+  const dealsResult = useOpportunitiesQuery(organizationId);
+  const deals = Array.isArray(dealsResult) ? dealsResult : [];
+
   // Combine all items with permission checks
   const allItems = useMemo(() => {
     const items: MentionItem[] = [];
 
     // Add users (with permission check)
-    if (canMentionUsers && (selectedCategory === "all" || selectedCategory === "users")) {
+    if (canMentionUsers && selectedCategory === "users") {
       users.forEach((user) => {
         items.push({
           id: user.id,
@@ -120,7 +139,7 @@ export function MentionPicker({
     }
 
     // Add tasks (with permission check)
-    if (canMentionTasks && (selectedCategory === "all" || selectedCategory === "tasks")) {
+    if (canMentionTasks && selectedCategory === "tasks") {
       tasks.forEach((task) => {
         items.push({
           id: task.id,
@@ -133,7 +152,7 @@ export function MentionPicker({
     }
 
     // Add documents (with permission check)
-    if (canMentionDocs && (selectedCategory === "all" || selectedCategory === "documents")) {
+    if (canMentionDocs && selectedCategory === "documents") {
       documents.forEach((doc) => {
         items.push({
           id: doc.id,
@@ -145,8 +164,47 @@ export function MentionPicker({
       });
     }
 
+    // Add projects (with permission check)
+    if (canMentionProjects && selectedCategory === "projects") {
+      projects.forEach((project) => {
+        items.push({
+          id: project.id,
+          name: project.name,
+          type: "project",
+          category: "projects",
+          subtitle: project.status || "Active",
+        });
+      });
+    }
+
+    // Add clients (with permission check)
+    if (canMentionClients && selectedCategory === "clients") {
+      clients.forEach((client) => {
+        items.push({
+          id: client.id,
+          name: client.name,
+          type: "client",
+          category: "clients",
+          subtitle: client.pipelineStage || "New",
+        });
+      });
+    }
+
+    // Add deals (with permission check)
+    if (canMentionDeals && selectedCategory === "deals") {
+      deals.forEach((deal) => {
+        items.push({
+          id: deal.id,
+          name: deal.name,
+          type: "deal",
+          category: "deals",
+          subtitle: deal.pipelineStage || "New",
+        });
+      });
+    }
+
     return items;
-  }, [users, tasks, documents, selectedCategory, canMentionUsers, canMentionTasks, canMentionDocs]);
+  }, [users, tasks, documents, projects, clients, deals, selectedCategory, canMentionUsers, canMentionTasks, canMentionDocs, canMentionProjects, canMentionClients, canMentionDeals]);
 
   // Filter items by search query
   const filteredItems = useMemo(() => {
@@ -166,6 +224,10 @@ export function MentionPicker({
       tasks: [],
       documents: [],
       files: [],
+      projects: [],
+      clients: [],
+      deals: [],
+      events: [],
     };
 
     filteredItems.forEach((item) => {
@@ -218,6 +280,14 @@ export function MentionPicker({
         return FileText;
       case "files":
         return Paperclip;
+      case "projects":
+        return FolderOpen;
+      case "clients":
+        return Building2;
+      case "deals":
+        return DollarSign;
+      case "events":
+        return Calendar;
     }
   };
 
@@ -231,6 +301,14 @@ export function MentionPicker({
         return "Documents";
       case "files":
         return "Files";
+      case "projects":
+        return "Projects";
+      case "clients":
+        return "Clients";
+      case "deals":
+        return "Deals";
+      case "events":
+        return "Events";
     }
   };
 
@@ -262,18 +340,6 @@ export function MentionPicker({
 
       {/* Category tabs */}
       <div className="flex gap-1 border-b border-border p-2 overflow-x-auto">
-        <button
-          type="button"
-          onClick={() => setSelectedCategory("all")}
-          className={cn(
-            "rounded-md px-4 py-2 text-xs font-medium transition-colors whitespace-nowrap",
-            selectedCategory === "all"
-              ? "bg-accent text-accent-foreground"
-              : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-          )}
-        >
-          All
-        </button>
         {canMentionUsers && (
           <button
             type="button"
@@ -316,18 +382,60 @@ export function MentionPicker({
             Documents
           </button>
         )}
-        {canMentionFiles && (
+        {canMentionProjects && (
           <button
             type="button"
-            onClick={() => setSelectedCategory("files")}
+            onClick={() => setSelectedCategory("projects")}
             className={cn(
               "rounded-md px-4 py-2 text-xs font-medium transition-colors whitespace-nowrap",
-              selectedCategory === "files"
+              selectedCategory === "projects"
                 ? "bg-accent text-accent-foreground"
                 : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
             )}
           >
-            Files
+            Projects
+          </button>
+        )}
+        {canMentionClients && (
+          <button
+            type="button"
+            onClick={() => setSelectedCategory("clients")}
+            className={cn(
+              "rounded-md px-4 py-2 text-xs font-medium transition-colors whitespace-nowrap",
+              selectedCategory === "clients"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+            )}
+          >
+            Clients
+          </button>
+        )}
+        {canMentionDeals && (
+          <button
+            type="button"
+            onClick={() => setSelectedCategory("deals")}
+            className={cn(
+              "rounded-md px-4 py-2 text-xs font-medium transition-colors whitespace-nowrap",
+              selectedCategory === "deals"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+            )}
+          >
+            Deals
+          </button>
+        )}
+        {canMentionEvents && (
+          <button
+            type="button"
+            onClick={() => setSelectedCategory("events")}
+            className={cn(
+              "rounded-md px-4 py-2 text-xs font-medium transition-colors whitespace-nowrap",
+              selectedCategory === "events"
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+            )}
+          >
+            Events
           </button>
         )}
       </div>
@@ -345,16 +453,20 @@ export function MentionPicker({
           </div>
         ) : (
           <div className="p-3">
-            {(["users", "tasks", "documents", "files"] as MentionCategory[]).map((category) => {
+            {(["users", "tasks", "documents", "files", "projects", "clients", "deals", "events"] as MentionCategory[]).map((category) => {
               const items = groupedItems[category];
               if (items.length === 0) return null;
 
               const Icon = getCategoryIcon(category);
-              const hasPermission = 
+              const hasPermission =
                 (category === "users" && canMentionUsers) ||
                 (category === "tasks" && canMentionTasks) ||
                 (category === "documents" && canMentionDocs) ||
-                (category === "files" && canMentionFiles);
+                (category === "files" && canMentionFiles) ||
+                (category === "projects" && canMentionProjects) ||
+                (category === "clients" && canMentionClients) ||
+                (category === "deals" && canMentionDeals) ||
+                (category === "events" && canMentionEvents);
 
               if (!hasPermission) return null;
 

@@ -1,4 +1,4 @@
-export { CalendarScreen } from "./components/calendar-screen";
+export { CalendarPageRedesigned } from "./components/CalendarPageRedesigned";
 export { useCalendarStore } from "./store/calendar.store";
 export {
   useCalendarEventsQuery,

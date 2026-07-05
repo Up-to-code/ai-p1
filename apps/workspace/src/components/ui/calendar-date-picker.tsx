@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
+import { DayPicker } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,7 @@ export function CalendarDatePicker({
 
   const calendarContent = (
     <div className="flex flex-col gap-3 p-1">
-      <Calendar
+      <DayPicker
         mode="single"
         selected={selectedDate}
         onSelect={(day) => {
@@ -64,11 +64,6 @@ export function CalendarDatePicker({
           }
         }}
         defaultMonth={selectedDate}
-        locale={isAr ? undefined : undefined}
-        classNames={{
-          root: "w-fit",
-          day: "h-9 w-9 p-0",
-        }}
       />
       <div className="flex items-center justify-between border-t border-border px-1 pt-2">
         <Button
@@ -99,7 +94,7 @@ export function CalendarDatePicker({
 
   const endDateCalendarContent = (
     <div className="flex flex-col gap-3 p-1">
-      <Calendar
+      <DayPicker
         mode="single"
         selected={endDateObj}
         onSelect={(day) => {
@@ -109,10 +104,6 @@ export function CalendarDatePicker({
           }
         }}
         defaultMonth={endDateObj ?? selectedDate}
-        classNames={{
-          root: "w-fit",
-          day: "h-9 w-9 p-0",
-        }}
       />
       <div className="flex items-center justify-between border-t border-border px-1 pt-2">
         <Button

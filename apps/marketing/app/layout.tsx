@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { rootMarketingMetadata } from "@/lib/seo";
 import { brandIdentity } from "@qentrah/brand-identity";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = rootMarketingMetadata("ar");
 
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       </head>
       <body>
         {children}
+        <Analytics />
       </body>
     </html>
   );

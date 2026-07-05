@@ -14,6 +14,19 @@ interface MentionRendererProps {
 export function MentionRenderer({ content, mentions = [], className }: MentionRendererProps) {
   const router = useRouter();
 
+  // Check if content is HTML (from TipTap)
+  const isHTML = content.startsWith("<") && content.endsWith(">");
+
+  // Render HTML content safely
+  if (isHTML) {
+    return (
+      <div
+        className={cn("text-sm text-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none", className)}
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    );
+  }
+
   // Parse content and replace @mentions with clickable badges
   const renderContent = () => {
     if (!mentions.length) {
@@ -99,6 +112,9 @@ function MentionBadge({ mention, router }: MentionBadgeProps) {
         break;
       case "project":
         router.push(`/projects/${mention.id}`);
+        break;
+      case "event":
+        router.push(`/calendar?eventId=${mention.id}`);
         break;
     }
   };

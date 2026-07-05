@@ -106,14 +106,14 @@ export function useMessagesQuery(channelId?: string, limit = 50) {
 
 export function useSendMessageMutation(organizationId?: string, channelId?: string) {
   const sendMessage = useSendMessage();
-  
+
   return {
-    mutate: (content: string) => {
+    mutate: (args: { content: string; replyToId?: string }) => {
       if (!organizationId || !channelId) throw new Error("Organization ID and Channel ID required");
       return sendMessage({
         organizationId,
         channelId,
-        input: { content },
+        input: { content: args.content, replyToId: args.replyToId },
       });
     },
     isPending: (sendMessage as any).isPending ?? false,
@@ -213,15 +213,18 @@ export function useCreateThreadMutation(organizationId?: string) {
 export function useInboxState() {
   const session = useAuthSession();
   const orgId = session.workspace.status === "ready" ? session.workspace.organizationId : undefined;
-  
+
   const channelsQuery = useChannelsQuery(orgId || "");
-  
+
   // Convex useQuery returns data directly, not wrapped in an object
   const channels = Array.isArray(channelsQuery) ? channelsQuery : [];
-  
+
+  // Check if query is loading (Convex returns undefined while loading)
+  const isLoadingChannels = channelsQuery === undefined;
+
   return {
     orgId,
     channels,
-    isLoadingChannels: false, // Convex queries don't have isLoading in the same way
+    isLoadingChannels,
   };
 }

@@ -49,6 +49,10 @@ export default function InboxPage() {
     author: string;
     content: string;
   } | null>(null);
+  const [editingMessage, setEditingMessage] = useState<{
+    id: string;
+    content: string;
+  } | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
 
@@ -82,10 +86,25 @@ export default function InboxPage() {
 
   // ── Message handlers ────────────────────────────────────────────────────
   const handleSendMessage = (content: string, _mentions?: MessageMention[]) => {
-    if (activeChannelId) sendMessageMutation.mutate(content);
+    if (activeChannelId) {
+      if (editingMessage) {
+        // Update existing message
+        updateMessageMutation.mutate({ messageId: editingMessage.id, content });
+        setEditingMessage(null);
+      } else {
+        // Send new message (with reply if applicable)
+        sendMessageMutation.mutate({ content, replyToId: replyTo?.id });
+        setReplyTo(null);
+      }
+    }
   };
-  const handleEditMessage = (messageId: string, content: string) =>
-    updateMessageMutation.mutate({ messageId, content });
+  const handleEditMessage = (messageId: string, content: string) => {
+    const message = messages.find((m) => m.id === messageId);
+    if (message) {
+      setEditingMessage({ id: messageId, content: message.content });
+    }
+  };
+  const handleCancelEdit = () => setEditingMessage(null);
   const handleDeleteMessage = (messageId: string) =>
     deleteMessageMutation.mutate(messageId);
   const handleAddReaction = (messageId: string, emoji: string) =>
@@ -239,7 +258,7 @@ export default function InboxPage() {
               onEdit={handleEditMessage}
               onDelete={handleDeleteMessage}
               onReaction={handleAddReaction}
-              isLoading={false}
+              isLoading={messages.isLoading}
             />
 
             {/* Composer */}
@@ -247,8 +266,10 @@ export default function InboxPage() {
               onSend={handleSendMessage}
               replyTo={replyTo}
               onCancelReply={() => setReplyTo(null)}
-              disabled={sendMessageMutation.isPending}
-              placeholder={`Message #${activeChannel.name}`}
+              editingMessage={editingMessage}
+              onCancelEdit={handleCancelEdit}
+              disabled={sendMessageMutation.isPending || updateMessageMutation.isPending}
+              placeholder={editingMessage ? "Edit message..." : `Message #${activeChannel.name}`}
               organizationId={orgId ?? undefined}
               projectId={activeChannel.projectId}
             />
@@ -256,50 +277,13 @@ export default function InboxPage() {
         ) : (
           /* Empty state */
           <div className="flex flex-1 items-center justify-center">
-            <div className="max-w-md px-8 text-center">
-              <div className="mb-6 flex justify-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted">
-                  <InboxIcon className="h-10 w-10 text-muted-foreground" />
-                </div>
-              </div>
+            <div className="text-center">
               <h2 className="mb-2 text-[17px] font-semibold text-foreground">
                 Welcome to Inbox
               </h2>
-              <p className="mb-8 text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Select a channel from the sidebar to start messaging your team
               </p>
-              <div className="flex justify-center gap-6">
-                {[
-                  {
-                    icon: MessageSquare,
-                    color: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-                    label: "Real-time messaging",
-                    desc: "Instant communication with your team",
-                  },
-                  {
-                    icon: Building2,
-                    color: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
-                    label: "Organization channels",
-                    desc: "Connect across projects and spaces",
-                  },
-                  {
-                    icon: Link2,
-                    color: "bg-green-500/10 text-green-600 dark:text-green-400",
-                    label: "Context-aware",
-                    desc: "Link tasks, docs, and resources",
-                  },
-                ].map(({ icon: Icon, color, label, desc }) => (
-                  <div key={label} className="flex flex-col items-center">
-                    <div
-                      className={`mb-3 flex h-14 w-14 items-center justify-center rounded-full ${color.split(" ")[0]}`}
-                    >
-                      <Icon className={`h-7 w-7 ${color.split(" ").slice(1).join(" ")}`} />
-                    </div>
-                    <h3 className="mb-1 text-[13px] font-semibold text-foreground">{label}</h3>
-                    <p className="text-[12px] text-muted-foreground">{desc}</p>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         )}

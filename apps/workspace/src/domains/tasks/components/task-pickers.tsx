@@ -10,7 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { DayPicker } from "react-day-picker";
 import { format } from "date-fns";
 import type { WorkOsPickerOption } from "@/domains/work-os/components/work-os-record-picker";
 import { STATUSES, PRIORITIES, STATUS_DOT, PRIORITY_COLOR } from "../tasks.constants";
@@ -230,12 +230,14 @@ export function DueDatePicker({
               />
             </div>
             <div className="overflow-x-auto pb-1">
-              <Calendar
+              <DayPicker
                 mode="single"
                 selected={date}
-                className="min-w-[280px] rounded-xl border border-border bg-background p-3 [--cell-size:2.35rem]"
+                className="min-w-[280px]"
                 onSelect={(d) => {
-                  onChange(d ? d.toISOString().slice(0, 10) : "");
+                  if (d) {
+                    onChange(d.toISOString().slice(0, 10));
+                  }
                   setOpen(false);
                 }}
               />

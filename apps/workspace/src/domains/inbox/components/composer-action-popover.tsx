@@ -87,8 +87,21 @@ export function ComposerActionPopover({
   isOpen,
   onClose,
   onAction,
+  anchorRef,
 }: ComposerActionPopoverProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+
+  // Calculate position based on anchor
+  useEffect(() => {
+    if (isOpen && anchorRef?.current) {
+      const rect = anchorRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.top - 8, // 8px gap above button
+        left: rect.left,
+      });
+    }
+  }, [isOpen, anchorRef]);
 
   // Close on click-outside
   useEffect(() => {
@@ -121,7 +134,8 @@ export function ComposerActionPopover({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 8, scale: 0.96 }}
           transition={{ duration: 0.15, ease: "easeOut" }}
-          className="absolute bottom-full left-0 mb-2 z-50"
+          className="fixed z-50"
+          style={{ top: position.top, left: position.left }}
         >
           <div className="rounded-xl border border-border bg-popover shadow-lg shadow-black/10 overflow-hidden w-[280px]">
             {/* Header */}

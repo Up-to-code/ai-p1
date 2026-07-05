@@ -53,7 +53,15 @@ export const messageInputValidator = v.object({
   threadId: v.optional(v.string()),
   replyToId: v.optional(v.string()),
   mentions: v.optional(v.array(v.object({
-    type: v.string(),
+    type: v.union(
+      v.literal("user"),
+      v.literal("task"),
+      v.literal("client"),
+      v.literal("deal"),
+      v.literal("project"),
+      v.literal("document"),
+      v.literal("file"),
+    ),
     id: v.string(),
     name: v.string(),
   }))),
@@ -75,7 +83,15 @@ export const messageValidator = v.object({
     userIds: v.array(v.string()),
   }))),
   mentions: v.optional(v.array(v.object({
-    type: v.string(),
+    type: v.union(
+      v.literal("user"),
+      v.literal("task"),
+      v.literal("client"),
+      v.literal("deal"),
+      v.literal("project"),
+      v.literal("document"),
+      v.literal("file"),
+    ),
     id: v.string(),
     name: v.string(),
   }))),

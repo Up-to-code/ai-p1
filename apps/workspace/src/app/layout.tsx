@@ -3,6 +3,7 @@ import { brandIdentity, brandLabel, brandDomainUrl } from "@qentrah/brand-identi
 import { Cairo } from "next/font/google";
 import { Suspense } from "react";
 import { NavigationProgress } from "@/components/layout/navigation-progress";
+import { Analytics } from "@vercel/analytics/next";
 
 import "./globals.css";
 
@@ -115,6 +116,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <NavigationProgress />
         </Suspense>
         {children}
+        <Analytics />
       </body>
     </html>
   );

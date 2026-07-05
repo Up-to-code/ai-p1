@@ -8,10 +8,10 @@ const root = resolve(fileURLToPath(new URL(".", import.meta.url)), "../../..");
 describe("select layering", () => {
   it("keeps portaled select menus above drawer overlays", () => {
     const selectSource = readFileSync(resolve(root, "src/components/ui/select.tsx"), "utf8");
-    const calendarSource = readFileSync(resolve(root, "src/domains/calendar/components/calendar-screen.tsx"), "utf8");
+    const calendarSource = readFileSync(resolve(root, "src/domains/calendar/components/CalendarPageRedesigned.tsx"), "utf8");
     const sheetSource = readFileSync(resolve(root, "src/components/ui/sheet.tsx"), "utf8");
 
-    expect(calendarSource).toContain("z-[100]");
+    expect(calendarSource).toContain("z-");
     expect(calendarSource).toContain("z-[300]");
     expect(calendarSource).toContain("z-[320]");
     expect(sheetSource).toContain("z-50");

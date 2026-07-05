@@ -40,9 +40,8 @@ export const getChannel = query({
   handler: async (ctx, args) => {
     const channels = await ctx.db
       .query("channels")
-      .withIndex("by_organization", (q) => q.eq("organizationId", ""))
       .collect();
-    
+
     const channel = channels.find((c) => c.id === args.channelId);
     if (!channel) {
       throw new Error("Channel not found");

@@ -9,6 +9,7 @@ export interface Channel {
   visibility: ChannelVisibility;
   organizationId: string;
   projectId?: string;
+  projectIds?: string[];
   spaceId?: string;
   clientId?: string;
   memberIds: string[];

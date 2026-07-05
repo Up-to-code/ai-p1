@@ -95,7 +95,7 @@ describe("Convex query load guards", () => {
     expect(read("convex/calendar/read.ts")).toContain("export const listUpcoming");
     expect(router).toContain('"/:organizationId/read/calendar/upcoming"');
     expect(read("src/domains/clients/components/clients-screens.tsx")).toContain("useUpcomingCalendarEventsQuery");
-    expect(read("src/domains/calendar/components/calendar-screen.tsx")).toContain("shouldLoadPickerOptions");
+    expect(read("src/domains/calendar/components/CalendarPageRedesigned.tsx")).toContain("shouldLoadPickerOptions");
   });
 
   it("keeps initial workspace screens on bundled index reads", () => {
@@ -115,7 +115,7 @@ describe("Convex query load guards", () => {
     expect(read("src/domains/assets/components/assets-screens.tsx")).toContain("useAssetsIndexQuery");
     expect(read("src/domains/clients/components/clients-screens.tsx")).toContain("useClientsIndexQuery");
     expect(read("src/domains/activity/components/activity-screen.tsx")).toContain("useWorkspaceIndexedResource");
-    expect(read("src/domains/calendar/components/calendar-screen.tsx")).toContain("useCalendarIndexRangeQueryResult");
+    expect(read("src/domains/calendar/components/CalendarPageRedesigned.tsx")).toContain("useCalendarIndexRangeQueryResult");
     expect(read("src/domains/dashboard/components/dashboard-screen.tsx")).toContain("useWorkspaceResourceResult");
   });
 

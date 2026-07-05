@@ -1,17 +1,23 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, Loader2, Plus, User, CheckSquare, FileText, X } from "lucide-react";
+import { ArrowUp, Loader2, Plus, User, CheckSquare, FileText, X, AtSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MentionPicker } from "./mention-picker";
 import { ComposerActionPopover, type ComposerAction } from "./composer-action-popover";
 import type { MessageMention, MessageAttachment } from "../types/inbox.types";
 import { AnimatePresence } from "framer-motion";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
+import { SlashCommandMenu } from "./slash-command-menu";
 
 interface MessageComposerProps {
   onSend: (content: string, mentions?: MessageMention[]) => void;
   replyTo?: { id: string; author: string; content: string } | null;
   onCancelReply?: () => void;
+  editingMessage?: { id: string; content: string } | null;
+  onCancelEdit?: () => void;
   disabled?: boolean;
   placeholder?: string;
   organizationId?: string;
@@ -91,12 +97,13 @@ export function MessageComposer({
   onSend,
   replyTo,
   onCancelReply,
+  editingMessage,
+  onCancelEdit,
   disabled = false,
   placeholder = "Type a message…",
   organizationId,
   projectId,
 }: MessageComposerProps) {
-  const [content, setContent] = useState("");
   const [mentions, setMentions] = useState<MessageMention[]>([]);
 
   // Pending attachments shown as chips above the textarea
@@ -104,60 +111,114 @@ export function MessageComposer({
     Array<{ id: string; label: string; type: ComposerAction }>
   >([]);
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const plusButtonRef = useRef<HTMLButtonElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
 
   const [showActionPopover, setShowActionPopover] = useState(false);
   const [showMentionPicker, setShowMentionPicker] = useState(false);
+  const [showSlashMenu, setShowSlashMenu] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+
+  // TipTap editor
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        bold: true,
+        italic: true,
+        strike: true,
+        code: true,
+        bulletList: true,
+        orderedList: true,
+        blockquote: true,
+      }),
+      Placeholder.configure({
+        placeholder,
+      }),
+    ],
+    content: "",
+    editorProps: {
+      attributes: {
+        class: "focus:outline-none min-h-[50px] max-h-[150px] overflow-y-auto text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground",
+      },
+    },
+    onKeyDown: ({ event }) => {
+      if (event.key === "Enter" && !event.shiftKey && !showMentionPicker && !showSlashMenu) {
+        event.preventDefault();
+        handleSend();
+      }
+      if (event.key === "@" && !showMentionPicker && !showSlashMenu && organizationId) {
+        setShowMentionPicker(true);
+      }
+      if (event.key === "/" && !showMentionPicker && !showSlashMenu) {
+        setShowSlashMenu(true);
+      }
+      if (event.key === " " && showSlashMenu) {
+        setShowSlashMenu(false);
+      }
+      if (event.key === "Escape") {
+        setShowMentionPicker(false);
+        setShowSlashMenu(false);
+      }
+    },
+  });
 
   useEffect(() => {
-    textareaRef.current?.focus();
-  }, []);
+    editor?.commands.focus();
+  }, [editor]);
 
-  // Auto-resize textarea
+  // Load editing message content into editor
   useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+    if (editingMessage && editor) {
+      editor.commands.setContent(editingMessage.content);
+    } else if (!editingMessage && editor) {
+      editor.commands.clearContent();
     }
-  }, [content]);
+  }, [editingMessage, editor]);
+
+  // Update isTyping state when editor content changes
+  useEffect(() => {
+    if (editor) {
+      const updateTyping = () => {
+        setIsTyping(!editor.isEmpty);
+      };
+      editor.on('update', updateTyping);
+      updateTyping(); // Initial check
+      return () => {
+        editor.off('update', updateTyping);
+      };
+    }
+  }, [editor]);
 
   const handleSend = () => {
-    if (content.trim() && !disabled) {
-      onSend(content.trim(), mentions.length > 0 ? mentions : undefined);
-      setContent("");
-      setMentions([]);
-      setAttachments([]);
+    const content = editor?.getHTML() || "";
+    const text = editor?.getText() || "";
+    // Prevent sending empty messages or messages with only whitespace
+    if (!text.trim() || content === "<p></p>" || !isTyping || disabled) {
+      return;
     }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey && !showMentionPicker) {
-      e.preventDefault();
-      handleSend();
-    }
-    // Typing @ opens mention picker
-    if (e.key === "@" && !showMentionPicker && organizationId) {
-      setShowMentionPicker(true);
-    }
+    onSend(content, mentions.length > 0 ? mentions : undefined);
+    editor?.commands.clearContent();
+    setMentions([]);
+    setAttachments([]);
+    setIsTyping(false);
   };
 
   const handleMentionSelect = (mention: MessageMention) => {
-    const mentionText = `@${mention.name}`;
-    setContent((prev) => prev + mentionText + " ");
+    // Insert mention with blue color styling
+    const mentionHtml = `<span class="text-blue-500 font-medium">@${mention.name}</span> `;
+    editor?.commands.insertContent(mentionHtml);
     setMentions((prev) => [...prev, mention]);
     setShowMentionPicker(false);
-    textareaRef.current?.focus();
+    editor?.view.focus();
   };
 
   const handleRemoveMention = (mentionId: string) => {
     const mention = mentions.find((m) => m.id === mentionId);
     setMentions((prev) => prev.filter((m) => m.id !== mentionId));
     if (mention) {
-      setContent((prev) => prev.replace(`@${mention.name}`, "").trim());
+      const currentContent = editor?.getHTML() || "";
+      editor?.commands.setContent(currentContent.replace(`@${mention.name}`, "").trim());
     }
   };
 
@@ -209,7 +270,6 @@ export function MessageComposer({
     setAttachments((prev) => prev.filter((a) => a.id !== id));
   };
 
-  const isTyping = content.trim().length > 0;
   const hasTokens = mentions.length > 0 || attachments.length > 0;
 
   const attachmentIconMap: Record<
@@ -260,6 +320,23 @@ export function MessageComposer({
         </div>
       )}
 
+      {/* Edit banner */}
+      {editingMessage && (
+        <div className="flex items-center gap-2 border-b border-border/50 bg-muted/50 px-4 py-2">
+          <span className="text-[11px] font-semibold text-muted-foreground">
+            Editing message
+          </span>
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            className="ml-auto text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Cancel edit"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Floating mention picker */}
       <AnimatePresence>
         {showMentionPicker && organizationId && (
@@ -272,105 +349,115 @@ export function MessageComposer({
         )}
       </AnimatePresence>
 
-      {/* Composer card */}
-      <div ref={composerRef} className="px-4 py-3">
+      {/* Floating slash command menu */}
+      <AnimatePresence>
+        {showSlashMenu && editor && (
+          <SlashCommandMenu
+            editor={editor}
+            onClose={() => setShowSlashMenu(false)}
+            onOpenMentionPicker={(category) => {
+              setShowSlashMenu(false);
+              setShowMentionPicker(true);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Composer card - compact */}
+      <div ref={composerRef} className="px-4 py-2">
         <div
           className={cn(
-            "relative flex flex-col rounded-2xl border bg-card transition-all duration-200",
+            "relative flex items-center gap-2 rounded-xl border bg-card transition-all duration-200 min-h-[60px]",
             "border-border",
             "focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/10",
           )}
         >
-          {/* Attachment + mention chips — shown inline above textarea */}
-          {hasTokens && (
-            <div className="flex flex-wrap gap-1.5 px-4 pt-3">
-              {attachments.map((a) => {
-                const { icon, accent } = attachmentIconMap[a.type];
-                return (
-                  <AttachmentChip
-                    key={a.id}
-                    label={a.label}
-                    icon={icon}
-                    accentClass={accent}
-                    onRemove={() => removeAttachment(a.id)}
-                  />
-                );
-              })}
-              {mentions.map((m) => (
-                <MentionChip key={m.id} mention={m} onRemove={handleRemoveMention} />
-              ))}
-            </div>
-          )}
+          {/* Left toolbar - horizontal icons */}
+          <div className="flex items-center gap-1 pl-2 relative">
+            <button
+              ref={plusButtonRef}
+              type="button"
+              disabled={disabled}
+              onClick={() => setShowActionPopover((v) => !v)}
+              aria-label="Add attachment or mention"
+              title="Add attachment or mention"
+              className={cn(
+                "flex h-9 w-9 items-center justify-center rounded-lg transition-all active:scale-95 disabled:opacity-40",
+                showActionPopover
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              <Plus className={cn("h-4 w-4 transition-transform duration-200", showActionPopover && "rotate-45")} />
+            </button>
 
-          {/* Text input */}
-          <textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={disabled}
-            placeholder={placeholder}
-            className="w-full resize-none appearance-none border-0 bg-transparent px-5 py-4 text-[15px] leading-relaxed outline-none ring-0 text-foreground placeholder:text-muted-foreground"
-            style={{ minHeight: "56px", maxHeight: "200px" }}
-            rows={1}
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => setShowMentionPicker(true)}
+              aria-label="Mention"
+              title="Mention"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all active:scale-95 disabled:opacity-40"
+            >
+              <AtSign className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Action popover anchored to the + button */}
+          <ComposerActionPopover
+            isOpen={showActionPopover}
+            onClose={() => setShowActionPopover(false)}
+            onAction={handleAction}
+            anchorRef={plusButtonRef}
           />
 
-          {/* Bottom toolbar */}
-          <div className="flex items-center justify-between gap-2 border-t border-border/60 px-3 pb-2.5 pt-2">
-            {/* Left — action trigger (relative so popover anchors here) */}
-            <div className="relative flex items-center gap-1">
-              <button
-                ref={plusButtonRef}
-                type="button"
-                disabled={disabled}
-                onClick={() => setShowActionPopover((v) => !v)}
-                aria-label="Add attachment or mention"
-                title="Add attachment or mention"
-                className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-full border transition-all active:scale-95 disabled:opacity-40",
-                  showActionPopover
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-transparent text-muted-foreground hover:text-foreground hover:border-foreground/30",
-                )}
-              >
-                <Plus className={cn("h-4 w-4 transition-transform duration-200", showActionPopover && "rotate-45")} />
-              </button>
+          {/* Center - text input with chips */}
+          <div className="flex-1 min-w-0 flex flex-col justify-center">
+            {/* Attachment + mention chips */}
+            {hasTokens && (
+              <div className="flex flex-wrap gap-1.5 mb-1">
+                {attachments.map((a) => {
+                  const { icon, accent } = attachmentIconMap[a.type];
+                  return (
+                    <AttachmentChip
+                      key={a.id}
+                      label={a.label}
+                      icon={icon}
+                      accentClass={accent}
+                      onRemove={() => removeAttachment(a.id)}
+                    />
+                  );
+                })}
+                {mentions.map((m) => (
+                  <MentionChip key={m.id} mention={m} onRemove={handleRemoveMention} />
+                ))}
+              </div>
+            )}
 
-              {/* Action popover anchored to the + button */}
-              <ComposerActionPopover
-                isOpen={showActionPopover}
-                onClose={() => setShowActionPopover(false)}
-                onAction={handleAction}
-              />
-            </div>
+            {/* Text input - TipTap editor */}
+            <EditorContent editor={editor} />
+          </div>
 
-            {/* Right — status + send */}
-            <div className="flex items-center gap-2">
-              {disabled && (
-                <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Sending
-                </span>
+          {/* Right - send button only */}
+          <div className="pr-2">
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={!isTyping || disabled}
+              aria-label="Send message"
+              className={cn(
+                "flex h-9 w-9 items-center justify-center rounded-lg transition-all active:scale-95 disabled:opacity-40",
+                isTyping
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "bg-muted text-muted-foreground",
               )}
-              <button
-                type="button"
-                onClick={handleSend}
-                disabled={!isTyping || disabled}
-                aria-label="Send message"
-                className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-full border transition-all active:scale-95 disabled:opacity-40",
-                  isTyping
-                    ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "border-border bg-transparent text-muted-foreground",
-                )}
-              >
-                {disabled ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <ArrowUp className="h-3.5 w-3.5" />
-                )}
-              </button>
-            </div>
+            >
+              {disabled ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <ArrowUp className="h-4 w-4" />
+              )}
+            </button>
           </div>
         </div>
       </div>
