@@ -232,7 +232,10 @@ export function DocEditor({
             }
           }}
           onBodyChange={(html) => {
-            if (html !== draft.content) updateDraft({ content: html });
+            if (html !== draft.content) {
+              // Defer state update to avoid setState during render
+              requestAnimationFrame(() => updateDraft({ content: html }));
+            }
           }}
           onBodyBlur={handleBodyBlur}
           compactFormatting
