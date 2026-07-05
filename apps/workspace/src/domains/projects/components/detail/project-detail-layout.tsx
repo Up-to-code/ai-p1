@@ -9,7 +9,7 @@ import { logger } from "@/lib/logger";
 import { useProjectQuery, updateProjectRequest } from "../../api/projects";
 import type { Project } from "../../store/projects.types";
 import type { ProjectFormValues } from "../../validation/project.schema";
-import { useActiveSpace } from "@/domains/spaces/hooks/use-active-space";
+import { useNavigation } from "@/domains/navigation";
 import { AppPageShell, AppTabsList } from "@/components/shared";
 import { ProgressiveLoadingState, DetailNotFoundState } from "@/components/shared/crud-ui";
 import { ProjectDetailHeader } from "./project-detail-header";
@@ -31,7 +31,7 @@ export function ProjectDetailLayout({ projectId }: { projectId: string }) {
   const workspaceOrganizationId =
     workspaceStatus === "ready" ? session.workspace.organizationId ?? undefined : undefined;
 
-  const { spaceId: currentSpaceIdRaw } = useActiveSpace();
+  const { spaceId: currentSpaceIdRaw } = useNavigation();
   const currentSpaceId = currentSpaceIdRaw ?? undefined;
 
   const project = useProjectQuery(workspaceOrganizationId, projectId) as Project | null | undefined;

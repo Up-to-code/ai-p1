@@ -21,16 +21,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useMutation } from "convex/react";
+import { api } from "@convex/_generated/api";
 import { useToast } from "@/components/ui/toast";
 import { useAuthSession } from "@/domains/auth";
-import { useQueryClient } from "@tanstack/react-query";
-import { createSpaceRequest } from "../api/spaces";
+import { useNavigation } from "@/domains/navigation";
 import type { SpaceFormValues } from "../validation/space.schema";
 import { MemberPicker } from "./member-picker";
 
 interface SpaceCreateFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAfterCreate?: (slug: string) => void;
 }
 
 const SPACE_COLORS = [
@@ -44,12 +46,13 @@ const SPACE_COLORS = [
   "#84cc16",
 ];
 
-export function SpaceCreateForm({ open, onOpenChange }: SpaceCreateFormProps) {
+export function SpaceCreateForm({ open, onOpenChange, onAfterCreate }: SpaceCreateFormProps) {
   const t = useTranslations("Projects");
   const { toast } = useToast();
   const session = useAuthSession();
-  const queryClient = useQueryClient();
+  const { setSpace } = useNavigation();
   const orgId = session.workspace.status === "ready" ? session.workspace.organizationId : undefined;
+  const createSpace = useMutation(api.spaces.write.create);
 
   const [values, setValues] = useState<SpaceFormValues>({
     name: "",
@@ -74,14 +77,27 @@ export function SpaceCreateForm({ open, onOpenChange }: SpaceCreateFormProps) {
 
     setIsSubmitting(true);
     try {
-      await createSpaceRequest(orgId, values);
-      queryClient.invalidateQueries({ queryKey: ["spaces", orgId] });
+      const space = await createSpace({
+        organizationId: orgId,
+        input: {
+          name: values.name,
+          description: values.description ?? undefined,
+          icon: values.icon ?? undefined,
+          color: values.color ?? undefined,
+          slug: values.slug,
+          visibility: values.visibility,
+          defaultProjectVisibility: values.defaultProjectVisibility ?? undefined,
+          allowMemberProjectCreation: values.allowMemberProjectCreation ?? undefined,
+        },
+      });
       toast({
         title: "Space created",
         type: "success",
       });
       onOpenChange(false);
       setValues({ name: "", slug: "", visibility: "private" });
+      setSpace(space.slug);
+      onAfterCreate?.(space.slug);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to create space";
       toast({
@@ -95,7 +111,7 @@ export function SpaceCreateForm({ open, onOpenChange }: SpaceCreateFormProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => !isSubmitting && onOpenChange(v)}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Create Space</DialogTitle>

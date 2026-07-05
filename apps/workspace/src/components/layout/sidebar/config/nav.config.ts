@@ -4,6 +4,7 @@ import {
   Bot,
   Building2,
   Clock,
+  LayoutGrid,
   Lightbulb,
   Plug,
   Shield,
@@ -49,6 +50,7 @@ export const sidebarStaticNav: SidebarNavItem[] = [
 /** Primary workspace-level navigation entries. */
 export const sidebarPrimaryNav: SidebarNavItem[] = [
   { name: "ai", href: "/ai", icon: Bot, label: "AI", group: "workspace" },
+  { name: "spaces", icon: LayoutGrid, label: "Spaces", group: "workspace", opensPanel: true },
   { name: "clients", href: "/clients", icon: UserRound, group: "crm" },
   { name: "opportunities", href: "/opportunities", icon: KanbanIcon, group: "crm" },
   { name: "deals", href: "/deals", icon: BadgeDollarSign, group: "crm" },

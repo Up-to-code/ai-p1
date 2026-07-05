@@ -1,12 +1,13 @@
-import type { DocVisibility } from "./docs.types";
+import type { DocVisibility, DocFormValues } from "./docs.types";
 
-export const DEFAULT_DOC_FORM_VALUES = {
+export const DEFAULT_DOC_FORM_VALUES: DocFormValues = {
   title: "",
   content: "",
   folderId: "",
   projectId: "",
-  visibility: "team" as const,
+  visibility: "team",
   tags: "",
+  customFields: [],
 };
 
 export const emptyDoc: typeof DEFAULT_DOC_FORM_VALUES = {

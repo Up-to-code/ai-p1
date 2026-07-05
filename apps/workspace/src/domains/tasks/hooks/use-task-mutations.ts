@@ -4,7 +4,6 @@ import { useCallback, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/toast";
 import { useNavigation } from "@/domains/navigation";
-import { useActiveSpace } from "@/domains/spaces";
 import {
   createTaskRequest,
   updateTaskRequest,
@@ -56,7 +55,7 @@ export function useTaskMutations(organizationId: string) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { projectId: navProjectId } = useNavigation();
-  const { spaceId: navSpaceId } = useActiveSpace();
+  const { spaceId: navSpaceId } = useNavigation();
 
   const navProjectIdRef = useRef(navProjectId);
   navProjectIdRef.current = navProjectId;

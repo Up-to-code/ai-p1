@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useReducedMotion, motion, AnimatePresence } from "framer-motion";
 import { MessageSquarePlus, ChevronDown, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 import { isRtlLocale } from "@/lib/i18n/locale";
 import { useEveChat } from "@/domains/eve";
 import {
@@ -126,7 +127,7 @@ function QuickChatInner({
         });
         const updated = await listThreads(organizationId);
         onPersisted(updated);
-      })().catch((err) => console.error("[quick-chat] persist failed:", err));
+      })().catch((err) => logger.error("persist failed", { module: 'quick-chat' }, err as Error));
     }
     prevIsStreamingRef.current = isStreaming;
   }, [isStreaming, eveSession, events, messages.length, organizationId, onPersisted]);

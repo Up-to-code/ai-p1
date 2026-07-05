@@ -1,16 +1,8 @@
-const isProd = process.env.NODE_ENV === "production";
+/**
+ * @deprecated Use the new deepened logging module from '@/lib/logger/index' instead
+ * This file is kept for backward compatibility and will be removed in a future update
+ */
 
-export const logger = {
-  error: (event: string, meta?: Record<string, unknown>) => {
-    if (isProd) return;
-    console.error(`[${event}]`, meta ?? "");
-  },
-  warn: (event: string, meta?: Record<string, unknown>) => {
-    if (isProd) return;
-    console.warn(`[${event}]`, meta ?? "");
-  },
-  info: (event: string, meta?: Record<string, unknown>) => {
-    if (isProd) return;
-    console.info(`[${event}]`, meta ?? "");
-  },
-};
+// Re-export from the new logging module for backward compatibility
+export { logger, createLogger, createConsoleLogger, createSentryLogger } from './logger/index';
+export type { Logger, LogContext, LogLevel, LogAdapter, PerformanceTimer } from './logger/types';

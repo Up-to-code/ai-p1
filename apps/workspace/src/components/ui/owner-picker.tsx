@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { User, Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { InlineLoading } from "@/components/shared/loading/ViewLoading";
 
 interface OwnerOption {
   id: string;
@@ -68,7 +69,7 @@ export function OwnerPicker({
             </div>
           )}
           <span className={cn("flex-1 truncate text-sm font-bold", selected ? "text-foreground" : "text-muted-foreground")}>
-            {selected ? selected.name : loading ? "Loading..." : "Assign team member"}
+            {selected ? selected.name : loading ? <InlineLoading size="sm" className="inline" /> : "Assign team member"}
           </span>
           <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
         </button>
@@ -77,7 +78,7 @@ export function OwnerPicker({
           <div className="absolute inset-x-0 top-full z-[200] mt-2 max-h-60 overflow-auto rounded-2xl border border-border bg-card shadow-xl">
             {options.length === 0 ? (
               <div className="px-4 py-6 text-center text-sm font-bold text-muted-foreground">
-                {loading ? "Loading..." : "No team members"}
+                {loading ? <InlineLoading size="md" /> : "No team members"}
               </div>
             ) : (
               <div className="p-1.5">

@@ -12,7 +12,7 @@ import { CreateProjectForm } from "@/domains/projects/components/create-project-
 import { ProjectsOverviewDashboard } from "@/domains/projects/components/projects-overview-dashboard";
 import { useNavigation } from "@/domains/navigation";
 
-export function SpaceDetailView({ spaceSlug }: { spaceSlug: string }) {
+export function SpaceDetailView({ spaceId }: { spaceId: string }) {
   const session = useAuthSession();
   const { clearContext } = useNavigation();
   const orgId = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
@@ -24,7 +24,7 @@ export function SpaceDetailView({ spaceSlug }: { spaceSlug: string }) {
   const t = useTranslations("Projects");
 
   const spaces = useWorkspaceSpacesQuery(orgId);
-  const currentSpace = spaces?.find((s) => s.slug === spaceSlug);
+  const currentSpace = spaces?.find((s) => s.slug === spaceId || s.id === spaceId);
 
   const query = useProjectsIndexQuery(orgId);
   const projects = query.results ?? [];
@@ -51,7 +51,7 @@ export function SpaceDetailView({ spaceSlug }: { spaceSlug: string }) {
         )}
         <div className="flex-1">
           <h1 className="text-lg font-bold text-foreground">
-            {currentSpace?.name ?? spaceSlug}
+            {currentSpace?.name ?? spaceId}
           </h1>
           <p className="text-xs text-muted-foreground">
             {projects.length} project{projects.length !== 1 ? "s" : ""}

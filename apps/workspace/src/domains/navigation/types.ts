@@ -1,11 +1,12 @@
 export type NavLevel = "workspace" | "space" | "project";
 
 export interface NavState {
-  workspaceId: string | null;
+  orgId: string | null;
   spaceId: string | null;
   spaceSlug: string | null;
   projectId: string | null;
   level: NavLevel;
+  activeSpace: { id: string; name: string; slug: string; } | null;
 }
 
 export interface NavActions {

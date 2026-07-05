@@ -1,5 +1,13 @@
 export type DocVisibility = "private" | "team" | "workspace";
 
+export type CustomField = {
+  id: string;
+  name: string;
+  type: "text" | "number" | "date" | "select" | "boolean";
+  value: string | number | boolean | null;
+  options?: string[]; // For select type
+};
+
 export type DocRecord = {
   id: string;
   title: string;
@@ -8,6 +16,7 @@ export type DocRecord = {
   projectId?: string;
   visibility: DocVisibility;
   tags?: string[];
+  customFields?: CustomField[];
   createdByUserId: string;
   createdAt: number;
   updatedAt: number;
@@ -34,6 +43,7 @@ export type DocFormValues = {
   projectId: string;
   visibility: DocVisibility;
   tags: string;
+  customFields?: CustomField[];
 };
 
 export type DocFolderFormValues = {

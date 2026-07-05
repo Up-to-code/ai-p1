@@ -45,7 +45,10 @@ export default async function OAuthLayout({ children }: { children: React.ReactN
       suppressHydrationWarning
     >
       <body className={`h-full bg-background text-text-primary ${isArabic ? "font-cairo" : ""}`} suppressHydrationWarning>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+          suppressHydrationWarning
+        />
         {children}
 </body>
     </html>

@@ -105,7 +105,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+          suppressHydrationWarning
+        />
       </head>
       <body className="h-full flex flex-col bg-background text-text-primary" suppressHydrationWarning>
         <Suspense fallback={null}>

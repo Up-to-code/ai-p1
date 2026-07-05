@@ -26,7 +26,7 @@ describe("sidebar source", () => {
       '{ name: "home", href: "/ws", icon: Home',
       '{ name: "inbox", href: "/inbox", icon: Inbox',
       '{ name: "ai", icon: Bot',
-      '{ name: "spaces", icon: Layers',
+      '{ name: "spaces", icon: LayoutGrid',
       '{ name: "clients", href: "/clients", icon: UserRound',
       '{ name: "opportunities", href: "/opportunities", icon: KanbanSquare',
       '{ name: "deals", href: "/deals", icon: BadgeDollarSign',

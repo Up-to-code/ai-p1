@@ -1,9 +1,12 @@
 import { openDB, type IDBPDatabase } from "idb";
 import type { SessionState, HandleMessageStreamEvent } from "eve/client";
+import { logger } from "@/lib/logger";
 
 const DB_NAME = "qentrah:threads";
 const DB_VERSION = 2;
 const STORE_NAME = "threads";
+
+const threadsLogger = logger.withModule('threads-store');
 
 interface ThreadDB {
   [STORE_NAME]: {
@@ -65,7 +68,7 @@ export async function listThreads(orgId: string): Promise<ThreadMeta[]> {
     const index = await db.get(STORE_NAME, indexKey(orgId));
     return (index as ThreadMeta[]) ?? [];
   } catch (err) {
-    console.error("[threads-store] listThreads failed:", err);
+    threadsLogger.error('listThreads failed', { orgId }, err as Error);
     return [];
   }
 }
@@ -77,7 +80,7 @@ export async function getThread(orgId: string, id: string): Promise<ThreadStorag
     const entry = await db.get(STORE_NAME, threadKey(orgId, id));
     return (entry as ThreadStorageEntry) ?? null;
   } catch (err) {
-    console.error("[threads-store] getThread failed:", err);
+    threadsLogger.error('getThread failed', { orgId, id }, err as Error);
     return null;
   }
 }
@@ -114,7 +117,7 @@ export async function saveThread(
     index.sort((a, b) => b.updatedAt - a.updatedAt);
     await db.put(STORE_NAME, index, ik);
   } catch (err) {
-    console.error("[threads-store] saveThread failed:", err);
+    threadsLogger.error('saveThread failed', { orgId, id }, err as Error);
   }
 }
 
@@ -129,7 +132,7 @@ export async function deleteThread(orgId: string, id: string): Promise<void> {
     const filtered = index.filter((m) => m.id !== id);
     await db.put(STORE_NAME, filtered, ik);
   } catch (err) {
-    console.error("[threads-store] deleteThread failed:", err);
+    threadsLogger.error('deleteThread failed', { orgId, id }, err as Error);
   }
 }
 
@@ -153,7 +156,7 @@ export async function renameThread(orgId: string, id: string, title: string): Pr
     }
     await db.put(STORE_NAME, index, ik);
   } catch (err) {
-    console.error("[threads-store] renameThread failed:", err);
+    threadsLogger.error('renameThread failed', { orgId, id, title }, err as Error);
   }
 }
 

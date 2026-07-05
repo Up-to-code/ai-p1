@@ -9,7 +9,7 @@ import { calendarHeaderLabel, visibleCalendarRange } from "../calendar-view-mode
 import type { CalendarView } from "../calendar-view-model";
 import { useCalendarIndexRangeQueryResult } from "../api/calendar";
 import { useCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
-import { useActiveSpace } from "@/domains/spaces/hooks/use-active-space";
+import { useNavigation } from "@/domains/navigation";
 import { HttpQueryState, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -55,7 +55,7 @@ export function CalendarScreen() {
   );
 
   const projectId = useCurrentProjectId();
-  const { spaceId } = useActiveSpace();
+  const { spaceId } = useNavigation();
 
   const eventsQuery = useCalendarIndexRangeQueryResult(
     workspaceOrganizationId,

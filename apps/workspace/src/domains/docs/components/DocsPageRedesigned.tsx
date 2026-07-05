@@ -1,23 +1,23 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from "next-intl";
-import { Plus, FileText, Search, Folder } from "lucide-react";
+import { Plus, FileText, Search, Folder, Info, X } from "lucide-react";
 import { QentrahTable, type QentrahColumnDef } from "@qentrah/ui";
-import { DomainHeader, type HeaderAction } from "@/components/shared/domain/DomainHeader";
-import { type ViewMode } from "@/components/shared/view-system/ViewSwitcher";
-import { ViewLoading } from "@/components/shared/loading/ViewLoading";
 import { EmptyWorkspace, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useAuthSession } from "@/domains/auth";
-import { useDocsQuery, useDocFoldersQuery, createDocRequest, createDocFolderRequest } from "../api/docs";
+import { useDocsQuery, useDocFoldersQuery, createDocRequest, createDocFolderRequest, useDocQuery } from "../api/docs";
 import type { DocRecord, DocFolder } from "../docs.types";
 import { cn } from "@/lib/utils";
 import { emptyDoc } from "../docs.constants";
-import { DocEditor } from "./doc-editor";
 import { DocCreateForm } from "./doc-create-form";
 import { buildBreadcrumbPath, getSubfolders } from "../lib/folder-utils";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Home } from "lucide-react";
+import { useRouter, usePathname } from "@/i18n/routing";
+import { DocEditor } from "./doc-editor";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { DocsTableSkeleton } from "./docs-table-skeleton";
 
 export function DocsPageRedesigned({
   projectId: projectIdProp,
@@ -25,13 +25,15 @@ export function DocsPageRedesigned({
   const t = useTranslations("Docs");
   const common = useTranslations("Common");
   const session = useAuthSession();
-  const [activeView, setActiveView] = useState<ViewMode>('table');
+  const router = useRouter();
+  const pathname = usePathname();
   const [search, setSearch] = useState("");
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedDoc, setSelectedDoc] = useState<DocRecord | null>(null);
   const [showNewFolder, setShowNewFolder] = useState(false);
+  const [showFolderGuidance, setShowFolderGuidance] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+  const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
 
   const workspaceStatus = session.workspace.status;
   const organizationId =
@@ -40,6 +42,18 @@ export function DocsPageRedesigned({
       : undefined;
 
   const projectId = projectIdProp ?? undefined;
+
+  const { data: selectedDoc, isLoading: isLoadingDoc } = useDocQuery(organizationId, selectedDocId || undefined);
+
+  // Sync modal with URL
+  useEffect(() => {
+    const match = pathname.match(/^\/docs\/([^/]+)$/);
+    if (match && match[1]) {
+      setSelectedDocId(match[1]);
+    } else {
+      setSelectedDocId(null);
+    }
+  }, [pathname]);
 
   const docsResult = useDocsQuery(organizationId, {
     projectId,
@@ -52,6 +66,7 @@ export function DocsPageRedesigned({
   const emptyDocs = [] as DocRecord[];
   const rawDocs = docsResult.data ?? emptyDocs;
   const docs = rawDocs.filter((doc) => !doc.deletedAt);
+  const isLoading = docsResult.isLoading || foldersResult.isLoading;
 
   const currentSubfolders = getSubfolders(allFolders, selectedFolderId);
   const breadcrumbPath = buildBreadcrumbPath(allFolders, selectedFolderId);
@@ -83,7 +98,7 @@ export function DocsPageRedesigned({
       cellRenderer: (p: any) => {
         const isFolder = p.data?.type === 'folder';
         return (
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0 cursor-pointer hover:bg-muted/50 rounded px-1 py-1">
             {isFolder ? (
               <Folder className="h-4 w-4 text-muted-foreground shrink-0" />
             ) : (
@@ -100,21 +115,22 @@ export function DocsPageRedesigned({
       headerName: "Type",
       field: "type",
       width: 100,
-      valueFormatter: (p: any) => p.value === 'folder' ? 'Folder' : 'Document',
+      valueGetter: (p: any) => p.data?.type === 'folder' ? 'Folder' : 'Document',
     },
     {
       headerName: "Items",
       field: "itemCount",
       width: 80,
-      valueFormatter: (p: any) => p.value ?? "—",
+      valueGetter: (p: any) => p.data?.itemCount ?? "—",
     },
     {
       headerName: "Updated",
       field: "updatedAt",
       width: 140,
-      valueFormatter: (p: any) => {
-        if (!p.value) return "—";
-        return new Date(p.value).toLocaleDateString(undefined, {
+      valueGetter: (p: any) => {
+        const value = p.data?.updatedAt;
+        if (!value) return "—";
+        return new Date(value).toLocaleDateString(undefined, {
           month: "short",
           day: "numeric",
           year: "numeric",
@@ -123,24 +139,19 @@ export function DocsPageRedesigned({
     },
   ];
 
-  const actions: HeaderAction[] = [
-    {
-      label: t("actions.newDoc"),
-      icon: <Plus className="w-4 h-4" />,
-      onClick: () => setShowCreateForm(true),
-      variant: "primary",
-    },
-  ];
 
-  const availableViews: ViewMode[] = ['table', 'board', 'calendar', 'timeline', 'dashboard', 'widgets'];
 
-  const handleRowClick = (row: any) => {
-    if (row.type === 'folder') {
+  const handleRowClick = (event: any) => {
+    const row = event.data;
+    if (row?.type === 'folder') {
       setSelectedFolderId(row.id);
-    } else {
-      const doc = docs.find((d) => d.id === row.id);
-      if (doc) setSelectedDoc(doc);
+    } else if (row?.id) {
+      router.push(`/docs/${row.id}`);
     }
+  };
+
+  const handleCloseModal = () => {
+    router.push("/docs");
   };
 
   async function handleCreateFolder() {
@@ -152,6 +163,7 @@ export function DocsPageRedesigned({
     });
     setNewFolderName("");
     setShowNewFolder(false);
+    setShowFolderGuidance(true);
   }
 
   function handleCreateDoc(title: string, templateId?: string) {
@@ -162,22 +174,35 @@ export function DocsPageRedesigned({
       folderId: selectedFolderId ?? "",
       projectId: projectId ?? "",
     }).then((result) => {
-      const newDoc = docs.find((d) => d.id === result.doc.id);
-      if (newDoc) setSelectedDoc(newDoc);
+      router.push(`/docs/${result.doc.id}`);
     });
   }
 
   if (workspaceStatus !== "ready") {
     return (
       <div className="flex flex-col h-full">
-        <DomainHeader
-          domain="Documents"
-          currentSection="All Documents"
-          actions={actions}
-          availableViews={availableViews}
-          activeView={activeView}
-          onViewChange={setActiveView}
-        />
+        <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0">
+          <h1 className="text-lg font-semibold text-foreground">{t("title")}</h1>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled
+              className="h-9 rounded-lg px-4 text-sm font-medium"
+            >
+              <Folder className="w-4 h-4 mr-2" />
+              {t("folders.newFolder")}
+            </Button>
+            <Button
+              type="button"
+              disabled
+              className="h-9 rounded-lg px-4 text-sm font-medium"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t("actions.newDoc")}
+            </Button>
+          </div>
+        </div>
         <div className="flex-1 flex items-center justify-center">
           <WorkspaceQueryState status={workspaceStatus} variant="table" />
         </div>
@@ -185,17 +210,33 @@ export function DocsPageRedesigned({
     );
   }
 
-  if (tableData.length === 0) {
+
+
+  if (tableData.length === 0 && !showNewFolder && !showFolderGuidance) {
     return (
       <div className="flex flex-col h-full">
-        <DomainHeader
-          domain="Documents"
-          currentSection="All Documents"
-          actions={actions}
-          availableViews={availableViews}
-          activeView={activeView}
-          onViewChange={setActiveView}
-        />
+        <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0">
+          <h1 className="text-lg font-semibold text-foreground">{t("title")}</h1>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowNewFolder(true)}
+              className="h-9 rounded-lg px-4 text-sm font-medium"
+            >
+              <Folder className="w-4 h-4 mr-2" />
+              {t("folders.newFolder")}
+            </Button>
+            <Button
+              type="button"
+              onClick={() => setShowCreateForm(true)}
+              className="h-9 rounded-lg px-4 text-sm font-medium"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t("actions.newDoc")}
+            </Button>
+          </div>
+        </div>
         <div className="flex-1 flex items-center justify-center">
           <EmptyWorkspace icon={FileText} title={t("empty.title")} description={t("empty.description")} />
         </div>
@@ -205,14 +246,28 @@ export function DocsPageRedesigned({
 
   return (
     <div className="flex flex-col h-full">
-      <DomainHeader
-        domain="Documents"
-        currentSection={`${tableData.length} item${tableData.length !== 1 ? "s" : ""}`}
-        actions={actions}
-        availableViews={availableViews}
-        activeView={activeView}
-        onViewChange={setActiveView}
-      />
+      <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0">
+        <h1 className="text-lg font-semibold text-foreground">{t("title")}</h1>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowNewFolder(true)}
+            className="h-9 rounded-lg px-4 text-sm font-medium"
+          >
+            <Folder className="w-4 h-4 mr-2" />
+            {t("folders.newFolder")}
+          </Button>
+          <Button
+            type="button"
+            onClick={() => setShowCreateForm(true)}
+            className="h-9 rounded-lg px-4 text-sm font-medium"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {t("actions.newDoc")}
+          </Button>
+        </div>
+      </div>
 
       {/* Breadcrumb bar */}
       <div className="flex shrink-0 items-center gap-2 border-b border-border bg-muted/30 px-6 py-3">
@@ -250,23 +305,7 @@ export function DocsPageRedesigned({
             </Button>
           </div>
         ))}
-      </div>
-
-      {/* Toolbar */}
-      <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border px-6 py-3">
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setShowNewFolder(true)}
-            className="h-8 rounded-lg px-3 text-xs font-medium"
-          >
-            <Folder className="h-3.5 w-3.5 mr-2" />
-            {t("folders.newFolder")}
-          </Button>
-        </div>
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2">
           <div className="flex h-8 items-center gap-2 rounded-lg border border-border bg-card px-3 focus-within:ring-2 focus-within:ring-ring/20">
             <Search className="h-3.5 w-3.5 text-muted-foreground" />
             <input
@@ -279,116 +318,102 @@ export function DocsPageRedesigned({
         </div>
       </div>
 
-      {/* View content */}
-      <div className="flex-1 overflow-hidden">
-        {activeView === 'table' && (
-          <div className="h-full p-6">
-            {showNewFolder ? (
-              <div className="mb-4 flex gap-2 items-center p-4 border border-dashed border-border bg-muted/30 rounded-lg">
-                <input
-                  value={newFolderName}
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                  placeholder="Folder name"
-                  className="h-9 flex-1 rounded-lg border border-border bg-background px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-ring/20"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleCreateFolder();
-                    if (e.key === "Escape") {
-                      setShowNewFolder(false);
-                      setNewFolderName("");
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={handleCreateFolder}
-                  className="h-9 text-sm"
-                >
-                  Create
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setShowNewFolder(false);
-                    setNewFolderName("");
-                  }}
-                  className="h-9 text-sm"
-                >
-                  Cancel
-                </Button>
+      {/* Table */}
+      <div className="flex-1 overflow-auto bg-muted/20">
+        {showNewFolder ? (
+          <div className="m-6 flex gap-2 items-center p-4 border border-dashed border-border bg-muted/30 rounded-lg">
+            <input
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              placeholder="Folder name"
+              className="h-9 flex-1 rounded-lg border border-border bg-background px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-ring/20"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleCreateFolder();
+                if (e.key === "Escape") {
+                  setShowNewFolder(false);
+                  setNewFolderName("");
+                }
+              }}
+            />
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleCreateFolder}
+              className="h-9 text-sm"
+            >
+              Create
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setShowNewFolder(false);
+                setNewFolderName("");
+              }}
+              className="h-9 text-sm"
+            >
+              Cancel
+            </Button>
+          </div>
+        ) : null}
+
+        {showFolderGuidance && (
+          <div className="m-6 p-6 border border-border bg-card rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="shrink-0 mt-0.5">
+                <Info className="h-5 w-5 text-muted-foreground" />
               </div>
-            ) : null}
-            <div className="rounded-xl border border-border bg-card overflow-hidden h-full">
-              <QentrahTable
-                rows={tableData}
-                columns={columns}
-                density="compact"
-                height="100%"
-                rowSelection="single"
-                getRowId={(row) => row.id}
-                onRowClicked={(p) => handleRowClick(p.data)}
-              />
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-foreground mb-2">
+                  Folder created successfully
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Folders help you organize your documents. You can now create your first document in this folder to get started.
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      setShowFolderGuidance(false);
+                      setShowCreateForm(true);
+                    }}
+                    className="h-8 text-sm"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create first document
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowFolderGuidance(false)}
+                    className="h-8 text-sm"
+                  >
+                    Skip for now
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {activeView === 'board' && (
-          <div className="h-full p-6">
-            <ViewLoading style="board" message="Board view coming soon" />
-          </div>
-        )}
-
-        {activeView === 'calendar' && (
-          <div className="h-full p-6">
-            <ViewLoading style="calendar" message="Calendar view coming soon" />
-          </div>
-        )}
-
-        {activeView === 'timeline' && (
-          <div className="h-full p-6">
-            <ViewLoading style="table" message="Timeline view coming soon" />
-          </div>
-        )}
-
-        {activeView === 'dashboard' && (
-          <div className="h-full p-6">
-            <ViewLoading style="skeleton" message="Dashboard view coming soon" />
-          </div>
-        )}
-
-        {activeView === 'widgets' && (
-          <div className="h-full p-6">
-            <ViewLoading style="skeleton" message="Widgets view coming soon" />
-          </div>
+        {isLoading ? (
+          <DocsTableSkeleton />
+        ) : (
+          <QentrahTable
+            rows={tableData}
+            columns={columns}
+            onRowClicked={handleRowClick}
+            getRowId={(row) => row.id}
+            className="h-full"
+            suppressRowClickSelection={false}
+            rowSelection="single"
+          />
         )}
       </div>
-
-      {/* Doc editor drawer */}
-      {selectedDoc && organizationId && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/20 backdrop-blur-[2px] dark:bg-black/45"
-            onClick={() => setSelectedDoc(null)}
-          />
-          <div className="relative z-10 w-[800px] h-[600px] min-w-[400px] min-h-[300px] rounded-2xl border border-border bg-background overflow-hidden flex flex-col">
-            <DocEditor
-              key={selectedDoc.id}
-              doc={selectedDoc}
-              organizationId={organizationId}
-              onClose={() => setSelectedDoc(null)}
-              onSaved={() => {}}
-              onDeleted={() => {
-                setSelectedDoc(null);
-              }}
-              isFullscreen={false}
-              onToggleFullscreen={() => {}}
-            />
-          </div>
-        </div>
-      )}
 
       {/* Create doc form modal */}
       {showCreateForm && (
@@ -398,6 +423,39 @@ export function DocsPageRedesigned({
           folderId={selectedFolderId}
         />
       )}
+
+      {/* Document editor modal */}
+      <Dialog open={!!selectedDocId} onOpenChange={(open) => !open && handleCloseModal()}>
+        <DialogContent className="max-w-[90vw] max-h-[90vh] w-full h-[90vh] p-0" showCloseButton={false}>
+          {selectedDoc && (
+            <div className="flex flex-col h-full">
+              <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0">
+                <h1 className="text-lg font-semibold text-foreground truncate flex-1">
+                  {selectedDoc.title || "Untitled"}
+                </h1>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={handleCloseModal}
+                  className="h-8 w-8"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <DocEditor
+                  doc={selectedDoc}
+                  organizationId={organizationId!}
+                  onClose={handleCloseModal}
+                  onSaved={() => {}}
+                  onDeleted={handleCloseModal}
+                />
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

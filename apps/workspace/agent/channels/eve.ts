@@ -1,9 +1,8 @@
 import { eveChannel } from "eve/channels/eve";
-import { localDev } from "eve/channels/auth";
 import { clerkAuth } from "../auth/clerk-auth";
 
 export default eveChannel({
-  auth: [clerkAuth, localDev()],
+  auth: [clerkAuth],
   cors: {
     origin: process.env.APP_URL ?? "*",
     methods: ["GET", "POST"],

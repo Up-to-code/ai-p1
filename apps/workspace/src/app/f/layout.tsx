@@ -30,7 +30,10 @@ export default function FileShareLayout({ children }: { children: React.ReactNod
   return (
     <html lang="en" className={`${cairo.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="h-full bg-background text-text-primary" suppressHydrationWarning>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+          suppressHydrationWarning
+        />
         {children}
       </body>
     </html>

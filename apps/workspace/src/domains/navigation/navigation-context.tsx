@@ -3,7 +3,8 @@
 import { createContext, createElement, useCallback, useContext, useMemo, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter, usePathname } from "@/i18n/routing";
-import { useAuthSession } from "@/domains/auth";
+import { useOrgId } from "@/domains/auth";
+import { useWorkspaceSpacesQuery, type Space } from "@/domains/spaces/api/spaces";
 import type { NavState, NavLevel, NavActions } from "./types";
 
 interface NavigationContextValue extends NavState, NavActions {}
@@ -17,17 +18,22 @@ function getLevel(projectId: string | null, spaceSlug: string | null): NavLevel 
 }
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
-  const session = useAuthSession();
+  const orgId = useOrgId();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-
-  const workspaceId: string | null = session.organization.id ?? null;
 
   const spaceSlug = searchParams.get("space");
   const projectId = searchParams.get("project");
 
   const level = useMemo(() => getLevel(projectId, spaceSlug), [projectId, spaceSlug]);
+
+  const spaces = useWorkspaceSpacesQuery(orgId ?? undefined);
+
+  const activeSpace = useMemo<Space | null>(
+    () => (spaces && spaceSlug ? spaces.find((s) => s.slug === spaceSlug) ?? null : null),
+    [spaces, spaceSlug],
+  );
 
   const setSpace = useCallback(
     (slug: string | null) => {
@@ -68,16 +74,17 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<NavigationContextValue>(
     () => ({
-      workspaceId,
-      spaceId: null,
+      orgId,
+      spaceId: activeSpace?.id ?? null,
       spaceSlug,
       projectId,
       level,
+      activeSpace,
       setSpace,
       setProject,
       clearContext,
     }),
-    [workspaceId, spaceSlug, projectId, level, setSpace, setProject, clearContext],
+    [orgId, activeSpace, spaceSlug, projectId, level, setSpace, setProject, clearContext],
   );
 
   return createElement(NavigationContext.Provider, { value }, children);

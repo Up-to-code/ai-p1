@@ -3,7 +3,7 @@
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
-import type { DocFormValues, DocFolderFormValues, DocRecord, DocFolder } from "../docs.types";
+import type { DocFormValues, DocFolderFormValues, DocRecord, DocFolder, CustomField } from "../docs.types";
 
 export function useDocsQuery(
   organizationId?: string,
@@ -36,10 +36,10 @@ export function useDocsQuery(
   return { data: filtered, isLoading: docs === undefined, isError: false, error: undefined as string | undefined, refetch: () => {} };
 }
 
-export function useDocQuery(organizationId: string | undefined, docId: string) {
+export function useDocQuery(organizationId: string | undefined, docId: string | undefined) {
   const doc = useQuery(
     api.clientDocs.read.get,
-    organizationId && docId ? { organizationId, docId: docId as any } : "skip",
+    organizationId && docId && docId !== "undefined" && docId.length > 0 ? { organizationId, docId: docId as any } : "skip",
   );
   return { data: doc ?? null, isLoading: doc === undefined, isError: false, error: undefined as string | undefined, refetch: () => {} };
 }
@@ -73,6 +73,7 @@ export function docPayloadFromForm(values: DocFormValues) {
       .split(",")
       .map((tag) => tag.trim())
       .filter(Boolean),
+    customFields: values.customFields,
   };
 }
 

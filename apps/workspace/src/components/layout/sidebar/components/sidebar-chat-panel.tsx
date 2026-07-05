@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { logger } from "@/lib/logger";
 import {
   MessageSquare,
   EllipsisVertical,
@@ -96,7 +97,7 @@ export function SidebarChatPanel() {
       await renameThread(orgId, id, newTitle);
       loadThreads();
     } catch (err) {
-      console.error("rename failed:", err);
+      logger.error("thread rename failed", { module: 'sidebar-chat-panel' }, err as Error);
     }
     setRenamingId(null);
   };

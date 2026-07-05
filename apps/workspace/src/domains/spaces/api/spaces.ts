@@ -59,7 +59,7 @@ function spacePayloadFromForm(values: SpaceFormValues) {
 }
 
 export async function createSpaceRequest(organizationId: string, values: SpaceFormValues) {
-  return workspaceMutation<{ space: { id: string } }>(
+  return workspaceMutation<{ space: { id: string; name: string; slug: string } }>(
     organizationId,
     `spaces`,
     {

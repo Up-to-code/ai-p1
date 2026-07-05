@@ -34,8 +34,18 @@ export default clerkMiddleware(async (auth, request) => {
   const requestForMetrics = request;
 
   try {
-    // Eve agent routes pass through without auth
-    if (route.startsWith("/eve/") || route.startsWith("/_eve_internal/")) {
+    // Eve agent routes, MCP, and .well-known pass through without auth
+    if (
+      route.startsWith("/eve/") ||
+      route.startsWith("/_eve_internal/") ||
+      route.startsWith("/mcp/") ||
+      route.startsWith("/.well-known/")
+    ) {
+      return NextResponse.next();
+    }
+
+    // API routes — pass through without i18n handling so Hono can serve them
+    if (route.startsWith("/api/")) {
       return NextResponse.next();
     }
 
@@ -73,6 +83,6 @@ export default clerkMiddleware(async (auth, request) => {
 export const config = {
   matcher: [
     // Match all routes except static files and public assets
-    "/((?!_next/static|_next/image|favicon.ico|ai/|images/|icons/|eve/|_eve_internal/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|ai/|images/|icons/|eve/|_eve_internal/|mcp/|\\.well-known/).*)",
   ],
 };

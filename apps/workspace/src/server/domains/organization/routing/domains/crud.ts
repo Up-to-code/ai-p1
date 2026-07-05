@@ -75,12 +75,14 @@ crudSubRouter.post("/:organizationId/projects", handleCreateProject);
 crudSubRouter.patch("/:organizationId/projects/:projectId", handleUpdateProject);
 crudSubRouter.delete("/:organizationId/projects/:projectId", handleDeleteProject);
 
+crudSubRouter.get("/:organizationId/read/spaces/options", handleReadSpaceOptions);
+crudSubRouter.post("/:organizationId/spaces", handleCreateSpace);
+crudSubRouter.patch("/:organizationId/spaces/:spaceId", handleUpdateSpace);
+crudSubRouter.delete("/:organizationId/spaces/:spaceId", handleDeleteSpace);
+
+// Project-space junction reads (legitimately need project context)
 crudSubRouter.get("/:organizationId/read/projects/:projectId/spaces", handleReadSpaces);
-crudSubRouter.get("/:organizationId/read/projects/:projectId/spaces/options", handleReadSpaceOptions);
 crudSubRouter.get("/:organizationId/read/projects/:projectId/spaces/:spaceId", handleReadSpace);
-crudSubRouter.post("/:organizationId/projects/:projectId/spaces", handleCreateSpace);
-crudSubRouter.patch("/:organizationId/projects/:projectId/spaces/:spaceId", handleUpdateSpace);
-crudSubRouter.delete("/:organizationId/projects/:projectId/spaces/:spaceId", handleDeleteSpace);
 
 crudSubRouter.post("/:organizationId/clients", handleCreateClient);
 crudSubRouter.patch("/:organizationId/clients/:clientId", handleUpdateClient);

@@ -2,6 +2,7 @@ import type { Context } from "hono";
 import { z } from "zod";
 import type { Id, TableNames } from "@convex/_generated/dataModel";
 import { errorMessage, errorStatus } from "@/server/utils/response/error-map";
+import { logger } from "@/lib/logger";
 
 const WORKSPACE_READ_TIMEOUT_MS = 10_000;
 const MAX_CURSOR_LENGTH = 4_000;
@@ -230,7 +231,7 @@ export async function workspaceReadJson<T>(
   try {
     return c.json(await withWorkspaceReadTimeout(label, operation));
   } catch (error) {
-    console.error(`[workspace-read] ${label} failed:`, error);
+    logger.error(`${label} failed`, { module: 'workspace-read' }, error as Error);
     return c.json(
       { error: workspaceReadMessage(error) },
       workspaceReadStatus(error),

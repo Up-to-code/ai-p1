@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { useWorkspaceSpacesQuery } from "@/domains/spaces/api/spaces";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
 import { useNavigation } from "@/domains/navigation";
-import { useAuthSession } from "@/domains/auth";
+
 import { getOrganizationCapabilities } from "@/domains/organization/api";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import {
@@ -28,6 +28,7 @@ import {
 import { SidebarPanelLayout } from "./sidebar-panel-layout";
 import { SpacesPanelSkeleton } from "@/components/loading-ui";
 import { SpaceCreateForm } from "@/domains/spaces";
+import { useSidebarRail } from "../sidebar-rail-context";
 
 function SpaceItem({
   space,
@@ -216,42 +217,49 @@ function ActiveSpaceView({
 
 function CreateMenu({ orgId, canCreate }: { orgId?: string; canCreate: boolean }) {
   const [open, setOpen] = useState(false);
+  const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
+  const { openRailItem } = useSidebarRail();
 
   if (!canCreate) return null;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={
-          <button
-            type="button"
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-accent/50 hover:text-text-primary"
-          >
-            <Plus className="h-3.5 w-3.5" />
-          </button>
-        }
-      />
-      <PopoverContent side="bottom" align="end" sideOffset={4} className="w-48 p-1.5">
-        <div className="flex flex-col gap-0.5">
-          <WorkspaceLink
-            href="/projects/new"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-3 rounded-md px-2.5 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-accent"
-          >
-            <FolderGit2 className="h-4 w-4 text-muted-foreground" />
-            New Project
-          </WorkspaceLink>
-          <WorkspaceLink
-            href={orgId ? `/spaces/new` : "#"}
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-3 rounded-md px-2.5 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-accent"
-          >
-            <KanbanSquare className="h-4 w-4 text-muted-foreground" />
-            New Space
-          </WorkspaceLink>
-        </div>
-      </PopoverContent>
-    </Popover>
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger
+          render={
+            <button
+              type="button"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-accent/50 hover:text-text-primary"
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </button>
+          }
+        />
+        <PopoverContent side="bottom" align="end" sideOffset={4} className="w-48 p-1.5">
+          <div className="flex flex-col gap-0.5">
+            <WorkspaceLink
+              href="/projects/new"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 rounded-md px-2.5 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-accent"
+            >
+              <FolderGit2 className="h-4 w-4 text-muted-foreground" />
+              New Project
+            </WorkspaceLink>
+            <button
+              onClick={() => {
+                setOpen(false);
+                setCreateSpaceOpen(true);
+              }}
+              className="flex items-center gap-3 rounded-md px-2.5 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-accent w-full text-left"
+            >
+              <KanbanSquare className="h-4 w-4 text-muted-foreground" />
+              New Space
+            </button>
+          </div>
+        </PopoverContent>
+      </Popover>
+      {orgId && <SpaceCreateForm open={createSpaceOpen} onOpenChange={setCreateSpaceOpen} onAfterCreate={() => openRailItem("spaces")} />}
+    </>
   );
 }
 
@@ -259,11 +267,8 @@ function CreateMenu({ orgId, canCreate }: { orgId?: string; canCreate: boolean }
 
 export function SidebarSpacePanel() {
   const t = useTranslations("Sidebar");
-  const { spaceSlug, setSpace, projectId, level } = useNavigation();
-
-  // Get organization ID from auth session instead of account context
-  const session = useAuthSession();
-  const orgId = session.organization.id ?? undefined;
+  const { spaceSlug, setSpace, projectId, level, activeSpace, orgId } = useNavigation();
+  const { openRailItem } = useSidebarRail();
 
   const capabilitiesQuery = useQuery({
     queryKey: ["organization-capabilities", orgId],
@@ -272,11 +277,9 @@ export function SidebarSpacePanel() {
   });
   const canCreate = capabilitiesQuery.data?.canCreateProjects ?? false;
 
-  const spaces = useWorkspaceSpacesQuery(orgId);
+  const spaces = useWorkspaceSpacesQuery(orgId ?? undefined);
   const spaceList = spaces ?? [];
   const isLoadingSpaces = spaces === undefined;
-
-  const activeSpace = spaceSlug ? spaceList.find((s) => s.slug === spaceSlug) ?? null : null;
 
   const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
 
@@ -294,7 +297,7 @@ export function SidebarSpacePanel() {
     <>
       <SidebarPanelLayout
         title={showActiveView && activeSpace ? activeSpace.name : t("spaces")}
-        navbarActions={<CreateMenu orgId={orgId} canCreate={canCreate} />}
+        navbarActions={<CreateMenu orgId={orgId ?? undefined} canCreate={canCreate} />}
       >
         {showActiveView && activeSpace ? (
           <ActiveSpaceView
@@ -302,7 +305,7 @@ export function SidebarSpacePanel() {
             spaceSlug={spaceSlug}
             level={level}
             onSelect={handleSpaceSelect}
-            orgId={orgId}
+            orgId={orgId ?? undefined}
           />
         ) : (
           <AllSpacesView
@@ -314,7 +317,7 @@ export function SidebarSpacePanel() {
         )}
       </SidebarPanelLayout>
 
-      <SpaceCreateForm open={createSpaceOpen} onOpenChange={setCreateSpaceOpen} />
+      <SpaceCreateForm open={createSpaceOpen} onOpenChange={setCreateSpaceOpen} onAfterCreate={() => openRailItem("spaces")} />
     </>
   );
 }

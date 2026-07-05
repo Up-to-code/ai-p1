@@ -1,11 +1,10 @@
 "use client";
 
-import { useWorkspaceStore } from "@/domains/workspace/stores/workspace-store";
+import { useNavigation } from "@/domains/navigation";
 import { TaskTableView } from "@/domains/projects/components/views/task-table-view";
 
 export default function WsPage() {
-  const orgId = useWorkspaceStore((s) => s.orgId);
-  const projectId = useWorkspaceStore((s) => s.projectId);
+  const { orgId, projectId } = useNavigation();
 
   return (
     <div className="p-4">

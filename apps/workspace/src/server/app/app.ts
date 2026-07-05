@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import * as Sentry from "@sentry/nextjs";
 import { v1Router } from "@/server/routing/v1/router";
 import { uploadThingHandler } from "@/server/uploadthing/router";
-import { handleMcpAgent, handleMcpMethodNotAllowed } from "@/server/protocols/mcp/transports/agent-link";
+
 import { requestSafetyMiddleware } from "@/server/security";
 
 export const app = new Hono().basePath("/api");
@@ -47,9 +47,6 @@ app.use("*", async (c, next) => {
 });
 
 app.all("/uploadthing", (c) => uploadThingHandler(c.req.raw));
-app.get("/mcp/agent/:publicId/:secret", handleMcpMethodNotAllowed);
-app.delete("/mcp/agent/:publicId/:secret", handleMcpMethodNotAllowed);
-app.post("/mcp/agent/:publicId/:secret", handleMcpAgent);
 app.route("/v1", v1Router);
 
 app.notFound((c) => c.json({ error: "Not Found" }, 404));

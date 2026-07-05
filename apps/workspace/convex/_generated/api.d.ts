@@ -71,6 +71,7 @@ import type * as mcp_toolCall from "../mcp/toolCall.js";
 import type * as mcp_toolInputs from "../mcp/toolInputs.js";
 import type * as mcp_toolRegistry from "../mcp/toolRegistry.js";
 import type * as mcp_tools from "../mcp/tools.js";
+import type * as mcp_toolsOAuth from "../mcp/toolsOAuth.js";
 import type * as mcp_validators from "../mcp/validators.js";
 import type * as media_attachment from "../media/attachment.js";
 import type * as media_data from "../media/data.js";
@@ -244,6 +245,7 @@ declare const fullApi: ApiFromModules<{
   "mcp/toolInputs": typeof mcp_toolInputs;
   "mcp/toolRegistry": typeof mcp_toolRegistry;
   "mcp/tools": typeof mcp_tools;
+  "mcp/toolsOAuth": typeof mcp_toolsOAuth;
   "mcp/validators": typeof mcp_validators;
   "media/attachment": typeof media_attachment;
   "media/data": typeof media_data;

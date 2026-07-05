@@ -2,7 +2,7 @@
 
 import React from "react";
 import { type Project } from "../../../store/projects.types";
-import { DocsScreen } from "@/domains/docs/components/docs-screen";
+import { DocsPageRedesigned } from "@/domains/docs/components/DocsPageRedesigned";
 
 interface DocumentsTabProps {
   project: Project;
@@ -10,5 +10,5 @@ interface DocumentsTabProps {
 }
 
 export function DocumentsTab({ project, organizationId }: DocumentsTabProps) {
-  return <DocsScreen projectId={project.id} />;
+  return <DocsPageRedesigned projectId={project.id} />;
 }

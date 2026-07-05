@@ -2,6 +2,7 @@ import type { Context } from "hono";
 import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { actionErrorJson } from "@/server/utils/response/action-error";
+import { logger } from "@/lib/logger";
 import {
   acceptOrganizationEmailInvitation,
   cancelOrganizationEmailInvitation,
@@ -34,10 +35,11 @@ export async function handleGetOrganizationCapabilities(c: Context) {
     const capabilities = await getCapabilities(org.organizationId);
     const elapsedMs = Date.now() - startedAt;
     if (process.env.NODE_ENV !== "production" && elapsedMs > 750) {
-      console.warn("[organization-capabilities] Slow capability load", {
+      logger.warn("Slow capability load", { 
+        module: 'organization-capabilities',
+        elapsedMs,
         route: "GET /api/v1/organizations/:organizationId/capabilities",
         organizationId: org.organizationId,
-        elapsedMs,
       });
     }
     return c.json({ capabilities });

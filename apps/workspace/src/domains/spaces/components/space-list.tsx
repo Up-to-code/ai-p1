@@ -14,7 +14,7 @@ import { SpaceNavItem } from "./space-nav-item";
 
 interface SpaceListProps {
   currentSpaceSlug?: string | null;
-  onSpaceSelect: (spaceSlug: string | null) => void;
+  onSpaceSelect?: (spaceSlug: string | null) => void;
 }
 
 export function SpaceList({ currentSpaceSlug, onSpaceSelect }: SpaceListProps) {
@@ -49,7 +49,7 @@ export function SpaceList({ currentSpaceSlug, onSpaceSelect }: SpaceListProps) {
       <SpaceNavItem
         name="Global"
         isSelected={!currentSpaceSlug}
-        onClick={() => onSpaceSelect(null)}
+        onClick={() => onSpaceSelect?.(null)}
       />
 
       {/* Space items */}
@@ -65,7 +65,7 @@ export function SpaceList({ currentSpaceSlug, onSpaceSelect }: SpaceListProps) {
               icon={space.icon}
               color={space.color}
               isSelected={currentSpaceSlug === space.slug}
-              onClick={() => onSpaceSelect(space.slug)}
+              onClick={() => onSpaceSelect?.(space.slug)}
             />
             <button
               type="button"

@@ -109,6 +109,7 @@ export const tasksComplete: WriteHandler = async (ctx: MutationCtx, args: WriteT
       priority: (existing.priority ?? "normal") as "low" | "normal" | "high" | "urgent",
       ...(existing.clientId ? { clientId: existing.clientId } : {}),
       ...(existing.projectId ? { projectId: existing.projectId } : {}),
+      ...(existing.spaceId ? { spaceId: existing.spaceId } : {}),
       ...(existing.dueDate ? { dueDate: existing.dueDate } : {}),
       visibility: existing.visibility ?? "workspace",
     },

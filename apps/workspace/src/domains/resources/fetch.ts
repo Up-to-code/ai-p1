@@ -1,14 +1,30 @@
 import { organizationResourcePath } from "./routing";
+import { logger } from "@/lib/logger";
 
 type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
+const resourceLogger = logger.withModule('resources');
+
 async function parseJsonResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
-  const payload = await response.json().catch(() => null) as { error?: string } | null;
+  const text = await response.text();
+  let payload: { error?: string } | null = null;
+  try {
+    payload = JSON.parse(text) as { error?: string } | null;
+  } catch {
+    resourceLogger.error('parseJsonResponse: invalid JSON', {
+      status: response.status,
+      ok: response.ok,
+      body: text.slice(0, 500),
+    });
+  }
   if (!response.ok) {
     throw new Error(payload?.error ?? fallbackMessage);
   }
   if (payload && "error" in payload && Object.keys(payload).length === 1) {
     throw new Error(payload.error ?? fallbackMessage);
+  }
+  if (payload === null) {
+    throw new Error(`Server returned empty response (${response.status}).`);
   }
   return payload as T;
 }

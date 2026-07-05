@@ -1,11 +1,11 @@
 export * from "./api/spaces";
-export { useActiveSpace } from "./hooks/use-active-space";
 export { SpaceCreateForm } from "./components/space-create-form";
 export { SpaceSettings } from "./components/space-settings";
 export { SpaceList } from "./components/space-list";
 export { SpaceNavItem } from "./components/space-nav-item";
 export { MemberPicker } from "./components/member-picker";
 export { SpaceDetailView } from "./components/space-detail-view";
+export { SpacesPage } from "./components/spaces-page";
 export { SpaceSwitcher } from "./components/space-switcher";
 export { spaceSchema } from "./validation/space.schema";
 export type { SpaceFormValues } from "./validation/space.schema";

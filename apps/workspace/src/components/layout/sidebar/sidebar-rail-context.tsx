@@ -17,6 +17,7 @@ interface SidebarRailContextType {
 const pathnameToRailItem: Record<string, RailItemId> = {
   "/ws": "home",
   "/ai": "ai",
+  "/spaces": "spaces",
   "/inbox": "inbox",
   "/tasks": "tasks",
   "/calendar": "calendar",

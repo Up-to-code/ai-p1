@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useReducedMotion, motion, AnimatePresence, type Variants } from "framer-motion";
 import { ArrowDown, Building2, CalendarClock, CheckCircle2, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 import AiComposer, { type ComposerMode } from "./ai-composer";
 import { Markdown } from "@/components/ui/markdown";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -152,7 +153,7 @@ export function EveDashboardChat({
       };
 
       persist().catch((err) => {
-        console.error("[eve-dashboard-chat] thread persist failed:", err);
+        logger.error("thread persist failed", { module: 'eve-dashboard-chat' }, err as Error);
       });
     }
 

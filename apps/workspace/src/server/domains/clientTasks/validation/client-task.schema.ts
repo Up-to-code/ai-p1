@@ -9,6 +9,7 @@ export const clientTaskPayloadSchema = z.object({
   assigneeUserId: z.string().trim().optional().transform((value) => value || undefined),
   clientId: z.string().trim().optional().transform((value) => value || undefined),
   projectId: z.string().trim().optional().transform((value) => value || undefined),
+  spaceId: z.string().trim().optional().transform((value) => value || undefined),
   dueDate: z.string().trim().optional().transform((value) => value || undefined),
   description: z.string().trim().optional().transform((value) => value || undefined),
   tags: z.array(z.string().trim()).optional(),

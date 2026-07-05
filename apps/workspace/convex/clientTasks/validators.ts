@@ -20,6 +20,7 @@ export const clientTaskInputValidator = v.object({
   assigneeUserId: v.optional(v.string()),
   clientId: v.optional(v.string()),
   projectId: v.optional(v.string()),
+  spaceId: v.optional(v.string()),
   dueDate: v.optional(v.string()),
   description: v.optional(v.string()),
   tags: v.optional(v.array(v.string())),
@@ -38,6 +39,7 @@ export const clientTaskValidator = v.object({
   assigneeUserId: v.optional(v.string()),
   clientId: v.optional(v.string()),
   projectId: v.optional(v.string()),
+  spaceId: v.optional(v.string()),
   dueDate: v.optional(v.string()),
   description: v.optional(v.string()),
   checklist: v.optional(v.array(v.object({
