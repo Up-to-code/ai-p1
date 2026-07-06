@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "@/i18n/routing";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ interface FormProps {
 export function CompanyInfoForm({ onNext, organizationName }: FormProps) {
   const t = useTranslations("Onboarding.company");
   const tc = useTranslations("Common");
+  const router = useRouter();
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<CompanyInfoInput>({
     resolver: zodResolver(companyInfoSchema as any),
     defaultValues: { legalName: organizationName, displayName: organizationName, crNumber: "", hqCity: "" },
@@ -97,7 +99,7 @@ export function CompanyInfoForm({ onNext, organizationName }: FormProps) {
         </CardContent>
 
         <CardFooter className="pt-8 pb-8 px-8 flex items-center justify-between rtl:flex-row-reverse border-t border-border dark:border-white/10 mt-8">
-          <Button variant="ghost" type="button" className="text-sm font-semibold text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" type="button" onClick={() => router.push("/ws")} className="text-sm font-semibold text-muted-foreground hover:text-foreground">
             {tc("saveAndExit")}
           </Button>
           <Button className="h-12 px-7 rounded-2xl bg-foreground text-sm font-bold text-white hover:bg-foreground/90 dark:bg-white dark:text-foreground dark:hover:bg-muted" type="submit">

@@ -12,6 +12,7 @@ export interface Channel {
   projectIds?: string[];
   spaceId?: string;
   clientId?: string;
+  parentChannelId?: string;
   memberIds: string[];
   createdBy: string;
   createdAt: number;
@@ -43,7 +44,7 @@ export interface MessageReaction {
 }
 
 export interface MessageMention {
-  type: "user" | "task" | "client" | "deal" | "project" | "document" | "file";
+  type: "user" | "task" | "client" | "deal" | "project" | "document" | "file" | "ai";
   id: string;
   name: string;
 }

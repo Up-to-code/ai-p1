@@ -44,3 +44,17 @@ export const countPendingByRole = query({
     return inviteLinks.length;
   },
 });
+
+export const getByTokenHash = query({
+  args: { tokenHash: v.string() },
+  returns: v.union(organizationInviteLinkValidator, v.null()),
+  handler: async (ctx, args) => {
+    const inviteLink = await ctx.db
+      .query("organizationInviteLinks")
+      .withIndex("by_token_hash", (q) => q.eq("tokenHash", args.tokenHash))
+      .unique();
+
+    if (!inviteLink) return null;
+    return toPublicInviteLink(inviteLink);
+  },
+});

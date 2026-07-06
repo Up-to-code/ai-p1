@@ -216,7 +216,7 @@ export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
               Custom Fields
             </h2>
             <Link
-              href="/settings/organization/custom-fields"
+              href="/organization?tab=profile"
               className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
             >
               Manage

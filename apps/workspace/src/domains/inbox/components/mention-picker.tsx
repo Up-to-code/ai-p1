@@ -1,11 +1,37 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, User, CheckSquare, FileText, Paperclip, Loader2, Lock, Calendar, Building2, DollarSign, FolderOpen } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  Search,
+  User,
+  CheckSquare,
+  FileText,
+  Paperclip,
+  Loader2,
+  Building2,
+  DollarSign,
+  FolderOpen,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { listOrganizationMembers, getOrganizationCapabilities } from "@/domains/organization/api";
+
+function AiLogoSmall({ className }: { className?: string }) {
+  return (
+    <img
+      src="/ai/logo.png"
+      alt=""
+      role="presentation"
+      className={cn("object-contain", className)}
+      width={16}
+      height={16}
+    />
+  );
+}
+import {
+  listOrganizationMembers,
+  getOrganizationCapabilities,
+} from "@/domains/organization/api";
 import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import { useDocsQuery } from "@/domains/docs/api/docs";
 import { useAuthSession } from "@/domains/auth";
@@ -21,15 +47,32 @@ interface MentionPickerProps {
   onClose: () => void;
 }
 
-type MentionCategory = "users" | "tasks" | "documents" | "files" | "projects" | "clients" | "deals" | "events";
+type MentionType = MessageMention["type"] | "ai";
 
 interface MentionItem {
   id: string;
   name: string;
-  type: MessageMention["type"];
-  category: MentionCategory;
+  type: MentionType;
   subtitle?: string;
+  icon: React.ElementType;
 }
+
+const AI_MENTION_NAME = "qentrah";
+
+const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ElementType }> = {
+  ai: { label: "Qentrah AI", icon: AiLogoSmall },
+  user: { label: "Users", icon: User },
+  task: { label: "Tasks", icon: CheckSquare },
+  document: { label: "Documents", icon: FileText },
+  file: { label: "Files", icon: Paperclip },
+  project: { label: "Projects", icon: FolderOpen },
+  client: { label: "Clients", icon: Building2 },
+  deal: { label: "Deals", icon: DollarSign },
+};
+
+const CATEGORY_ORDER = [
+  "ai", "user", "task", "document", "file", "project", "client", "deal",
+];
 
 export function MentionPicker({
   organizationId,
@@ -38,44 +81,27 @@ export function MentionPicker({
   onClose,
 }: MentionPickerProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<MentionCategory>("users");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const session = useAuthSession();
   const [capabilities, setCapabilities] = useState<any>(null);
 
-  // Click outside to close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         onClose();
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
-  // Fetch capabilities for permission checks
   useEffect(() => {
     if (organizationId) {
       getOrganizationCapabilities(organizationId).then(setCapabilities);
     }
   }, [organizationId]);
 
-  // Permission checks
-  const canMentionUsers = capabilities?.canViewMembers ?? true;
-  const canMentionTasks = capabilities?.canViewTasks ?? true;
-  const canMentionDocs = capabilities?.canViewDocs ?? true;
-  const canMentionFiles = capabilities?.canViewMedia ?? true;
-  const canMentionProjects = capabilities?.canViewProjects ?? true;
-  const canMentionClients = capabilities?.canViewClients ?? true;
-  const canMentionDeals = capabilities?.canViewDeals ?? true;
-  const canMentionEvents = capabilities?.canViewCalendar ?? true;
-
-  // Fetch users
   const [users, setUsers] = useState<Array<{ id: string; name: string; email?: string }>>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
 
@@ -89,155 +115,91 @@ export function MentionPicker({
               id: m.userId,
               name: m.user?.name || m.user?.email || m.userId,
               email: m.user?.email,
-            }))
+            })),
           );
         })
         .finally(() => setIsLoadingUsers(false));
     }
   }, [organizationId]);
 
-  // Fetch tasks
-  const tasksResult = useTasksQuery(organizationId, {
-    status: "all",
-    projectId: projectId || null,
-  });
+  const tasksResult = useTasksQuery(organizationId, { status: "all", projectId: projectId || null });
   const tasks = Array.isArray(tasksResult) ? tasksResult : [];
 
-  // Fetch documents
-  const docsResult = useDocsQuery(organizationId, {
-    projectId: projectId || null,
-  });
+  const docsResult = useDocsQuery(organizationId, { projectId: projectId || null });
   const documents = Array.isArray(docsResult) ? docsResult : [];
 
-  // Fetch projects
   const projectsResult = useProjectsIndexQuery(organizationId);
   const projects = projectsResult?.results ?? [];
 
-  // Fetch clients
   const clientsResult = useClientsIndexQuery(organizationId);
   const clients = clientsResult?.results ?? [];
 
-  // Fetch deals
   const dealsResult = useOpportunitiesQuery(organizationId);
   const deals = Array.isArray(dealsResult) ? dealsResult : [];
 
-  // Combine all items with permission checks
+  // Combine ALL items across all categories into one global list
   const allItems = useMemo(() => {
     const items: MentionItem[] = [];
 
-    // Add users (with permission check)
-    if (canMentionUsers && selectedCategory === "users") {
-      users.forEach((user) => {
-        items.push({
-          id: user.id,
-          name: user.name,
-          type: "user",
-          category: "users",
-          subtitle: user.email,
-        });
-      });
-    }
+    // AI Assistant (always available)
+    items.push({
+      id: "ai-draw",
+      name: AI_MENTION_NAME,
+      type: "ai",
+      subtitle: "Ask the AI assistant",
+      icon: AiLogoSmall,
+    });
 
-    // Add tasks (with permission check)
-    if (canMentionTasks && selectedCategory === "tasks") {
-      tasks.forEach((task) => {
-        items.push({
-          id: task.id,
-          name: task.title,
-          type: "task",
-          category: "tasks",
-          subtitle: task.status,
-        });
-      });
-    }
+    users.forEach((user) =>
+      items.push({ id: user.id, name: user.name, type: "user" as const, subtitle: user.email, icon: User }),
+    );
 
-    // Add documents (with permission check)
-    if (canMentionDocs && selectedCategory === "documents") {
-      documents.forEach((doc) => {
-        items.push({
-          id: doc.id,
-          name: doc.title,
-          type: "document",
-          category: "documents",
-          subtitle: doc.folderId || "Root",
-        });
-      });
-    }
+    tasks.forEach((task) =>
+      items.push({ id: task.id, name: task.title, type: "task" as const, subtitle: task.status, icon: CheckSquare }),
+    );
 
-    // Add projects (with permission check)
-    if (canMentionProjects && selectedCategory === "projects") {
-      projects.forEach((project) => {
-        items.push({
-          id: project.id,
-          name: project.name,
-          type: "project",
-          category: "projects",
-          subtitle: project.status || "Active",
-        });
-      });
-    }
+    documents.forEach((doc) =>
+      items.push({ id: doc.id, name: doc.title, type: "document" as const, subtitle: doc.folderId || "Root", icon: FileText }),
+    );
 
-    // Add clients (with permission check)
-    if (canMentionClients && selectedCategory === "clients") {
-      clients.forEach((client) => {
-        items.push({
-          id: client.id,
-          name: client.name,
-          type: "client",
-          category: "clients",
-          subtitle: client.pipelineStage || "New",
-        });
-      });
-    }
+    projects.forEach((project) =>
+      items.push({ id: project.id, name: project.name, type: "project" as const, subtitle: project.status || "Active", icon: FolderOpen }),
+    );
 
-    // Add deals (with permission check)
-    if (canMentionDeals && selectedCategory === "deals") {
-      deals.forEach((deal) => {
-        items.push({
-          id: deal.id,
-          name: deal.name,
-          type: "deal",
-          category: "deals",
-          subtitle: deal.pipelineStage || "New",
-        });
-      });
-    }
+    clients.forEach((client) =>
+      items.push({ id: client.id, name: client.name, type: "client" as const, subtitle: client.pipelineStage || "New", icon: Building2 }),
+    );
+
+    deals.forEach((deal) =>
+      items.push({ id: deal.id, name: deal.title, type: "deal" as const, subtitle: deal.stage || "New", icon: DollarSign }),
+    );
 
     return items;
-  }, [users, tasks, documents, projects, clients, deals, selectedCategory, canMentionUsers, canMentionTasks, canMentionDocs, canMentionProjects, canMentionClients, canMentionDeals]);
+  }, [users, tasks, documents, projects, clients, deals]);
 
-  // Filter items by search query
+  // Global search across ALL categories
   const filteredItems = useMemo(() => {
     if (!searchQuery.trim()) return allItems;
     const query = searchQuery.toLowerCase();
     return allItems.filter(
       (item) =>
         item.name.toLowerCase().includes(query) ||
-        item.subtitle?.toLowerCase().includes(query)
+        item.subtitle?.toLowerCase().includes(query),
     );
   }, [allItems, searchQuery]);
 
-  // Group items by category
+  // Group filtered results by category
   const groupedItems = useMemo(() => {
-    const groups: Record<MentionCategory, MentionItem[]> = {
-      users: [],
-      tasks: [],
-      documents: [],
-      files: [],
-      projects: [],
-      clients: [],
-      deals: [],
-      events: [],
-    };
-
+    const groups: Record<string, MentionItem[]> = {};
+    CATEGORY_ORDER.forEach((cat) => { groups[cat] = []; });
     filteredItems.forEach((item) => {
-      groups[item.category].push(item);
+      const key = String(item.type);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(item);
     });
-
     return groups;
   }, [filteredItems]);
 
-  // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown") {
@@ -256,7 +218,6 @@ export function MentionPicker({
         onClose();
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [filteredItems, selectedIndex, onClose]);
@@ -265,54 +226,10 @@ export function MentionPicker({
     onSelect({
       id: item.id,
       name: item.name,
-      type: item.type,
-    });
+      type: item.type as MessageMention["type"],
+    } as MessageMention);
     onClose();
   };
-
-  const getCategoryIcon = (category: MentionCategory) => {
-    switch (category) {
-      case "users":
-        return User;
-      case "tasks":
-        return CheckSquare;
-      case "documents":
-        return FileText;
-      case "files":
-        return Paperclip;
-      case "projects":
-        return FolderOpen;
-      case "clients":
-        return Building2;
-      case "deals":
-        return DollarSign;
-      case "events":
-        return Calendar;
-    }
-  };
-
-  const getCategoryLabel = (category: MentionCategory) => {
-    switch (category) {
-      case "users":
-        return "Users";
-      case "tasks":
-        return "Tasks";
-      case "documents":
-        return "Documents";
-      case "files":
-        return "Files";
-      case "projects":
-        return "Projects";
-      case "clients":
-        return "Clients";
-      case "deals":
-        return "Deals";
-      case "events":
-        return "Events";
-    }
-  };
-
-  const isLoading = isLoadingUsers;
 
   return (
     <motion.div
@@ -321,207 +238,81 @@ export function MentionPicker({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 10, scale: 0.95 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="fixed left-0 right-0 mx-auto max-w-2xl rounded-xl border border-border bg-popover shadow-2xl z-50"
+      className="fixed left-0 right-0 mx-auto max-w-xl rounded-xl border border-border bg-popover shadow-2xl z-50"
       style={{ bottom: "100px" }}
     >
-      {/* Header */}
-      <div className="border-b border-border p-4">
+      {/* Global search */}
+      <div className="border-b border-border p-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             autoFocus
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search users, tasks, documents..."
-            className="pl-9 h-10 text-sm"
+            onChange={(e) => { setSearchQuery(e.target.value); setSelectedIndex(0); }}
+            placeholder="Search @users, tasks, docs, projects, clients, deals..."
+            className="pl-9 h-10 text-sm border-transparent bg-muted/50 focus:bg-background"
           />
         </div>
       </div>
 
-      {/* Category tabs */}
-      <div className="flex gap-1 border-b border-border p-2 overflow-x-auto">
-        {canMentionUsers && (
-          <button
-            type="button"
-            onClick={() => setSelectedCategory("users")}
-            className={cn(
-              "rounded-md px-4 py-2 text-xs font-medium transition-colors whitespace-nowrap",
-              selectedCategory === "users"
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-            )}
-          >
-            Users
-          </button>
-        )}
-        {canMentionTasks && (
-          <button
-            type="button"
-            onClick={() => setSelectedCategory("tasks")}
-            className={cn(
-              "rounded-md px-4 py-2 text-xs font-medium transition-colors whitespace-nowrap",
-              selectedCategory === "tasks"
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-            )}
-          >
-            Tasks
-          </button>
-        )}
-        {canMentionDocs && (
-          <button
-            type="button"
-            onClick={() => setSelectedCategory("documents")}
-            className={cn(
-              "rounded-md px-4 py-2 text-xs font-medium transition-colors whitespace-nowrap",
-              selectedCategory === "documents"
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-            )}
-          >
-            Documents
-          </button>
-        )}
-        {canMentionProjects && (
-          <button
-            type="button"
-            onClick={() => setSelectedCategory("projects")}
-            className={cn(
-              "rounded-md px-4 py-2 text-xs font-medium transition-colors whitespace-nowrap",
-              selectedCategory === "projects"
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-            )}
-          >
-            Projects
-          </button>
-        )}
-        {canMentionClients && (
-          <button
-            type="button"
-            onClick={() => setSelectedCategory("clients")}
-            className={cn(
-              "rounded-md px-4 py-2 text-xs font-medium transition-colors whitespace-nowrap",
-              selectedCategory === "clients"
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-            )}
-          >
-            Clients
-          </button>
-        )}
-        {canMentionDeals && (
-          <button
-            type="button"
-            onClick={() => setSelectedCategory("deals")}
-            className={cn(
-              "rounded-md px-4 py-2 text-xs font-medium transition-colors whitespace-nowrap",
-              selectedCategory === "deals"
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-            )}
-          >
-            Deals
-          </button>
-        )}
-        {canMentionEvents && (
-          <button
-            type="button"
-            onClick={() => setSelectedCategory("events")}
-            className={cn(
-              "rounded-md px-4 py-2 text-xs font-medium transition-colors whitespace-nowrap",
-              selectedCategory === "events"
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-            )}
-          >
-            Events
-          </button>
-        )}
-      </div>
-
-      {/* Items list */}
-      <div className="max-h-96 overflow-y-auto">
-        {isLoading ? (
+      {/* Results */}
+      <div className="max-h-80 overflow-y-auto">
+        {isLoadingUsers ? (
           <div className="flex items-center justify-center p-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 text-center">
-            <Search className="mb-3 h-12 w-12 text-muted-foreground/40" />
-            <p className="text-sm text-muted-foreground">No items found</p>
+          <div className="flex flex-col items-center justify-center p-10 text-center">
+            <Search className="mb-2 h-10 w-10 text-muted-foreground/30" />
+            <p className="text-sm text-muted-foreground">
+              {searchQuery ? "No results found" : "No items available"}
+            </p>
           </div>
         ) : (
-          <div className="p-3">
-            {(["users", "tasks", "documents", "files", "projects", "clients", "deals", "events"] as MentionCategory[]).map((category) => {
-              const items = groupedItems[category];
-              if (items.length === 0) return null;
+          <div className="py-2">
+            {CATEGORY_ORDER.map((catKey) => {
+              const items = groupedItems[catKey];
+              if (!items?.length) return null;
 
-              const Icon = getCategoryIcon(category);
-              const hasPermission =
-                (category === "users" && canMentionUsers) ||
-                (category === "tasks" && canMentionTasks) ||
-                (category === "documents" && canMentionDocs) ||
-                (category === "files" && canMentionFiles) ||
-                (category === "projects" && canMentionProjects) ||
-                (category === "clients" && canMentionClients) ||
-                (category === "deals" && canMentionDeals) ||
-                (category === "events" && canMentionEvents);
-
-              if (!hasPermission) return null;
+              const config = CATEGORY_CONFIG[catKey];
+              if (!config) return null;
+              const Icon = config.icon;
 
               return (
-                <div key={category} className="mb-4 last:mb-0">
-                  <div className="mb-2 flex items-center gap-2 px-2">
-                    <Icon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {getCategoryLabel(category)}
+                <div key={catKey}>
+                  <div className="flex items-center gap-2 px-4 py-1.5">
+                    <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {config.label}
                     </span>
+                    <span className="text-[10px] text-muted-foreground/60">{items.length}</span>
                   </div>
-                  <div className="space-y-1">
-                    {items.map((item, idx) => {
-                      const globalIndex = filteredItems.indexOf(item);
-                      const isSelected = globalIndex === selectedIndex;
-
-                      return (
-                        <motion.button
-                          key={item.id}
-                          type="button"
-                          onClick={() => handleSelect(item)}
-                          onMouseEnter={() => setSelectedIndex(globalIndex)}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          className={cn(
-                            "flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors",
-                            isSelected
-                              ? "bg-accent text-accent-foreground"
-                              : "hover:bg-accent/50"
+                  {items.map((item) => {
+                    const globalIndex = filteredItems.indexOf(item);
+                    const isSelected = globalIndex === selectedIndex;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => handleSelect(item)}
+                        onMouseEnter={() => setSelectedIndex(globalIndex)}
+                        className={cn(
+                          "flex w-full items-center gap-3 rounded-lg mx-2 px-3 py-2 text-left transition-colors",
+                          isSelected ? "bg-accent text-accent-foreground" : "hover:bg-accent/50 text-foreground",
+                        )}
+                      >
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                          <Icon className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-[13px] font-medium">{item.name}</div>
+                          {item.subtitle && (
+                            <div className="truncate text-[11px] text-muted-foreground">{item.subtitle}</div>
                           )}
-                        >
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                            <Icon className="h-5 w-5 text-muted-foreground" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-medium text-foreground">
-                              {item.name}
-                            </div>
-                            {item.subtitle && (
-                              <div className="truncate text-xs text-muted-foreground">
-                                {item.subtitle}
-                              </div>
-                            )}
-                          </div>
-                          {isSelected && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="h-2 w-2 rounded-full bg-accent-foreground"
-                            />
-                          )}
-                        </motion.button>
-                      );
-                    })}
-                  </div>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               );
             })}
@@ -529,19 +320,10 @@ export function MentionPicker({
         )}
       </div>
 
-      {/* Footer */}
-      <div className="border-t border-border px-4 py-3 text-xs text-muted-foreground bg-muted/30">
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1">
-            <Lock className="h-3 w-3" />
-            Permission-based access
-          </span>
-          <div className="flex items-center gap-3">
-            <span>↑↓ Navigate</span>
-            <span>↵ Select</span>
-            <span>Esc Close</span>
-          </div>
-        </div>
+      <div className="border-t border-border px-4 py-2.5 text-[11px] text-muted-foreground bg-muted/30 flex items-center justify-between">
+        <span>↑↓ Navigate</span>
+        <span>↵ Select</span>
+        <span>Esc Close</span>
       </div>
     </motion.div>
   );

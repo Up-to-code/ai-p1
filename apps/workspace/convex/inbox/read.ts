@@ -62,7 +62,7 @@ export const listMessages = query({
     const messages = await ctx.db
       .query("messages")
       .withIndex("by_channel_created", (q) => q.eq("channelId", channelId))
-      .order("desc")
+      .order("asc")
       .take(limit);
     
     return messages.filter((msg) => !msg.isDeleted);

@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { Calendar, momentLocalizer, View } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import "./calendar.css";
 import { cn } from "@/lib/utils";
 
 const localizer = momentLocalizer(moment);
@@ -82,6 +83,7 @@ export function CalendarComponent({
         padding: "2px 4px",
         fontSize: "12px",
       },
+      className: "rbc-event",
     };
   }, []);
 
@@ -92,11 +94,274 @@ export function CalendarComponent({
         backgroundColor: isDisabled ? "#f5f5f5" : undefined,
         cursor: isDisabled ? "not-allowed" : "pointer",
       },
+      className: isDisabled ? "rbc-off-range-bg" : "",
     };
   }, [disabled]);
 
   return (
-    <div className={cn("h-full w-full", className)}>
+    <div className={cn("h-full w-full rbc-calendar", className)}>
+      <Calendar
+        localizer={localizer}
+        events={events}
+        startAccessor="start"
+        endAccessor="end"
+        style={{ height: "100%", width: "100%" }}
+        view={currentView}
+        date={currentDate}
+        onNavigate={handleNavigate}
+        onView={handleView}
+        onSelectEvent={handleSelectEvent}
+        onSelectSlot={handleSelectSlot}
+        selectable
+        eventPropGetter={eventStyleGetter}
+        dayPropGetter={dayPropGetter}
+        views={["month" as View, "week" as View, "day" as View, "agenda" as View]}
+        defaultView="month"
+      />
+    </div>
+  );
+}
+          --rbc-off-range-bg: var(--muted/50);
+          --rbc-off-range-color: var(--muted-foreground);
+          --rbc-slot-bg: var(--muted/20);
+          --rbc-slot-color: var(--foreground);
+        }
+        
+        .rbc-header {
+          background-color: var(--rbc-header-bg);
+          color: var(--rbc-header-color);
+          border-bottom: 1px solid var(--border);
+        }
+        
+        .rbc-month-view, .rbc-time-view, .rbc-agenda-view {
+          background-color: var(--background);
+        }
+        
+        .rbc-today {
+          background-color: var(--rbc-today-bg) !important;
+        }
+        
+        .rbc-off-range-bg {
+          background-color: var(--rbc-off-range-bg);
+        }
+        
+        .rbc-day-bg + .rbc-day-bg {
+          border-left: 1px solid var(--border);
+        }
+        
+        .rbc-month-row {
+          border-bottom: 1px solid var(--border);
+        }
+        
+        .rbc-event {
+          background-color: var(--rbc-event-bg);
+          color: white;
+        }
+        
+        .rbc-event.rbc-selected {
+          background-color: var(--rbc-active-bg);
+          color: var(--rbc-active-color);
+        }
+        
+        .rbc-show-more {
+          background-color: var(--rbc-slot-bg);
+          color: var(--rbc-slot-color);
+        }
+        
+        .rbc-toolbar button {
+          color: var(--foreground);
+          background-color: var(--background);
+          border: 1px solid var(--border);
+        }
+        
+        .rbc-toolbar button:hover {
+          background-color: var(--accent);
+          color: var(--accent-foreground);
+        }
+        
+        .rbc-toolbar button.rbc-active {
+          background-color: var(--primary);
+          color: var(--primary-foreground);
+        }
+        
+        .rbc-toolbar label {
+          color: var(--foreground);
+        }
+      `}</style>
+      <Calendar
+        localizer={localizer}
+        events={events}
+        startAccessor="start"
+        endAccessor="end"
+        style={{ height: "100%", width: "100%" }}
+        view={currentView}
+        date={currentDate}
+        onNavigate={handleNavigate}
+        onView={handleView}
+        onSelectEvent={handleSelectEvent}
+        onSelectSlot={handleSelectSlot}
+        selectable
+        eventPropGetter={eventStyleGetter}
+        dayPropGetter={dayPropGetter}
+        views={["month" as View, "week" as View, "day" as View, "agenda" as View]}
+        defaultView="month"
+      />
+    </div>
+  );
+}
+          --rbc-off-range-color: var(--muted-foreground);
+          --rbc-slot-bg: var(--muted/20);
+          --rbc-slot-color: var(--foreground);
+        }
+        
+        .rbc-header {
+          background-color: var(--rbc-header-bg);
+          color: var(--rbc-header-color);
+          border-bottom: 1px solid var(--border);
+        }
+        
+        .rbc-month-view, .rbc-time-view, .rbc-agenda-view {
+          background-color: var(--background);
+        }
+        
+        .rbc-today {
+          background-color: var(--rbc-today-bg) !important;
+        }
+        
+        .rbc-off-range-bg {
+          background-color: var(--rbc-off-range-bg);
+        }
+        
+        .rbc-day-bg + .rbc-day-bg {
+          border-left: 1px solid var(--border);
+        }
+        
+        .rbc-month-row {
+          border-bottom: 1px solid var(--border);
+        }
+        
+        .rbc-event {
+          background-color: var(--rbc-event-bg);
+          color: white;
+        }
+        
+        .rbc-event.rbc-selected {
+          background-color: var(--rbc-active-bg);
+          color: var(--rbc-active-color);
+        }
+        
+        .rbc-show-more {
+          background-color: var(--rbc-slot-bg);
+          color: var(--rbc-slot-color);
+        }
+        
+        .rbc-toolbar button {
+          color: var(--foreground);
+          background-color: var(--background);
+          border: 1px solid var(--border);
+        }
+        
+        .rbc-toolbar button:hover {
+          background-color: var(--accent);
+          color: var(--accent-foreground);
+        }
+        
+        .rbc-toolbar button.rbc-active {
+          background-color: var(--primary);
+          color: var(--primary-foreground);
+        }
+        
+        .rbc-toolbar label {
+          color: var(--foreground);
+        }
+      `}</style>
+      <Calendar
+        localizer={localizer}
+        events={events}
+        startAccessor="start"
+        endAccessor="end"
+        style={{ height: "100%", width: "100%" }}
+        view={currentView}
+        date={currentDate}
+        onNavigate={handleNavigate}
+        onView={handleView}
+        onSelectEvent={handleSelectEvent}
+        onSelectSlot={handleSelectSlot}
+        selectable
+        eventPropGetter={eventStyleGetter}
+        dayPropGetter={dayPropGetter}
+        views={["month" as View, "week" as View, "day" as View, "agenda" as View]}
+        defaultView="month"
+      />
+    </div>
+  );
+}
+          --rbc-off-range-color: var(--muted-foreground);
+          --rbc-slot-bg: var(--muted/20);
+          --rbc-slot-color: var(--foreground);
+        }
+        
+        .rbc-header {
+          background-color: var(--rbc-header-bg);
+          color: var(--rbc-header-color);
+          border-bottom: 1px solid var(--border);
+        }
+        
+        .rbc-month-view, .rbc-time-view, .rbc-agenda-view {
+          background-color: var(--background);
+        }
+        
+        .rbc-today {
+          background-color: var(--rbc-today-bg) !important;
+        }
+        
+        .rbc-off-range-bg {
+          background-color: var(--rbc-off-range-bg);
+        }
+        
+        .rbc-day-bg + .rbc-day-bg {
+          border-left: 1px solid var(--border);
+        }
+        
+        .rbc-month-row {
+          border-bottom: 1px solid var(--border);
+        }
+        
+        .rbc-event {
+          background-color: var(--rbc-event-bg);
+          color: white;
+        }
+        
+        .rbc-event.rbc-selected {
+          background-color: var(--rbc-active-bg);
+          color: var(--rbc-active-color);
+        }
+        
+        .rbc-show-more {
+          background-color: var(--rbc-slot-bg);
+          color: var(--rbc-slot-color);
+        }
+        
+        .rbc-toolbar button {
+          color: var(--foreground);
+          background-color: var(--background);
+          border: 1px solid var(--border);
+        }
+        
+        .rbc-toolbar button:hover {
+          background-color: var(--accent);
+          color: var(--accent-foreground);
+        }
+        
+        .rbc-toolbar button.rbc-active {
+          background-color: var(--primary);
+          color: var(--primary-foreground);
+        }
+        
+        .rbc-toolbar label {
+          color: var(--foreground);
+        }
+      `}</style>
       <Calendar
         localizer={localizer}
         events={events}

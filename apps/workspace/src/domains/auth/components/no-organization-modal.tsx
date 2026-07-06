@@ -15,12 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-type ClerkOrganization = {
-  id: string;
-  name?: string | null;
-  slug?: string | null;
-};
+import { createClerkOrganization } from "@/lib/auth-client";
 
 function isOrganizationsDisabledError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
@@ -53,10 +48,7 @@ export function NoOrganizationModal() {
     setBusyAction("create");
     setError("");
     try {
-      const clerkApi = clerk as unknown as {
-        createOrganization?: (input: { name: string }) => Promise<ClerkOrganization>;
-      };
-      const organization = await clerkApi.createOrganization?.({ name });
+      const organization = await createClerkOrganization(clerk, name);
       if (!organization?.id) throw new Error(t("errorDesc"));
       await clerk.setActive({ organization: organization.id });
       router.replace("/onboarding");

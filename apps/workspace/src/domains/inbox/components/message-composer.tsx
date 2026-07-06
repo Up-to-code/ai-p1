@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { ArrowUp, Loader2, Plus, User, CheckSquare, FileText, X, AtSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MentionPicker } from "./mention-picker";
@@ -11,6 +11,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import { SlashCommandMenu } from "./slash-command-menu";
+import { setItem, getItem, removeItem } from "@/domains/storage";
 
 interface MessageComposerProps {
   onSend: (content: string, mentions?: MessageMention[]) => void;
@@ -22,6 +23,23 @@ interface MessageComposerProps {
   placeholder?: string;
   organizationId?: string;
   projectId?: string;
+  channelId?: string;
+}
+
+// ─── Mention route helper ──────────────────────────────────────────────────
+
+function getMentionRoute(type: string, id: string): string {
+  switch (type) {
+    case "task": return `/tasks/${id}`;
+    case "document": return `/docs/${id}`;
+    case "client": return `/clients/${id}`;
+    case "deal": return `/deals/${id}`;
+    case "project": return `/projects?project=${id}`;
+    case "file": return "#";
+    case "ai": return "/ai";
+    case "user":
+    default: return "#";
+  }
 }
 
 // ─── Attachment token chip ────────────────────────────────────────────────────
@@ -35,12 +53,9 @@ interface AttachmentChipProps {
 
 function AttachmentChip({ label, icon: Icon, onRemove, accentClass }: AttachmentChipProps) {
   return (
-    <div
-      className={cn(
-        "flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/60 px-2.5 py-1 text-[12px] font-medium",
-        "text-foreground",
-      )}
-    >
+    <div className={cn(
+      "flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/60 px-2.5 py-1 text-[12px] font-medium text-foreground",
+    )}>
       <Icon className={cn("h-3 w-3 shrink-0", accentClass)} />
       <span className="max-w-[120px] truncate">{label}</span>
       <button
@@ -57,21 +72,10 @@ function AttachmentChip({ label, icon: Icon, onRemove, accentClass }: Attachment
 
 // ─── Mention chip ─────────────────────────────────────────────────────────────
 
-function MentionChip({
-  mention,
-  onRemove,
-}: {
-  mention: MessageMention;
-  onRemove: (id: string) => void;
-}) {
-  const IconMap: Record<MessageMention["type"], React.ElementType> = {
-    user: User,
-    task: CheckSquare,
-    document: FileText,
-    file: FileText,
-    client: User,
-    deal: CheckSquare,
-    project: CheckSquare,
+function MentionChip({ mention, onRemove }: { mention: MessageMention; onRemove: (id: string) => void }) {
+  const IconMap: Record<string, React.ElementType> = {
+    user: User, task: CheckSquare, document: FileText, file: FileText,
+    client: User, deal: CheckSquare, project: CheckSquare, ai: CheckSquare,
   };
   const Icon = IconMap[mention.type] ?? User;
 
@@ -103,18 +107,13 @@ export function MessageComposer({
   placeholder = "Type a message…",
   organizationId,
   projectId,
+  channelId,
 }: MessageComposerProps) {
   const [mentions, setMentions] = useState<MessageMention[]>([]);
-
-  // Pending attachments shown as chips above the textarea
-  const [attachments, setAttachments] = useState<
-    Array<{ id: string; label: string; type: ComposerAction }>
-  >([]);
-
+  const [attachments, setAttachments] = useState<Array<{ id: string; label: string; type: ComposerAction }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const plusButtonRef = useRef<HTMLButtonElement>(null);
   const composerRef = useRef<HTMLDivElement>(null);
-
   const [showActionPopover, setShowActionPopover] = useState(false);
   const [showMentionPicker, setShowMentionPicker] = useState(false);
   const [showSlashMenu, setShowSlashMenu] = useState(false);
@@ -124,34 +123,35 @@ export function MessageComposer({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        bold: true,
-        italic: true,
-        strike: true,
-        code: true,
-        bulletList: true,
-        orderedList: true,
-        blockquote: true,
+        bold: {} as any,
+        italic: {} as any,
+        strike: {} as any,
+        code: {} as any,
+        bulletList: {} as any,
+        orderedList: {} as any,
+        blockquote: {} as any,
       }),
-      Placeholder.configure({
-        placeholder,
-      }),
+      Placeholder.configure({ placeholder }),
     ],
     content: "",
     editorProps: {
       attributes: {
-        class: "focus:outline-none min-h-[50px] max-h-[150px] overflow-y-auto text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground",
+        class: "focus:outline-none min-h-[44px] max-h-[150px] overflow-y-auto py-3 text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground",
       },
     },
-    onKeyDown: ({ event }) => {
+    onKeyDown: ({ event }: { event: KeyboardEvent }) => {
       if (event.key === "Enter" && !event.shiftKey && !showMentionPicker && !showSlashMenu) {
         event.preventDefault();
         handleSend();
       }
-      if (event.key === "@" && !showMentionPicker && !showSlashMenu && organizationId) {
+      if (event.key === "@" && !showMentionPicker && !showSlashMenu) {
         setShowMentionPicker(true);
       }
       if (event.key === "/" && !showMentionPicker && !showSlashMenu) {
         setShowSlashMenu(true);
+      }
+      if (event.key === " " && showMentionPicker) {
+        setShowMentionPicker(false);
       }
       if (event.key === " " && showSlashMenu) {
         setShowSlashMenu(false);
@@ -163,11 +163,8 @@ export function MessageComposer({
     },
   });
 
-  useEffect(() => {
-    editor?.commands.focus();
-  }, [editor]);
+  useEffect(() => { editor?.commands.focus(); }, [editor]);
 
-  // Load editing message content into editor
   useEffect(() => {
     if (editingMessage && editor) {
       editor.commands.setContent(editingMessage.content);
@@ -176,37 +173,69 @@ export function MessageComposer({
     }
   }, [editingMessage, editor]);
 
-  // Update isTyping state when editor content changes
   useEffect(() => {
     if (editor) {
-      const updateTyping = () => {
-        setIsTyping(!editor.isEmpty);
-      };
-      editor.on('update', updateTyping);
-      updateTyping(); // Initial check
-      return () => {
-        editor.off('update', updateTyping);
-      };
+      const updateTyping = () => { setIsTyping(!editor.isEmpty); };
+      editor.on("update", updateTyping);
+      updateTyping();
+      return () => { editor.off("update", updateTyping); };
     }
   }, [editor]);
 
+  // Auto-save draft to IndexedDB (debounced)
+  const draftKey = channelId ? `inbox:draft:${channelId}` : null;
+  const draftTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => {
+    if (!editor || !draftKey) return;
+    const saveDraft = () => {
+      const html = editor.getHTML();
+      const text = editor.getText();
+      if (text.trim()) {
+        setItem("layouts", draftKey, JSON.stringify({ html, text, savedAt: Date.now() })).catch(() => {});
+      } else {
+        removeItem("layouts", draftKey).catch(() => {});
+      }
+    };
+    editor.on("update", () => {
+      clearTimeout(draftTimerRef.current);
+      draftTimerRef.current = setTimeout(saveDraft, 500);
+    });
+    return () => clearTimeout(draftTimerRef.current);
+  }, [editor, draftKey]);
+
+  // Restore draft on channel change
+  useEffect(() => {
+    if (!editor || !draftKey) return;
+    getItem("layouts", draftKey).then((raw: any) => {
+      if (raw && typeof raw === "string") {
+        try {
+          const draft = JSON.parse(raw);
+          if (draft.html && draft.text) {
+            editor.commands.setContent(draft.html);
+          }
+        } catch {}
+      }
+    }).catch(() => {});
+  }, [draftKey, editor]);
+
   const handleSend = () => {
-    const content = editor?.getHTML() || "";
     const text = editor?.getText() || "";
-    // Prevent sending empty messages or messages with only whitespace
-    if (!text.trim() || content === "<p></p>" || !isTyping || disabled) {
-      return;
-    }
+    if (!text.trim() || disabled) return;
+    const content = editor?.getHTML() || "";
     onSend(content, mentions.length > 0 ? mentions : undefined);
     editor?.commands.clearContent();
     setMentions([]);
     setAttachments([]);
     setIsTyping(false);
+    if (draftKey) removeItem("layouts", draftKey).catch(() => {});
   };
 
   const handleMentionSelect = (mention: MessageMention) => {
-    // Insert mention with blue color styling
-    const mentionHtml = `<span class="text-blue-500 font-medium">@${mention.name}</span> `;
+    const route = getMentionRoute(mention.type, mention.id);
+    const mentionHtml = route !== "#"
+      ? `<a href="${route}" data-mention-id="${mention.id}" data-mention-type="${mention.type}" class="text-blue-500 font-medium cursor-pointer">@${mention.name}</a>&nbsp;`
+      : `<span class="text-blue-500 font-medium">@${mention.name}</span>&nbsp;`;
     editor?.commands.insertContent(mentionHtml);
     setMentions((prev) => [...prev, mention]);
     setShowMentionPicker(false);
@@ -214,12 +243,7 @@ export function MessageComposer({
   };
 
   const handleRemoveMention = (mentionId: string) => {
-    const mention = mentions.find((m) => m.id === mentionId);
     setMentions((prev) => prev.filter((m) => m.id !== mentionId));
-    if (mention) {
-      const currentContent = editor?.getHTML() || "";
-      editor?.commands.setContent(currentContent.replace(`@${mention.name}`, "").trim());
-    }
   };
 
   const handleAction = (action: ComposerAction) => {
@@ -240,16 +264,10 @@ export function MessageComposer({
         break;
       }
       case "attach-document":
-        setAttachments((prev) => [
-          ...prev,
-          { id: crypto.randomUUID(), label: "Browse documents…", type: action },
-        ]);
+        setAttachments((prev) => [...prev, { id: crypto.randomUUID(), label: "Browse documents…", type: action }]);
         break;
       case "insert-link":
-        setAttachments((prev) => [
-          ...prev,
-          { id: crypto.randomUUID(), label: "https://", type: action },
-        ]);
+        setAttachments((prev) => [...prev, { id: crypto.randomUUID(), label: "https://", type: action }]);
         break;
       case "mention":
         setShowMentionPicker(true);
@@ -259,10 +277,7 @@ export function MessageComposer({
 
   const handleFileSelection = (files: FileList, type: ComposerAction) => {
     Array.from(files).forEach((file) => {
-      setAttachments((prev) => [
-        ...prev,
-        { id: crypto.randomUUID(), label: file.name, type },
-      ]);
+      setAttachments((prev) => [...prev, { id: crypto.randomUUID(), label: file.name, type }]);
     });
   };
 
@@ -272,10 +287,7 @@ export function MessageComposer({
 
   const hasTokens = mentions.length > 0 || attachments.length > 0;
 
-  const attachmentIconMap: Record<
-    ComposerAction,
-    { icon: React.ElementType; accent: string }
-  > = {
+  const attachmentIconMap: Record<ComposerAction, { icon: React.ElementType; accent: string }> = {
     "upload-file": { icon: FileText, accent: "text-blue-500" },
     "attach-document": { icon: FileText, accent: "text-violet-500" },
     "attach-image": { icon: FileText, accent: "text-emerald-500" },
@@ -284,16 +296,13 @@ export function MessageComposer({
   };
 
   return (
-    <div className="border-t border-border/50 bg-background">
-      {/* Hidden file input */}
+    <div className="shrink-0 border-t border-border/50 bg-background">
       <input
         ref={fileInputRef}
         type="file"
         multiple
         className="hidden"
-        onChange={(e) => {
-          if (e.target.files) handleFileSelection(e.target.files, "upload-file");
-        }}
+        onChange={(e) => { if (e.target.files) handleFileSelection(e.target.files, "upload-file"); }}
       />
 
       {/* Reply banner */}
@@ -301,21 +310,16 @@ export function MessageComposer({
         <div className="flex items-start gap-2 border-b border-border/50 bg-muted/50 px-4 py-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-[11px] font-semibold text-muted-foreground">
-                ↩ Replying to {replyTo.author}
-              </span>
+              <span className="text-[11px] font-semibold text-muted-foreground">↩ Replying to {replyTo.author}</span>
               <button
                 type="button"
                 onClick={onCancelReply}
                 className="ml-auto text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Cancel reply"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
-            <p className="text-[12px] text-muted-foreground line-clamp-1 italic">
-              {replyTo.content}
-            </p>
+            <p className="text-[12px] text-muted-foreground line-clamp-1 italic">{replyTo.content}</p>
           </div>
         </div>
       )}
@@ -323,21 +327,18 @@ export function MessageComposer({
       {/* Edit banner */}
       {editingMessage && (
         <div className="flex items-center gap-2 border-b border-border/50 bg-muted/50 px-4 py-2">
-          <span className="text-[11px] font-semibold text-muted-foreground">
-            Editing message
-          </span>
+          <span className="text-[11px] font-semibold text-muted-foreground">Editing message</span>
           <button
             type="button"
             onClick={onCancelEdit}
             className="ml-auto text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Cancel edit"
           >
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
       )}
 
-      {/* Floating mention picker */}
+      {/* Mention picker */}
       <AnimatePresence>
         {showMentionPicker && organizationId && (
           <MentionPicker
@@ -349,61 +350,47 @@ export function MessageComposer({
         )}
       </AnimatePresence>
 
-      {/* Floating slash command menu */}
+      {/* Slash command menu */}
       <AnimatePresence>
         {showSlashMenu && editor && (
           <SlashCommandMenu
             editor={editor}
             onClose={() => setShowSlashMenu(false)}
-            onOpenMentionPicker={(category) => {
-              setShowSlashMenu(false);
-              setShowMentionPicker(true);
-            }}
+            onOpenMentionPicker={() => { setShowSlashMenu(false); setShowMentionPicker(true); }}
           />
         )}
       </AnimatePresence>
 
-      {/* Composer card - compact */}
+      {/* Composer card */}
       <div ref={composerRef} className="px-4 py-2">
-        <div
-          className={cn(
-            "relative flex items-center gap-2 rounded-xl border bg-card transition-all duration-200 min-h-[60px]",
-            "border-border",
-            "focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/10",
-          )}
-        >
-          {/* Left toolbar - horizontal icons */}
+        <div className={cn(
+          "relative flex items-center gap-2 rounded-xl border bg-card transition-all duration-200 min-h-[60px]",
+          "border-border focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/10",
+        )}>
+          {/* Left toolbar */}
           <div className="flex items-center gap-1 pl-2 relative">
             <button
               ref={plusButtonRef}
               type="button"
               disabled={disabled}
               onClick={() => setShowActionPopover((v) => !v)}
-              aria-label="Add attachment or mention"
-              title="Add attachment or mention"
               className={cn(
                 "flex h-9 w-9 items-center justify-center rounded-lg transition-all active:scale-95 disabled:opacity-40",
-                showActionPopover
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                showActionPopover ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
               <Plus className={cn("h-4 w-4 transition-transform duration-200", showActionPopover && "rotate-45")} />
             </button>
-
             <button
               type="button"
               disabled={disabled}
               onClick={() => setShowMentionPicker(true)}
-              aria-label="Mention"
-              title="Mention"
               className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all active:scale-95 disabled:opacity-40"
             >
               <AtSign className="h-4 w-4" />
             </button>
           </div>
 
-          {/* Action popover anchored to the + button */}
           <ComposerActionPopover
             isOpen={showActionPopover}
             onClose={() => setShowActionPopover(false)}
@@ -411,52 +398,34 @@ export function MessageComposer({
             anchorRef={plusButtonRef}
           />
 
-          {/* Center - text input with chips */}
+          {/* Center */}
           <div className="flex-1 min-w-0 flex flex-col justify-center">
-            {/* Attachment + mention chips */}
             {hasTokens && (
               <div className="flex flex-wrap gap-1.5 mb-1">
                 {attachments.map((a) => {
                   const { icon, accent } = attachmentIconMap[a.type];
-                  return (
-                    <AttachmentChip
-                      key={a.id}
-                      label={a.label}
-                      icon={icon}
-                      accentClass={accent}
-                      onRemove={() => removeAttachment(a.id)}
-                    />
-                  );
+                  return <AttachmentChip key={a.id} label={a.label} icon={icon} accentClass={accent} onRemove={() => removeAttachment(a.id)} />;
                 })}
                 {mentions.map((m) => (
                   <MentionChip key={m.id} mention={m} onRemove={handleRemoveMention} />
                 ))}
               </div>
             )}
-
-            {/* Text input - TipTap editor */}
             <EditorContent editor={editor} />
           </div>
 
-          {/* Right - send button only */}
+          {/* Right - send */}
           <div className="pr-2">
             <button
               type="button"
               onClick={handleSend}
               disabled={!isTyping || disabled}
-              aria-label="Send message"
               className={cn(
                 "flex h-9 w-9 items-center justify-center rounded-lg transition-all active:scale-95 disabled:opacity-40",
-                isTyping
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "bg-muted text-muted-foreground",
+                isTyping ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-muted-foreground",
               )}
             >
-              {disabled ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <ArrowUp className="h-4 w-4" />
-              )}
+              {disabled ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
             </button>
           </div>
         </div>

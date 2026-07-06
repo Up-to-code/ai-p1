@@ -6,13 +6,52 @@ import { AuthAccessScreen } from "@/components/auth/auth-access-screen";
 import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-loading";
 import { useHeadlessClerkAuth } from "../hooks/use-headless-clerk-auth";
 
+const SAFE_CALLBACK_PATHS = new Set([
+  "choose-org",
+  "ws",
+  "accept-invite",
+  "onboarding",
+  "dashboard",
+  "projects",
+  "tasks",
+  "calendar",
+  "clients",
+  "docs",
+  "inbox",
+  "ai",
+  "organization",
+  "settings",
+]);
+
 function resolveTarget(callbackURL: string | null | undefined, locale: string): string {
   if (!callbackURL) return `/${locale}/choose-org`;
 
-  // callbackURL may be locale-prefixed (e.g. "/en/choose-org") or bare.
-  if (callbackURL.startsWith("/")) return callbackURL;
+  if (
+    callbackURL.startsWith("http://") ||
+    callbackURL.startsWith("https://") ||
+    callbackURL.startsWith("//") ||
+    callbackURL.startsWith("javascript:") ||
+    callbackURL.startsWith("data:")
+  ) {
+    return `/${locale}/ws`;
+  }
 
-  return `/${locale}/${callbackURL}`;
+  const localePrefix = new RegExp(`^/(${["en", "ar"].join("|")})/`);
+  const normalized = callbackURL.replace(localePrefix, "/");
+
+  try {
+    const parsed = new URL(normalized, "https://qentrah.local");
+    const segments = parsed.pathname.replace(/^\/+|\/+$/g, "").split("/");
+    const rootPath = segments[0] ?? "";
+
+    if (SAFE_CALLBACK_PATHS.has(rootPath)) {
+      return `/${locale}${parsed.pathname}${parsed.search}`;
+    }
+  } catch {
+    return `/${locale}/ws`;
+  }
+
+  return `/${locale}/ws`;
 }
 
 type AuthEntryClientProps = {
@@ -25,13 +64,6 @@ export function AuthEntryClient({ callbackURL, locale, mode }: AuthEntryClientPr
   const clerkAuth = useAuth();
   const auth = useHeadlessClerkAuth({ callbackURL, locale, mode });
 
-  // If Clerk detects the user is already signed in (but the server-side
-  // redirectAuthenticatedUserFromAuthEntry missed it — e.g., cookie not
-  // propagated), redirect client-side so we never show an infinite loading
-  // state waiting for a server redirect that will never come.
-  // Respect callbackURL if present (e.g. /choose-org).
-  // useLayoutEffect fires synchronously before paint — no flash.
-  // window.location.href forces an immediate hard navigation — no router delay.
   useLayoutEffect(() => {
     if (clerkAuth.isLoaded && clerkAuth.isSignedIn) {
       const target = resolveTarget(callbackURL, locale);

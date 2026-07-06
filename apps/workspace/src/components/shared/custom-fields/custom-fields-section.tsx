@@ -50,7 +50,7 @@ export function CustomFieldsSection({ recordType, recordId, editable = true }: C
       <div className="rounded-xl border border-dashed border-border p-6 text-center">
         <p className="text-sm text-muted-foreground">No custom fields configured.</p>
         <Link
-          href="/settings/organization/custom-fields"
+          href="/organization?tab=profile"
           className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
         >
           <Settings className="h-3 w-3" />

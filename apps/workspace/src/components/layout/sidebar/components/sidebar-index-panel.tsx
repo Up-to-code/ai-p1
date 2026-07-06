@@ -1,163 +1,146 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import {
+  LayoutGrid,
   ListTodo,
-  FolderGit2,
   Layers,
-  Users,
-  UserRound,
-  CheckCircle2,
-  Clock,
+  UserCircle,
+  Grid3X3,
+  BarChart3,
+  Building2,
   ChevronRight,
-  FileText,
-  CalendarDays,
-  KanbanSquare,
-  BadgeDollarSign,
-  Bot,
 } from "lucide-react";
 import { useAuthSession } from "@/domains/auth";
-import { useTasksQuery } from "@/domains/tasks/api/tasks";
-import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
-import { useWorkspaceSpacesQuery } from "@/domains/spaces/api/spaces";
-import { listOrganizationMembers } from "@/domains/organization/api/members";
+import { useNavigation } from "@/domains/navigation";
 import { cn } from "@/lib/utils";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { SidebarPanelLayout } from "./sidebar-panel-layout";
-import { CollapsibleSection } from "./collapsible-section";
-import { IndexPanelSkeleton } from "@/components/loading-ui";
 
-function IndexItem({
+function LauncherItem({
   icon: Icon,
   label,
   href,
   meta,
-  isMe,
+  onClick,
 }: {
-  icon: typeof ListTodo;
+  icon: typeof LayoutGrid;
   label: string;
-  href: string;
+  href?: string;
   meta?: string;
-  isMe?: boolean;
+  onClick?: () => void;
+}) {
+  const content = (
+    <>
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+        <Icon className="h-4 w-4 text-muted-foreground" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="truncate text-[13px] font-medium text-foreground">{label}</div>
+        {meta && <div className="truncate text-[11px] text-muted-foreground">{meta}</div>}
+      </div>
+      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+    </>
+  );
+
+  const className = cn(
+    "group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors",
+    "hover:bg-accent/60 hover:text-foreground",
+  );
+
+  if (href) {
+    return (
+      <WorkspaceLink href={href} className={className}>
+        {content}
+      </WorkspaceLink>
+    );
+  }
+
+  return (
+    <button type="button" onClick={onClick} className={className}>
+      {content}
+    </button>
+  );
+}
+
+function LauncherSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
 }) {
   return (
-    <WorkspaceLink
-      href={href}
-      className="group/item flex items-center gap-2 rounded-lg px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
-    >
-      <Icon className="h-3.5 w-3.5 shrink-0" />
-      <span className="flex-1 truncate">{label}</span>
-      {isMe && (
-        <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
-          me
-        </span>
-      )}
-      {meta && (
-        <span className="text-[11px] text-text-muted">{meta}</span>
-      )}
-    </WorkspaceLink>
+    <div className="mb-5">
+      <h3 className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {title}
+      </h3>
+      <div className="flex flex-col gap-1">{children}</div>
+    </div>
   );
 }
 
 export function SidebarIndexPanel() {
   const session = useAuthSession();
-  const orgId = session.workspace.status === "ready"
-    ? session.workspace.organizationId ?? undefined
-    : undefined;
-  const currentUserId = session.user?.id;
+  const { activeSpace } = useNavigation();
 
-  // Don't query if organization access is denied
-  const tasksQuery = session.status === "access_denied"
-    ? undefined
-    : useTasksQuery(orgId);
-  const tasks = tasksQuery?.data ?? [];
-
-  const projectsQuery = session.status === "access_denied"
-    ? undefined
-    : useProjectsIndexQuery(orgId);
-  const projects = projectsQuery?.results ?? [];
-
-  const spaces = session.status === "access_denied"
-    ? []
-    : useWorkspaceSpacesQuery(orgId) ?? [];
-
-  const { data: members } = useQuery({
-    queryKey: ["organization-members-summary", orgId],
-    queryFn: () => listOrganizationMembers(orgId ?? ""),
-    enabled: Boolean(orgId) && session.status !== "access_denied",
-  });
-
-  const isLoading = tasksQuery === undefined || projectsQuery === undefined || spaces === undefined;
-
-  if (isLoading) {
-    return <IndexPanelSkeleton />;
-  }
+  const orgName =
+    session.organization.legalName?.trim() ||
+    session.organization.name ||
+    "Workspace";
 
   return (
-    <SidebarPanelLayout title="Home">
-      <div className="flex flex-col gap-2">
-        {/* Tasks */}
-        <CollapsibleSection
-          title="Tasks"
-          href="/tasks"
-          count={tasks.length}
-          moreHref="/tasks"
-        >
-          {tasks.slice(0, 5).map((task) => (
-            <IndexItem
-              key={task.id}
-              icon={task.status === "done" ? CheckCircle2 : ListTodo}
-              label={task.title}
-              href={`/tasks/${task.id}`}
-              meta={task.status}
-            />
-          ))}
-          {tasks.length === 0 && (
-            <div className="px-4 py-1.5 text-xs text-text-muted">No tasks yet</div>
-          )}
-        </CollapsibleSection>
-
-        {/* Projects */}
-        <CollapsibleSection
-          title="Projects"
-          href="/projects"
-          count={projects.length}
-          moreHref="/projects"
-        >
-          {projects.slice(0, 5).map((project) => (
-            <IndexItem
-              key={project.id}
-              icon={FolderGit2}
-              label={project.name}
-              href={`/projects/${project.id}`}
-            />
-          ))}
-          {projects.length === 0 && (
-            <div className="px-4 py-1.5 text-xs text-text-muted">No projects yet</div>
-          )}
-        </CollapsibleSection>
-
-        {/* Spaces */}
-        <CollapsibleSection
-          title="Spaces"
-          href="/spaces"
-          count={spaces.length}
-          moreHref="/spaces"
-        >
-          {spaces.slice(0, 5).map((space) => (
-            <IndexItem
-              key={space.id}
+    <SidebarPanelLayout title="Workspace">
+      <div className="flex flex-col">
+        {/* Current context */}
+        <LauncherSection title="Current">
+          <LauncherItem
+            icon={Building2}
+            label={orgName}
+            meta="Workspace I am in"
+            href="/ws"
+          />
+          {activeSpace && (
+            <LauncherItem
               icon={Layers}
-              label={space.name}
-              href={`/spaces?id=${space.id}`}
+              label={activeSpace.name}
+              meta="Space I am in"
+              href={`/spaces?space=${activeSpace.slug}`}
             />
-          ))}
-          {spaces.length === 0 && (
-            <div className="px-4 py-1.5 text-xs text-text-muted">No spaces yet</div>
           )}
-        </CollapsibleSection>
+        </LauncherSection>
 
+        {/* Overview & navigation */}
+        <LauncherSection title="Overview">
+          <LauncherItem
+            icon={BarChart3}
+            label="Overview"
+            href="/ws"
+          />
+          <LauncherItem
+            icon={Grid3X3}
+            label="Custom widgets"
+            href="/ws"
+          />
+        </LauncherSection>
 
+        {/* Work */}
+        <LauncherSection title="Work">
+          <LauncherItem
+            icon={LayoutGrid}
+            label="Spaces"
+            href="/spaces"
+          />
+          <LauncherItem
+            icon={ListTodo}
+            label="All tasks"
+            href="/tasks"
+          />
+          <LauncherItem
+            icon={UserCircle}
+            label="My tasks"
+            href="/tasks"
+          />
+        </LauncherSection>
       </div>
     </SidebarPanelLayout>
   );

@@ -12,7 +12,7 @@ import { BrandSetupForm } from "@/domains/onboarding";
 import { TeamInviteForm } from "@/domains/onboarding";
 import { useRouter } from "@/i18n/routing";
 
-const ORG_LOAD_TIMEOUT_MS = 8_000;
+const ORG_LOAD_TIMEOUT_MS = 15_000;
 
 export default function OnboardingPage() {
   const t = useTranslations("Onboarding");

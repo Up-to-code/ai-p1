@@ -1,31 +1,22 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
 import { usePathname } from "@/i18n/routing";
 
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { isRtlLocale } from "@/lib/i18n/locale";
 import { useAuthSession } from "@/domains/auth";
-import { useTheme } from "@/components/providers/theme-provider";
-import { useQuery } from "@tanstack/react-query";
-import { Pencil, Plus, Users, Building2, PanelRight } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
+import { PanelRight } from "lucide-react";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import {
   sidebarComingSoonNav,
   sidebarNavGroups,
-  sidebarOrganizationListLimit,
   sidebarPrimaryNav,
   sidebarStaticNav,
-  sidebarWorkspaceNav,
 } from "../config/nav.config";
-import { listOrganizationMembers } from "@/domains/organization/api/members";
-import { isGeneratedOrganizationName, sidebarInitials } from "../lib/sidebar-utils";
-import type { BetterAuthOrganization } from "../lib/types";
-import { useOrganizationSwitch } from "../hooks/use-organization-switch";
 import { NavTooltip } from "./nav-tooltip";
 import { IdentityAvatar } from "./identity-avatar";
+import { SidebarWorkspaceSwitcher } from "./sidebar-workspace-switcher";
 import { AiLogoIcon } from "./ai-logo-icon";
 import { useSidebarRail, type RailItemId } from "../sidebar-rail-context";
 
@@ -34,49 +25,8 @@ export function SidebarRail() {
   const locale = useLocale();
   const isRtl = isRtlLocale(locale);
   const pathname = usePathname();
-  const { isDark: isDarkMode } = useTheme();
   const session = useAuthSession();
   const { activeRailItem, openRailItem, closeAll, toggleMain } = useSidebarRail();
-
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const [orgSwitcherOpen, setOrgSwitcherOpen] = useState(false);
-  const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
-
-  const { switchingOrganizationId, switchOrganization } = useOrganizationSwitch(session.organization.id ?? "");
-
-  const organizationsQuery = authClient.useListOrganizations();
-  const allOrgs = useMemo(
-    () =>
-      ((organizationsQuery.data ?? []) as BetterAuthOrganization[])
-        .filter((organization) => organization.id),
-    [organizationsQuery.data],
-  );
-  const organizations = allOrgs.slice(0, sidebarOrganizationListLimit);
-
-  const { data: orgMembers } = useQuery({
-    queryKey: ["org-members-count", session.organization.id],
-    queryFn: () => listOrganizationMembers(session.organization.id ?? ""),
-    enabled: Boolean(session.organization.id),
-  });
-  const memberCount = orgMembers?.length ?? 0;
-
-  const organizationDisplayName =
-    session.organization.legalName?.trim() ||
-    (!isGeneratedOrganizationName(session.organization.name)
-      ? session.organization.name
-      : t("defaultOrganizationName"));
-
-  function toggleOrgSwitcher() {
-    if (buttonRef.current) {
-      setButtonRect(buttonRef.current.getBoundingClientRect());
-    }
-    setOrgSwitcherOpen((prev) => !prev);
-  }
-
-  function handleRailItemClick(item: (typeof sidebarPrimaryNav)[number]) {
-    // All items with href should navigate via WorkspaceLink
-    // Panel-opening items are handled separately in the render
-  }
 
   return (
     <aside
@@ -85,6 +35,11 @@ export function SidebarRail() {
         isRtl && "font-cairo",
       )}
     >
+      {/* Level 0: Workspace Switcher */}
+      <div className="flex flex-col items-center gap-1 p-2 border-b border-sidebar-border">
+        <SidebarWorkspaceSwitcher />
+      </div>
+
       {/* Level 1: Core Navigation */}
       <div className="flex flex-col gap-1 p-2 border-b border-sidebar-border">
         {sidebarStaticNav.map((item) => {
@@ -126,7 +81,6 @@ export function SidebarRail() {
 
             {/* Group Items — icons only */}
             {group.items.map((item) => {
-              const Icon = item.icon;
               const isActive = item.href ? pathname.startsWith(item.href) : false;
               return (
                 <NavTooltip key={item.name} label={t(item.name)}>
@@ -146,7 +100,14 @@ export function SidebarRail() {
                         : "text-muted-foreground hover:bg-accent hover:text-foreground",
                     )}
                   >
-                    <Icon className="h-[18px] w-[18px] shrink-0" />
+                    {item.name === "ai" ? (
+                      <AiLogoIcon isActive={isActive} size={18} />
+                    ) : (
+                      (() => {
+                        const Icon = item.icon;
+                        return <Icon className="h-[18px] w-[18px] shrink-0" />;
+                      })()
+                    )}
                   </WorkspaceLink>
                 </NavTooltip>
               );

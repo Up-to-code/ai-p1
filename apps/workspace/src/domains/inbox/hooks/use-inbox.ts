@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useCallback, useEffect } from "react";
 import { useAuthSession } from "@/domains/auth";
 import {
   useListChannels,
@@ -16,7 +17,7 @@ import {
   useGetThread,
   useCreateThread,
 } from "../api/inbox";
-import type { Channel, Message } from "../types/inbox.types";
+import type { Channel, Message, MessageMention } from "../types/inbox.types";
 
 // Channels
 export function useChannelsQuery(organizationId?: string) {
@@ -100,20 +101,40 @@ export function useDeleteChannelMutation(organizationId?: string) {
 // Messages
 export function useMessagesQuery(channelId?: string, limit = 50) {
   const messages = useListMessages(channelId || "", limit);
-  // Convex returns array of documents, convert to Message type
-  return Array.isArray(messages) ? messages as Message[] : [];
+  return Array.isArray(messages) ? (messages as Message[]) : [];
+}
+
+export function useLoadMoreMessages(channelId?: string) {
+  const [limit, setLimit] = useState(50);
+  const messages = useMessagesQuery(channelId, limit);
+  const hasMore = messages.length >= limit;
+
+  const loadMore = useCallback(() => {
+    setLimit((prev) => prev + 30);
+  }, []);
+
+  // Reset limit when channel changes
+  useEffect(() => {
+    setLimit(50);
+  }, [channelId]);
+
+  return { messages, loadMore, hasMore, isLoadingMore: false };
 }
 
 export function useSendMessageMutation(organizationId?: string, channelId?: string) {
   const sendMessage = useSendMessage();
 
   return {
-    mutate: (args: { content: string; replyToId?: string }) => {
+    mutate: (args: { content: string; replyToId?: string; mentions?: MessageMention[] }) => {
       if (!organizationId || !channelId) throw new Error("Organization ID and Channel ID required");
       return sendMessage({
         organizationId,
         channelId,
-        input: { content: args.content, replyToId: args.replyToId },
+        input: {
+          content: args.content,
+          replyToId: args.replyToId,
+          mentions: args.mentions,
+        },
       });
     },
     isPending: (sendMessage as any).isPending ?? false,

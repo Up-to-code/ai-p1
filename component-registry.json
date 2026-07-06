@@ -343,14 +343,15 @@
       "notes": "Heavier component — includes rich text editing."
     },
     {
-      "name": "SidebarRail",
-      "path": "apps/workspace/src/components/layout/sidebar/components/sidebar-rail.tsx",
+      "name": "SidebarIndexPanel",
+      "path": "apps/workspace/src/components/layout/sidebar/components/sidebar-index-panel.tsx",
       "kind": "shared-ui",
-      "summary": "Fixed w-14 rail with org switcher, nav items, settings/user at bottom.",
-      "usedIn": ["components/layout/sidebar/sidebar"],
+      "summary": "Workspace launcher sidebar panel: current workspace/space context plus navigation to Overview, Spaces, All tasks, My tasks, and Custom widgets.",
+      "usedIn": ["components/layout/sidebar/components/sidebar-secondary-panel"],
       "props": [],
       "createdAt": "2026-04-01",
-      "notes": "Always visible. Part of dual-layer sidebar architecture."
+      "updatedAt": "2026-07-06",
+      "notes": "Renamed role from 'Home' to 'Workspace' launcher."
     },
     {
       "name": "SidebarPanelLayout",
@@ -361,6 +362,16 @@
       "props": ["title", "actions", "onClose", "children"],
       "createdAt": "2026-04-01",
       "notes": "Consistent shell for all secondary sidebar panels."
+    },
+    {
+      "name": "SidebarWorkspaceSwitcher",
+      "path": "apps/workspace/src/components/layout/sidebar/components/sidebar-workspace-switcher.tsx",
+      "kind": "shared-ui",
+      "summary": "Rail-top workspace avatar with dropdown for switching organizations and creating/joining workspaces.",
+      "usedIn": ["components/layout/sidebar/components/sidebar-rail"],
+      "props": [],
+      "createdAt": "2026-07-06",
+      "notes": "Self-contained; consumes auth session and organization list."
     },
     {
       "name": "Button",

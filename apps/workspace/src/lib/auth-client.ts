@@ -154,3 +154,15 @@ export const authClient = {
     continue: () => success({ redirectURI: "/" }),
   },
 };
+
+export async function createClerkOrganization(
+  clerk: ReturnType<typeof useClerk>,
+  name: string,
+): Promise<ClerkOrganization> {
+  const clerkApi = clerk as unknown as {
+    createOrganization?: (input: { name: string; slug?: string }) => Promise<ClerkOrganization>;
+  };
+  const organization = await clerkApi.createOrganization?.({ name, slug: name });
+  if (!organization?.id) throw new Error("Organization creation failed.");
+  return organization;
+}

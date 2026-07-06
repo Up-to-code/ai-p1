@@ -1,34 +1,12 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { clerkAuthComponent, createAuth } from "../../auth";
+import { clerkAuthComponent } from "../../auth";
 import { assertOrganizationResourcePermission } from "../profile/access";
 import { findInviteLinkByTokenHash, toPublicInviteLink } from "./data";
 import {
   createOrganizationInviteLinkInputValidator,
   organizationInviteLinkValidator,
 } from "./validators";
-
-type AddMemberApi = {
-  addMember: (input: {
-    body: {
-      userId: string;
-      organizationId: string;
-      role: string;
-    };
-  }) => Promise<unknown>;
-};
-
-type AddMemberErrorResult = {
-  error?: {
-    message?: string;
-    code?: string;
-  } | null;
-};
-
-function isAlreadyMemberError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.toLowerCase().includes("already a member");
-}
 
 export const createInviteLinkFromHono = mutation({
   args: {
@@ -78,10 +56,10 @@ export const createInviteLinkFromHono = mutation({
 export const acceptInviteLinkFromHono = mutation({
   args: {
     tokenHash: v.string(),
+    userId: v.string(),
   },
   returns: organizationInviteLinkValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
     const inviteLink = await findInviteLinkByTokenHash(ctx, args.tokenHash);
     const now = Date.now();
 
@@ -95,42 +73,16 @@ export const acceptInviteLinkFromHono = mutation({
       throw new Error("Invite link has expired.");
     }
 
-    const { auth } = await clerkAuthComponent.getAuth(createAuth, ctx);
-    const organizationApi = auth.api as unknown as AddMemberApi;
-
-    try {
-      const addMemberResult = await organizationApi.addMember({
-        body: {
-          userId: user._id,
-          organizationId: inviteLink.organizationId,
-          role: inviteLink.role,
-        },
-      });
-      const addMemberError = (addMemberResult as AddMemberErrorResult | null)?.error;
-
-      if (addMemberError) {
-        if (isAlreadyMemberError(addMemberError.message ?? addMemberError.code)) {
-          return toPublicInviteLink(inviteLink);
-        }
-        throw new Error(addMemberError.message ?? addMemberError.code ?? "Invite link could not add member.");
-      }
-    } catch (error) {
-      if (isAlreadyMemberError(error)) {
-        return toPublicInviteLink(inviteLink);
-      }
-      throw error;
-    }
-
     await ctx.db.patch(inviteLink._id, {
       status: "used",
       usedAt: now,
-      usedByUserId: user._id,
+      usedByUserId: args.userId,
       updatedAt: now,
     });
 
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: inviteLink.organizationId,
-      actorUserId: user._id,
+      actorUserId: args.userId,
       action: "organization.invite_link.accept",
       target: inviteLink._id,
       summary: `Accepted invite link for ${inviteLink.role}.`,
@@ -141,7 +93,7 @@ export const acceptInviteLinkFromHono = mutation({
       ...toPublicInviteLink(inviteLink),
       status: "used" as const,
       usedAt: now,
-      usedByUserId: user._id,
+      usedByUserId: args.userId,
       updatedAt: now,
     };
   },

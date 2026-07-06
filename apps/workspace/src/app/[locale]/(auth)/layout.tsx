@@ -1,4 +1,3 @@
-import { ClerkProvider } from "@clerk/nextjs";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { LocaleDocumentAttrs } from "@/components/i18n/locale-document-attrs";
@@ -19,22 +18,20 @@ export default async function AuthLayout({
   const messages = await getMessages();
 
   return (
-    <ClerkProvider>
-      <NextIntlClientProvider messages={messages}>
-        <BackendProviders>
-          <ThemeProvider>
-            <TooltipProvider>
-              <ToastProvider>
-                <LocaleDocumentAttrs locale={locale} />
-                <UiLocalizer />
-                <div className="relative w-full">
-                  {children}
-                </div>
-              </ToastProvider>
-            </TooltipProvider>
-          </ThemeProvider>
-        </BackendProviders>
-      </NextIntlClientProvider>
-    </ClerkProvider>
+    <NextIntlClientProvider messages={messages}>
+      <BackendProviders>
+        <ThemeProvider>
+          <TooltipProvider>
+            <ToastProvider>
+              <LocaleDocumentAttrs locale={locale} />
+              <UiLocalizer />
+              <div className="relative w-full">
+                {children}
+              </div>
+            </ToastProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </BackendProviders>
+    </NextIntlClientProvider>
   );
 }

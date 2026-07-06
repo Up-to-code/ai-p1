@@ -1,267 +1,298 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
-import { ChevronDown, Search } from "lucide-react";
-import { View } from "react-big-calendar";
+import { useState, useCallback } from "react";
 import { useCalendarStore } from "../store/calendar.store";
-import type { CalendarEvent } from "../store/calendar.types";
-import { useAuthSession } from "@/domains/auth";
-import { visibleCalendarRange } from "../calendar-view-model";
 import type { CalendarView } from "../calendar-view-model";
-import { useCalendarIndexRangeQueryResult, createCalendarEventRequest } from "../api/calendar";
-import { useCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
-import { useNavigation } from "@/domains/navigation";
-import { HttpQueryState, WorkspaceQueryState } from "@/components/shared/crud-ui";
-import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
-import { CalendarComponent } from "@/components/ui/calendar";
-import { EventCreationModal } from "./event-creation-modal";
+import { QentrahCalendar, type CalendarEvent } from "@qentrah/svar-ui-components/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-const EVENT_COLORS: Record<CalendarEvent["type"], string> = {
-  meeting: "#007AFF",
-  deadline: "#FF3B30",
-  reminder: "#FF9500",
-  milestone: "#34C759",
-  focusBlock: "#AF52DE",
+const EVENT_TYPE_COLORS: Record<string, string> = {
+  meeting: "#6F00C2",
+  deadline: "#A71E0F",
+  reminder: "#ED8E00",
+  milestone: "#00753E",
+  focusBlock: "#31574B",
 };
 
-function getEventColor(type: CalendarEvent["type"], status: CalendarEvent["status"]): string {
-  if (status === "draft") return "#8e8e93";
-  return EVENT_COLORS[type] ?? "#007AFF";
-}
-
-interface RBCEvent {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  color?: string;
-  type?: string;
-  status?: string;
-  location?: string;
-}
+const MOCK_EVENTS: CalendarEvent[] = [
+  {
+    id: "1",
+    title: "Sprint Planning",
+    start: new Date(new Date().setHours(9, 0, 0, 0)),
+    end: new Date(new Date().setHours(10, 30, 0, 0)),
+    type: "meeting",
+    description: "Weekly sprint planning session",
+    location: "Conference Room A",
+    status: "confirmed",
+    color: EVENT_TYPE_COLORS.meeting,
+  },
+  {
+    id: "2",
+    title: "Q3 Deadline",
+    start: new Date(new Date().setDate(new Date().getDate() + 1)),
+    end: new Date(new Date().setDate(new Date().getDate() + 1)),
+    allDay: true,
+    type: "deadline",
+    description: "Q3 deliverables due",
+    status: "confirmed",
+    color: EVENT_TYPE_COLORS.deadline,
+  },
+  {
+    id: "3",
+    title: "Client Call — Acme Corp",
+    start: new Date(new Date().setHours(14, 0, 0, 0)),
+    end: new Date(new Date().setHours(15, 0, 0, 0)),
+    type: "meeting",
+    description: "Monthly review with Acme",
+    location: "Zoom",
+    status: "confirmed",
+    color: EVENT_TYPE_COLORS.meeting,
+  },
+  {
+    id: "4",
+    title: "Design Review",
+    start: new Date(new Date().setDate(new Date().getDate() + 2)),
+    end: new Date(new Date().setDate(new Date().getDate() + 2)),
+    allDay: true,
+    type: "milestone",
+    description: "Design system audit",
+    status: "confirmed",
+    color: EVENT_TYPE_COLORS.milestone,
+  },
+  {
+    id: "5",
+    title: "Focus Time",
+    start: new Date(new Date(new Date().setHours(7, 0, 0, 0)).setDate(new Date().getDate() + 1)),
+    end: new Date(new Date(new Date().setHours(9, 0, 0, 0)).setDate(new Date().getDate() + 1)),
+    type: "focusBlock",
+    description: "Deep work — no meetings",
+    status: "confirmed",
+    color: EVENT_TYPE_COLORS.focusBlock,
+  },
+  {
+    id: "6",
+    title: "Follow up: Vendor contract",
+    start: new Date(new Date(new Date().setHours(11, 0, 0, 0)).setDate(new Date().getDate() - 1)),
+    end: new Date(new Date(new Date().setHours(11, 30, 0, 0)).setDate(new Date().getDate() - 1)),
+    type: "reminder",
+    description: "Send revised contract to vendor",
+    status: "confirmed",
+    color: EVENT_TYPE_COLORS.reminder,
+  },
+];
 
 export function CalendarPageRedesigned() {
-  const t = useTranslations("Calendar");
-  const session = useAuthSession();
-  const [showEventModal, setShowEventModal] = useState(false);
-  const [modalInitialDate, setModalInitialDate] = useState<Date | undefined>(undefined);
-  const [modalInitialEndTime, setModalInitialEndTime] = useState<Date | undefined>(undefined);
-  const [calendarView, setCalendarView] = useState<View>("week");
-  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
-  const [viewSearch, setViewSearch] = useState("");
-  const [showViewMenu, setShowViewMenu] = useState(false);
-
-  const workspaceStatus = session.workspace.status;
-  const isWorkspaceReady = workspaceStatus === "ready";
-  const workspaceOrganizationId = isWorkspaceReady && session.workspace.organizationId
-    ? session.workspace.organizationId
-    : undefined;
-
   const { currentDate, view, setCurrentDate, setView } = useCalendarStore();
+  const [events, setEvents] = useState<CalendarEvent[]>(MOCK_EVENTS);
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [newEventStart, setNewEventStart] = useState<Date>(new Date());
+  const [newEventEnd, setNewEventEnd] = useState<Date>(new Date());
+  const [newTitle, setNewTitle] = useState("");
+  const [newType, setNewType] = useState<string>("meeting");
+  const [newTime, setNewTime] = useState("09:00");
+  const [newEndTime, setNewEndTime] = useState("10:00");
+  const [newLocation, setNewLocation] = useState("");
+  const [newDescription, setNewDescription] = useState("");
 
-  const range = useMemo(
-    () => visibleCalendarRange(currentDate, view),
-    [currentDate, view],
-  );
-
-  const projectId = useCurrentProjectId();
-  const { spaceId } = useNavigation();
-
-  const eventsQuery = useCalendarIndexRangeQueryResult(
-    workspaceOrganizationId,
-    range.startAt,
-    range.endAt,
-    projectId,
-    spaceId,
-  );
-
-  const events = useMemo(
-    () => (eventsQuery.data?.events ?? []) as CalendarEvent[],
-    [eventsQuery.data],
-  );
-
-  const isLoading = isWorkspaceReady && eventsQuery.queryStatus === "loading";
-  const isQueryBlocked = isLoading || eventsQuery.queryStatus === "error";
-
-  // Transform CalendarEvent for react-big-calendar
-  const displayEvents = useMemo(() => {
-    return events.map((ev) => {
-      const start = new Date(`${ev.date}T${ev.time || "00:00"}`);
-      const end = ev.endTime ? new Date(`${ev.date}T${ev.endTime}`) : new Date(start.getTime() + 60 * 60 * 1000); // Default 1 hour
-      return {
-        id: ev.id,
-        title: ev.title,
-        start,
-        end,
-        color: getEventColor(ev.type, ev.status),
-        type: ev.type,
-        status: ev.status,
-        location: ev.location,
-      } as RBCEvent;
-    });
-  }, [events]);
-
-
-  const handleEventClick = useCallback((event: RBCEvent) => {
-    // Handle event click - could open event details modal
-    console.log("Event clicked:", event);
+  const handleEventClick = useCallback((_event: CalendarEvent) => {
+    // Show event details — can be expanded later
   }, []);
 
-  const handleSlotClick = useCallback((slotInfo: { start: Date; end: Date }) => {
-    setModalInitialDate(slotInfo.start);
-    setModalInitialEndTime(slotInfo.end);
+  const handleSlotCreate = useCallback((start: Date, end: Date) => {
+    setNewEventStart(start);
+    setNewEventEnd(end);
+    const hours = String(start.getHours()).padStart(2, "0");
+    const mins = String(start.getMinutes()).padStart(2, "0");
+    const endHours = String(end.getHours()).padStart(2, "0");
+    const endMins = String(end.getMinutes()).padStart(2, "0");
+    setNewTime(`${hours}:${mins}`);
+    setNewEndTime(`${endHours}:${endMins}`);
+    setNewTitle("");
+    setNewType("meeting");
+    setNewLocation("");
+    setNewDescription("");
     setShowEventModal(true);
   }, []);
 
-  const handleSaveEvent = useCallback(async (data: any) => {
-    if (!workspaceOrganizationId) return;
-    
-    try {
-      await createCalendarEventRequest(workspaceOrganizationId, {
-        title: data.title,
-        owner: session.user?.id || "unknown",
-        date: data.date,
-        time: data.time,
-        endTime: data.endTime,
-        type: data.type,
-        location: data.location,
-        notes: data.notes,
-        status: "confirmed",
-      });
-      // The query will automatically refetch due to TanStack Query
-    } catch (error) {
-      console.error("Failed to create event:", error);
-    }
-  }, [workspaceOrganizationId, session.user?.id]);
+  const handleSaveEvent = useCallback(() => {
+    if (!newTitle.trim()) return;
+    const [sh, sm] = newTime.split(":").map(Number);
+    const [eh, em] = newEndTime.split(":").map(Number);
+    const start = new Date(newEventStart);
+    start.setHours(sh, sm, 0, 0);
+    const end = new Date(newEventStart);
+    end.setHours(eh, em, 0, 0);
 
-  const handleCalendarNavigate = useCallback((date: Date) => {
-    setCalendarDate(date);
+    const newEvent: CalendarEvent = {
+      id: `mock-${Date.now()}`,
+      title: newTitle.trim(),
+      start,
+      end,
+      type: newType,
+      color: EVENT_TYPE_COLORS[newType] || EVENT_TYPE_COLORS.meeting,
+      description: newDescription,
+      location: newLocation,
+      status: "confirmed",
+    };
+    setEvents((prev) => [...prev, newEvent]);
+    setShowEventModal(false);
+  }, [newTitle, newType, newTime, newEndTime, newEventStart, newLocation, newDescription]);
+
+  const handleEventUpdate = useCallback((updated: CalendarEvent) => {
+    setEvents((prev) => prev.map((e) => (e.id === updated.id ? { ...e, ...updated } : e)));
+  }, []);
+
+  const handleEventDelete = useCallback((eventId: string) => {
+    setEvents((prev) => prev.filter((e) => e.id !== eventId));
+  }, []);
+
+  const handleDateChange = useCallback((date: Date) => {
     setCurrentDate(date);
   }, [setCurrentDate]);
 
-  const handleCalendarView = useCallback((view: View) => {
-    setCalendarView(view);
-    const viewMapping: Record<View, CalendarView> = {
-      "month": "month",
-      "week": "week",
-      "day": "day",
-      "agenda": "month",
-      "work_week": "week",
-    };
-    setView(viewMapping[view] || "week");
+  const handleViewChange = useCallback((newView: CalendarView) => {
+    setView(newView);
   }, [setView]);
 
-  if (workspaceStatus !== "ready") {
-    return (
-      <div className="flex h-full items-center justify-center bg-background">
-        <WorkspaceQueryState status={workspaceStatus} variant="calendar" />
-      </div>
-    );
-  }
-
-  if (isQueryBlocked) {
-    return (
-      <div className="flex h-full items-center justify-center bg-background">
-        <HttpQueryState query={eventsQuery} variant="calendar" />
-      </div>
-    );
-  }
-
-  const viewOptions: { value: View; label: string }[] = [
-    { value: "week", label: "Week" },
-    { value: "month", label: "Month" },
-    { value: "day", label: "Day" },
-    { value: "agenda", label: "Agenda" },
-    { value: "work_week", label: "Work Week" },
-  ];
-
-  const filteredViewOptions = viewOptions.filter((option) =>
-    option.label.toLowerCase().includes(viewSearch.toLowerCase())
-  );
-
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-background">
-      {/* Top navigation bar */}
-      <div className="flex items-center justify-between border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-3">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold tracking-tight">Calendar</h1>
-          
-          <Popover open={showViewMenu} onOpenChange={setShowViewMenu}>
-            <PopoverTrigger asChild>
-              <button className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground rounded-md transition-colors">
-                {viewOptions.find((v) => v.value === calendarView)?.label || "Week"}
-                <ChevronDown className="h-4 w-4 opacity-50" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-0" align="start">
-              <div className="p-4 border-b border-border/50">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Search views..."
-                    value={viewSearch}
-                    onChange={(e) => setViewSearch(e.target.value)}
-                    className="pl-9 h-10 bg-muted/50 border-0 focus-visible:ring-2 focus-visible:ring-ring/20"
-                  />
-                </div>
-              </div>
-              <div className="max-h-64 overflow-y-auto py-2">
-                {filteredViewOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => {
-                      setCalendarView(option.value);
-                      handleCalendarView(option.value);
-                      setShowViewMenu(false);
-                      setViewSearch("");
-                    }}
-                    className={cn(
-                      "w-full px-4 py-2.5 text-left text-sm transition-colors mx-2 rounded-md",
-                      calendarView === option.value
-                        ? "bg-accent text-accent-foreground font-medium"
-                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
+    <div className="flex h-full flex-col bg-background">
+      {/* Header area with breathing room */}
+      <div className="shrink-0 px-6 pt-5 pb-2 flex items-center justify-between">
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">Calendar</h1>
+        <div className="text-xs text-muted-foreground">
+          {events.length} event{events.length !== 1 ? "s" : ""}
         </div>
       </div>
 
-      {/* Full-screen calendar */}
-      <div className="flex-1 overflow-hidden">
-        {isLoading ? (
-          <div className="flex h-full items-center justify-center">
-            <div className="text-muted-foreground">Loading calendar...</div>
-          </div>
-        ) : (
-          <CalendarComponent
-            events={displayEvents}
+      {/* Calendar body — full width, no shadows, padded bottom */}
+      <div className="flex-1 min-h-0 px-2 pb-4">
+        <div className="h-full w-full rounded-xl overflow-hidden border border-border bg-card">
+          <QentrahCalendar
+            events={events}
+            view={view}
+            currentDate={currentDate}
             onEventClick={handleEventClick}
-            onSlotClick={handleSlotClick}
-            view={calendarView}
-            onView={handleCalendarView}
-            date={calendarDate}
-            onNavigate={handleCalendarNavigate}
-            className="h-full"
+            onEventCreate={handleSlotCreate}
+            onEventUpdate={handleEventUpdate}
+            onEventDelete={handleEventDelete}
+            onDateChange={handleDateChange}
+            onViewChange={handleViewChange}
+            className="q-calendar-view"
           />
-        )}
+        </div>
       </div>
 
-      <EventCreationModal
-        open={showEventModal}
-        onOpenChange={setShowEventModal}
-        initialDate={modalInitialDate}
-        initialEndTime={modalInitialEndTime}
-        onSave={handleSaveEvent}
-      />
+      {/* Create Event Modal */}
+      <Dialog open={showEventModal} onOpenChange={setShowEventModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>New Event</DialogTitle>
+            <DialogDescription>
+              {newEventStart.toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "short",
+                day: "numeric",
+              })}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <Input
+              placeholder="Event title"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              className="text-sm"
+              autoFocus
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Type</label>
+                <select
+                  value={newType}
+                  onChange={(e) => setNewType(e.target.value)}
+                  className="h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                >
+                  <option value="meeting">Meeting</option>
+                  <option value="deadline">Deadline</option>
+                  <option value="reminder">Reminder</option>
+                  <option value="milestone">Milestone</option>
+                  <option value="focusBlock">Focus Block</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Color</label>
+                <div
+                  className="h-9 w-full rounded-lg border border-border flex items-center gap-2 px-3"
+                  style={{ backgroundColor: `${EVENT_TYPE_COLORS[newType] || EVENT_TYPE_COLORS.meeting}14` }}
+                >
+                  <div
+                    className="h-3 w-3 rounded-full shrink-0"
+                    style={{ backgroundColor: EVENT_TYPE_COLORS[newType] || EVENT_TYPE_COLORS.meeting }}
+                  />
+                  <span className="text-sm" style={{ color: EVENT_TYPE_COLORS[newType] || EVENT_TYPE_COLORS.meeting }}>
+                    {newType}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Start</label>
+                <Input
+                  type="time"
+                  value={newTime}
+                  onChange={(e) => setNewTime(e.target.value)}
+                  className="text-sm dark:[color-scheme:dark]"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">End</label>
+                <Input
+                  type="time"
+                  value={newEndTime}
+                  onChange={(e) => setNewEndTime(e.target.value)}
+                  className="text-sm dark:[color-scheme:dark]"
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Location</label>
+              <Input
+                placeholder="Room, link, or address"
+                value={newLocation}
+                onChange={(e) => setNewLocation(e.target.value)}
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Notes</label>
+              <Input
+                placeholder="Add description..."
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                className="text-sm"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setShowEventModal(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleSaveEvent} disabled={!newTitle.trim()}>
+              Create Event
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

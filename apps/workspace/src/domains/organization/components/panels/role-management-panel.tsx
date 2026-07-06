@@ -384,7 +384,7 @@ export function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "
     <div className="min-h-screen bg-muted/50">
       <div className="border-b border-border bg-card">
         <div className="mx-auto max-w-5xl px-6 py-8">
-          <Link href={`/${locale}/settings/organization?tab=members`} className={cn(buttonVariants({ variant: "ghost" }), "mb-5 h-9 rounded-xl text-[10px] font-black uppercase tracking-widest")}>
+          <Link href={`/${locale}/organization?tab=members`} className={cn(buttonVariants({ variant: "ghost" }), "mb-5 h-9 rounded-xl text-[10px] font-black uppercase tracking-widest")}>
             {t("roles.backToOrganization")}
           </Link>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

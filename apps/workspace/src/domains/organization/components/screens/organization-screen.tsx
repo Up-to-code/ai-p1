@@ -342,7 +342,7 @@ export function OrganizationScreen() {
       params.set("tab", tab);
     }
     const query = params.toString();
-    router.replace(`/${locale}/settings/organization${query ? `?${query}` : ""}`, { scroll: false });
+    router.push(`/${locale}/organization${query ? `?${query}` : ""}`, { scroll: false });
   }
 
   function makeInviteLink(invite: OrganizationInvitation) {
@@ -368,7 +368,6 @@ export function OrganizationScreen() {
     if (!open) {
       setInviteEmail("");
       setInviteMode("link");
-      resetGeneratedInviteLink();
     }
   }
 

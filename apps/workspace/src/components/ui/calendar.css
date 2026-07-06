@@ -1,0 +1,94 @@
+.rbc-calendar {
+  --rbc-event-bg: var(--q-calendar-meeting);
+  --rbc-today-bg: var(--q-calendar-today);
+  --rbc-header-bg: var(--q-bg);
+  --rbc-header-color: var(--q-text-primary);
+  --rbc-cell-bg: var(--q-bg);
+  --rbc-cell-color: var(--q-text-primary);
+  --rbc-off-range-bg: var(--q-bg-secondary);
+  --rbc-off-range-color: var(--q-text-muted);
+  --rbc-slot-bg: var(--q-bg-tertiary);
+  --rbc-slot-color: var(--q-text-primary);
+  --rbc-active-bg: var(--q-accent-muted);
+  --rbc-active-color: var(--q-accent);
+}
+
+.dark .rbc-calendar {
+  --rbc-header-bg: var(--q-bg);
+  --rbc-header-color: var(--q-text-primary);
+  --rbc-cell-bg: var(--q-bg);
+  --rbc-cell-color: var(--q-text-primary);
+  --rbc-off-range-bg: var(--q-bg-secondary);
+  --rbc-off-range-color: var(--q-text-muted);
+  --rbc-slot-bg: var(--q-bg-tertiary);
+  --rbc-slot-color: var(--q-text-primary);
+}
+
+.rbc-header {
+  background-color: var(--rbc-header-bg);
+  color: var(--rbc-header-color);
+  border-bottom: 1px solid var(--q-border);
+}
+
+.rbc-month-view, .rbc-time-view, .rbc-agenda-view {
+  background-color: var(--q-bg);
+}
+
+.rbc-today {
+  background-color: var(--rbc-today-bg) !important;
+}
+
+.rbc-off-range-bg {
+  background-color: var(--rbc-off-range-bg);
+}
+
+.dark .rbc-off-range-bg {
+  opacity: 0.5;
+}
+
+.rbc-day-bg + .rbc-day-bg {
+  border-left: 1px solid var(--q-border);
+}
+
+.rbc-month-row {
+  border-bottom: 1px solid var(--q-border);
+}
+
+.rbc-event {
+  background-color: var(--rbc-event-bg);
+  color: white;
+}
+
+.rbc-event.rbc-selected {
+  background-color: var(--rbc-active-bg);
+  color: var(--rbc-active-color);
+}
+
+.rbc-show-more {
+  background-color: var(--rbc-slot-bg);
+  color: var(--rbc-slot-color);
+}
+
+.dark .rbc-show-more {
+  opacity: 0.3;
+}
+
+.rbc-toolbar button {
+  color: var(--q-text-primary);
+  background-color: var(--q-bg);
+  border: 1px solid var(--q-border);
+}
+
+.rbc-toolbar button:hover {
+  background-color: var(--q-accent-muted);
+  color: var(--q-accent);
+}
+
+.rbc-toolbar button.rbc-active {
+  background-color: var(--q-accent);
+  color: var(--q-surface);
+}
+
+.rbc-toolbar label {
+  color: var(--q-text-primary);
+}

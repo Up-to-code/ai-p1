@@ -58,7 +58,7 @@ export function DashboardAuthenticatedShell({
       setLoadingTimedOut(false);
       return;
     }
-    const timer = setTimeout(() => setLoadingTimedOut(true), 8000);
+    const timer = setTimeout(() => setLoadingTimedOut(true), 15_000);
     return () => clearTimeout(timer);
   }, [session.workspace.status]);
 

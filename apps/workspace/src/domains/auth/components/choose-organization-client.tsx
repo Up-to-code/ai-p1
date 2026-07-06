@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useRouter } from "@/i18n/routing";
+import { createClerkOrganization } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 type ChooseOrganizationClientProps = {
@@ -151,13 +152,7 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
     setBusyAction("create");
     setError("");
     try {
-      const clerkApi = clerk as unknown as {
-        createOrganization?: (input: { name: string }) => Promise<ClerkOrganization>;
-      };
-      const organization = await clerkApi.createOrganization?.({
-        name,
-      });
-      if (!organization?.id) throw new Error(t("errorDesc"));
+      const organization = await createClerkOrganization(clerk, name);
       await clerk.setActive({ organization: organization.id });
       router.replace("/onboarding");
     } catch (error) {

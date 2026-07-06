@@ -238,28 +238,30 @@ export default function InboxPage() {
             </div>
 
             {/* Message list */}
-            <MessageList
-              messages={messages}
-              currentUserId={session.user?.id ?? ""}
-              organizationId={orgId ?? undefined}
-              onReply={(messageId) => {
-                const message = messages.find((m) => m.id === messageId);
-                if (message) {
-                  setReplyTo({
-                    id: messageId,
-                    author:
-                      message.authorId === session.user?.id
-                        ? "You"
-                        : message.authorId.slice(0, 8),
-                    content: message.content,
-                  });
-                }
-              }}
-              onEdit={handleEditMessage}
-              onDelete={handleDeleteMessage}
-              onReaction={handleAddReaction}
-              isLoading={messages.isLoading}
-            />
+            <div className="flex-1 min-h-0">
+              <MessageList
+                messages={messages}
+                currentUserId={session.user?.id ?? ""}
+                organizationId={orgId ?? undefined}
+                onReply={(messageId) => {
+                  const message = messages.find((m) => m.id === messageId);
+                  if (message) {
+                    setReplyTo({
+                      id: messageId,
+                      author:
+                        message.authorId === session.user?.id
+                          ? "You"
+                          : message.authorId.slice(0, 8),
+                      content: message.content,
+                    });
+                  }
+                }}
+                onEdit={handleEditMessage}
+                onDelete={handleDeleteMessage}
+                onReaction={handleAddReaction}
+                isLoading={messages.isLoading}
+              />
+            </div>
 
             {/* Composer */}
             <MessageComposer

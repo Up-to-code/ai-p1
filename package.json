@@ -1,5 +1,6 @@
 {
   "name": "qentrah",
+
   "version": "0.1.0",
   "private": true,
   "workspaces": [
@@ -28,8 +29,20 @@
   },
   "devDependencies": {
     "@emotion/is-prop-valid": "^1.4.0",
+    "@expo/metro": "^55.1.1",
+    "@expo/router-server": "^57.0.1",
+    "anser": "^2.3.5",
+    "bser": "^2.1.1",
+    "chrome-launcher": "^1.2.1",
+    "destroy": "^1.2.0",
     "effect": "^3.21.2",
-    "patch-package": "^8.0.1"
+    "getenv": "^2.0.0",
+    "is-typed-array": "^1.1.15",
+    "metro-transform-plugins": "^0.85.0",
+    "on-headers": "^1.1.0",
+    "patch-package": "^8.0.1",
+    "simple-swizzle": "^0.2.4",
+    "supports-hyperlinks": "^4.5.0"
   },
   "overrides": {
     "effect": "$effect",

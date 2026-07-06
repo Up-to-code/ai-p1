@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Reply, Smile, Paperclip, Edit2, Trash2, Check, Search, Filter, ArrowUpDown } from "lucide-react";
+import { Reply, Smile, Paperclip, Edit2, Trash2, Check, Search, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,77 @@ interface MessageListProps {
   isLoading?: boolean;
 }
 
+function TabBar({
+  activeTab,
+  onTabChange,
+  searchLabel,
+  filterLabel,
+  trailingText,
+}: {
+  activeTab: "all" | "my";
+  onTabChange: (tab: "all" | "my") => void;
+  searchLabel?: string;
+  filterLabel?: string;
+  trailingText?: string;
+}) {
+  return (
+    <div className="shrink-0 border-b border-border/50 px-4 py-2 flex items-center gap-2 bg-background">
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
+        title="Search messages"
+      >
+        <Search className="h-3.5 w-3.5 mr-1.5" />
+        {searchLabel ?? "Search"}
+      </Button>
+      <div className="h-4 w-px bg-border/50 mx-1" />
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
+        title="Filter messages"
+      >
+        <Filter className="h-3.5 w-3.5 mr-1.5" />
+        {filterLabel ?? "Filter"}
+      </Button>
+      <div className="h-4 w-px bg-border/50 mx-1" />
+      <button
+        type="button"
+        onClick={() => onTabChange("all")}
+        className={cn(
+          "h-8 px-3 text-[13px] rounded-md transition-colors",
+          activeTab === "all"
+            ? "bg-muted text-foreground font-medium"
+            : "text-muted-foreground hover:text-foreground"
+        )}
+      >
+        All
+      </button>
+      <button
+        type="button"
+        onClick={() => onTabChange("my")}
+        className={cn(
+          "h-8 px-3 text-[13px] rounded-md transition-colors",
+          activeTab === "my"
+            ? "bg-muted text-foreground font-medium"
+            : "text-muted-foreground hover:text-foreground"
+        )}
+      >
+        My Messages
+      </button>
+      <div className="flex-1" />
+      {trailingText && (
+        <span className="text-[12px] text-muted-foreground">
+          {trailingText}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function MessageList({
   messages,
   currentUserId,
@@ -36,17 +107,15 @@ export function MessageList({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
-  const [reverseOrder, setReverseOrder] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | "my">("all");
   const session = useAuthSession();
 
-  // Fetch organization members for user info
   const { data: orgMembers } = useQuery({
     queryKey: ["organization-members", organizationId],
     queryFn: () => listOrganizationMembers(organizationId!),
     enabled: Boolean(organizationId),
   });
 
-  // Create a map of userId -> user info for quick lookup
   const userMap = new Map(
     orgMembers?.map((member) => [
       member.userId,
@@ -59,15 +128,16 @@ export function MessageList({
   );
 
   useEffect(() => {
-    // Scroll to bottom or top depending on reverse order
     if (messagesContainerRef.current) {
-      if (reverseOrder) {
-        messagesContainerRef.current.scrollTop = 0;
-      } else {
-        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-      }
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
     }
-  }, [messages, reverseOrder]);
+  }, [messages, activeTab]);
+
+  const displayedMessages =
+    activeTab === "my"
+      ? messages.filter((m) => m.authorId === currentUserId)
+      : messages;
 
   const commonEmojis = ["👍", "❤️", "😂", "🎉", "🔥", "👀", "🚀", "💯"];
 
@@ -75,25 +145,28 @@ export function MessageList({
     const date = new Date(timestamp);
     const now = new Date();
     const isToday = date.toDateString() === now.toDateString();
-    
+
     if (isToday) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     }
-    
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + 
-           ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    return (
+      date.toLocaleDateString([], { month: "short", day: "numeric" }) +
+      " " +
+      date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    );
   };
 
   const getUserName = (authorId: string) => {
     if (authorId === currentUserId) {
       return session.user?.name || session.user?.email || "You";
     }
-    
+
     const userInfo = userMap.get(authorId);
     if (userInfo) {
       return userInfo.name;
     }
-    
+
     return authorId.slice(0, 8);
   };
 
@@ -101,7 +174,7 @@ export function MessageList({
     if (authorId === currentUserId) {
       return session.user?.image;
     }
-    
+
     const userInfo = userMap.get(authorId);
     return userInfo?.image || undefined;
   };
@@ -109,46 +182,11 @@ export function MessageList({
   if (isLoading) {
     return (
       <div className="flex flex-col h-full">
-        {/* Action toolbar at top */}
-        <div className="shrink-0 border-b border-border/50 px-4 py-2 flex items-center gap-2 bg-background">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
-            title="Search messages"
-          >
-            <Search className="h-3.5 w-3.5 mr-1.5" />
-            Search
-          </Button>
-          <div className="h-4 w-px bg-border/50 mx-1" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
-            title="Filter messages"
-          >
-            <Filter className="h-3.5 w-3.5 mr-1.5" />
-            Filter
-          </Button>
-          <div className="h-4 w-px bg-border/50 mx-1" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
-            title="Reverse message order"
-            onClick={() => setReverseOrder(!reverseOrder)}
-          >
-            <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
-            {reverseOrder ? 'Newest first' : 'Oldest first'}
-          </Button>
-          <div className="flex-1" />
-          <span className="text-[12px] text-muted-foreground">
-            Loading...
-          </span>
-        </div>
+        <TabBar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          trailingText="Loading..."
+        />
 
         {/* Loading skeleton */}
         <div className="flex-1 overflow-auto p-4 space-y-4">
@@ -166,55 +204,23 @@ export function MessageList({
     );
   }
 
-  if (messages.length === 0) {
+  if (displayedMessages.length === 0) {
+    const emptyText =
+      activeTab === "my"
+        ? "You haven't sent any messages yet."
+        : "No messages yet. Start the conversation!";
     return (
       <div className="flex flex-col h-full">
-        {/* Action toolbar at top */}
-        <div className="shrink-0 border-b border-border/50 px-4 py-2 flex items-center gap-2 bg-background">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
-            title="Search messages"
-          >
-            <Search className="h-3.5 w-3.5 mr-1.5" />
-            Search
-          </Button>
-          <div className="h-4 w-px bg-border/50 mx-1" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
-            title="Filter messages"
-          >
-            <Filter className="h-3.5 w-3.5 mr-1.5" />
-            Filter
-          </Button>
-          <div className="h-4 w-px bg-border/50 mx-1" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
-            title="Reverse message order"
-            onClick={() => setReverseOrder(!reverseOrder)}
-          >
-            <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
-            {reverseOrder ? 'Newest first' : 'Oldest first'}
-          </Button>
-          <div className="flex-1" />
-          <span className="text-[12px] text-muted-foreground">
-            0 messages
-          </span>
-        </div>
+        <TabBar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          trailingText="0 messages"
+        />
 
-        {/* Empty state */}
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="text-center">
             <div className="text-4xl mb-4">💬</div>
-            <p className="text-sm text-muted-foreground">No messages yet. Start the conversation!</p>
+            <p className="text-sm text-muted-foreground">{emptyText}</p>
           </div>
         </div>
       </div>
@@ -223,53 +229,20 @@ export function MessageList({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Action toolbar at top */}
-      <div className="shrink-0 border-b border-border/50 px-4 py-2 flex items-center gap-2 bg-background">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
-          title="Search messages"
-        >
-          <Search className="h-3.5 w-3.5 mr-1.5" />
-          Search
-        </Button>
-        <div className="h-4 w-px bg-border/50 mx-1" />
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
-          title="Filter messages"
-        >
-          <Filter className="h-3.5 w-3.5 mr-1.5" />
-          Filter
-        </Button>
-        <div className="h-4 w-px bg-border/50 mx-1" />
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 px-3 text-[13px] text-muted-foreground hover:text-foreground"
-          title="Reverse message order"
-          onClick={() => setReverseOrder(!reverseOrder)}
-        >
-          <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
-          {reverseOrder ? 'Newest first' : 'Oldest first'}
-        </Button>
-        <div className="flex-1" />
-        <span className="text-[12px] text-muted-foreground">
-          {messages.length} {messages.length === 1 ? 'message' : 'messages'}
-        </span>
-      </div>
+      <TabBar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        trailingText={`${displayedMessages.length} ${displayedMessages.length === 1 ? "message" : "messages"}`}
+      />
 
       {/* Scrollable message list */}
-      <div ref={messagesContainerRef} className="flex-1 overflow-auto p-6 space-y-4">
-        {(reverseOrder ? [...messages].reverse() : messages).map((message, index, array) => {
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 overflow-auto p-6 space-y-4"
+      >
+        {displayedMessages.map((message, index, array) => {
           const isOwn = message.authorId === currentUserId;
           const isHovered = hoveredMessageId === message.id;
-          const showAvatar = index === 0 || array[index - 1]?.authorId !== message.authorId;
           const userName = getUserName(message.authorId);
           const userAvatar = getUserAvatar(message.authorId);
 
@@ -281,38 +254,31 @@ export function MessageList({
               onMouseLeave={() => setHoveredMessageId(null)}
             >
               <div className="flex gap-3">
-                {/* Avatar */}
-                {showAvatar ? (
-                  <Avatar className="h-10 w-10 shrink-0 mt-0.5">
-                    {userAvatar ? (
-                      <AvatarImage src={userAvatar} alt={userName} />
-                    ) : null}
-                    <AvatarFallback className="text-xs font-semibold bg-primary text-primary-foreground">
-                      {userName.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                ) : (
-                  <div className="h-10 w-10 shrink-0" />
-                )}
+                <Avatar className="h-10 w-10 shrink-0 mt-0.5">
+                  {userAvatar ? (
+                    <AvatarImage src={userAvatar} alt={userName} />
+                  ) : null}
+                  <AvatarFallback className="text-xs font-semibold bg-primary text-primary-foreground">
+                    {userName.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
 
                 {/* Message content */}
                 <div className="flex-1 min-w-0">
                   {/* Header */}
-                  {showAvatar && (
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="text-sm font-semibold text-foreground">
-                        {userName}
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-sm font-semibold text-foreground">
+                      {userName}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatTime(message.createdAt)}
+                    </span>
+                    {message.editedAt && (
+                      <span className="text-xs text-muted-foreground italic">
+                        (edited)
                       </span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatTime(message.createdAt)}
-                      </span>
-                      {message.editedAt && (
-                        <span className="text-xs text-muted-foreground italic">
-                          (edited)
-                        </span>
-                      )}
-                    </div>
-                  )}
+                    )}
+                  </div>
 
                   {/* Content - with mention rendering */}
                   <MentionRenderer
@@ -327,11 +293,15 @@ export function MessageList({
                         <button
                           key={idx}
                           type="button"
-                          onClick={() => onReaction?.(message.id, reaction.emoji)}
+                          onClick={() =>
+                            onReaction?.(message.id, reaction.emoji)
+                          }
                           className="flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs hover:bg-accent transition-colors border border-border/50"
                         >
                           <span className="text-sm">{reaction.emoji}</span>
-                          <span className="text-muted-foreground font-medium">{reaction.userIds.length}</span>
+                          <span className="text-muted-foreground font-medium">
+                            {reaction.userIds.length}
+                          </span>
                         </button>
                       ))}
                     </div>

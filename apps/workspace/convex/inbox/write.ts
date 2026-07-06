@@ -16,6 +16,7 @@ type ChannelInput = {
   projectIds?: string[];
   spaceId?: string;
   clientId?: string;
+  parentChannelId?: string;
   memberIds?: string[];
   dmUserId?: string;
 };
