@@ -31,10 +31,20 @@ export function AcceptInviteScreen() {
   const [status, setStatus] = useState<"idle" | "accepting" | "accepted" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const hasStartedAccepting = useRef(false);
+  const [stabilized, setStabilized] = useState(false);
   const isLoading = !authLoaded || !userLoaded;
 
   useEffect(() => {
-    if ((!invitationId && !inviteToken) || isLoading || !isSignedIn || !user || hasStartedAccepting.current) return;
+    if (isLoading) {
+      setStabilized(false);
+      return;
+    }
+    const timer = setTimeout(() => setStabilized(true), 800);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
+
+  useEffect(() => {
+    if ((!invitationId && !inviteToken) || isLoading || !stabilized || !isSignedIn || !user || hasStartedAccepting.current) return;
 
     let cancelled = false;
     hasStartedAccepting.current = true;
@@ -53,7 +63,11 @@ export function AcceptInviteScreen() {
           const organizationId = getAcceptedOrganizationId(result);
 
           if (organizationId) {
-            await clerk.setActive({ organization: organizationId });
+            try {
+              await clerk.setActive({ organization: organizationId });
+            } catch (setActiveError) {
+              console.warn("[accept-invite] setActive failed, falling back to hard reload:", setActiveError);
+            }
             writeAuthHandoff(organizationId);
           }
 
@@ -74,9 +88,9 @@ export function AcceptInviteScreen() {
     return () => {
       cancelled = true;
     };
-  }, [invitationId, inviteToken, locale, isSignedIn, user, isLoading, clerk, t]);
+  }, [invitationId, inviteToken, locale, isSignedIn, user, isLoading, stabilized, clerk, t]);
 
-  const isSignedOut = !isLoading && !isSignedIn;
+  const isSignedOut = stabilized && !isSignedIn;
   const isMissingInvite = !invitationId && !inviteToken;
   const currentInvitePath = `/${locale}/accept-invite?${inviteToken ? `inviteToken=${encodeURIComponent(inviteToken)}` : `invitationId=${encodeURIComponent(invitationId ?? "")}`}`;
 
@@ -95,24 +109,28 @@ export function AcceptInviteScreen() {
         <h1 className="mt-6 text-2xl font-black uppercase tracking-tight text-foreground">
           {isMissingInvite
             ? t("missingTitle")
-            : isSignedOut
-              ? t("signInTitle")
-              : status === "accepted"
-                ? t("acceptedTitle")
-                : status === "error"
-                  ? t("errorTitle")
-                  : t("loadingTitle")}
+            : !stabilized
+              ? t("loadingTitle")
+              : isSignedOut
+                ? t("signInTitle")
+                : status === "accepted"
+                  ? t("acceptedTitle")
+                  : status === "error"
+                    ? t("errorTitle")
+                    : t("loadingTitle")}
         </h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
           {isMissingInvite
             ? t("missingDesc")
-            : isSignedOut
-              ? t("signInDesc")
-              : status === "accepted"
-                ? t("acceptedDesc")
-                : status === "error"
-                  ? error
-                  : t("loadingDesc")}
+            : !stabilized
+              ? t("loadingDesc")
+              : isSignedOut
+                ? t("signInDesc")
+                : status === "accepted"
+                  ? t("acceptedDesc")
+                  : status === "error"
+                    ? error
+                    : t("loadingDesc")}
         </p>
         {isSignedOut && (
           <Button

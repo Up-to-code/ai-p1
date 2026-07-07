@@ -47,7 +47,7 @@ export async function handleAcceptOrganizationInviteLink(c: Context) {
   }
 
   try {
-    const inviteLink = await acceptOrganizationInviteLink(c, parsed.data);
+    const inviteLink = await acceptOrganizationInviteLink(parsed.data);
     return c.json({ inviteLink });
   } catch (error) {
     return actionErrorJson(c, error, "Invite link could not be accepted.");

@@ -39,6 +39,11 @@ export async function listOrganizationMembers(c: Context, organizationId: string
   return listMembers(c, organizationId);
 }
 
+export async function listOrganizationInvitations(c: Context, organizationId: string) {
+  await requireOrganizationAction(organizationId, "member", "read");
+  return listInvitations(c, organizationId);
+}
+
 export async function listOrganizationWorkRoles(c: Context, organizationId: string) {
   await requireOrganizationAction(organizationId, "role", "read");
   return listRoles(c, organizationId);

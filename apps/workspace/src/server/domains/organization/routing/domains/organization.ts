@@ -17,6 +17,7 @@ import {
   handleCreateOrganizationRole,
   handleDeleteOrganizationRole,
   handleGetOrganizationCapabilities,
+  handleListOrganizationInvitations,
   handleListOrganizationMembers,
   handleListOrganizationRoles,
   handleRemoveOrganizationMember,
@@ -45,6 +46,7 @@ organizationSubRouter.post("/:organizationId/api-keys/:apiKeyId/rotate", handleR
 organizationSubRouter.delete("/:organizationId/api-keys/:apiKeyId", handleRevokeOrganizationApiKey);
 
 organizationSubRouter.patch("/:organizationId/identity", handleUpdateOrganizationIdentity);
+organizationSubRouter.get("/:organizationId/invitations", handleListOrganizationInvitations);
 organizationSubRouter.post("/:organizationId/invitations", handleCreateOrganizationInvitation);
 organizationSubRouter.delete("/:organizationId/invitations/:invitationId", handleCancelOrganizationInvitation);
 organizationSubRouter.patch("/:organizationId/members/:memberId/role", handleUpdateOrganizationMemberRole);

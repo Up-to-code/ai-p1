@@ -10,6 +10,7 @@ import {
   createOrganizationWorkRole,
   deleteOrganizationWorkRole,
   getCapabilities,
+  listOrganizationInvitations,
   listOrganizationMembers,
   listOrganizationWorkRoles,
   removeOrganizationMember,
@@ -109,6 +110,18 @@ export async function handleAcceptOrganizationInvitation(c: Context) {
   try {
     const invitation = await acceptOrganizationEmailInvitation(c, parsed.data.invitationId);
     return c.json({ invitation });
+  } catch (error) {
+    return actionErrorJson(c, error, "Organization action failed.");
+  }
+}
+
+export async function handleListOrganizationInvitations(c: Context) {
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
+
+  try {
+    const invitations = await listOrganizationInvitations(c, org.organizationId);
+    return c.json({ invitations });
   } catch (error) {
     return actionErrorJson(c, error, "Organization action failed.");
   }

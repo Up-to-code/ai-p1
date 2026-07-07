@@ -88,18 +88,20 @@ function PanelLink({
 
       {onIconChange && (
         <Popover open={iconPickerOpen} onOpenChange={setIconPickerOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent/50"
-            >
-              <Icon className="h-3 w-3 text-muted-foreground" />
-            </button>
-          </PopoverTrigger>
+          <PopoverTrigger
+            render={
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent/50"
+              >
+                <Icon className="h-3 w-3 text-muted-foreground" />
+              </button>
+            }
+          />
           <PopoverContent side="right" align="start" className="w-auto p-2">
             <IconPicker
               selectedIcon={selectedIcon}
@@ -241,19 +243,21 @@ export function SidebarInboxPanel() {
     >
       {/* Organization filter dropdown */}
       <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-between mb-3 h-9 px-3 text-sm font-medium"
-          >
-            <div className="flex items-center gap-2">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              {orgFilterOptions.find((o) => o.id === selectedOrgFilter)?.label}
-            </div>
-            <ChevronDown className="h-4 w-4 opacity-50" />
-          </Button>
-        </PopoverTrigger>
+        <PopoverTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-between mb-3 h-9 px-3 text-sm font-medium"
+            >
+              <div className="flex items-center gap-2">
+                <Search className="h-4 w-4 text-muted-foreground" />
+                {orgFilterOptions.find((o) => o.id === selectedOrgFilter)?.label}
+              </div>
+              <ChevronDown className="h-4 w-4 opacity-50" />
+            </Button>
+          }
+        />
         <PopoverContent side="bottom" align="start" className="w-40 p-1">
           {orgFilterOptions.map((option) => (
             <button

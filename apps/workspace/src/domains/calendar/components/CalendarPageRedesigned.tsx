@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { useCalendarStore } from "../store/calendar.store";
 import type { CalendarView } from "../calendar-view-model";
-import { QentrahCalendar, type CalendarEvent } from "@qentrah/svar-ui-components/calendar";
+import { Calendar } from "@svar-ui/react-calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -24,7 +24,7 @@ const EVENT_TYPE_COLORS: Record<string, string> = {
   focusBlock: "#31574B",
 };
 
-const MOCK_EVENTS: CalendarEvent[] = [
+const MOCK_EVENTS = [
   {
     id: "1",
     title: "Sprint Planning",
@@ -90,6 +90,19 @@ const MOCK_EVENTS: CalendarEvent[] = [
     color: EVENT_TYPE_COLORS.reminder,
   },
 ];
+
+interface CalendarEvent {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  color?: string;
+  type?: string;
+  status?: string;
+  location?: string;
+  description?: string;
+  allDay?: boolean;
+}
 
 export function CalendarPageRedesigned() {
   const { currentDate, view, setCurrentDate, setView } = useCalendarStore();
@@ -177,17 +190,10 @@ export function CalendarPageRedesigned() {
       {/* Calendar body — full width, no shadows, padded bottom */}
       <div className="flex-1 min-h-0 px-2 pb-4">
         <div className="h-full w-full rounded-xl overflow-hidden border border-border bg-card">
-          <QentrahCalendar
+          <Calendar
             events={events}
             view={view}
-            currentDate={currentDate}
-            onEventClick={handleEventClick}
-            onEventCreate={handleSlotCreate}
-            onEventUpdate={handleEventUpdate}
-            onEventDelete={handleEventDelete}
-            onDateChange={handleDateChange}
-            onViewChange={handleViewChange}
-            className="q-calendar-view"
+            date={currentDate}
           />
         </div>
       </div>

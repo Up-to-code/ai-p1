@@ -1,16 +1,18 @@
 import { createHash, randomBytes } from "node:crypto";
-import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { clerkClient } from "@clerk/nextjs/server";
-import { auth } from "@clerk/nextjs/server";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
+import { createClerkClient } from "@clerk/backend";
+import { getSessionUserId, fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
 import type {
   AcceptOrganizationInviteLinkInput,
   CreateOrganizationInviteLinkInput,
 } from "../validation/invite-link.schema";
 
 const inviteLinkTtlMs = 7 * 24 * 60 * 60 * 1000;
+
+const clerkBackend = createClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY!,
+});
 
 function createInviteToken() {
   return randomBytes(32).toString("base64url");
@@ -27,6 +29,10 @@ function createInviteUrl(origin: string, locale: string, token: string) {
 function isAlreadyMemberError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   return message.toLowerCase().includes("already a member");
+}
+
+function coerceRole(role: string) {
+  return role.startsWith("org:") ? role : `org:${role}`;
 }
 
 export async function createOrganizationInviteLink(
@@ -50,7 +56,7 @@ export async function createOrganizationInviteLink(
   };
 }
 
-export async function acceptOrganizationInviteLink(c: Context, input: AcceptOrganizationInviteLinkInput) {
+export async function acceptOrganizationInviteLink(input: AcceptOrganizationInviteLinkInput) {
   const tokenHash = hashInviteToken(input.token);
 
   const inviteLink = await fetchAuthQuery(api.organizations.inviteLinks.read.getByTokenHash, {
@@ -69,19 +75,24 @@ export async function acceptOrganizationInviteLink(c: Context, input: AcceptOrga
     throw new Error("Invite link has expired.");
   }
 
-  const session = await auth();
-  const userId = session.userId;
+  const userId = await getSessionUserId();
   if (!userId) {
     throw new Error("Authentication required.");
   }
 
-  const client = await clerkClient();
+  console.log("[invite-links] acceptOrganizationInviteLink:", {
+    tokenHash,
+    organizationId: inviteLink.organizationId,
+    role: inviteLink.role,
+    coercedRole: coerceRole(inviteLink.role),
+    userId,
+  });
 
   try {
-    await client.organizations.createOrganizationMembership({
+    await clerkBackend.organizations.createOrganizationMembership({
       organizationId: inviteLink.organizationId,
       userId,
-      role: inviteLink.role,
+      role: coerceRole(inviteLink.role),
     });
   } catch (error) {
     if (!isAlreadyMemberError(error)) {

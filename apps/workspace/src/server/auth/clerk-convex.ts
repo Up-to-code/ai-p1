@@ -19,6 +19,7 @@ function clerkArgs<FuncRef extends FunctionReference<"query" | "mutation" | "act
 }
 
 const authRequestStore = new AsyncLocalStorage<Request>();
+export { authRequestStore };
 
 export function runWithAuthHeaders<T>(headers: Headers, operation: () => T | Promise<T>) {
   const request = new Request("https://qentrah.internal/api/auth-context", { headers });
@@ -32,6 +33,15 @@ async function getRequestAuth() {
   }
 
   return auth();
+}
+
+export async function getSessionUserId(): Promise<string | null> {
+  try {
+    const session = await getRequestAuth();
+    return session.userId ?? null;
+  } catch {
+    return null;
+  }
 }
 
 async function getToken() {

@@ -11,7 +11,7 @@ import { customFieldsSubRouter } from "@/server/domains/custom-fields/routing/ro
 
 export const organizationRouter = new Hono();
 
-organizationRouter.use("/:organizationId/*", organizationRequestSafetyMiddleware);
+organizationRouter.use("*", organizationRequestSafetyMiddleware);
 
 organizationRouter.route("/", organizationSubRouter);
 organizationRouter.route("/", crudSubRouter);

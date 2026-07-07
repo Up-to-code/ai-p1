@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { QentrahCalendar } from "@qentrah/svar-ui-components/calendar";
+import { Calendar } from "@svar-ui/react-calendar";
 import type { CalendarEvent as CalendarEventType } from "@/domains/calendar/store/calendar.types";
 
 interface CalendarTabProps {
@@ -66,16 +66,10 @@ export function CalendarTab({ project, organizationId, spaceId }: CalendarTabPro
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-border overflow-hidden bg-card" style={{ height: "calc(100vh - 340px)" }}>
-        <QentrahCalendar
+        <Calendar
           events={displayEvents}
           view="month"
-          currentDate={currentMonth}
-          onDateChange={setCurrentMonth}
-          onEventCreate={(start: Date) => {
-            setNewDate(start.toISOString().split("T")[0]);
-            setIsAdding(true);
-          }}
-          compact
+          date={currentMonth}
         />
       </div>
 

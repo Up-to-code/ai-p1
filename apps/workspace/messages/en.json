@@ -2143,6 +2143,7 @@
       "inviteMember": "Invite Member"
     },
     "stats": {
+      "workspace": "Workspace",
       "members": "Members",
       "pendingInvites": "Pending invites",
       "roles": "Work roles",

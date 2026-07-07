@@ -2128,6 +2128,7 @@
       "inviteMember": "دعوة عضو"
     },
     "stats": {
+      "workspace": "مساحة العمل",
       "members": "الأعضاء",
       "pendingInvites": "دعوات معلقة",
       "roles": "أدوار العمل",
