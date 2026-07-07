@@ -182,7 +182,7 @@ export function ClientsWorkspace({ initialView = "list" }: { initialView?: "cale
       {isWorkspaceReady && !isLoading && view === "calendar" && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {calendarEventsForClients(calendarEvents, searchedClients).map((event) => (
-            <AppSection key={event.id} title={`${event.date} · ${event.time}`} description={event.owner}>
+            <AppSection key={event.id} title={`${event.date} · ${event.time}`} description={event.clientName ?? event.location ?? "Workspace event"}>
               <div className="flex items-start justify-between gap-4">
                 <div className="text-start">
                   <p className="text-sm font-black uppercase tracking-tight text-foreground">{event.title}</p>

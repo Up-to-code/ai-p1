@@ -2,11 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { useLocale } from "next-intl";
 import { Link } from "@/i18n/routing";
-import { workspaceLinks } from "@/lib/workspace-links";
+import { getLocalizedWorkspaceUrl } from "@/lib/workspace-links";
 import { AnimatedTetrahedron } from "./animated-tetrahedron";
 
 export function CtaSection() {
+  const locale = useLocale();
+  const signUpUrl = getLocalizedWorkspaceUrl(locale, "sign-up");
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
@@ -62,7 +65,7 @@ export function CtaSection() {
 
                 <div className="flex flex-col sm:flex-row items-start gap-4">
                   <a
-                    href={workspaceLinks.signUp}
+                    href={signUpUrl}
                     className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[var(--q-accent)] px-8 text-sm font-bold text-[var(--q-bg)] transition-all hover:bg-[var(--q-accent-hover)] group"
                   >
                     Start building free

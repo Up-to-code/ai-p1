@@ -1,13 +1,12 @@
 "use client";
 
 import { createContext, createElement, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { useAuth, useOrganization, useUser } from "@clerk/nextjs";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
+import { authClient } from "@/lib/auth-client";
 import { deriveWorkspaceStatus } from "../workspace-status";
 import {
   accountInitials,
-  clerkMembershipOrganizationIds,
   defaultAccountNotifications,
   type AccountContextValue,
 } from "../lib/account-normalizers";
@@ -17,43 +16,28 @@ const ORG_LOAD_TIMEOUT_MS = 8_000;
 const AccountContext = createContext<AccountContextValue | null>(null);
 
 function useAccountContextValue(): AccountContextValue {
-  const auth = useAuth();
-  const userQuery = useUser();
-  const organizationQuery = useOrganization();
+  const { data: session, isPending: sessionPending } = authClient.useSession();
+  const { data: activeOrg, isPending: activeOrgPending } = authClient.useActiveOrganization();
   const convexAuth = useConvexAuth();
   const [orgLoadTimedOut, setOrgLoadTimedOut] = useState(false);
 
-  // If useOrganization() hangs (e.g., user has no org memberships),
-  // time out after ORG_LOAD_TIMEOUT_MS so the shell doesn't show
-  // an infinite loading state.
   useEffect(() => {
-    if (organizationQuery.isLoaded || orgLoadTimedOut) return;
+    if (!activeOrgPending || orgLoadTimedOut) return;
     const timer = setTimeout(() => setOrgLoadTimedOut(true), ORG_LOAD_TIMEOUT_MS);
     return () => clearTimeout(timer);
-  }, [organizationQuery.isLoaded, orgLoadTimedOut]);
+  }, [activeOrgPending, orgLoadTimedOut]);
 
-  const organizationId = auth.orgId ?? organizationQuery.organization?.id ?? null;
-  const isOrganizationPending = !organizationQuery.isLoaded && !orgLoadTimedOut;
+  const organizationId = session?.session?.activeOrganizationId ?? activeOrg?.id ?? null;
+  const isOrganizationPending = activeOrgPending && !orgLoadTimedOut;
   const isConvexAuthenticated = convexAuth.isAuthenticated;
-  const isConvexAuthPending = !convexAuth.isLoading && auth.isSignedIn ? false : convexAuth.isLoading;
+  const isConvexAuthPending = !convexAuth.isLoading && session?.user ? false : convexAuth.isLoading;
 
-  const membershipOrganizationIds = useMemo(
-    () => clerkMembershipOrganizationIds(userQuery.user),
-    [userQuery.user?.organizationMemberships],
-  );
-
-  const hasLoadedMemberships = userQuery.isLoaded;
-  const hasOrganizationAccessDenied = useMemo(
-    () =>
-      typeof organizationId === "string" &&
-      hasLoadedMemberships &&
-      !membershipOrganizationIds.includes(organizationId),
-    [organizationId, hasLoadedMemberships, membershipOrganizationIds],
-  );
+  const isSignedIn = Boolean(session?.user);
+  const isLoaded = !sessionPending;
 
   const organizationProfile = useQuery(
     api.organizations.profile.read.getProfile,
-    organizationId && isConvexAuthenticated && !hasOrganizationAccessDenied ? { organizationId } : "skip",
+    organizationId && isConvexAuthenticated ? { organizationId } : "skip",
   );
 
   const userProfile = useQuery(api.userProfiles.read.getCurrent, isConvexAuthenticated ? {} : "skip");
@@ -61,41 +45,38 @@ function useAccountContextValue(): AccountContextValue {
   const workspaceStatus = useMemo(
     () =>
       deriveWorkspaceStatus({
-        isSessionPending: !auth.isLoaded || !userQuery.isLoaded,
+        isSessionPending: sessionPending,
         isOrganizationPending,
         organizationId,
         isConvexAuthPending,
         isConvexAuthenticated,
-        hasOrganizationAccessDenied,
+        hasOrganizationAccessDenied: false,
       }),
     [
-      auth.isLoaded,
-      userQuery.isLoaded,
+      sessionPending,
       isOrganizationPending,
       organizationId,
       isConvexAuthPending,
       isConvexAuthenticated,
-      hasOrganizationAccessDenied,
     ],
   );
 
   const isWorkspaceReady = workspaceStatus === "ready";
 
   return useMemo(() => {
-    const clerkUser = userQuery.user;
-    const clerkOrganization = organizationQuery.organization;
+    const user = session?.user;
+    const org = activeOrg;
     const userName =
       userProfile?.name?.trim() ||
-      clerkUser?.fullName?.trim() ||
-      clerkUser?.username?.trim() ||
-      clerkUser?.primaryEmailAddress?.emailAddress ||
+      user?.name?.trim() ||
+      user?.email ||
       "Workspace user";
-    const userEmail = clerkUser?.primaryEmailAddress?.emailAddress ?? "";
-    const organizationName = organizationProfile?.name?.trim() || clerkOrganization?.name?.trim() || "Workspace";
+    const userEmail = user?.email ?? "";
+    const organizationName = organizationProfile?.name?.trim() || org?.name?.trim() || "Workspace";
 
     return {
-      isSignedIn: Boolean(auth.isSignedIn),
-      isPending: !auth.isLoaded || !userQuery.isLoaded || isOrganizationPending,
+      isSignedIn,
+      isPending: !isLoaded || isOrganizationPending,
       workspace: {
         status: workspaceStatus,
         organizationId,
@@ -105,10 +86,10 @@ function useAccountContextValue(): AccountContextValue {
         isReady: isWorkspaceReady,
       },
       user: {
-        id: auth.userId ?? clerkUser?.id ?? "",
+        id: user?.id ?? "",
         name: userName,
         email: userEmail,
-        image: userProfile?.avatarUrl ?? clerkUser?.imageUrl ?? null,
+        image: userProfile?.avatarUrl ?? user?.image ?? null,
         initials: accountInitials(userName),
         profile: {
           phone: userProfile?.phone ?? "",
@@ -127,8 +108,8 @@ function useAccountContextValue(): AccountContextValue {
         phone: organizationProfile?.phone,
         website: organizationProfile?.website,
         address: organizationProfile?.address,
-        logo: organizationProfile?.logo ?? clerkOrganization?.imageUrl ?? null,
-        slug: clerkOrganization?.slug ?? organizationId,
+        logo: organizationProfile?.logo ?? org?.logo ?? null,
+        slug: org?.slug ?? organizationId,
         status: "active",
         brandColor: undefined,
         sound: undefined,
@@ -136,9 +117,8 @@ function useAccountContextValue(): AccountContextValue {
       },
     };
   }, [
-    auth.isLoaded,
-    auth.isSignedIn,
-    auth.userId,
+    isLoaded,
+    isSignedIn,
     isOrganizationPending,
     isConvexAuthenticated,
     isConvexAuthPending,
@@ -152,15 +132,13 @@ function useAccountContextValue(): AccountContextValue {
     organizationProfile?.website,
     organizationProfile?.address,
     organizationProfile?.logo,
-    organizationQuery.organization?.name,
-    organizationQuery.organization?.imageUrl,
-    organizationQuery.organization?.slug,
-    userQuery.isLoaded,
-    userQuery.user?.id,
-    userQuery.user?.fullName,
-    userQuery.user?.username,
-    userQuery.user?.primaryEmailAddress?.emailAddress,
-    userQuery.user?.imageUrl,
+    activeOrg?.name,
+    activeOrg?.logo,
+    activeOrg?.slug,
+    session?.user?.id,
+    session?.user?.name,
+    session?.user?.email,
+    session?.user?.image,
     userProfile?.name,
     userProfile?.avatarUrl,
     userProfile?.phone,

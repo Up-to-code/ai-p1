@@ -127,7 +127,7 @@ export function SidebarChatPanel() {
 
   return (
     <SidebarPanelLayout
-      title="Chat History"
+      title="AI"
       navbarActions={
         <button
           type="button"
@@ -138,20 +138,25 @@ export function SidebarChatPanel() {
           <Plus className="h-4 w-4" />
         </button>
       }
-    >
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="px-4 pb-2">
+      header={
+        <div className="px-4 py-3">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search conversations..."
+              placeholder="Search chats..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-md border border-border/50 bg-muted py-1.5 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
+              className="w-full rounded-md border border-border bg-background py-1.5 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
             />
           </div>
         </div>
+      }
+    >
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <p className="px-4 pb-2 text-[10px] font-medium text-muted-foreground">
+          Recent Chats
+        </p>
 
         <div className="flex-1 overflow-y-auto px-2 pb-2">
           {loading && orgId ? (
@@ -170,10 +175,10 @@ export function SidebarChatPanel() {
                 return (
                   <div
                     key={thread.id}
-                    className={`group flex items-center gap-1 rounded-md px-2 py-2 text-left text-xs transition-colors cursor-pointer ${
+                    className={`group flex items-center gap-1 rounded-md border px-2 py-2 text-left text-xs transition-colors cursor-pointer ${
                       isActive
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                        ? "border-primary/30 bg-primary/10 text-foreground"
+                        : "border-transparent text-muted-foreground hover:border-border hover:bg-card hover:text-foreground"
                     }`}
                     onClick={() => {
                       if (renamingId !== thread.id) {
@@ -185,7 +190,7 @@ export function SidebarChatPanel() {
                       }
                     }}
                   >
-                    <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+                    <MessageSquare className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : ""}`} />
                     {renamingId === thread.id ? (
                       <input
                         type="text"
@@ -208,7 +213,7 @@ export function SidebarChatPanel() {
                     ) : (
                       <span className="flex-1 truncate">{thread.title}</span>
                     )}
-                    <span className="shrink-0 text-[10px] text-muted-foreground/40">
+                    <span className="shrink-0 text-[10px] text-muted-foreground/60">
                       {formatTime(thread.updatedAt)}
                     </span>
 
@@ -219,7 +224,7 @@ export function SidebarChatPanel() {
                         setRenamingId(thread.id);
                       }}
                       title="Rename"
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-accent hover:text-foreground"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-accent hover:text-accent-foreground"
                     >
                       <Pencil className="h-3 w-3" />
                     </button>
@@ -232,7 +237,7 @@ export function SidebarChatPanel() {
                             onClick={(e: React.MouseEvent) =>
                               e.stopPropagation()
                             }
-                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md opacity-0 transition-opacity group-hover:opacity-100 hover:bg-accent"
+                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-accent hover:text-accent-foreground"
                           >
                             <EllipsisVertical className="h-3.5 w-3.5" />
                           </button>

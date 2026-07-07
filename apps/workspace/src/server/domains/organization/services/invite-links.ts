@@ -1,18 +1,15 @@
 import { createHash, randomBytes } from "node:crypto";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { createClerkClient } from "@clerk/backend";
-import { getSessionUserId, fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
+import { logger } from "@/lib/logger";
+import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/auth-context";
+import { getBetterAuthSessionUserId, addMemberToOrganizationBA } from "./better-auth-organization-service";
 import type {
   AcceptOrganizationInviteLinkInput,
   CreateOrganizationInviteLinkInput,
 } from "../validation/invite-link.schema";
 
 const inviteLinkTtlMs = 7 * 24 * 60 * 60 * 1000;
-
-const clerkBackend = createClerkClient({
-  secretKey: process.env.CLERK_SECRET_KEY!,
-});
 
 function createInviteToken() {
   return randomBytes(32).toString("base64url");
@@ -24,15 +21,6 @@ function hashInviteToken(token: string) {
 
 function createInviteUrl(origin: string, locale: string, token: string) {
   return `${origin}/${locale}/accept-invite?inviteToken=${encodeURIComponent(token)}`;
-}
-
-function isAlreadyMemberError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.toLowerCase().includes("already a member");
-}
-
-function coerceRole(role: string) {
-  return role.startsWith("org:") ? role : `org:${role}`;
 }
 
 export async function createOrganizationInviteLink(
@@ -75,30 +63,21 @@ export async function acceptOrganizationInviteLink(input: AcceptOrganizationInvi
     throw new Error("Invite link has expired.");
   }
 
-  const userId = await getSessionUserId();
+  const userId = await getBetterAuthSessionUserId();
   if (!userId) {
     throw new Error("Authentication required.");
   }
 
-  console.log("[invite-links] acceptOrganizationInviteLink:", {
+  logger.info("Accepting organization invite link", {
+    module: "organization-invite-links",
     tokenHash,
     organizationId: inviteLink.organizationId,
     role: inviteLink.role,
-    coercedRole: coerceRole(inviteLink.role),
     userId,
   });
 
-  try {
-    await clerkBackend.organizations.createOrganizationMembership({
-      organizationId: inviteLink.organizationId,
-      userId,
-      role: coerceRole(inviteLink.role),
-    });
-  } catch (error) {
-    if (!isAlreadyMemberError(error)) {
-      throw error;
-    }
-  }
+  // Add the current user to the organization via Better Auth
+  await addMemberToOrganizationBA(inviteLink.organizationId, userId, inviteLink.role);
 
   return fetchAuthMutation(api.organizations.inviteLinks.write.acceptInviteLinkFromHono, {
     tokenHash,

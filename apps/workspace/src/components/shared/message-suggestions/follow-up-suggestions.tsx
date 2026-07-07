@@ -53,7 +53,7 @@ export function FollowUpSuggestions({
       transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
       className={cn("flex flex-col gap-2 mt-4", className)}
     >
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {isPlanMode ? "Next steps" : "Suggested actions"}
       </p>
       <div className="flex flex-wrap gap-2">
@@ -72,15 +72,15 @@ export function FollowUpSuggestions({
                 ease: [0.22, 1, 0.36, 1] 
               }}
               className={cn(
-                "group flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all active:scale-[0.97]",
+                "group flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium transition-all active:scale-[0.97]",
                 isPlanMode
-                  ? "border-[#EF4444]/30 bg-[#EF4444]/5 text-[#EF4444] hover:border-[#EF4444]/50 hover:bg-[#EF4444]/10"
-                  : "border-border bg-card text-foreground hover:border-[#0C7DF3]/40 hover:bg-[#0C7DF3]/5 hover:text-[#0C7DF3]"
+                  ? "border-destructive/30 bg-destructive/5 text-destructive hover:border-destructive/50 hover:bg-destructive/10"
+                  : "border-border bg-background text-foreground hover:border-primary/40 hover:bg-accent hover:text-accent-foreground"
               )}
             >
               <Icon className={cn(
                 "h-4 w-4 transition-transform group-hover:scale-110",
-                isPlanMode ? "text-[#EF4444]" : "text-text-muted group-hover:text-[#0C7DF3]"
+                isPlanMode ? "text-destructive" : "text-muted-foreground group-hover:text-accent-foreground"
               )} />
               <span>{action.label}</span>
             </motion.button>

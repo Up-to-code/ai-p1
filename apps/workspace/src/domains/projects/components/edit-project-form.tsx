@@ -49,7 +49,7 @@ export function EditProjectForm({ project, isOpen, onSuccess, onCancel }: EditPr
       opportunityId: project.opportunityId ?? "",
       status: project.status ?? "planned",
       health: project.health ?? "onTrack",
-      visibility: project.visibility ?? "team",
+      visibility: project.visibility ?? "space_members",
       startDate: project.startDate ?? "",
       endDate: project.endDate ?? "",
       budget: project.budget != null ? String(project.budget) : "",
@@ -169,12 +169,12 @@ export function EditProjectForm({ project, isOpen, onSuccess, onCancel }: EditPr
       label: t("visibilityLabel"),
       value: (
         <select
-          value={form.watch("visibility") ?? "team"}
+          value={form.watch("visibility") ?? "space_members"}
           onChange={(e) => form.setValue("visibility", e.target.value as any)}
           className="h-8 rounded-lg border-0 bg-transparent px-2 text-sm font-semibold text-foreground focus:ring-1 focus:ring-ring outline-none cursor-pointer"
         >
-          <option value="team">{t("visibilityTeam")}</option>
-          <option value="workspace">{t("visibilityPublic")}</option>
+          <option value="space_members">{t("visibilityTeam")}</option>
+          <option value="organization">{t("visibilityPublic")}</option>
           <option value="private">{t("visibilityPrivate")}</option>
         </select>
       ),

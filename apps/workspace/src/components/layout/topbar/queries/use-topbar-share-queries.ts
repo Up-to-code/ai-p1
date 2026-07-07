@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getOrganizationCapabilities,
   listOrganizationMembers,
-} from "@/domains/organization/api/clerk-organization-api";
+} from "@/domains/organization/api";
 import { topbarShareQueryKeys } from "../config/share.config";
 
 /** Loads organization members and capabilities for the topbar share popover. */

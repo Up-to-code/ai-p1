@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import {
   cancelQueuedJobsForSource,
   defaultPreference,
@@ -29,7 +29,7 @@ export const registerDevice = mutation({
   },
   returns: notificationDeviceValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     const now = Date.now();
     const key = recipientKey(user._id, args.installationId);
     const existing = await ctx.db
@@ -77,7 +77,7 @@ export const removeDevice = mutation({
   },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     const key = recipientKey(user._id, args.installationId);
     const existing = await ctx.db
       .query("notificationDevices")
@@ -103,7 +103,7 @@ export const upsertMyPreferences = mutation({
   },
   returns: notificationPreferenceValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     const now = Date.now();
     const principalKey = userPrincipalKey(user._id);
     const existing = await getPreference(ctx, args.organizationId, principalKey);
@@ -145,7 +145,7 @@ export const upsertOrganizationPreferences = mutation({
   },
   returns: notificationPreferenceValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     const now = Date.now();
     const principalKey = "organization";
     const existing = await getPreference(ctx, args.organizationId, principalKey);
@@ -186,7 +186,7 @@ export const createSchedule = mutation({
   },
   returns: notificationScheduleValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     const now = Date.now();
     const scheduleId = await ctx.db.insert("notificationSchedules", {
       organizationId: args.organizationId,
@@ -213,7 +213,7 @@ export const updateSchedule = mutation({
   },
   returns: notificationScheduleValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     const existing = await ctx.db.get(args.scheduleId);
     if (!existing || existing.organizationId !== args.organizationId || existing.ownerUserId !== user._id) {
       throw new Error("Notification schedule was not found.");
@@ -239,7 +239,7 @@ export const cancelSchedule = mutation({
   },
   returns: v.object({ canceled: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     const existing = await ctx.db.get(args.scheduleId);
     if (!existing || existing.organizationId !== args.organizationId || existing.ownerUserId !== user._id) {
       throw new Error("Notification schedule was not found.");
@@ -262,7 +262,7 @@ export const ensureDefaultPreferences = mutation({
   },
   returns: notificationPreferenceValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     const principalKey = userPrincipalKey(user._id);
     const existing = await getPreference(ctx, args.organizationId, principalKey);
     if (existing) return existing;

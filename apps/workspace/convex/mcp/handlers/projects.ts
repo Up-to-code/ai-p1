@@ -156,7 +156,7 @@ export const projectsCreate: WriteHandler = async (ctx: MutationCtx, args: Write
   await assertProjectLinks(ctx, args.organizationId, project);
   const result = await ctx.runMutation(internal.projects.write.createInternal, {
     organizationId: args.organizationId,
-    input: { ...project, visibility: "workspace" },
+    input: { ...project, visibility: "organization" },
     actorUserId: args.actorId,
   });
   await audit(ctx, args.organizationId, args.connectionId, "project.create", result.id, `Created project ${project.name}.`);

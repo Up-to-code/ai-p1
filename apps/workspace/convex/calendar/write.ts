@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { internalMutation, mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { cancelQueuedJobsForSource, scheduleCalendarEventReminders } from "../notifications/helpers";
 import { isoDate, isoTime, presentWorkspaceRecord } from "../shared/present";
@@ -75,7 +75,7 @@ export const createFromHono = mutation({
   args: { organizationId: v.string(), input: calendarEventInputValidator },
   returns: calendarEventValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "calendar", "create");
     const { presented, now } = await createEventCore(ctx, {
       organizationId: args.organizationId,
@@ -98,7 +98,7 @@ export const updateFromHono = mutation({
   args: { organizationId: v.string(), eventId: v.id("calendarEvents"), input: calendarEventInputValidator },
   returns: calendarEventValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "calendar", "update");
     const { presented, now } = await updateEventCore(ctx, {
       organizationId: args.organizationId,
@@ -122,7 +122,7 @@ export const deleteFromHono = mutation({
   args: { organizationId: v.string(), eventId: v.id("calendarEvents") },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "calendar", "delete");
     const { now, title } = await deleteEventCore(ctx, {
       organizationId: args.organizationId,

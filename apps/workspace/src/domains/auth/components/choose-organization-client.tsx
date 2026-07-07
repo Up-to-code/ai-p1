@@ -1,72 +1,67 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useClerk, useOrganization, useUser } from "@clerk/nextjs";
-import { AlertCircle, ArrowRight, Building2, CheckCircle2, Loader2, LogOut, Plus } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowRight,
+  Building2,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  Eye,
+  Loader2,
+  LogOut,
+  Plus,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { BrandMark } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Link, useRouter } from "@/i18n/routing";
-import { createClerkOrganization } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 type ChooseOrganizationClientProps = {
   locale: string;
 };
 
-type ClerkOrganization = {
-  id: string;
-  name?: string | null;
-  slug?: string | null;
-};
+const createSteps = ["name", "profile", "preview"] as const;
+type CreateStep = (typeof createSteps)[number];
 
-type ClerkMembership = {
-  organization?: ClerkOrganization | null;
-};
-
-type ClerkMembershipList = ClerkMembership[] | { data?: ClerkMembership[] } | null | undefined;
-
-function normalizeMemberships(memberships: ClerkMembershipList) {
-  const data = Array.isArray(memberships) ? memberships : memberships?.data ?? [];
-  return data
-    .map((membership) => membership.organization)
-    .filter((organization): organization is ClerkOrganization => Boolean(organization?.id));
+function authErrorMessage(error: unknown, fallback: string) {
+  if (!error) return fallback;
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  if (typeof error === "object" && "message" in error && typeof error.message === "string") {
+    return error.message;
+  }
+  return fallback;
 }
 
-function isOrganizationsDisabledError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.toLowerCase().includes("organizations feature is not enabled");
-}
-
-function isOrganizationSlugsDisabledError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.toLowerCase().includes("does not have slugs enabled");
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
 }
 
 function WorkspaceListSkeleton({ label }: { label: string }) {
   return (
-    <div className="p-5">
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <div>
-          <div className="h-3 w-24 animate-pulse rounded-full bg-muted" />
-          <div className="mt-3 h-2.5 w-44 animate-pulse rounded-full bg-muted" />
-        </div>
-        <div className="h-11 w-11 animate-pulse rounded-2xl bg-muted" />
-      </div>
-      <div className="space-y-3">
-        {[0, 1, 2].map((item) => (
-          <div className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-4" key={item}>
-            <div className="h-10 w-10 shrink-0 animate-pulse rounded-2xl bg-muted" />
+    <div className="grid gap-3 sm:grid-cols-2">
+      {[0, 1, 2, 3].map((item) => (
+        <div className="min-h-28 rounded-xl border border-border/70 bg-card/70 p-4" key={item}>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 animate-pulse rounded-xl bg-muted" />
             <div className="min-w-0 flex-1 space-y-2">
               <div className="h-3 w-2/3 animate-pulse rounded-full bg-muted" />
               <div className="h-2.5 w-1/2 animate-pulse rounded-full bg-muted" />
             </div>
           </div>
-        ))}
-      </div>
-      <p className="mt-5 text-center text-xs font-semibold text-text-secondary">{label}</p>
+        </div>
+      ))}
+      <p className="text-xs font-semibold text-muted-foreground sm:col-span-2">{label}</p>
     </div>
   );
 }
@@ -74,69 +69,44 @@ function WorkspaceListSkeleton({ label }: { label: string }) {
 export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientProps) {
   const t = useTranslations("ChooseOrg");
   const router = useRouter();
-  const clerk = useClerk();
-  const { isLoaded: userLoaded, user } = useUser();
-  const { isLoaded: organizationLoaded, organization } = useOrganization();
-  const [choice, setChoice] = useState<"create" | null>(null);
+  const { data: session, isPending: sessionPending } = authClient.useSession();
+  const { data: orgs, isPending: orgsPending } = authClient.useListOrganizations();
+  const [mode, setMode] = useState<"list" | "create">("list");
+  const [stepIndex, setStepIndex] = useState(0);
   const [organizationName, setOrganizationName] = useState("");
-  const [remoteMemberships, setRemoteMemberships] = useState<{ userId: string; organizations: ClerkOrganization[] } | null>(null);
+  const [organizationPurpose, setOrganizationPurpose] = useState("");
   const [busyId, setBusyId] = useState("");
   const [busyAction, setBusyAction] = useState<"create" | "sign-out" | "">("");
   const [error, setError] = useState("");
 
-  const cachedOrganizations = useMemo(
-    () => normalizeMemberships(user?.organizationMemberships as ClerkMembershipList),
-    [user],
-  );
-  const remoteOrganizations =
-    remoteMemberships && remoteMemberships.userId === user?.id ? remoteMemberships.organizations : null;
-  const organizations = remoteOrganizations ?? cachedOrganizations;
-  const canRefreshMemberships = Boolean(
-    user &&
-      (user as unknown as { getOrganizationMemberships?: () => Promise<ClerkMembershipList> }).getOrganizationMemberships,
-  );
-  const membershipsLoading = Boolean(user && canRefreshMemberships && remoteMemberships?.userId !== user.id);
-  const currentOrganizationId = organization?.id ?? null;
-  const isBusy = Boolean(busyId || busyAction);
-  const isLoading = !userLoaded || !organizationLoaded || membershipsLoading;
-  const activeChoice = choice ?? (!isLoading && organizations.length === 0 ? "create" : null);
+  const isLoading = sessionPending || orgsPending;
+  const currentStep = createSteps[stepIndex];
+  const hasOrganizations = Boolean(orgs?.length);
+  const organizationSlug = useMemo(() => slugify(organizationName), [organizationName]);
 
   useEffect(() => {
-    if (!userLoaded) return;
-    if (!user) {
+    if (!isLoading && !session?.user) {
       router.replace(`/sign-in?callbackURL=${encodeURIComponent(`/${locale}/choose-org`)}`);
-      return;
     }
+  }, [isLoading, session, locale, router]);
 
-    let active = true;
-    const getOrganizationMemberships = (user as unknown as {
-      getOrganizationMemberships?: () => Promise<ClerkMembershipList>;
-    }).getOrganizationMemberships;
+  useEffect(() => {
+    if (!isLoading && orgs?.length === 0) setMode("create");
+  }, [isLoading, orgs?.length]);
 
-    if (!getOrganizationMemberships) return;
-
-    void getOrganizationMemberships
-      .call(user)
-      .then((memberships) => {
-        if (active) setRemoteMemberships({ userId: user.id, organizations: normalizeMemberships(memberships) });
-      })
-      .catch(() => {
-        if (active) setRemoteMemberships({ userId: user.id, organizations: cachedOrganizations });
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [cachedOrganizations, locale, router, user, userLoaded]);
+  const canGoNext = currentStep !== "name" || organizationName.trim().length > 1;
 
   async function selectOrganization(organizationId: string) {
     setBusyId(organizationId);
     setError("");
     try {
-      await clerk.setActive({ organization: organizationId });
+      const result = await authClient.organization.setActive({ organizationId });
+      if (result.error) {
+        throw new Error(authErrorMessage(result.error, t("errorDesc")));
+      }
       router.replace("/ws");
-    } catch (error) {
-      setError(error instanceof Error ? error.message : t("errorDesc"));
+    } catch (caught) {
+      setError(authErrorMessage(caught, t("errorDesc")));
     } finally {
       setBusyId("");
     }
@@ -146,25 +116,28 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
     const name = organizationName.trim();
     if (!name) {
       setError(t("nameRequired"));
+      setStepIndex(0);
       return;
     }
 
     setBusyAction("create");
     setError("");
     try {
-      const organization = await createClerkOrganization(clerk, name);
-      await clerk.setActive({ organization: organization.id });
-      router.replace("/onboarding");
-    } catch (error) {
-      if (isOrganizationsDisabledError(error)) {
-        setError(t("organizationsDisabled"));
+      const result = await authClient.organization.create({ name, slug: organizationSlug || `workspace-${Date.now()}` });
+      if (result.error) {
+        throw new Error(authErrorMessage(result.error, t("errorDesc")));
+      }
+      if (result.data?.id) {
+        const activeResult = await authClient.organization.setActive({ organizationId: result.data.id });
+        if (activeResult.error) {
+          throw new Error(authErrorMessage(activeResult.error, t("errorDesc")));
+        }
+        router.replace("/onboarding");
         return;
       }
-      if (isOrganizationSlugsDisabledError(error)) {
-        setError(t("slugsDisabled"));
-        return;
-      }
-      setError(error instanceof Error ? error.message : t("errorDesc"));
+      throw new Error(t("errorDesc"));
+    } catch (caught) {
+      setError(authErrorMessage(caught, t("errorDesc")));
     } finally {
       setBusyAction("");
     }
@@ -174,21 +147,49 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
     setBusyAction("sign-out");
     setError("");
     try {
-      await clerk.signOut();
+      await authClient.signOut();
       router.replace("/sign-in");
-    } catch (error) {
-      setError(error instanceof Error ? error.message : t("errorDesc"));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : t("errorDesc"));
     } finally {
       setBusyAction("");
     }
   }
 
+  function goNext() {
+    if (!canGoNext) {
+      setError(t("nameRequired"));
+      return;
+    }
+    setError("");
+    setStepIndex((current) => Math.min(current + 1, createSteps.length - 1));
+  }
+
   return (
-    <main className="min-h-svh bg-[oklch(96.5%_0.008_255)] px-4 py-6 text-foreground dark:bg-[oklch(8.5%_0.012_255)] sm:px-6">
-      <div className="mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-3xl flex-col">
-        <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+    <main className="relative min-h-svh overflow-hidden bg-background text-foreground">
+      <div className="pointer-events-none absolute inset-0 opacity-80">
+        <div
+          className="absolute -left-32 top-[-22rem] h-[42rem] w-[42rem] rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, color-mix(in srgb, #F2488B 20%, transparent), transparent 66%)" }}
+        />
+        <div
+          className="absolute right-[-18rem] top-[-18rem] h-[46rem] w-[46rem] rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, color-mix(in srgb, #0C7DF3 20%, transparent), transparent 68%)" }}
+        />
+        <div
+          className="absolute bottom-[-24rem] left-1/3 h-[48rem] w-[48rem] rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, color-mix(in srgb, #834DF1 14%, transparent), transparent 70%)" }}
+        />
+      </div>
+
+      <div className="relative z-10 flex min-h-svh flex-col px-5 py-5 sm:px-8 lg:px-10">
+        <header className="flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <BrandMark className="h-6 w-6" priority />
+            <span className="text-base font-black tracking-tight">qentrah</span>
+          </Link>
           <Button
-            className="justify-self-start text-text-secondary"
+            className="rounded-lg text-muted-foreground hover:text-foreground"
             disabled={busyAction === "sign-out"}
             onClick={() => void handleUseAnotherAccount()}
             size="sm"
@@ -198,110 +199,139 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
             {busyAction === "sign-out" ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
             <span className="hidden sm:inline">{busyAction === "sign-out" ? t("signingOut") : t("useAnotherAccount")}</span>
           </Button>
-          <Link href="/" className="group flex items-center gap-2 justify-self-center">
-            <span className="text-sm font-black tracking-tight">qentrah</span>
-            <BrandMark className="h-6 w-auto" priority />
-          </Link>
         </header>
 
-        <section className="flex flex-1 flex-col items-center justify-center gap-7 py-8 sm:py-10">
-          <div className="max-w-sm text-center">
-            <p className="text-[11px] font-black text-primary">
+        <section className="grid flex-1 items-center gap-10 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+          <aside className="max-w-xl">
+            <div className="mb-6 text-xs font-black uppercase tracking-[0.08em] text-muted-foreground">
               {t("eyebrow")}
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold leading-[1.08] tracking-0 text-foreground sm:text-4xl rtl:leading-[1.14]">
-              {t("title")}
+            </div>
+            <h1 className="text-4xl font-black leading-[0.98] tracking-0 text-foreground sm:text-6xl lg:text-7xl rtl:leading-[1.08]">
+              {hasOrganizations ? t("title") : t("createTitle")}
             </h1>
-            <p className="mt-3 text-sm font-medium leading-6 text-text-secondary">
-              {t("subtitle")}
+            <p className="mt-6 max-w-lg text-base font-medium leading-7 text-muted-foreground sm:text-lg">
+              {hasOrganizations ? t("subtitle") : t("createDesc")}
             </p>
-          </div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              {session?.session?.activeOrganizationId ? (
+                <Button className="rounded-lg" onClick={() => router.replace("/ws")} type="button" variant="outline">
+                  {t("continueWorkspace")}
+                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                </Button>
+              ) : null}
+            </div>
+          </aside>
 
-          <div className="w-full max-w-[424px] overflow-hidden rounded-3xl border border-[oklch(86%_0.014_255)] bg-[oklch(99%_0.004_255)] dark:border-white/10 dark:bg-[oklch(13%_0.016_255)]">
+          <section className="flex min-h-[560px] items-center justify-center">
+            <div className="w-full max-w-2xl">
+            {error ? (
+              <div className="mb-5 flex items-start gap-3 rounded-lg bg-destructive/10 px-4 py-3 text-sm font-semibold leading-6 text-destructive">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <p>{error}</p>
+              </div>
+            ) : null}
+
             {isLoading ? (
               <WorkspaceListSkeleton label={t("loading")} />
-            ) : (
-              <div className="divide-y divide-border">
-                {error ? (
-                  <div className="flex items-start gap-3 bg-red-50 px-5 py-4 text-sm font-semibold leading-6 text-red-700 dark:bg-red-400/10 dark:text-red-200">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <p>{error}</p>
-                  </div>
-                ) : null}
-
-                {organizations.length > 0 ? (
-                  <div className="bg-muted/40 px-5 py-3 text-[10px] font-black uppercase tracking-[0.08em] text-text-secondary">
-                    {t("existingTitle")}
-                  </div>
-                ) : null}
-
-                {organizations.map((organization) => {
-                  const isCurrent = currentOrganizationId === organization.id;
-                  return (
-                    <button
-                      className="flex w-full items-center gap-4 p-5 text-start transition hover:bg-muted disabled:pointer-events-none disabled:opacity-60"
-                      disabled={isBusy}
-                      key={organization.id}
-                      onClick={() => void selectOrganization(organization.id)}
-                      type="button"
-                    >
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-surface">
-                        {busyId === organization.id || isCurrent ? (
-                          <CheckCircle2 className="h-5 w-5 text-primary" />
-                        ) : (
-                          <Building2 className="h-5 w-5 text-foreground" />
-                        )}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-black text-foreground">
-                          {organization.name ?? t("untitledWorkspace")}
+            ) : mode === "list" && hasOrganizations ? (
+              <div className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {orgs?.map((org) => {
+                    const isCurrent = session?.session?.activeOrganizationId === org.id;
+                    return (
+                      <button
+                        className="group min-h-32 rounded-xl border border-border bg-card p-4 text-start transition hover:border-primary/50 hover:bg-accent/40 disabled:pointer-events-none disabled:opacity-60"
+                        disabled={Boolean(busyId || busyAction)}
+                        key={org.id}
+                        onClick={() => void selectOrganization(org.id)}
+                        type="button"
+                      >
+                        <span className="flex items-start gap-3">
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-background">
+                            {busyId === org.id ? (
+                              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                            ) : isCurrent ? (
+                              <CheckCircle2 className="h-5 w-5 text-primary" />
+                            ) : (
+                              <Building2 className="h-5 w-5 text-muted-foreground" />
+                            )}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-black">{org.name ?? t("untitledWorkspace")}</span>
+                            <span className="mt-1 block truncate text-xs font-semibold text-muted-foreground">
+                              {isCurrent ? t("currentWorkspace") : org.slug ?? org.id}
+                            </span>
+                          </span>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition group-hover:opacity-100 rtl:rotate-180" />
                         </span>
-                        <span className="mt-1 block truncate text-xs font-semibold text-text-secondary">
-                          {isCurrent ? t("currentWorkspace") : organization.slug ?? organization.id}
-                        </span>
-                      </span>
-                      {busyId === organization.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-text-secondary" />
-                      ) : (
-                        <ArrowRight className="h-4 w-4 text-text-secondary rtl:rotate-180" />
-                      )}
-                    </button>
-                  );
-                })}
-
-                <div className="bg-muted/40 px-5 py-3 text-[10px] font-black uppercase tracking-[0.08em] text-text-secondary">
-                  {t("setupAccess")}
+                      </button>
+                    );
+                  })}
                 </div>
-
                 <button
-                  className={cn(
-                    "flex w-full items-center gap-4 p-5 text-start transition hover:bg-muted",
-                    activeChoice === "create" && "bg-muted",
-                  )}
-                  disabled={isBusy}
-                  onClick={() => {
-                    setError("");
-                    setChoice(choice === "create" ? null : "create");
-                  }}
+                  className="flex w-full items-center justify-between rounded-xl px-2 py-3 text-start text-sm font-black text-muted-foreground transition hover:text-foreground disabled:pointer-events-none disabled:opacity-60"
+                  disabled={Boolean(busyId || busyAction)}
+                  onClick={() => setMode("create")}
                   type="button"
                 >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-surface">
-                    <Plus className="h-5 w-5 text-foreground" />
+                  <span className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Plus className="h-4 w-4" />
+                    </span>
+                    {t("createTitle")}
                   </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-black text-foreground">{t("createTitle")}</span>
-                    <span className="mt-1 block text-xs font-semibold leading-5 text-text-secondary">{t("createDesc")}</span>
-                  </span>
+                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
                 </button>
+              </div>
+            ) : (
+              <div className="flex min-h-[500px] flex-col">
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-xs font-black uppercase tracking-[0.08em] text-muted-foreground">{t("setupAccess")}</p>
+                  {hasOrganizations ? (
+                    <Button className="rounded-lg" onClick={() => setMode("list")} type="button" variant="ghost">
+                      <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+                      {t("existingTitle")}
+                    </Button>
+                  ) : null}
+                </div>
 
-                {activeChoice === "create" ? (
-                  <div className="space-y-4 bg-muted/60 p-5">
-                    <div className="space-y-2">
-                      <Label htmlFor="organization-name" className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary">
-                        {t("createNameLabel")}
-                      </Label>
+                <div className="mt-8 grid grid-cols-3 gap-4">
+                  {createSteps.map((step, index) => {
+                    const active = index === stepIndex;
+                    const complete = index < stepIndex;
+                    return (
+                      <button
+                        className="group flex items-center gap-3 text-start"
+                        disabled={busyAction === "create" || (index > 0 && !organizationName.trim())}
+                        key={step}
+                        onClick={() => setStepIndex(index)}
+                        type="button"
+                      >
+                        <span className={cn(
+                          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-xs font-black transition",
+                          active && "border-primary bg-primary text-primary-foreground",
+                          complete && "border-primary/40 bg-primary/10 text-primary",
+                          !active && !complete && "border-border bg-card text-muted-foreground",
+                        )}>
+                          {complete ? <Check className="h-4 w-4" /> : index + 1}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-black">{t(`steps.${step}`)}</span>
+                          <span className="mt-2 block h-0.5 rounded-full bg-border">
+                            <span className={cn("block h-full rounded-full bg-primary transition-all", (active || complete) ? "w-full" : "w-0")} />
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex flex-1 items-center py-10">
+                  {currentStep === "name" ? (
+                    <div className="w-full max-w-xl space-y-3">
+                      <label htmlFor="organization-name" className="text-sm font-black">{t("createNameLabel")}</label>
                       <Input
-                        className="h-12 rounded-2xl"
+                        className="h-12 rounded-lg"
                         id="organization-name"
                         onChange={(event) => {
                           setOrganizationName(event.target.value);
@@ -310,26 +340,77 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
                         placeholder={t("createNamePlaceholder")}
                         value={organizationName}
                       />
+                      <p className="text-xs font-semibold text-muted-foreground">{organizationSlug || "workspace-slug"}</p>
                     </div>
-                    <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={busyAction === "create"} onClick={() => void createOrganization()} type="button">
-                      {busyAction === "create" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                      {busyAction === "create" ? t("creating") : t("createBtn")}
-                      {busyAction === "create" ? null : <ArrowRight className="h-4 w-4 rtl:rotate-180" />}
-                    </Button>
-                  </div>
-                ) : null}
+                  ) : null}
 
-                {currentOrganizationId ? (
-                  <div className="bg-background p-5">
-                    <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={isBusy} onClick={() => router.replace("/ws")} type="button">
-                      {t("continueWorkspace")}
-                      <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-                    </Button>
+                  {currentStep === "profile" ? (
+                    <div className="w-full max-w-xl space-y-3">
+                      <label htmlFor="organization-purpose" className="text-sm font-black">{t("profileLabel")}</label>
+                      <Input
+                        className="h-12 rounded-lg"
+                        id="organization-purpose"
+                        onChange={(event) => setOrganizationPurpose(event.target.value)}
+                        placeholder={t("profilePlaceholder")}
+                        value={organizationPurpose}
+                      />
+                      <p className="text-xs font-semibold text-muted-foreground">{t("profileHint")}</p>
+                    </div>
+                  ) : null}
+
+                  {currentStep === "preview" ? (
+                    <div className="w-full max-w-xl">
+                      <div className="flex items-start gap-4">
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                          <Building2 className="h-5 w-5 text-primary" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-black uppercase tracking-[0.08em] text-muted-foreground">{t("previewTitle")}</p>
+                          <h3 className="mt-2 truncate text-2xl font-black">{organizationName || t("untitledWorkspace")}</h3>
+                          <p className="mt-1 truncate text-sm font-semibold text-muted-foreground">{organizationSlug || "workspace-slug"}</p>
+                          {organizationPurpose ? <p className="mt-5 text-sm font-medium leading-6 text-muted-foreground">{organizationPurpose}</p> : null}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="flex items-center justify-between pt-5">
+                  <Button
+                    className="rounded-lg"
+                    disabled={stepIndex === 0 || busyAction === "create"}
+                    onClick={() => setStepIndex((current) => Math.max(current - 1, 0))}
+                    type="button"
+                    variant="outline"
+                  >
+                    <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+                    {t("back")}
+                  </Button>
+                  <div className="flex items-center gap-2">
+                    {stepIndex < createSteps.length - 1 ? (
+                      <>
+                        <Button className="rounded-lg" disabled={!organizationName.trim()} onClick={() => setStepIndex(2)} type="button" variant="ghost">
+                          <Eye className="h-4 w-4" />
+                          {t("preview")}
+                        </Button>
+                        <Button className="rounded-lg" disabled={!canGoNext} onClick={goNext} type="button">
+                          {t("next")}
+                          <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                        </Button>
+                      </>
+                    ) : (
+                      <Button className="rounded-lg" disabled={busyAction === "create"} onClick={() => void createOrganization()} type="button">
+                        {busyAction === "create" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                        {busyAction === "create" ? t("creating") : t("createBtn")}
+                        {busyAction === "create" ? null : <ArrowRight className="h-4 w-4 rtl:rotate-180" />}
+                      </Button>
+                    )}
                   </div>
-                ) : null}
+                </div>
               </div>
             )}
-          </div>
+            </div>
+          </section>
         </section>
       </div>
     </main>

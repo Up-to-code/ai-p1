@@ -51,6 +51,17 @@ export const organizationTables = {
     .index("by_organization_role_status_expires", ["organizationId", "role", "status", "expiresAt"])
     .index("by_token_hash", ["tokenHash"]),
 
+  organizationWorkRoles: defineTable({
+    organizationId: v.string(),
+    role: v.string(),
+    permission: v.record(v.string(), v.array(v.string())),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_organization_id", ["organizationId"])
+    .index("by_organization_role", ["organizationId", "role"]),
+
   organizationMcpConnections: defineTable({
     organizationId: v.string(),
     publicId: v.string(),

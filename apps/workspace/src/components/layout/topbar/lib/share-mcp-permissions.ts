@@ -2,7 +2,7 @@ import type {
   McpConnectionPermission,
   McpPermissionAction,
   OrganizationCapabilities,
-} from "@/domains/organization/api/clerk-organization-api";
+} from "@/domains/organization/api";
 import { shareMcpResourceDefinitions } from "../config/share.config";
 
 function readOnlyActions(canRead: boolean): McpPermissionAction[] {

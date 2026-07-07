@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
 import { query } from "../../_generated/server";
-import { clerkAuthComponent } from "../../auth";
+import { authUser } from "../../auth";
 import {
   assertCanPerformOrganizationAction,
   assertCanAccessSpace,
@@ -82,7 +82,7 @@ export async function assertOrganizationResourcePermission(
   resource: OrganizationPermissionResource,
   action: string,
 ) {
-  const user = await clerkAuthComponent.getAuthUser(ctx);
+  const user = await authUser.getAuthUser(ctx);
   await assertCanPerformOrganizationAction(
     ctx,
     organizationId,
@@ -98,7 +98,7 @@ export async function canUseOrganizationResourceAction(
   resource: OrganizationPermissionResource,
   action: string,
 ) {
-  const user = await clerkAuthComponent.getAuthUser(ctx);
+  const user = await authUser.getAuthUser(ctx);
   // Use the permission check but catch errors to return boolean
   try {
     await assertCanPerformOrganizationAction(
@@ -168,7 +168,7 @@ export const getCapabilities = query({
   args: { organizationId: v.string() },
   returns: capabilitiesReturnValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.safeGetAuthUser(ctx);
+    const user = await authUser.safeGetAuthUser(ctx);
     if (!user) {
       return {
         canReadOrganization: false,
@@ -212,9 +212,7 @@ export const getCapabilities = query({
     const orgRole = await getOrganizationRole(ctx, args.organizationId, user._id);
     const isOwner = orgRole === "owner";
     const isAdmin = orgRole === "admin";
-    // Treat a missing org role (JWT template not configured) as member-level access
-    // so users aren't locked out of basic functionality.
-    const isMember = orgRole === "member" || orgRole === null;
+    const isMember = orgRole === "member";
 
     const hasOrgAccess = isOwner || isAdmin || isMember;
 

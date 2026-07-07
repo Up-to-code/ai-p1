@@ -107,6 +107,8 @@ export interface ViewSwitcherTabsProps {
   onReorder?: (views: ViewItem[]) => void;
   onAddView?: (type: ViewType) => void;
   onRemoveView?: (viewId: string) => void;
+  onRenameTab?: (id: string, label: string) => void;
+  onDuplicateTab?: (id: string) => void;
   showAddView?: boolean;
   count?: number;
   leftSlot?: ReactNode;

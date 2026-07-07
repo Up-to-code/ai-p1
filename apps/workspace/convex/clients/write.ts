@@ -3,7 +3,7 @@ import { internalMutation, mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { protectClientPii } from "../security/clientPii";
 import { presentClient } from "./read";
@@ -121,7 +121,7 @@ export const createFromHono = mutation({
   },
   returns: clientValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "create");
     const { id, presented, now } = await createClientCore(ctx, {
       organizationId: args.organizationId,
@@ -148,7 +148,7 @@ export const updateFromHono = mutation({
   },
   returns: clientValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     await assertClient(ctx, args.organizationId, args.clientId);
     const { presented, now } = await updateClientCore(ctx, {
@@ -176,7 +176,7 @@ export const deleteFromHono = mutation({
   },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "delete");
     const { now, name } = await deleteClientCore(ctx, {
       organizationId: args.organizationId,

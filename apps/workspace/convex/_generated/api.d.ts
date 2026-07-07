@@ -10,6 +10,7 @@
 
 import type * as apiKeys from "../apiKeys.js";
 import type * as auth from "../auth.js";
+import type * as betterAuth from "../betterAuth.js";
 import type * as billing_creditSurface from "../billing/creditSurface.js";
 import type * as billing_customers from "../billing/customers.js";
 import type * as billing_data from "../billing/data.js";
@@ -46,6 +47,7 @@ import type * as dashboard_read from "../dashboard/read.js";
 import type * as deals_read from "../deals/read.js";
 import type * as deals_validators from "../deals/validators.js";
 import type * as deals_write from "../deals/write.js";
+import type * as email from "../email.js";
 import type * as http from "../http.js";
 import type * as inbox_read from "../inbox/read.js";
 import type * as inbox_validators from "../inbox/validators.js";
@@ -107,6 +109,7 @@ import type * as organizations_profile_data from "../organizations/profile/data.
 import type * as organizations_profile_read from "../organizations/profile/read.js";
 import type * as organizations_profile_validators from "../organizations/profile/validators.js";
 import type * as organizations_profile_write from "../organizations/profile/write.js";
+import type * as organizations_workRoles from "../organizations/workRoles.js";
 import type * as partnerApps_apps from "../partnerApps/apps.js";
 import type * as partnerApps_migrations from "../partnerApps/migrations.js";
 import type * as partnerApps_oauthClients from "../partnerApps/oauthClients.js";
@@ -184,6 +187,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   apiKeys: typeof apiKeys;
   auth: typeof auth;
+  betterAuth: typeof betterAuth;
   "billing/creditSurface": typeof billing_creditSurface;
   "billing/customers": typeof billing_customers;
   "billing/data": typeof billing_data;
@@ -220,6 +224,7 @@ declare const fullApi: ApiFromModules<{
   "deals/read": typeof deals_read;
   "deals/validators": typeof deals_validators;
   "deals/write": typeof deals_write;
+  email: typeof email;
   http: typeof http;
   "inbox/read": typeof inbox_read;
   "inbox/validators": typeof inbox_validators;
@@ -281,6 +286,7 @@ declare const fullApi: ApiFromModules<{
   "organizations/profile/read": typeof organizations_profile_read;
   "organizations/profile/validators": typeof organizations_profile_validators;
   "organizations/profile/write": typeof organizations_profile_write;
+  "organizations/workRoles": typeof organizations_workRoles;
   "partnerApps/apps": typeof partnerApps_apps;
   "partnerApps/migrations": typeof partnerApps_migrations;
   "partnerApps/oauthClients": typeof partnerApps_oauthClients;
@@ -376,4 +382,7 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  betterAuth: import("../betterAuthLocal/_generated/component.js").ComponentApi<"betterAuth">;
+  resend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"resend">;
+};

@@ -13,9 +13,17 @@ export const visibilityValidator = v.union(
   v.literal("private"),
   v.literal("space_members"),
   v.literal("organization"),
-  v.literal("workspace"),
-  v.literal("team"),
 );
+
+export type ProjectVisibility = "private" | "space_members" | "organization";
+export type StoredProjectVisibility = ProjectVisibility | "team" | "workspace";
+
+export function normalizeProjectVisibility(value: StoredProjectVisibility | undefined): ProjectVisibility {
+  if (value === "organization" || value === "space_members" || value === "private") return value;
+  if (value === "workspace") return "organization";
+  if (value === "team") return "space_members";
+  return "space_members";
+}
 
 export const projectInputValidator = v.object({
   name: v.string(),

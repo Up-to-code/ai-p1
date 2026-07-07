@@ -3,7 +3,7 @@ import type {
   OrganizationCapabilities,
   OrganizationMember,
   OrganizationRole,
-} from "./api/clerk-organization-api";
+} from "./api";
 
 export type OrganizationSettingsTab = "profile" | "members" | "apiKeys" | "notifications" | "billing";
 export type Tab = OrganizationSettingsTab;

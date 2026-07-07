@@ -12,7 +12,7 @@ vi.mock("@convex/_generated/api", () => ({
   },
 }));
 
-vi.mock("@/server/auth/clerk-convex", () => ({
+vi.mock("@/server/auth/convex-auth", () => ({
   fetchAuthMutation: vi.fn(),
   fetchAuthQuery: vi.fn(),
 }));
@@ -22,14 +22,14 @@ vi.mock("@/server/utils/organization/access-checker", () => ({
   getOrganizationCapabilities: vi.fn(),
 }));
 
-vi.mock("./clerk-organization-proxy", () => ({
-  callClerkOrganization: vi.fn(),
-  getClerkSession: vi.fn(),
+vi.mock("./better-auth-organization-service", () => ({
+  callBetterAuthOrganization: vi.fn(),
+  getBetterAuthSession: vi.fn(),
 }));
 
-import { fetchAuthMutation } from "@/server/auth/clerk-convex";
+import { fetchAuthMutation } from "@/server/auth/convex-auth";
 import { assertCanUseOrganizationResource } from "@/server/utils/organization/access-checker";
-import { callClerkOrganization, getClerkSession } from "./clerk-organization-proxy";
+import { callBetterAuthOrganization, getBetterAuthSession } from "./better-auth-organization-service";
 import { removeOrganizationMember } from "./actions";
 
 const context = {} as never;
@@ -37,7 +37,7 @@ const context = {} as never;
 describe("organization actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getClerkSession).mockResolvedValue({
+    vi.mocked(getBetterAuthSession).mockResolvedValue({
       session: { userId: "user_owner", activeOrganizationId: "org_1" },
       user: {
         id: "user_owner",
@@ -47,7 +47,7 @@ describe("organization actions", () => {
     });
     vi.mocked(assertCanUseOrganizationResource).mockResolvedValue(undefined);
     vi.mocked(fetchAuthMutation).mockResolvedValue(undefined);
-    vi.mocked(callClerkOrganization).mockImplementation(async (_c, path) => {
+    vi.mocked(callBetterAuthOrganization).mockImplementation(async (_c, path) => {
       if (path === "/organization/list-members") {
         return [
           { id: "member_owner", userId: "user_owner", role: "owner", user: { email: "owner@example.com" } },
@@ -69,7 +69,7 @@ describe("organization actions", () => {
     });
 
     expect(assertCanUseOrganizationResource).toHaveBeenCalledWith("org_1", "member", "delete");
-    expect(callClerkOrganization).toHaveBeenCalledWith(
+    expect(callBetterAuthOrganization).toHaveBeenCalledWith(
       context,
       "/organization/remove-member",
       expect.objectContaining({

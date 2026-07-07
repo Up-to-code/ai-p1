@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { OrganizationCapabilities } from "@/domains/organization/api/clerk-organization-api";
+import type { OrganizationCapabilities } from "@/domains/organization/api";
 import { buildMcpPermissionsForShareAccess } from "./share-mcp-permissions";
 
 const capabilities: OrganizationCapabilities = {

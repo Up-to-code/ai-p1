@@ -1,5 +1,5 @@
 import type { Context, Next } from "hono";
-import { runWithAuthHeaders } from "@/server/auth/clerk-convex";
+import { runWithAuthHeaders } from "@/server/auth/auth-request-store";
 import {
   mobileRequestContextMiddleware,
   type MobileRequestContext,

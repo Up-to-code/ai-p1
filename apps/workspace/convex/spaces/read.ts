@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import { assertCanAccessSpace, assertCanPerformSpaceAction } from "../permissions";
 import { activeWorkspaceRows, boundedWorkspaceReadLimit } from "../workspace/readSurface";
 import { spaceValidator } from "./validators";
@@ -12,7 +12,7 @@ export const listByOrganization = query({
   args: { organizationId: v.string() },
   returns: v.array(spaceValidator),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     // For now, allow listing all spaces - in production, filter by user's accessible spaces
     const spaces = await ctx.db
       .query("spaces")
@@ -30,7 +30,7 @@ export const listAccessible = query({
   args: { organizationId: v.string() },
   returns: v.array(spaceValidator),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     // Filter spaces by user's access
     const allSpaces = await ctx.db
       .query("spaces")
@@ -48,7 +48,7 @@ export const get = query({
   args: { organizationId: v.string(), spaceId: v.id("spaces") },
   returns: v.union(spaceValidator, v.null()),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertCanAccessSpace(ctx, args.organizationId, args.spaceId, user._id);
     const space = await ctx.db.get(args.spaceId);
     if (!space || space.organizationId !== args.organizationId || space.deletedAt) {
@@ -65,7 +65,7 @@ export const getBySlug = query({
   },
   returns: v.union(spaceValidator, v.null()),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     const space = await ctx.db
       .query("spaces")
       .withIndex("by_organization_slug", (q) =>
@@ -82,7 +82,7 @@ export const options = query({
   args: { organizationId: v.string(), limit: v.optional(v.number()) },
   returns: v.array(v.object({ id: v.string(), name: v.string(), slug: v.string(), icon: v.optional(v.string()), color: v.optional(v.string()) })),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     const limit = boundedWorkspaceReadLimit(args.limit, 50, 100);
     const spaces = await ctx.db
       .query("spaces")

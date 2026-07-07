@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { docInputValidator, docValidator, docFolderInputValidator, docFolderValidator } from "./validators";
 
@@ -12,7 +12,7 @@ export const createFromHono = mutation({
   args: { organizationId: v.string(), input: docInputValidator },
   returns: docValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
 
     const now = Date.now();
@@ -44,7 +44,7 @@ export const updateFromHono = mutation({
   args: { organizationId: v.string(), docId: v.id("docs"), input: docInputValidator },
   returns: docValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.docId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
@@ -77,7 +77,7 @@ export const deleteFromHono = mutation({
   args: { organizationId: v.string(), docId: v.id("docs") },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.docId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
@@ -108,7 +108,7 @@ export const moveToFolder = mutation({
   },
   returns: docValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.docId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
@@ -144,7 +144,7 @@ export const createFolderFromHono = mutation({
   args: { organizationId: v.string(), input: docFolderInputValidator },
   returns: docFolderValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
 
     const now = Date.now();
@@ -175,7 +175,7 @@ export const renameFolderFromHono = mutation({
   args: { organizationId: v.string(), folderId: v.id("docFolders"), name: v.string() },
   returns: docFolderValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.folderId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
@@ -204,7 +204,7 @@ export const deleteFolderFromHono = mutation({
   args: { organizationId: v.string(), folderId: v.id("docFolders") },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.folderId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {

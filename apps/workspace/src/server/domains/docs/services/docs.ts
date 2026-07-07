@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { fetchAuthMutation } from "@/server/auth/clerk-convex";
+import { fetchAuthMutation } from "@/server/auth/convex-auth";
 import type { DocPayload, DocMovePayload } from "../validation/doc.schema";
 
 function toConvexInput(input: DocPayload) {

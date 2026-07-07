@@ -55,7 +55,7 @@ export type OrganizationCapabilities = Record<OrganizationCapabilityKey, boolean
 
 type DynamicOrganizationRole = {
   role: string;
-  permission: string;
+  permission: string | PermissionMap;
 };
 
 type PermissionMap = Partial<Record<keyof OrganizationPermissionStatement, readonly string[]>>;
@@ -77,13 +77,17 @@ function emptyCapabilities(isPlatformAdmin: boolean): OrganizationCapabilities {
   };
 }
 
-function parseDynamicRolePermission(permission: string): PermissionMap | null {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(permission);
-  } catch {
-    return null;
-  }
+function parseDynamicRolePermission(permission: DynamicOrganizationRole["permission"]): PermissionMap | null {
+  const parsed: unknown =
+    typeof permission === "string"
+      ? (() => {
+          try {
+            return JSON.parse(permission);
+          } catch {
+            return null;
+          }
+        })()
+      : permission;
 
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
     return null;

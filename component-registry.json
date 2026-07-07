@@ -552,6 +552,26 @@
       "props": ["value", "onChange", "placeholder", "size", "trigger", "disabled", "className", "inputClassName", "truncate", "ariaLabel"],
       "createdAt": "2026-07-01",
       "notes": "Replaces 6+ inlined click-to-edit patterns in project-overview-sidebar, project-dashboard, projects-overview-dashboard, doc-folder-tree, ColumnHeader (via internal use), widget-grid WidgetShell (planned)."
+    },
+    {
+      "name": "PermissionMatrix",
+      "path": "apps/workspace/src/components/mcp/permission-matrix.tsx",
+      "kind": "shared-ui",
+      "summary": "Reusable permission builder with compact preset boxes and searchable module/action rows.",
+      "usedIn": ["domains/organization/components/panels/role-management-panel"],
+      "props": ["permissions", "onPermissionToggle", "disabled", "className"],
+      "createdAt": "2026-07-07",
+      "notes": "Includes QuickRoleSelector for preset role templates. Designed for organization work roles and future MCP/API permission configuration surfaces."
+    },
+    {
+      "name": "AiConversationThread",
+      "path": "apps/workspace/src/components/shared/ai-chat/ai-conversation-thread.tsx",
+      "kind": "shared-ui",
+      "summary": "Shared AI chat message renderer for full AI mode and the resizable quick AI panel. Handles user/assistant layout, thinking state, message actions, follow-up actions, suggestions, and plan cards.",
+      "usedIn": ["components/dashboard/eve-dashboard-chat", "components/layout/quick-chat-panel"],
+      "props": ["messages", "isStreaming", "errorMessage", "variant", "isImplementing", "onSendPrompt", "onImplementPlan"],
+      "createdAt": "2026-07-07",
+      "notes": "Presentation-only. Containers own Eve session, persistence, thread history, composer state, and panel sizing."
     }
   ]
 }

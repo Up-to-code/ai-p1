@@ -1,8 +1,24 @@
 import { httpRouter } from "convex/server";
 import { createDodoWebhookHandler } from "@dodopayments/convex";
 import { internal } from "./_generated/api";
+import { httpAction } from "./_generated/server";
+import { betterAuthClient } from "./betterAuth";
+import { createAuth } from "./auth";
+import { resend } from "./email";
 
 const http = httpRouter();
+
+betterAuthClient.registerRoutesLazy(http, createAuth, {
+  basePath: "/api/auth",
+});
+
+http.route({
+  path: "/resend-webhook",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    return await resend.handleResendEventWebhook(ctx, request);
+  }),
+});
 
 http.route({
   path: "/dodopayments-webhook",

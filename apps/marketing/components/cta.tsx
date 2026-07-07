@@ -5,12 +5,13 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
-import { workspaceLinks } from "@/lib/workspace-links";
+import { getLocalizedWorkspaceUrl } from "@/lib/workspace-links";
 
 const CTA = () => {
   const t = useTranslations("Landing.home.cta");
   const locale = useLocale();
   const isAr = locale === "ar";
+  const signUpUrl = getLocalizedWorkspaceUrl(locale, "sign-up");
 
   return (
     <section className="px-6 py-20 md:py-32 bg-[var(--q-bg-very-dark)] dark:bg-[var(--q-bg-very-dark)] border-t border-[var(--q-border)]">
@@ -38,7 +39,7 @@ const CTA = () => {
         <div className="mt-12 flex flex-col gap-4 sm:flex-row justify-center w-full sm:w-auto">
           <a
             className="group inline-flex h-14 items-center justify-center gap-3 rounded-[14px] bg-[var(--q-accent)] px-8 text-sm font-bold text-background transition-all duration-300 hover:bg-[var(--q-accent-hover)] active:scale-95"
-            href={workspaceLinks.signUp}
+            href={signUpUrl}
           >
             {t("primary")}
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />

@@ -4,7 +4,7 @@ import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "../../../lib/convex";
 import { requireOrgId } from "../../../lib/org-context";
 import { requireOrganizationAction, recordOrganizationAction } from "../../../lib/action-workflow";
-import { listOrganizationMembers, listOrganizationInvitations, listOrganizationRoles, deleteOrganizationRole } from "../../../lib/clerk-org";
+import { listOrganizationMembers, listOrganizationInvitations, listOrganizationRoles, deleteOrganizationRole } from "../../../lib/better-auth-org";
 import { assertCanDeleteRole } from "../../../lib/access-policy";
 
 export default defineTool({
@@ -16,9 +16,9 @@ export default defineTool({
     const organizationId = requireOrgId(ctx);
     await requireOrganizationAction(ctx, organizationId, "role", "delete");
     const [members, invitations, roles] = await Promise.all([
-      listOrganizationMembers(organizationId),
-      listOrganizationInvitations(organizationId),
-      listOrganizationRoles(organizationId),
+      listOrganizationMembers(ctx, organizationId),
+      listOrganizationInvitations(ctx, organizationId),
+      listOrganizationRoles(ctx, organizationId),
     ]);
     const role = roles.find((item) => item.id === args.roleId);
     if (!role) throw new Error("Work role was not found.");
@@ -31,7 +31,7 @@ export default defineTool({
 
     assertCanDeleteRole({ role, members, invitations, pendingInviteLinkCount });
 
-    const result = await deleteOrganizationRole(organizationId, args.roleId);
+    const result = await deleteOrganizationRole(ctx, organizationId, args.roleId);
     await recordOrganizationAction(ctx, organizationId, {
       action: "organization.role.delete",
       target: args.roleId,

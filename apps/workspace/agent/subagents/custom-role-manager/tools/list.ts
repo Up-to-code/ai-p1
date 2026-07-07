@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { requireOrgId } from "../../../lib/org-context";
 import { requireOrganizationAction } from "../../../lib/action-workflow";
-import { listOrganizationRoles } from "../../../lib/clerk-org";
+import { listOrganizationRoles } from "../../../lib/better-auth-org";
 
 export default defineTool({
   description: "List all custom work roles in the organization.",
@@ -10,6 +10,6 @@ export default defineTool({
   async execute(_args, ctx) {
     const organizationId = requireOrgId(ctx);
     await requireOrganizationAction(ctx, organizationId, "role", "read");
-    return listOrganizationRoles(organizationId);
+    return listOrganizationRoles(ctx, organizationId);
   },
 });

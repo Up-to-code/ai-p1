@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 
 export const list = query({
   args: { organizationId: v.string() },
@@ -17,7 +17,7 @@ export const list = query({
     updatedAt: v.number(),
   })),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     if (!user) {
       throw new Error("Authentication required to list pipeline stages.");
     }

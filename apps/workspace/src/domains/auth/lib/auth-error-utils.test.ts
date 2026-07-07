@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { localizedAuthError } from "./clerk-auth-utils";
+import { localizedAuthError } from "./auth-error-utils";
 
 describe("localizedAuthError", () => {
   const t = (key: string) => key;

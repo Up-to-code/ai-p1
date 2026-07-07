@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation } from "@/server/auth/clerk-convex";
+import { fetchAuthMutation } from "@/server/auth/convex-auth";
 
 // Link a space to a project (junction table)
 export function linkSpaceToProject(

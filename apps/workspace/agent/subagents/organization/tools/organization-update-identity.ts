@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { requireOrgId } from "../../../lib/org-context";
 import { requireOrganizationAction, recordOrganizationAction } from "../../../lib/action-workflow";
-import { updateOrganizationIdentity } from "../../../lib/clerk-org";
+import { updateOrganizationIdentity } from "../../../lib/better-auth-org";
 
 export default defineTool({
   description: "Update organization identity (name, slug, logo).",
@@ -14,7 +14,7 @@ export default defineTool({
   async execute(args, ctx) {
     const organizationId = requireOrgId(ctx);
     await requireOrganizationAction(ctx, organizationId, "organization", "update");
-    const result = await updateOrganizationIdentity(organizationId, args);
+    const result = await updateOrganizationIdentity(ctx, organizationId, args);
     await recordOrganizationAction(ctx, organizationId, {
       action: "organization.identity.update",
       target: organizationId,

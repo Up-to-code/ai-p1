@@ -50,8 +50,13 @@ export const domainTables = {
       v.literal("archived"),
     ),
     health: v.union(v.literal("onTrack"), v.literal("atRisk"), v.literal("blocked")),
-    visibility: v.optional(v.union(v.literal("private"), v.literal("space_members"), v.literal("organization"), v.literal("workspace"), v.literal("team"))),
-    spaceIds: v.optional(v.array(v.id("spaces"))),
+    visibility: v.optional(v.union(
+      v.literal("private"),
+      v.literal("space_members"),
+      v.literal("organization"),
+      v.literal("team"),
+      v.literal("workspace"),
+    )),
     startDate: v.optional(v.string()),
     endDate: v.optional(v.string()),
     budget: v.optional(v.number()),
@@ -78,7 +83,6 @@ export const domainTables = {
     .index("by_organization_deleted_status_updated", ["organizationId", "isDeleted", "status", "updatedAt"])
     .index("by_client", ["organizationId", "clientId"])
     .index("by_opportunity", ["organizationId", "opportunityId"])
-    .index("by_space", ["organizationId", "spaceIds"])
     .index("by_organization_updated", ["organizationId", "updatedAt"])
     .index("by_updated", ["updatedAt"]),
 
@@ -407,7 +411,16 @@ export const domainTables = {
       userIds: v.array(v.string()),
     }))),
     mentions: v.optional(v.array(v.object({
-      type: v.string(),
+      type: v.union(
+        v.literal("user"),
+        v.literal("task"),
+        v.literal("client"),
+        v.literal("deal"),
+        v.literal("project"),
+        v.literal("document"),
+        v.literal("file"),
+        v.literal("ai"),
+      ),
       id: v.string(),
       name: v.string(),
     }))),

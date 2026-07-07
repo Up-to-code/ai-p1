@@ -138,28 +138,30 @@ export function MessageComposer({
       attributes: {
         class: "focus:outline-none min-h-[44px] max-h-[150px] overflow-y-auto py-3 text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground",
       },
-    },
-    onKeyDown: ({ event }: { event: KeyboardEvent }) => {
-      if (event.key === "Enter" && !event.shiftKey && !showMentionPicker && !showSlashMenu) {
-        event.preventDefault();
-        handleSend();
-      }
-      if (event.key === "@" && !showMentionPicker && !showSlashMenu) {
-        setShowMentionPicker(true);
-      }
-      if (event.key === "/" && !showMentionPicker && !showSlashMenu) {
-        setShowSlashMenu(true);
-      }
-      if (event.key === " " && showMentionPicker) {
-        setShowMentionPicker(false);
-      }
-      if (event.key === " " && showSlashMenu) {
-        setShowSlashMenu(false);
-      }
-      if (event.key === "Escape") {
-        setShowMentionPicker(false);
-        setShowSlashMenu(false);
-      }
+      handleKeyDown: (_view, event) => {
+        if (event.key === "Enter" && !event.shiftKey && !showMentionPicker && !showSlashMenu) {
+          event.preventDefault();
+          handleSend();
+          return true;
+        }
+        if (event.key === "@" && !showMentionPicker && !showSlashMenu) {
+          setShowMentionPicker(true);
+        }
+        if (event.key === "/" && !showMentionPicker && !showSlashMenu) {
+          setShowSlashMenu(true);
+        }
+        if (event.key === " " && showMentionPicker) {
+          setShowMentionPicker(false);
+        }
+        if (event.key === " " && showSlashMenu) {
+          setShowSlashMenu(false);
+        }
+        if (event.key === "Escape") {
+          setShowMentionPicker(false);
+          setShowSlashMenu(false);
+        }
+        return false;
+      },
     },
   });
 
@@ -395,7 +397,7 @@ export function MessageComposer({
             isOpen={showActionPopover}
             onClose={() => setShowActionPopover(false)}
             onAction={handleAction}
-            anchorRef={plusButtonRef}
+            anchorRef={plusButtonRef as React.RefObject<HTMLElement>}
           />
 
           {/* Center */}

@@ -8,7 +8,7 @@ export const projectPayloadSchema = z.object({
   opportunityId: optionalTrimmedText,
   status: z.enum(["planned", "active", "paused", "completed", "archived"]),
   health: z.enum(["onTrack", "atRisk", "blocked"]).default("onTrack"),
-  visibility: z.enum(["private", "team", "workspace"]).optional(),
+  visibility: z.enum(["private", "space_members", "organization"]).optional(),
   teamMemberIds: z.array(z.string().trim()).optional(),
   startDate: optionalTrimmedText,
   endDate: optionalTrimmedText,

@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { requireOrgId } from "../../../lib/org-context";
 import { requireOrganizationAction, recordOrganizationAction } from "../../../lib/action-workflow";
-import { revokeOrganizationInvitation } from "../../../lib/clerk-org";
+import { revokeOrganizationInvitation } from "../../../lib/better-auth-org";
 
 export default defineTool({
   description: "Cancel a pending invitation.",
@@ -12,7 +12,7 @@ export default defineTool({
   async execute(args, ctx) {
     const organizationId = requireOrgId(ctx);
     await requireOrganizationAction(ctx, organizationId, "member", "create");
-    const result = await revokeOrganizationInvitation(organizationId, args.invitationId);
+    const result = await revokeOrganizationInvitation(ctx, organizationId, args.invitationId);
     await recordOrganizationAction(ctx, organizationId, {
       action: "organization.invitation.cancel",
       target: args.invitationId,

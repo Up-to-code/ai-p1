@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
-import { fetchAuthQuery } from "@/server/auth/clerk-convex";
+import { fetchAuthQuery } from "@/server/auth/convex-auth";
 import {
   readOrganizationId,
   workspaceReadJsonForOrganization,

@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { internalMutation, mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
 import { internal } from "../_generated/api";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { channelInputValidator, channelValidator, messageInputValidator, messageValidator, threadValidator } from "./validators";
 
@@ -25,7 +25,11 @@ type MessageInput = {
   content: string;
   threadId?: string;
   replyToId?: string;
-  mentions?: { type: string; id: string; name: string }[];
+  mentions?: {
+    type: "user" | "task" | "client" | "deal" | "project" | "document" | "file" | "ai";
+    id: string;
+    name: string;
+  }[];
 };
 
 // Helper function to get or create ID
@@ -323,7 +327,7 @@ export const createChannel = mutation({
   },
   returns: channelValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "channel", "create");
     const { channel } = await createChannelCore(ctx, {
       organizationId: args.organizationId,
@@ -342,7 +346,7 @@ export const updateChannel = mutation({
   },
   returns: channelValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "channel", "update");
     const { channel } = await updateChannelCore(ctx, {
       organizationId: args.organizationId,
@@ -361,7 +365,7 @@ export const deleteChannel = mutation({
   },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "channel", "delete");
     await deleteChannelCore(ctx, {
       organizationId: args.organizationId,
@@ -380,7 +384,7 @@ export const sendMessage = mutation({
   },
   returns: messageValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertChannelMembership(ctx, args.channelId, user._id);
     const { message } = await createMessageCore(ctx, {
       channelId: args.channelId,
@@ -400,7 +404,7 @@ export const updateMessage = mutation({
   },
   returns: messageValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     const { message } = await updateMessageCore(ctx, {
       channelId: args.channelId,
       messageId: args.messageId,
@@ -419,7 +423,7 @@ export const deleteMessage = mutation({
   },
   returns: v.object({ deleted: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await deleteMessageCore(ctx, {
       channelId: args.channelId,
       messageId: args.messageId,
@@ -438,7 +442,7 @@ export const addReaction = mutation({
   },
   returns: v.union(messageValidator, v.null()),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertChannelMembership(ctx, args.channelId, user._id);
     const { message } = await addReactionCore(ctx, {
       messageId: args.messageId,
@@ -458,7 +462,7 @@ export const removeReaction = mutation({
   },
   returns: v.union(messageValidator, v.null()),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertChannelMembership(ctx, args.channelId, user._id);
     const { message } = await removeReactionCore(ctx, {
       messageId: args.messageId,
@@ -477,7 +481,7 @@ export const createThread = mutation({
   },
   returns: threadValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertChannelMembership(ctx, args.channelId, user._id);
     const { thread } = await createThreadCore(ctx, {
       channelId: args.channelId,

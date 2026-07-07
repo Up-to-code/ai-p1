@@ -21,7 +21,7 @@ import {
   type OrganizationApiKeyExpiry,
   type OrganizationApiKeyPermission,
   type OrganizationApiKeyResource,
-} from "../../api/clerk-organization-api";
+} from "../../api";
 import { apiKeyExpiryOptions, apiKeyResourceDefinitions } from "../../config/api-key.config";
 import { organizationApiBaseUrl, organizationApiStarterRequest } from "../../lib/organization-api-utils";
 import {
@@ -34,6 +34,7 @@ import {
   formatDate,
   toggleApiKeyPermission,
 } from "../../settings-view-model";
+import { invalidateOrganizationSettings, organizationSettingsKeys } from "../../settings-cache";
 import { EmptyState, LoadingCardGrid, Section } from "../shared";
 
 export function ApiKeysPanel({
@@ -65,7 +66,7 @@ export function ApiKeysPanel({
   const selectedPermissions = clampApiKeyPermissionsToGrantable(permissions, grantablePermissions);
 
   const query = useQuery({
-    queryKey: ["organization-api-keys", organizationId],
+    queryKey: organizationSettingsKeys.apiKeys(organizationId),
     queryFn: () => listOrganizationApiKeys(organizationId),
     enabled: Boolean(organizationId && canRead),
   });
@@ -79,7 +80,7 @@ export function ApiKeysPanel({
     onSuccess: async (result) => {
       setOneTimeKey(result.apiKey);
       setOneTimePermissions(cloneApiKeyPermissions(selectedPermissions));
-      queryClient.invalidateQueries({ queryKey: ["organization-api-keys", organizationId] });
+      void invalidateOrganizationSettings(queryClient, organizationId, ["apiKeys"]);
       await navigator.clipboard?.writeText(result.apiKey).catch(() => undefined);
       toast({ title: t("toasts.readyTitle"), description: t("toasts.readyDescription"), type: "success" });
     },
@@ -94,7 +95,7 @@ export function ApiKeysPanel({
     onSuccess: async (result) => {
       setOneTimeKey(result.apiKey);
       setOneTimePermissions(cloneApiKeyPermissions(result.key.permissions));
-      queryClient.invalidateQueries({ queryKey: ["organization-api-keys", organizationId] });
+      void invalidateOrganizationSettings(queryClient, organizationId, ["apiKeys"]);
       await navigator.clipboard?.writeText(result.apiKey).catch(() => undefined);
       toast({ title: t("toasts.rotatedTitle"), description: t("toasts.rotatedDescription"), type: "success" });
     },
@@ -104,7 +105,7 @@ export function ApiKeysPanel({
   const revokeMutation = useMutation({
     mutationFn: (key: OrganizationApiKey) => revokeOrganizationApiKey(organizationId, key.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organization-api-keys", organizationId] });
+      void invalidateOrganizationSettings(queryClient, organizationId, ["apiKeys"]);
       toast({ title: t("toasts.revokedTitle"), description: t("toasts.revokedDescription"), type: "success" });
     },
     onError: (error) => toast({ title: t("toasts.failedTitle"), description: error.message, type: "error" }),

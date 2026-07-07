@@ -24,7 +24,7 @@ import type {
   McpConnectionPermission,
   OrganizationApiKeyPermission,
   OrganizationCapabilities,
-} from "./api/clerk-organization-api";
+} from "./api";
 
 const baseCapabilities: OrganizationCapabilities = {
   canReadOrganization: true,
@@ -70,7 +70,7 @@ const baseCapabilities: OrganizationCapabilities = {
 
 describe("organization settings permission view model", () => {
   it("keeps the primary organization tabs complete", () => {
-    expect(organizationSettingsTabs).toEqual(["profile", "members", "agentLinks", "apiKeys", "notifications", "billing"]);
+    expect(organizationSettingsTabs).toEqual(["profile", "members", "apiKeys", "notifications", "billing"]);
   });
 
   it("normalizes stale role tab URLs back to members", () => {
@@ -124,6 +124,7 @@ describe("organization settings permission view model", () => {
       { resource: "organization", actions: ["read"] },
       { resource: "client", actions: ["read", "create", "update"] },
       { resource: "project", actions: ["read", "update"] },
+      { resource: "space", actions: ["read", "update"] },
       { resource: "deal", actions: ["read", "create", "update"] },
       { resource: "calendar", actions: ["read", "create"] },
       { resource: "task", actions: ["read"] },

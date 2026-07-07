@@ -5,10 +5,10 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, Loader2, LogIn, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth, useClerk, useUser } from "@clerk/nextjs";
+import { authClient } from "@/lib/auth-client";
 import { writeAuthHandoff } from "@/domains/auth";
-import { acceptOrganizationInvitation, acceptOrganizationInviteLink } from "../api/clerk-organization-api";
-import type { OrganizationInvitationAcceptance, OrganizationInviteLink } from "../api/clerk-organization-api";
+import { acceptOrganizationInvitation, acceptOrganizationInviteLink } from "../api";
+import type { OrganizationInvitationAcceptance, OrganizationInviteLink } from "../api";
 
 function getAcceptedOrganizationId(result: OrganizationInviteLink | OrganizationInvitationAcceptance) {
   return (
@@ -23,16 +23,14 @@ export function AcceptInviteScreen() {
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isLoaded: authLoaded, isSignedIn } = useAuth();
-  const { isLoaded: userLoaded, user } = useUser();
-  const clerk = useClerk();
+  const { data: session, isPending: authPending } = authClient.useSession();
   const invitationId = searchParams.get("invitationId");
   const inviteToken = searchParams.get("inviteToken");
   const [status, setStatus] = useState<"idle" | "accepting" | "accepted" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const hasStartedAccepting = useRef(false);
   const [stabilized, setStabilized] = useState(false);
-  const isLoading = !authLoaded || !userLoaded;
+  const isLoading = authPending;
 
   useEffect(() => {
     if (isLoading) {
@@ -44,7 +42,7 @@ export function AcceptInviteScreen() {
   }, [isLoading]);
 
   useEffect(() => {
-    if ((!invitationId && !inviteToken) || isLoading || !stabilized || !isSignedIn || !user || hasStartedAccepting.current) return;
+    if ((!invitationId && !inviteToken) || isLoading || !stabilized || !session?.user || hasStartedAccepting.current) return;
 
     let cancelled = false;
     hasStartedAccepting.current = true;
@@ -64,7 +62,7 @@ export function AcceptInviteScreen() {
 
           if (organizationId) {
             try {
-              await clerk.setActive({ organization: organizationId });
+              await authClient.organization.setActive({ organizationId });
             } catch (setActiveError) {
               console.warn("[accept-invite] setActive failed, falling back to hard reload:", setActiveError);
             }
@@ -88,9 +86,9 @@ export function AcceptInviteScreen() {
     return () => {
       cancelled = true;
     };
-  }, [invitationId, inviteToken, locale, isSignedIn, user, isLoading, stabilized, clerk, t]);
+  }, [invitationId, inviteToken, locale, session, isLoading, stabilized, t]);
 
-  const isSignedOut = stabilized && !isSignedIn;
+  const isSignedOut = stabilized && !session?.user;
   const isMissingInvite = !invitationId && !inviteToken;
   const currentInvitePath = `/${locale}/accept-invite?${inviteToken ? `inviteToken=${encodeURIComponent(inviteToken)}` : `invitationId=${encodeURIComponent(invitationId ?? "")}`}`;
 

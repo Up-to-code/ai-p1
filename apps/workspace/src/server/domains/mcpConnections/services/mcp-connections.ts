@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
+import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/convex-auth";
 import type { CreateMcpConnectionPayload, UpdateMcpConnectionPayload } from "../validation/mcp-connection.schema";
 
 export function listMcpConnections(organizationId: string) {

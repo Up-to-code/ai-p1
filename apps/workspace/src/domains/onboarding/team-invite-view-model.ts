@@ -2,7 +2,7 @@ import type {
   OrganizationInvitation,
   OrganizationMember,
   OrganizationRole,
-} from "@/domains/organization/api/clerk-organization-api";
+} from "@/domains/organization/api";
 
 export type InviteEmailBlockReason = "current-user" | "member" | "pending-invite" | null;
 

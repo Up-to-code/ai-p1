@@ -1,7 +1,7 @@
 import type {
   McpPermissionResource,
   OrganizationCapabilities,
-} from "@/domains/organization/api/clerk-organization-api";
+} from "@/domains/organization/api";
 import type { ExpiryDuration } from "@/lib/utils/expiry-timestamp";
 
 /** React Query keys for topbar share data. */

@@ -1,11 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Search, ChevronDown, ChevronUp } from "lucide-react";
+import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { MCP_MODULES, MCP_ACTIONS, type QuickRoleId } from "./constants/quick-roles";
+import {
+  MCP_ACTIONS,
+  MCP_MODULES,
+  getQuickRolesByCategory,
+  type QuickRole,
+  type QuickRoleId,
+} from "./constants/quick-roles";
 
 export interface PermissionMatrixProps {
   permissions: Record<string, string[]>;
@@ -14,12 +19,6 @@ export interface PermissionMatrixProps {
   className?: string;
 }
 
-/**
- * MCP Permission Matrix Component
- * 
- * Displays permissions in a searchable list grouped by module with badge-based actions.
- * Replaces card-based UI with compact list rows for better readability and scan speed.
- */
 export function PermissionMatrix({ 
   permissions, 
   onPermissionToggle, 
@@ -27,7 +26,6 @@ export function PermissionMatrix({
   className 
 }: PermissionMatrixProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set(MCP_MODULES));
 
   const filteredModules = MCP_MODULES.filter((module) => {
     if (!searchQuery) return true;
@@ -41,112 +39,54 @@ export function PermissionMatrix({
     );
   });
 
-  const toggleModuleExpand = (module: string) => {
-    setExpandedModules((prev) => {
-      const next = new Set(prev);
-      if (next.has(module)) {
-        next.delete(module);
-      } else {
-        next.add(module);
-      }
-      return next;
-    });
-  };
-
-  const expandAll = () => setExpandedModules(new Set(MCP_MODULES));
-  const collapseAll = () => setExpandedModules(new Set());
-
   return (
-    <div className={cn("space-y-4", className)}>
-      {/* Search and Expand Controls */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className={cn("flex min-h-0 flex-col gap-3", className)}>
+      <div className="shrink-0">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search modules or permissions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 rounded-lg"
+            className="h-9 rounded-lg pl-9 text-sm"
           />
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={expandAll}
-            className="h-9 rounded-lg text-xs font-semibold"
-          >
-            Expand All
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={collapseAll}
-            className="h-9 rounded-lg text-xs font-semibold"
-          >
-            Collapse All
-          </Button>
         </div>
       </div>
 
-      {/* Permission Matrix */}
-      <div className="space-y-2">
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
         {filteredModules.map((module) => {
-          const isExpanded = expandedModules.has(module);
           const modulePermissions = permissions[module] || [];
           const hasPermissions = modulePermissions.length > 0;
 
           return (
             <div
               key={module}
-              className="rounded-lg border border-border bg-card overflow-hidden"
+              className="grid gap-2 border-b border-border py-3 last:border-b-0 md:grid-cols-[180px_minmax(0,1fr)] md:items-start"
             >
-              {/* Module Header */}
-              <button
-                type="button"
-                onClick={() => toggleModuleExpand(module)}
-                disabled={disabled}
-                className={cn(
-                  "w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted/50 transition-colors",
-                  disabled && "opacity-50 cursor-not-allowed"
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold capitalize text-foreground">
-                    {formatModuleName(module)}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold capitalize text-foreground">
+                  {formatModuleName(module)}
+                </span>
+                {hasPermissions && (
+                  <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                    {modulePermissions.length}
                   </span>
-                  {hasPermissions && (
-                    <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-                      {modulePermissions.length}
-                    </span>
-                  )}
-                </div>
-                {isExpanded ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
                 )}
-              </button>
-
-              {/* Permission Badges */}
-              {isExpanded && (
-                <div className="border-t border-border bg-muted/30 px-4 py-3">
-                  <div className="flex flex-wrap gap-2">
-                    {MCP_ACTIONS.map((action) => {
-                      const isEnabled = modulePermissions.includes(action);
-                      return (
-                        <PermissionBadge
-                          key={action}
-                          action={action}
-                          enabled={isEnabled}
-                          onClick={() => !disabled && onPermissionToggle(module, action)}
-                          disabled={disabled}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {MCP_ACTIONS.map((action) => {
+                  const isEnabled = modulePermissions.includes(action);
+                  return (
+                    <PermissionBadge
+                      key={action}
+                      action={action}
+                      enabled={isEnabled}
+                      onClick={() => !disabled && onPermissionToggle(module, action)}
+                      disabled={disabled}
+                    />
+                  );
+                })}
+              </div>
             </div>
           );
         })}
@@ -163,9 +103,6 @@ export function PermissionMatrix({
   );
 }
 
-/**
- * Individual Permission Badge Component
- */
 interface PermissionBadgeProps {
   action: string;
   enabled: boolean;
@@ -180,7 +117,7 @@ function PermissionBadge({ action, enabled, onClick, disabled }: PermissionBadge
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-all",
+        "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium transition-colors",
         "border",
         enabled
           ? "bg-primary border-primary text-primary-foreground hover:bg-primary/90"
@@ -188,15 +125,11 @@ function PermissionBadge({ action, enabled, onClick, disabled }: PermissionBadge
         disabled && "opacity-50 cursor-not-allowed hover:bg-background hover:text-muted-foreground"
       )}
     >
-      {enabled && <span className="h-1.5 w-1.5 rounded-full bg-current" />}
       {formatActionName(action)}
     </button>
   );
 }
 
-/**
- * Format module name for display
- */
 function formatModuleName(module: string): string {
   return module
     .split("_")
@@ -204,16 +137,10 @@ function formatModuleName(module: string): string {
     .join(" ");
 }
 
-/**
- * Format action name for display
- */
 function formatActionName(action: string): string {
   return action.charAt(0).toUpperCase() + action.slice(1);
 }
 
-/**
- * Quick Role Selector Component
- */
 export interface QuickRoleSelectorProps {
   selectedRole: QuickRoleId | null;
   onRoleSelect: (roleId: QuickRoleId) => void;
@@ -221,24 +148,22 @@ export interface QuickRoleSelectorProps {
 }
 
 export function QuickRoleSelector({ selectedRole, onRoleSelect, disabled }: QuickRoleSelectorProps) {
-  const { QUICK_ROLES, getQuickRolesByCategory } = require("./constants/quick-roles");
-  
   const basicRoles = getQuickRolesByCategory("basic");
   const operationalRoles = getQuickRolesByCategory("operational");
   const administrativeRoles = getQuickRolesByCategory("administrative");
 
   const RoleGroup = ({ 
     title, 
-    roles 
+    roles
   }: { 
     title: string; 
-    roles: typeof QUICK_ROLES[QuickRoleId][] 
+    roles: QuickRole[];
   }) => (
     <div className="space-y-2">
-      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
         {title}
       </p>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {roles.map((role) => (
           <button
             key={role.id}
@@ -246,16 +171,20 @@ export function QuickRoleSelector({ selectedRole, onRoleSelect, disabled }: Quic
             onClick={() => !disabled && onRoleSelect(role.id)}
             disabled={disabled}
             className={cn(
-              "flex flex-col items-start rounded-lg border p-3 text-left transition-all",
-              "hover:bg-muted",
+              "flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left transition-colors",
+              "hover:bg-muted/70",
               selectedRole === role.id
-                ? "border-primary bg-primary/5 ring-1 ring-primary"
+                ? "border-primary bg-primary/5 text-foreground"
                 : "border-border bg-card",
               disabled && "opacity-50 cursor-not-allowed"
             )}
           >
-            <span className="text-sm font-bold text-foreground">{role.name}</span>
-            <span className="text-xs text-muted-foreground line-clamp-2">{role.description}</span>
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-semibold text-foreground">{role.name}</span>
+            </span>
+            <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+              {Object.values(role.permissions).reduce((sum, actions) => sum + actions.length, 0)}
+            </span>
           </button>
         ))}
       </div>
@@ -263,7 +192,7 @@ export function QuickRoleSelector({ selectedRole, onRoleSelect, disabled }: Quic
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <RoleGroup title="Basic Access" roles={basicRoles} />
       <RoleGroup title="Operational Roles" roles={operationalRoles} />
       <RoleGroup title="Administrative Roles" roles={administrativeRoles} />

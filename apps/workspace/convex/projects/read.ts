@@ -14,7 +14,7 @@ import {
   workspaceSearchRows,
 } from "../workspace/readSurface";
 import { projectStats } from "../workspace/readStats";
-import { projectValidator } from "./validators";
+import { normalizeProjectVisibility, projectValidator } from "./validators";
 
 const MAX_LIST_ITEMS = 300;
 const MAX_SEARCH_SCAN_ITEMS = 500;
@@ -25,7 +25,7 @@ async function presentProject(ctx: QueryCtx, project: Doc<"projects">) {
   const clean = stripDeletedFields(project);
   return {
     ...presentWorkspaceRecord(clean),
-    visibility: project.visibility ?? "private",
+    visibility: normalizeProjectVisibility(project.visibility),
     coverImageUrl: selectCoverUrl(media),
   };
 }
@@ -35,7 +35,7 @@ async function presentProjectListItem(ctx: QueryCtx, project: Doc<"projects">) {
   const clean = stripDeletedFields(project);
   return {
     ...presentWorkspaceRecord(clean),
-    visibility: project.visibility ?? "private",
+    visibility: normalizeProjectVisibility(project.visibility),
     coverImageUrl: selectCoverUrl(media),
   };
 }

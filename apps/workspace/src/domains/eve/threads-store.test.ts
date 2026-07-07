@@ -55,11 +55,6 @@ describe("session encode/decode", () => {
   const sessionState = { continuationToken: "evetest", sessionId: "sess_123", streamIndex: 5 };
 
   it("encodeSession produces base64 JSON", () => {
-    const { encodeSession, decodeSession } = vi.importActual<{
-      encodeSession: (s: unknown) => string;
-      decodeSession: (s: string) => unknown;
-    }>("./use-eve-chat" as any).catch(() => ({}));
-
     // We can't directly import use-eve-chat hook in node (it uses next/navigation).
     // Instead test the round-trip directly.
     const encoded = btoa(JSON.stringify(sessionState));

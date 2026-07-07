@@ -34,6 +34,7 @@ export interface DealInput {
 export type ProjectStatus = "planned" | "active" | "paused" | "completed" | "archived";
 export type ProjectHealth = "onTrack" | "atRisk" | "blocked";
 export type Visibility = "private" | "team" | "workspace";
+export type ProjectVisibility = "private" | "space_members" | "organization";
 
 export interface ProjectInput {
   name: string;
@@ -41,7 +42,7 @@ export interface ProjectInput {
   opportunityId?: string;
   status: ProjectStatus;
   health: ProjectHealth;
-  visibility?: Visibility;
+  visibility?: ProjectVisibility;
   teamMemberIds?: string[];
   startDate?: string;
   endDate?: string;

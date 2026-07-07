@@ -17,7 +17,7 @@ export function createOrganizationRole(
   role: string,
   permission: Partial<Record<keyof OrganizationPermissionStatement, string[]>>,
 ) {
-  return workspaceMutation<{ role: { roleData: OrganizationRole } }>(
+  return workspaceMutation<{ role: OrganizationRole }>(
     organizationId,
     "roles",
     { method: "POST", body: { role, permission }, fallbackMessage: "Role could not be created." },
@@ -32,7 +32,7 @@ export function updateOrganizationRole(
     permission?: Partial<Record<keyof OrganizationPermissionStatement, string[]>>;
   },
 ) {
-  return workspaceMutation<{ role: { roleData: OrganizationRole } }>(
+  return workspaceMutation<{ role: OrganizationRole }>(
     organizationId,
     `roles/${roleId}`,
     { method: "PATCH", body: data, fallbackMessage: "Role could not be updated." },

@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { brandDomainUrl } from "@qentrah/brand-identity";
@@ -13,10 +12,10 @@ export default async function WorkspaceHome({
   let isAuthenticated = false;
 
   try {
-    const { userId } = await auth();
-    isAuthenticated = !!userId;
+    const cookieStore = await cookies();
+    isAuthenticated = cookieStore.has("better-auth.session_token");
   } catch {
-    isAuthenticated = (await cookies()).has("__session");
+    isAuthenticated = false;
   }
 
   if (isAuthenticated) {

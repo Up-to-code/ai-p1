@@ -1,5 +1,5 @@
 import { Building2, CalendarDays, CheckCircle2, FileText, Users, type LucideIcon } from "lucide-react";
-import type { OrganizationApiKeyAction, OrganizationApiKeyExpiry, OrganizationApiKeyResource } from "../api/clerk-organization-api";
+import type { OrganizationApiKeyAction, OrganizationApiKeyExpiry, OrganizationApiKeyResource } from "../api";
 
 export const apiKeyResourceDefinitions: Array<{
   resource: OrganizationApiKeyResource;

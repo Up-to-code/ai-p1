@@ -1,6 +1,6 @@
-export type ClerkSocialProvider = "google" | "apple";
+export type SocialProvider = "google" | "apple";
 
-export const clerkSocialProviderStrategies: Record<ClerkSocialProvider, `oauth_${string}`> = {
+export const socialProviderStrategies: Record<SocialProvider, `oauth_${string}`> = {
   apple: "oauth_apple",
   google: "oauth_google",
 };
@@ -33,7 +33,7 @@ export function assignExternalRedirect(url: string) {
   window.location.assign(url);
 }
 
-function clerkErrorText(error: unknown) {
+function authErrorText(error: unknown) {
   const candidate = error as {
     message?: string;
     errors?: Array<{ message?: string; longMessage?: string; code?: string }>;
@@ -47,7 +47,7 @@ export function localizedAuthError(
   fallback: string,
   t: (key: AuthErrorMessageKey) => string,
 ) {
-  const message = clerkErrorText(error);
+  const message = authErrorText(error);
   if (!message) return fallback;
   const normalized = message.toLowerCase();
 
@@ -62,7 +62,7 @@ export function localizedAuthError(
 }
 
 export function isAlreadySignedInError(error: unknown) {
-  const message = clerkErrorText(error)?.toLowerCase() ?? "";
+  const message = authErrorText(error)?.toLowerCase() ?? "";
   return message.includes("already signed in");
 }
 

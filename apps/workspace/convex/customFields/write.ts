@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 
 export const createFromHono = mutation({
@@ -57,7 +57,7 @@ export const createFromHono = mutation({
     order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
 
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
@@ -87,7 +87,7 @@ export const createFromHono = mutation({
         requiredOnCreate: false,
       },
       order: args.order ?? maxOrder + 1,
-      createdByUserId: user.id,
+      createdByUserId: user._id,
       createdAt: now,
       updatedAt: now,
     });
@@ -138,7 +138,7 @@ export const updateFromHono = mutation({
     order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
 
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
@@ -168,7 +168,7 @@ export const deleteFromHono = mutation({
     fieldId: v.id("customFieldDefinitions"),
   },
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
 
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
@@ -212,7 +212,7 @@ export const reorderFromHono = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
 
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");

@@ -2,10 +2,10 @@ import { v } from "convex/values";
 import { internalMutation, mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { presentWorkspaceRecord, stripDeletedFields } from "../shared/present";
-import { projectInputValidator, projectValidator } from "./validators";
+import { normalizeProjectVisibility, projectInputValidator, projectValidator } from "./validators";
 
 type ProjectInput = {
   name: string;
@@ -13,7 +13,7 @@ type ProjectInput = {
   opportunityId?: Id<"opportunities">;
   status: "planned" | "active" | "paused" | "completed" | "archived";
   health: "onTrack" | "atRisk" | "blocked";
-  visibility?: "private" | "space_members" | "organization" | "workspace" | "team";
+  visibility?: "private" | "space_members" | "organization";
   teamMemberIds?: string[];
   startDate?: string;
   endDate?: string;
@@ -32,7 +32,7 @@ function presentProject(project: Doc<"projects">) {
   const clean = stripDeletedFields(project);
   return {
     ...presentWorkspaceRecord(clean),
-    visibility: project.visibility ?? "private",
+    visibility: normalizeProjectVisibility(project.visibility),
     coverImageUrl: undefined,
   };
 }
@@ -43,7 +43,7 @@ async function createProjectCore(ctx: MutationCtx, args: { organizationId: strin
     organizationId: args.organizationId,
     ...args.input,
     ownerUserId: args.actorUserId,
-    visibility: args.input.visibility ?? "private",
+    visibility: normalizeProjectVisibility(args.input.visibility),
     isDeleted: false,
     createdByUserId: args.actorUserId,
     createdAt: now,
@@ -61,7 +61,7 @@ async function updateProjectCore(ctx: MutationCtx, args: { organizationId: strin
     throw new Error("Project was not found.");
   }
 
-  const nextVisibility = args.input.visibility ?? (existing.visibility ?? "private");
+  const nextVisibility = normalizeProjectVisibility(args.input.visibility ?? existing.visibility);
   const now = Date.now();
   await ctx.db.patch(args.projectId, {
     ...args.input,
@@ -91,7 +91,7 @@ export const createFromHono = mutation({
   },
   returns: projectValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "create");
     const { presented, now } = await createProjectCore(ctx, {
       organizationId: args.organizationId,
@@ -118,7 +118,7 @@ export const updateFromHono = mutation({
   },
   returns: projectValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "update");
     const { presented, now } = await updateProjectCore(ctx, {
       organizationId: args.organizationId,
@@ -145,7 +145,7 @@ export const deleteFromHono = mutation({
   },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "delete");
     const { now, name } = await deleteProjectCore(ctx, {
       organizationId: args.organizationId,

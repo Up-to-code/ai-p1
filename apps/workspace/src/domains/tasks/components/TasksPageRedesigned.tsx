@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useTranslations } from "next-intl";
 import { Plus, ListTodo, Search } from "lucide-react";
-import { QentrahTable, type QentrahColumnDef } from "@qentrah/ui";
 import { DomainHeader, type HeaderAction } from "@/components/shared/domain/DomainHeader";
-import { type ViewMode } from "@/components/shared/view-system/ViewSwitcher";
+import { ViewSwitcherTabs, useViewTabs, ViewTabsContent } from "@/components/shared/view-system";
+import type { ViewItem } from "@/components/shared/view-system/types";
 import { ViewLoading } from "@/components/shared/loading/ViewLoading";
 import { EmptyWorkspace, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useAuthSession } from "@/domains/auth";
@@ -15,12 +15,24 @@ import { useNavigation } from "@/domains/navigation";
 import { useTasksQuery } from "../api/tasks";
 import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
 import type { TaskRecord, TaskStatus } from "../tasks.types";
-import { cn } from "@/lib/utils";
 import { ownershipFilters, type OwnershipFilter, emptyTask } from "../tasks.constants";
 import { TaskFilterDropdown } from "./task-filter-dropdown";
-import { PipelineBoard } from "@qentrah/our-platform-components/pipeline";
+import { TaskViewFrame } from "./views/task-view-frame";
 import { taskLog } from "../task-log";
 import { createTaskRequest } from "../api/tasks";
+
+const DEFAULT_TABS: ViewItem[] = [
+  { id: "default-board", type: "board", label: "Board" },
+  { id: "default-table", type: "table", label: "Table" },
+];
+
+const STAGES = [
+  { key: 'todo', name: 'To Do', color: '#6b7280', order: 0 },
+  { key: 'inProgress', name: 'In Progress', color: '#3b82f6', order: 1 },
+  { key: 'waiting', name: 'Waiting', color: '#f59e0b', order: 2 },
+  { key: 'done', name: 'Done', color: '#22c55e', order: 3 },
+  { key: 'canceled', name: 'Canceled', color: '#ef4444', order: 4 },
+];
 
 export function TasksPageRedesigned({
   projectId: projectIdProp,
@@ -28,7 +40,6 @@ export function TasksPageRedesigned({
   const t = useTranslations("Tasks");
   const common = useTranslations("Common");
   const session = useAuthSession();
-  const [activeView, setActiveView] = useState<ViewMode>('board');
   const [search, setSearch] = useState("");
   const [ownership, setOwnership] = useState<OwnershipFilter>("all");
   const [projectFilter, setProjectFilter] = useState<string>("");
@@ -59,123 +70,53 @@ export function TasksPageRedesigned({
   const { applyOptimistic, moveTask: moveTaskFromHook } = useTaskMutations(organizationId ?? "");
   const tasks = applyOptimistic(rawTasks);
 
-  const filteredTasks = tasks.filter((task) => {
-    if (task._deleted) return false;
-    const needle = search.trim().toLowerCase();
-    if (
-      needle &&
-      ![
-        task.title,
-        task.description,
-        task.assigneeUserId,
-        ...(task.tags ?? []),
-      ].some((v) => v?.toLowerCase().includes(needle))
-    )
-      return false;
-    if (ownership === "assignedToMe")
-      return task.assigneeUserId === session.user.id;
-    if (ownership === "sentByMe")
-      return task.createdByUserId === session.user.id;
-    return true;
-  });
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((task) => {
+      if (task._deleted) return false;
+      const needle = search.trim().toLowerCase();
+      if (
+        needle &&
+        ![
+          task.title,
+          task.description,
+          task.assigneeUserId,
+          ...(task.tags ?? []),
+        ].some((v) => v?.toLowerCase().includes(needle))
+      )
+        return false;
+      if (ownership === "assignedToMe")
+        return task.assigneeUserId === session.user.id;
+      if (ownership === "sentByMe")
+        return task.createdByUserId === session.user.id;
+      return true;
+    });
+  }, [tasks, search, ownership, session.user.id]);
 
-  // Transform tasks to PipelineBoard format
-  const stages = [
-    {
-      key: 'todo',
-      name: t("statuses.todo"),
-      color: '#6b7280',
-      order: 0,
-    },
-    {
-      key: 'inProgress',
-      name: t("statuses.inProgress"),
-      color: '#3b82f6',
-      order: 1,
-    },
-    {
-      key: 'waiting',
-      name: t("statuses.waiting"),
-      color: '#f59e0b',
-      order: 2,
-    },
-    {
-      key: 'done',
-      name: t("statuses.done"),
-      color: '#22c55e',
-      order: 3,
-    },
-    {
-      key: 'canceled',
-      name: 'Canceled',
-      color: '#ef4444',
-      order: 4,
-    },
-  ];
+  const tasksScope = projectId ? `project:${projectId}:tasks` : "tasks:global";
 
-  const items = filteredTasks.map(task => ({
-    id: task.id,
-    stageKey: task.status,
-    title: task.title,
-    subtitle: task.description,
-    badge: task.priority,
-    badgeColor: task.priority === 'urgent' ? '#ef4444' : task.priority === 'high' ? '#f59e0b' : task.priority === 'normal' ? '#3b82f6' : '#6b7280',
-    data: {
-      priority: task.priority,
-      assigneeUserId: task.assigneeUserId,
-      dueDate: task.dueDate,
-    },
-  }));
+  const {
+    tabs,
+    activeTabId,
+    mountedTabIds,
+    setActiveTab,
+    addTab,
+    removeTab,
+    reorderTabs,
+    renameTab,
+    isLoaded,
+  } = useViewTabs({ scope: tasksScope, defaultTabs: DEFAULT_TABS });
 
-  const columns: QentrahColumnDef<TaskRecord>[] = [
-    {
-      headerName: "Task",
-      field: "title",
-      flex: 1.5,
-      minWidth: 200,
-      cellRenderer: (p: any) => {
-        return (
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-foreground">{p.data?.title}</p>
-            {p.data?.description && (
-              <p className="mt-1 truncate text-xs text-muted-foreground">{p.data.description}</p>
-            )}
-          </div>
-        );
-      },
+  const handleCardMove = useCallback(
+    (itemId: string, fromStage: string, toStage: string, targetIndex: number) => {
+      if (!organizationId) return;
+      const task = tasks.find((t) => t.id === itemId);
+      if (!task) return;
+      const newStatus = toStage as TaskStatus;
+      const statusTasks = tasks.filter((candidate) => candidate.status === newStatus);
+      moveTaskFromHook(task, newStatus, statusTasks, targetIndex);
     },
-    {
-      headerName: "Status",
-      field: "status",
-      width: 120,
-      valueFormatter: (p: any) => {
-        const statusMap: Record<TaskStatus, string> = {
-          todo: t("statuses.todo"),
-          inProgress: t("statuses.inProgress"),
-          waiting: t("statuses.waiting"),
-          done: t("statuses.done"),
-          canceled: 'Canceled',
-        };
-        const status = p.value as TaskStatus;
-        return statusMap[status] || status;
-      },
-    },
-    {
-      headerName: "Priority",
-      field: "priority",
-      width: 100,
-      valueFormatter: (p: any) => p.value || "—",
-    },
-    {
-      headerName: "Due Date",
-      field: "dueDate",
-      width: 120,
-      valueFormatter: (p: any) => {
-        if (!p.value) return "—";
-        return new Date(p.value).toLocaleDateString();
-      },
-    },
-  ];
+    [organizationId, tasks, moveTaskFromHook],
+  );
 
   const actions: HeaderAction[] = [
     {
@@ -193,66 +134,27 @@ export function TasksPageRedesigned({
     },
   ];
 
-  const availableViews: ViewMode[] = ['table', 'board', 'calendar', 'timeline', 'dashboard', 'widgets'];
+  const sectionLabel = isLoaded
+    ? `${filteredTasks.length} task${filteredTasks.length !== 1 ? "s" : ""}`
+    : "Loading...";
 
-  const handleCardMove = (itemId: string, fromStage: string, toStage: string, targetIndex: number) => {
-    if (!organizationId) return;
-    const task = tasks.find((t) => t.id === itemId);
-    if (!task) return;
-    
-    const newStatus = toStage as TaskStatus;
-    const statusTasks = tasks.filter((candidate) => candidate.status === newStatus);
-    moveTaskFromHook(task, newStatus, statusTasks, targetIndex);
-  };
-
-  if (workspaceStatus !== "ready") {
-    return (
-      <div className="flex flex-col h-full">
-        <DomainHeader
-          domain="Tasks"
-          currentSection="All Tasks"
-          actions={actions}
-          availableViews={availableViews}
-          activeView={activeView}
-          onViewChange={setActiveView}
-        />
-        <div className="flex-1 flex items-center justify-center">
-          <WorkspaceQueryState status={workspaceStatus} variant="table" />
-        </div>
-      </div>
-    );
-  }
-
-  if (filteredTasks.length === 0) {
-    return (
-      <div className="flex flex-col h-full">
-        <DomainHeader
-          domain="Tasks"
-          currentSection="All Tasks"
-          actions={actions}
-          availableViews={availableViews}
-          activeView={activeView}
-          onViewChange={setActiveView}
-        />
-        <div className="flex-1 flex items-center justify-center">
-          <EmptyWorkspace icon={ListTodo} title={t("empty.title")} description={t("empty.description")} />
-        </div>
-      </div>
-    );
-  }
-
-  return (
+  const workspaceContent = (
     <div className="flex flex-col h-full">
       <DomainHeader
         domain="Tasks"
-        currentSection={`${filteredTasks.length} task${filteredTasks.length !== 1 ? "s" : ""}`}
+        currentSection={sectionLabel}
         actions={actions}
-        availableViews={availableViews}
-        activeView={activeView}
-        onViewChange={setActiveView}
+        showViewSwitcher={false}
       />
-
-      {/* Toolbar with search and filters */}
+      <ViewSwitcherTabs
+        views={tabs}
+        activeViewId={activeTabId}
+        onViewChange={setActiveTab}
+        onReorder={reorderTabs}
+        onAddView={addTab}
+        onRemoveView={removeTab}
+        onRenameTab={renameTab}
+      />
       <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border bg-background/80 backdrop-blur-xl px-6 h-12">
         <div className="flex items-center gap-2">
           <div className="flex h-8 items-center gap-2 rounded-lg border border-border bg-card px-3 focus-within:ring-2 focus-within:ring-ring/20">
@@ -290,64 +192,64 @@ export function TasksPageRedesigned({
           )}
         </div>
       </div>
-
-      {/* View content */}
       <div className="flex-1 overflow-hidden">
-        {activeView === 'table' && (
-          <div className="h-full p-6">
-            <div className="rounded-xl border border-border bg-card overflow-hidden h-full">
-              <QentrahTable
-                rows={filteredTasks}
-                columns={columns}
-                density="compact"
-                height="100%"
-                rowSelection="single"
-                getRowId={(row) => row.id}
-              />
-            </div>
-          </div>
-        )}
-
-        {activeView === 'board' && (
-          <div className="h-full p-6">
-            <PipelineBoard
-              items={items}
-              stages={stages}
+        <ViewTabsContent
+          tabs={tabs}
+          activeTabId={activeTabId}
+          mountedTabIds={mountedTabIds}
+          renderTab={(tab) => (
+            <TaskViewFrame
+              tab={tab}
+              tasks={filteredTasks}
+              stages={STAGES}
               onCardMove={handleCardMove}
-              showBarColor
-              renderEmpty={(stage) => (
-                <div className="text-center py-8 text-[11px] text-muted-foreground/40 font-bold">
-                  No tasks
-                </div>
-              )}
             />
-          </div>
-        )}
-
-        {activeView === 'calendar' && (
-          <div className="h-full p-6">
-            <ViewLoading style="calendar" message="Calendar view coming soon" />
-          </div>
-        )}
-
-        {activeView === 'timeline' && (
-          <div className="h-full p-6">
-            <ViewLoading style="table" message="Timeline view coming soon" />
-          </div>
-        )}
-
-        {activeView === 'dashboard' && (
-          <div className="h-full p-6">
-            <ViewLoading style="skeleton" message="Dashboard view coming soon" />
-          </div>
-        )}
-
-        {activeView === 'widgets' && (
-          <div className="h-full p-6">
-            <ViewLoading style="skeleton" message="Widgets view coming soon" />
-          </div>
-        )}
+          )}
+        />
       </div>
     </div>
   );
+
+  if (workspaceStatus !== "ready") {
+    return (
+      <div className="flex flex-col h-full">
+        <DomainHeader
+          domain="Tasks"
+          currentSection="All Tasks"
+          actions={actions}
+          showViewSwitcher={false}
+        />
+        <div className="flex-1 flex items-center justify-center">
+          <WorkspaceQueryState status={workspaceStatus} variant="table" />
+        </div>
+      </div>
+    );
+  }
+
+  if (filteredTasks.length === 0) {
+    return (
+      <div className="flex flex-col h-full">
+        <DomainHeader
+          domain="Tasks"
+          currentSection="All Tasks"
+          actions={actions}
+          showViewSwitcher={false}
+        />
+        <ViewSwitcherTabs
+          views={tabs}
+          activeViewId={activeTabId}
+          onViewChange={setActiveTab}
+          onReorder={reorderTabs}
+          onAddView={addTab}
+          onRemoveView={removeTab}
+          onRenameTab={renameTab}
+        />
+        <div className="flex-1 flex items-center justify-center">
+          <EmptyWorkspace icon={ListTodo} title={t("empty.title")} description={t("empty.description")} />
+        </div>
+      </div>
+    );
+  }
+
+  return workspaceContent;
 }

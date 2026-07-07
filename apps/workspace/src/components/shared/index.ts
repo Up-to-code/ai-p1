@@ -51,3 +51,8 @@ export { parseFollowUpActions } from "./message-suggestions/parse-follow-up-acti
 export type { FollowUpAction, ParsedFollowUpActions } from "./message-suggestions/parse-follow-up-actions";
 export { PlanCard } from "./plan-card";
 export type { PlanCardProps } from "./plan-card";
+export {
+  AiConversationThread,
+  type AiConversationMessage,
+  type AiConversationThreadProps,
+} from "./ai-chat";

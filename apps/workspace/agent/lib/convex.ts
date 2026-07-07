@@ -8,7 +8,7 @@ type OptionalArgs<FuncRef extends FunctionReference<"query" | "mutation" | "acti
     ? [args?: FuncRef["_args"]]
     : [args: FuncRef["_args"]];
 
-function clerkArgs<FuncRef extends FunctionReference<"query" | "mutation" | "action">>(
+function authArgs<FuncRef extends FunctionReference<"query" | "mutation" | "action">>(
   args: OptionalArgs<FuncRef>,
   token: string | null,
 ): ArgsAndOptions<FuncRef, { token?: string }> {
@@ -30,7 +30,7 @@ export async function fetchAuthQuery<Query extends FunctionReference<"query">>(
   ...args: OptionalArgs<Query>
 ): Promise<FunctionReturnType<Query>> {
   const token = getTokenFromContext(ctx);
-  return fetchQuery(query, ...clerkArgs<Query>(args, token));
+  return fetchQuery(query, ...authArgs<Query>(args, token));
 }
 
 export async function fetchAuthMutation<Mutation extends FunctionReference<"mutation">>(
@@ -39,5 +39,5 @@ export async function fetchAuthMutation<Mutation extends FunctionReference<"muta
   ...args: OptionalArgs<Mutation>
 ): Promise<FunctionReturnType<Mutation>> {
   const token = getTokenFromContext(ctx);
-  return fetchMutation(mutation, ...clerkArgs<Mutation>(args, token));
+  return fetchMutation(mutation, ...authArgs<Mutation>(args, token));
 }

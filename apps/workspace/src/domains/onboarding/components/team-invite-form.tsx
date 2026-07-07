@@ -19,7 +19,7 @@ import {
   type OrganizationInvitation,
   type OrganizationMember,
   type OrganizationRole,
-} from "@/domains/organization/api/clerk-organization-api";
+} from "@/domains/organization/api";
 import { formatRoleName } from "@/domains/organization/settings-view-model";
 import { UserPlus, Trash2, HelpCircle, Loader2 } from "lucide-react";
 import { teamInviteSchema, type TeamInviteInput } from "../validation/onboarding.schema";

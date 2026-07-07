@@ -77,7 +77,7 @@ export function ProjectDetailLayout({ projectId }: { projectId: string }) {
       opportunityId: project.opportunityId ?? "",
       status: project.status,
       health: project.health,
-      visibility: project.visibility ?? "team",
+      visibility: project.visibility ?? "space_members",
       startDate: project.startDate ?? "",
       endDate: project.endDate ?? "",
       budget: project.budget != null ? String(project.budget) : "",

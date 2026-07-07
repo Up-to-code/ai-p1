@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { NavigationProgress } from "@/components/layout/navigation-progress";
 import { Analytics } from "@vercel/analytics/next";
 
+import "@svar-ui/react-calendar/all.css";
 import "./globals.css";
 
 const cairo = Cairo({

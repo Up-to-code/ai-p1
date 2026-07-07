@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { requireOrgId } from "../../../lib/org-context";
 import { requireOrganizationAction, recordOrganizationAction } from "../../../lib/action-workflow";
-import { createOrganizationInvitation, listOrganizationRoles } from "../../../lib/clerk-org";
+import { createOrganizationInvitation, listOrganizationRoles } from "../../../lib/better-auth-org";
 import { assertAssignableRole } from "../../../lib/access-policy";
 
 export default defineTool({
@@ -14,9 +14,9 @@ export default defineTool({
   async execute(args, ctx) {
     const organizationId = requireOrgId(ctx);
     await requireOrganizationAction(ctx, organizationId, "member", "create");
-    const roles = await listOrganizationRoles(organizationId);
+    const roles = await listOrganizationRoles(ctx, organizationId);
     assertAssignableRole(args.role, roles);
-    const result = await createOrganizationInvitation(organizationId, {
+    const result = await createOrganizationInvitation(ctx, organizationId, {
       emailAddress: args.email,
       role: args.role,
     });

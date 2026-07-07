@@ -1,8 +1,8 @@
 import { eveChannel } from "eve/channels/eve";
-import { clerkAuth } from "../auth/clerk-auth";
+import { betterAuth } from "../lib/better-auth-channel";
 
 export default eveChannel({
-  auth: [clerkAuth],
+  auth: [betterAuth],
   cors: {
     origin: process.env.APP_URL ?? "*",
     methods: ["GET", "POST"],

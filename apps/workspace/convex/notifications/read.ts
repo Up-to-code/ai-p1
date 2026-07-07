@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import {
   defaultPreference,
   getPreference,
@@ -20,7 +20,7 @@ export const getMyStatus = query({
     hasActiveDevice: v.boolean(),
   }),
   handler: async (ctx) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     const devices = await ctx.db
       .query("notificationDevices")
       .withIndex("by_user_id", (q) => q.eq("userId", user._id))
@@ -37,7 +37,7 @@ export const getMyPreferences = query({
   args: { organizationId: v.string() },
   returns: notificationPreferenceSurfaceValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     return await getPreference(ctx, args.organizationId, userPrincipalKey(user._id))
       ?? defaultPreference({
         organizationId: args.organizationId,
@@ -51,7 +51,7 @@ export const getOrganizationPreferences = query({
   args: { organizationId: v.string() },
   returns: notificationPreferenceSurfaceValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     return await getPreference(ctx, args.organizationId, organizationPrincipalKey())
       ?? defaultPreference({
         organizationId: args.organizationId,
@@ -67,7 +67,7 @@ export const listMySchedules = query({
   },
   returns: v.array(notificationScheduleValidator),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     return await ctx.db
       .query("notificationSchedules")
       .withIndex("by_organization_owner", (q) => q.eq("organizationId", args.organizationId).eq("ownerUserId", user._id))

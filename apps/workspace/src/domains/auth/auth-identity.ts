@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { useAuth, useUser } from "@clerk/nextjs";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
+import { authClient } from "@/lib/auth-client";
 import {
   accountInitials,
   defaultAccountNotifications,
@@ -37,41 +37,39 @@ export interface AuthIdentity {
 }
 
 export function useAuthIdentity(): AuthIdentity {
-  const auth = useAuth();
-  const userQuery = useUser();
+  const { data: session, isPending: sessionPending } = authClient.useSession();
   const convexAuth = useConvexAuth();
   const userProfile = useQuery(api.userProfiles.read.getCurrent, convexAuth.isAuthenticated ? {} : "skip");
 
-  const isSessionPending = !auth.isLoaded || !userQuery.isLoaded;
+  const isSessionPending = sessionPending;
   const isConvexAuthenticated = convexAuth.isAuthenticated;
-  const isConvexAuthPending = !convexAuth.isLoading && auth.isSignedIn ? false : convexAuth.isLoading;
+  const isConvexAuthPending = !convexAuth.isLoading && session?.user ? false : convexAuth.isLoading;
 
   const sessionStatus = useMemo(() => {
     if (isSessionPending) return "loading";
-    if (!auth.isSignedIn) return "unauthenticated";
+    if (!session?.user) return "unauthenticated";
     if (isConvexAuthenticated) return "authenticated";
     return "loading";
-  }, [isSessionPending, auth.isSignedIn, isConvexAuthenticated]);
+  }, [isSessionPending, session?.user, isConvexAuthenticated]);
 
   return useMemo(() => {
-    const clerkUser = userQuery.user;
+    const authUser = session?.user;
     const userName =
       userProfile?.name?.trim() ||
-      clerkUser?.fullName?.trim() ||
-      clerkUser?.username?.trim() ||
-      clerkUser?.primaryEmailAddress?.emailAddress ||
+      authUser?.name?.trim() ||
+      authUser?.email ||
       "Workspace user";
-    const userEmail = clerkUser?.primaryEmailAddress?.emailAddress ?? "";
+    const userEmail = authUser?.email ?? "";
 
     return {
       status: sessionStatus,
       isPending: isSessionPending,
-      isSignedIn: Boolean(auth.isSignedIn),
+      isSignedIn: Boolean(session?.user),
       user: {
-        id: auth.userId ?? clerkUser?.id ?? "",
+        id: authUser?.id ?? "",
         name: userName,
         email: userEmail,
-        image: userProfile?.avatarUrl ?? clerkUser?.imageUrl ?? null,
+        image: userProfile?.avatarUrl ?? authUser?.image ?? null,
         initials: accountInitials(userName),
         profile: {
           phone: userProfile?.phone ?? "",
@@ -85,15 +83,10 @@ export function useAuthIdentity(): AuthIdentity {
   }, [
     sessionStatus,
     isSessionPending,
-    auth.isLoaded,
-    auth.isSignedIn,
-    auth.userId,
-    userQuery.isLoaded,
-    userQuery.user?.id,
-    userQuery.user?.fullName,
-    userQuery.user?.username,
-    userQuery.user?.primaryEmailAddress?.emailAddress,
-    userQuery.user?.imageUrl,
+    session?.user?.id,
+    session?.user?.name,
+    session?.user?.email,
+    session?.user?.image,
     userProfile?.name,
     userProfile?.avatarUrl,
     userProfile?.phone,

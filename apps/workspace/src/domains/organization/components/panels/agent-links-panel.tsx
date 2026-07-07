@@ -25,7 +25,7 @@ import {
   type OrganizationApiKeyExpiry,
   type OrganizationMcpConnection,
   type OrganizationMember,
-} from "../../api/clerk-organization-api";
+} from "../../api";
 import { apiKeyExpiryOptions } from "../../config/api-key.config";
 import {
   agentConnectionProjection,
@@ -38,6 +38,7 @@ import {
   memberName,
   toggleAgentPermission,
 } from "../../settings-view-model";
+import { invalidateOrganizationSettings, organizationSettingsKeys } from "../../settings-cache";
 import { EmptyState, LoadingCardGrid, Section } from "../shared";
 
 const agentPermissionAreas: Array<{
@@ -128,7 +129,7 @@ export function AgentLinksPanel({
   const memberByUserId = new Map(members.map((member) => [member.userId, member]));
 
   const query = useQuery({
-    queryKey: ["organization-mcp-connections", organizationId],
+    queryKey: organizationSettingsKeys.mcpConnections(organizationId),
     queryFn: () => listOrganizationMcpConnections(organizationId),
     enabled: Boolean(organizationId && canRead),
   });
@@ -144,7 +145,7 @@ export function AgentLinksPanel({
     onSuccess: async (result) => {
       setOneTimeLink(result.agentLink);
       setOneTimePermissions(cloneAgentPermissions(selectedGrantablePermissions));
-      queryClient.invalidateQueries({ queryKey: ["organization-mcp-connections", organizationId] });
+      void invalidateOrganizationSettings(queryClient, organizationId, ["mcpConnections"]);
       await navigator.clipboard?.writeText(result.agentLink).catch(() => undefined);
       toast({ title: t("toasts.readyTitle"), description: t("toasts.readyDescription"), type: "success" });
     },
@@ -159,7 +160,7 @@ export function AgentLinksPanel({
     onSuccess: () => {
       setEditingConnection(null);
       setDialogOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["organization-mcp-connections", organizationId] });
+      void invalidateOrganizationSettings(queryClient, organizationId, ["mcpConnections"]);
       toast({ title: t("toasts.updatedTitle"), description: t("toasts.updatedDescription"), type: "success" });
     },
     onError: (error) => toast({ title: t("toasts.failedTitle"), description: error.message, type: "error" }),
@@ -168,7 +169,7 @@ export function AgentLinksPanel({
   const revokeMutation = useMutation({
     mutationFn: (connection: OrganizationMcpConnection) => revokeOrganizationMcpConnection(organizationId, connection.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organization-mcp-connections", organizationId] });
+      void invalidateOrganizationSettings(queryClient, organizationId, ["mcpConnections"]);
       toast({ title: t("toasts.revokedTitle"), description: t("toasts.revokedDescription"), type: "success" });
     },
     onError: (error) => toast({ title: t("toasts.failedTitle"), description: error.message, type: "error" }),
@@ -180,7 +181,7 @@ export function AgentLinksPanel({
       setOneTimeLink(result.agentLink);
       setOneTimePermissions(cloneAgentPermissions(result.connection.permissions));
       setDialogOpen(true);
-      queryClient.invalidateQueries({ queryKey: ["organization-mcp-connections", organizationId] });
+      void invalidateOrganizationSettings(queryClient, organizationId, ["mcpConnections"]);
       await navigator.clipboard?.writeText(result.agentLink).catch(() => undefined);
       toast({ title: t("toasts.rotatedTitle"), description: t("toasts.rotatedDescription"), type: "success" });
     },

@@ -1397,7 +1397,7 @@
       "passwordNotEnabled": "Email and password sign-in is not enabled for this workspace.",
       "signInFailed": "Could not sign in. Check your email and password, then try again.",
       "signUpFailed": "Could not create your account. Review the fields and try again.",
-      "socialProviderNotEnabled": "This social sign-in provider is not enabled in Clerk. Enable the provider, then try again.",
+      "socialProviderNotEnabled": "This social sign-in provider is not enabled for this app. Enable the provider, then try again.",
       "socialStartFailed": "Could not start social sign-in. Try again or use email.",
       "unsupportedStep": "This account needs an authentication step that is not supported here yet.",
       "verificationIncomplete": "Verification is not complete. Check the code and try again.",
@@ -2539,6 +2539,8 @@
       "createTitle": "Create custom work role",
       "editTitle": "Edit work role",
       "createDesc": "Choose the work this person can do. The app saves your selections as backend access rules.",
+      "modelPreview": "Model preview",
+      "modelPreviewDesc": "Custom permission modeling is visible here, but custom role writes are paused until the Better Auth role storage is enabled. Built-in owner, admin, and member permissions are active.",
       "name": "Work role name",
       "namePlaceholder": "project-manager",
       "nameHint": "Use a simple job name. It will be saved as a lowercase system name.",
@@ -4172,6 +4174,54 @@
     "organizationRequiredDesc": "Onboarding runs inside an active organization. Create a workspace or select one before continuing.",
     "chooseOrganization": "Create or select workspace",
     "signIn": "Sign in",
+    "quick": {
+      "close": "Close onboarding",
+      "back": "Back",
+      "next": "Next",
+      "finish": "Finish",
+      "invalidEmail": "Enter a valid email address.",
+      "finishError": "Workspace setup could not be completed.",
+      "purposeTitle": "What will you use this Workspace for?",
+      "manageTitle": "What would you like to manage?",
+      "inviteTitle": "Invite people to your Workspace:",
+      "featuresTitle": "Which features are you interested in trying?",
+      "nameTitle": "Lastly, what would you like to name your Workspace?",
+      "invitePlaceholder": "name@company.com",
+      "inviteHint": "Don't do it alone — invite your team to get started faster.",
+      "inviteEnter": "Press ENTER to add",
+      "nameHint": "Try the name of your company or organization.",
+      "purpose": {
+        "work": "Work",
+        "personal": "Personal",
+        "school": "School"
+      },
+      "manage": {
+        "it": "IT",
+        "marketing": "Marketing",
+        "hr": "HR & Recruiting",
+        "software": "Software Development",
+        "pmo": "PMO",
+        "services": "Professional Services",
+        "startup": "Startup",
+        "finance": "Finance & Accounting",
+        "sales": "Sales & CRM",
+        "support": "Support",
+        "operations": "Operations",
+        "creative": "Creative & Design",
+        "other": "Other"
+      },
+      "features": {
+        "tasks": "Tasks & Projects",
+        "crm": "CRM",
+        "calendar": "Calendar",
+        "time": "Time Tracking",
+        "ai": "AI",
+        "dashboards": "Dashboards",
+        "goals": "Goals & OKRs",
+        "boards": "Boards & Kanban",
+        "chat": "Chat"
+      }
+    },
     "stepper": {
       "company": "Company Information",
       "legal": "Legal Documentation",
@@ -4281,13 +4331,29 @@
     "createNamePlaceholder": "e.g. Acme Workspace",
     "createBtn": "Start Setup",
     "creating": "Creating...",
+    "back": "Back",
+    "next": "Next",
+    "preview": "Preview",
+    "profileLabel": "What will this organization manage?",
+    "profilePlaceholder": "e.g. Product, client operations, marketing, internal work",
+    "profileHint": "This helps prepare the next onboarding steps. You can change it later.",
+    "previewTitle": "Workspace preview",
+    "steps": {
+      "name": "Name",
+      "profile": "Profile",
+      "preview": "Preview"
+    },
+    "journeyTitle": "Setup journey",
+    "journeyCreate": "Create your organization record",
+    "journeyActivate": "Make it the active workspace",
+    "journeyOnboarding": "Continue to onboarding",
     "existingTitle": "Organizations",
     "nameRequired": "Enter an organization name first.",
     "inviteRequired": "Paste an invite link or token first.",
     "errorTitle": "Organization setup failed",
     "errorDesc": "Could not complete this organization action.",
-    "organizationsDisabled": "Clerk Organizations are not enabled for this instance. Enable Organizations in the Clerk Dashboard, then create the workspace again.",
-    "slugsDisabled": "Organization slugs are disabled in Clerk. The workspace will be created without a custom slug."
+    "organizationsDisabled": "Organizations are not enabled for this instance. Enable organizations in Better Auth, then create the workspace again.",
+    "slugsDisabled": "Organization slugs are disabled in Better Auth. The workspace will be created without a custom slug."
   },
   "NoOrganizationModal": {
     "title": "Create your workspace",
@@ -4301,8 +4367,8 @@
     "invitationDesc": "Ask your organization admin to send you an invite link. Once you accept, you will automatically join their workspace.",
     "nameRequired": "Enter an organization name first.",
     "errorDesc": "Could not create the organization.",
-    "organizationsDisabled": "Clerk Organizations are not enabled for this instance. Enable Organizations in the Clerk Dashboard, then try again.",
-    "slugsDisabled": "Organization slugs are disabled in Clerk. The workspace will be created without a custom slug."
+    "organizationsDisabled": "Organizations are not enabled for this instance. Enable organizations in Better Auth, then try again.",
+    "slugsDisabled": "Organization slugs are disabled in Better Auth. The workspace will be created without a custom slug."
   },
   "Widgets": {
     "taskTable": {

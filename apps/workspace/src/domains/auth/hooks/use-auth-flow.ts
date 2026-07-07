@@ -1,0 +1,140 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "@/i18n/routing";
+import { authClient } from "@/lib/auth-client";
+
+export type AuthFlowPhase = "initial" | "credentials" | "sso" | "mfa" | "complete" | "forgot-password" | "reset-code" | "new-password";
+export type SocialProvider = "google" | "apple";
+
+interface UseAuthFlowOptions {
+  callbackURL?: string | null;
+  locale: string;
+  mode: "sign-in" | "sign-up";
+}
+
+interface UseAuthFlowResult {
+  phase: AuthFlowPhase;
+  isPending: boolean;
+  error?: string | null;
+  pendingProvider?: SocialProvider | null;
+  finalizeCallback: () => Promise<void>;
+  submitCredentials: (input: { emailAddress: string; name?: string; password: string }) => Promise<void>;
+  signInWithSocial: (provider: SocialProvider) => Promise<void>;
+  startForgotPassword: (emailAddress: string) => Promise<void>;
+  goBack: () => void;
+}
+
+export function useAuthFlow(
+  options: UseAuthFlowOptions
+): UseAuthFlowResult {
+  const router = useRouter();
+
+  const [phase, setPhase] = useState<AuthFlowPhase>("initial");
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pendingProvider, setPendingProvider] = useState<SocialProvider | null>(null);
+
+  const finalizeCallback = async () => {
+    if (options.callbackURL) {
+      const localePrefixPattern = new RegExp(`^/(${["en", "ar"].join("|")})/`);
+      const cleanPath = options.callbackURL.replace(localePrefixPattern, "/");
+      router.push(cleanPath);
+    } else {
+      router.push("/choose-org");
+    }
+  };
+
+  const submitCredentials = async (input: { emailAddress: string; name?: string; password: string }) => {
+    setIsPending(true);
+    setError(null);
+    setPhase("credentials");
+
+    try {
+      if (options.mode === "sign-up") {
+        const { error: signUpError } = await authClient.signUp.email({
+          email: input.emailAddress,
+          password: input.password,
+          name: input.name ?? input.emailAddress,
+          callbackURL: options.callbackURL ?? undefined,
+        });
+        if (signUpError) throw signUpError;
+        await finalizeCallback();
+      } else {
+        const { error: signInError } = await authClient.signIn.email({
+          email: input.emailAddress,
+          password: input.password,
+          callbackURL: options.callbackURL ?? undefined,
+        });
+        if (signInError) throw signInError;
+        await finalizeCallback();
+      }
+    } catch (err: any) {
+      setError(err?.message || "Authentication failed");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const signInWithSocial = async (provider: SocialProvider) => {
+    setIsPending(true);
+    setError(null);
+    setPendingProvider(provider);
+    setPhase("sso");
+
+    try {
+      const { error: ssoErr } = await authClient.signIn.social({
+        provider,
+        callbackURL: options.callbackURL ?? undefined,
+      });
+      if (ssoErr) throw ssoErr;
+    } catch (err: any) {
+      setError(err?.message || "Social authentication failed");
+      setPendingProvider(null);
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const startForgotPassword = async (emailAddress: string) => {
+    if (!emailAddress) {
+      setPhase("forgot-password");
+      setError(null);
+      return;
+    }
+
+    setIsPending(true);
+    setError(null);
+
+    try {
+      const { error: forgotErr } = await authClient.requestPasswordReset({
+        email: emailAddress,
+        redirectTo: `${window.location.origin}/${options.locale}/reset-password`,
+      } as any);
+      if (forgotErr) throw forgotErr;
+      setPhase("reset-code");
+    } catch (err: any) {
+      setPhase("forgot-password");
+      setError(err?.message || "Failed to send reset email");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const goBack = () => {
+    setPhase("initial");
+    setError(null);
+  };
+
+  return {
+    phase,
+    isPending,
+    error,
+    pendingProvider,
+    finalizeCallback,
+    submitCredentials,
+    signInWithSocial,
+    startForgotPassword,
+    goBack,
+  };
+}

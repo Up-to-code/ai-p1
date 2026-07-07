@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { followUpInputValidator, followUpValidator } from "./validators";
 
@@ -12,7 +12,7 @@ export const createFromHono = mutation({
   args: { organizationId: v.string(), input: followUpInputValidator },
   returns: followUpValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
 
     const now = Date.now();
@@ -45,7 +45,7 @@ export const updateFromHono = mutation({
   args: { organizationId: v.string(), followUpId: v.id("clientFollowUps"), input: followUpInputValidator },
   returns: followUpValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.followUpId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Follow-up was not found.");
@@ -78,7 +78,7 @@ export const deleteFromHono = mutation({
   args: { organizationId: v.string(), followUpId: v.id("clientFollowUps") },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.followUpId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Follow-up was not found.");
@@ -100,7 +100,7 @@ export const markComplete = mutation({
   args: { organizationId: v.string(), followUpId: v.id("clientFollowUps") },
   returns: followUpValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.followUpId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Follow-up was not found.");

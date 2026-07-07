@@ -1,5 +1,5 @@
 import type { ShareUser } from "@/components/shared/share-popover/types";
-import type { OrganizationMember } from "@/domains/organization/api/clerk-organization-api";
+import type { OrganizationMember } from "@/domains/organization/api";
 
 function memberShareRole(role: string): ShareUser["role"] {
   if (role.includes("owner")) return "owner";

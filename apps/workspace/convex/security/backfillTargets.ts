@@ -173,9 +173,9 @@ export async function createBackfillPatchesForTarget(
 }
 
 export function readBackfillTargetPage(ctx: QueryCtx, target: BackfillTarget, paginationOpts: PaginationOpts) {
-  return ctx.db.query(adapterFor(target).table).paginate(paginationOpts);
+  return ctx.db.query(adapterFor(target).table as any).paginate(paginationOpts);
 }
 
 export function normalizeBackfillTargetId(ctx: MutationCtx, target: BackfillTarget, id: string) {
-  return ctx.db.normalizeId(adapterFor(target).table, id);
+  return ctx.db.normalizeId(adapterFor(target).table as any, id);
 }

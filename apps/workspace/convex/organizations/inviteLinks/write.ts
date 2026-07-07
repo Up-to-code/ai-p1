@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { clerkAuthComponent } from "../../auth";
+import { authUser } from "../../auth";
 import { assertOrganizationResourcePermission } from "../profile/access";
 import { findInviteLinkByTokenHash, toPublicInviteLink } from "./data";
 import {
@@ -15,7 +15,7 @@ export const createInviteLinkFromHono = mutation({
   },
   returns: organizationInviteLinkValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
 
     const existing = await findInviteLinkByTokenHash(ctx, args.input.tokenHash);
@@ -106,7 +106,7 @@ export const cancelInviteLinkFromHono = mutation({
   },
   returns: organizationInviteLinkValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
     const inviteLink = await ctx.db.get(args.inviteLinkId);
     const now = Date.now();

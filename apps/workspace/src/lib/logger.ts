@@ -4,5 +4,5 @@
  */
 
 // Re-export from the new logging module for backward compatibility
-export { logger, createLogger, createConsoleLogger, createSentryLogger } from './logger/index';
+export { logger, createLogger } from './logger/index';
 export type { Logger, LogContext, LogLevel, LogAdapter, PerformanceTimer } from './logger/types';

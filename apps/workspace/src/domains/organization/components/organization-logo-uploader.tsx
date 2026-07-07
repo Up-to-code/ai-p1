@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast";
 import { uploadFiles } from "@/lib/uploadthing";
 import { cn } from "@/lib/utils";
-import { updateAuthOrganization } from "../api/clerk-organization-api";
+import { updateAuthOrganization } from "../api";
 import {
   clampLogoCropPosition,
   organizationLogoCoverLayout,

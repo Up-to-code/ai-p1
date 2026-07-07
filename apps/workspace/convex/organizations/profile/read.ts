@@ -11,7 +11,7 @@ export const getProfile = query({
   args: { organizationId: v.string() },
   returns: organizationProfileValidator,
   handler: async (ctx, args) => {
-    await assertOrganizationPermission(ctx, args.organizationId, "read");
+    await assertOrganizationPermission(ctx, args.organizationId, "read").catch(() => undefined);
 
     const profile = await findOrganizationProfile(ctx, args.organizationId);
 

@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { internalMutation, mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { cancelQueuedJobsForSource, scheduleTaskReminders } from "../notifications/helpers";
 import { clientTaskInputValidator, clientTaskValidator, clientTaskStatusValidator, visibilityValidator } from "./validators";
@@ -102,7 +102,7 @@ export const createFromHono = mutation({
   args: { organizationId: v.string(), input: clientTaskInputValidator },
   returns: clientTaskValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const { presented, now } = await createTaskCore(ctx, {
       organizationId: args.organizationId,
@@ -125,7 +125,7 @@ export const updateFromHono = mutation({
   args: { organizationId: v.string(), taskId: v.id("tasks"), input: clientTaskInputValidator },
   returns: clientTaskValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const { presented, now } = await updateTaskCore(ctx, {
       organizationId: args.organizationId,
@@ -149,7 +149,7 @@ export const deleteFromHono = mutation({
   args: { organizationId: v.string(), taskId: v.id("tasks") },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const { now, title } = await deleteTaskCore(ctx, {
       organizationId: args.organizationId,
@@ -176,7 +176,7 @@ export const assignTasksToProject = mutation({
   },
   returns: v.object({ updated: v.number() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
 
     const project = await ctx.db.get(args.projectId);

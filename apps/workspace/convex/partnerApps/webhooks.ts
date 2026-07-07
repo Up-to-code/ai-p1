@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { action, internalMutation, internalQuery, mutation } from "../_generated/server";
 import { internal } from "../_generated/api";
 import type { Doc } from "../_generated/dataModel";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import {
   inboundWebhookInputValidator,
@@ -37,7 +37,7 @@ export const createEndpointFromHono = mutation({
   },
   returns: v.any(),
   handler: async (ctx, args) => {
-    await clerkAuthComponent.getAuthUser(ctx);
+    await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "oauthApp", "update");
     assertSafeWebhookUrl(args.input.url);
 

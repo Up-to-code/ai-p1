@@ -2,7 +2,7 @@
 
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { OrganizationInviteLink } from "../../api/clerk-organization-api";
+import type { OrganizationInviteLink } from "../../api";
 import { defaultRoleNames, formatDate, formatRoleName } from "../../settings-view-model";
 
 export function PendingInviteLinkRow({

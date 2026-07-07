@@ -63,16 +63,3 @@ export function accountInitials(value: string) {
       .join("") || "AN"
   );
 }
-
-export function clerkMembershipOrganizationIds(
-  user: { organizationMemberships?: unknown } | null | undefined,
-) {
-  const memberships = user?.organizationMemberships;
-  const data = Array.isArray(memberships)
-    ? memberships
-    : (memberships as { data?: unknown[] } | null | undefined)?.data ?? [];
-
-  return data
-    .map((membership) => (membership as { organization?: { id?: string | null } | null }).organization?.id)
-    .filter((id): id is string => Boolean(id));
-}

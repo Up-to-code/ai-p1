@@ -26,7 +26,7 @@ export function projectFormDefaults(project?: Project | null): ProjectFormValues
     name: project?.name ?? "",
     status: project?.status ?? "planned",
     health: project?.health ?? "onTrack",
-    visibility: project?.visibility ?? "team",
+    visibility: project?.visibility ?? "space_members",
     useAiSetup: false,
     description: project?.description ?? "",
   };

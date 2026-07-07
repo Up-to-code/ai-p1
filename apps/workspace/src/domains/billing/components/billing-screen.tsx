@@ -20,7 +20,7 @@ import { AppPageShell } from "@/components/shared";
 import { LoadingState, StatusPill, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { Button } from "@/components/ui/button";
 import { useAuthSession } from "@/domains/auth";
-import { listOrganizationMembers } from "@/domains/organization/api/clerk-organization-api";
+import { listOrganizationMembers } from "@/domains/organization/api";
 import { Link } from "@/i18n/routing";
 import { useBillingOverview } from "../api/billing";
 import {

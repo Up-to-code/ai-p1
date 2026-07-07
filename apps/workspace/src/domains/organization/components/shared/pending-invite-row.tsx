@@ -2,7 +2,7 @@
 
 import { CheckCircle2, Copy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { OrganizationInvitation } from "../../api/clerk-organization-api";
+import type { OrganizationInvitation } from "../../api";
 import { defaultRoleNames, formatDate, formatRoleName } from "../../settings-view-model";
 
 export function PendingInviteRow({

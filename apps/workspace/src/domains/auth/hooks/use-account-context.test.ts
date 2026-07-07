@@ -8,13 +8,11 @@ function readSource(path: string) {
   return readFileSync(resolve(root, path), "utf8");
 }
 
-describe("useAccountContext Clerk wiring", () => {
-  it("derives session and organization identity from Clerk", () => {
+describe("useAccountContext Better Auth wiring", () => {
+  it("derives session and organization identity from Better Auth", () => {
     const source = readSource("src/domains/auth/hooks/use-account-context.ts");
 
-    expect(source).toContain("useAuth");
-    expect(source).toContain("useUser");
-    expect(source).toContain("useOrganization");
-    expect(source).toContain("useConvexAuth");
+    expect(source).toContain("authClient.useSession");
+    expect(source).toContain("authClient.useActiveOrganization");
   });
 });

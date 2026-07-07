@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { visibilitySchema } from "./clients";
 
 export const projectStatusSchema = z.enum(["planned", "active", "paused", "completed", "archived"]);
 export const projectHealthSchema = z.enum(["onTrack", "atRisk", "blocked"]);
+export const projectVisibilitySchema = z.enum(["private", "space_members", "organization"]);
 
 export const projectInputSchema = z.object({
   name: z.string().trim().min(1, "Project name is required"),
@@ -10,7 +10,7 @@ export const projectInputSchema = z.object({
   opportunityId: z.string().optional(),
   status: projectStatusSchema,
   health: projectHealthSchema,
-  visibility: visibilitySchema.optional(),
+  visibility: projectVisibilitySchema.optional(),
   teamMemberIds: z.array(z.string()).optional(),
   startDate: z.string().trim().optional(),
   endDate: z.string().trim().optional(),
@@ -37,7 +37,7 @@ export const projectRecordSchema = z.object({
   teamMemberIds: z.array(z.string()).optional(),
   status: projectStatusSchema,
   health: projectHealthSchema,
-  visibility: visibilitySchema.optional(),
+  visibility: projectVisibilitySchema.optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   budget: z.number().optional(),
@@ -60,6 +60,7 @@ export const projectRecordSchema = z.object({
 
 export type ProjectStatus = z.infer<typeof projectStatusSchema>;
 export type ProjectHealth = z.infer<typeof projectHealthSchema>;
+export type ProjectVisibility = z.infer<typeof projectVisibilitySchema>;
 export type ProjectInput = z.infer<typeof projectInputSchema>;
 export type ProjectRecord = z.infer<typeof projectRecordSchema>;
 

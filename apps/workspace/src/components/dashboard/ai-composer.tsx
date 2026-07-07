@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { ArrowUp, Loader2, Mic, Paperclip, ChevronDown } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowUp, Mic, Paperclip, ChevronDown, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
@@ -20,6 +20,7 @@ type AiComposerProps = {
   value: string;
   onChange: (val: string) => void;
   onSend: (message: string, attachments?: File[]) => void | Promise<void>;
+  onStop?: () => void;
   isSending?: boolean;
   layout?: "landing" | "thread";
   placeholder?: string;
@@ -52,6 +53,7 @@ export default function AiComposer({
   value,
   onChange,
   onSend,
+  onStop,
   isSending = false,
   layout = "thread",
   placeholder,
@@ -77,30 +79,44 @@ export default function AiComposer({
     onPlanModeChange?.(nextMode === "plan");
   };
 
-  // Auto-resize textarea — runs on every value change AND on first mount
-  // We intentionally DON'T set height:"auto" when the textarea hasn't been
-  // painted yet (scrollHeight===0) to avoid the collapse-to-0 flash.
-  useEffect(() => {
+  const resizeTextarea = useCallback(() => {
     const textarea = textareaRef.current;
-    if (!textarea) return;
-    if (textarea.scrollHeight === 0) return; // not painted yet — skip
-    textarea.style.height = "auto";
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+    if (!textarea) return false;
+
+    const width = textarea.getBoundingClientRect().width;
+    if (width < 120) {
+      textarea.style.height = "60px";
+      return false;
+    }
+
+    textarea.style.height = "60px";
+    if (value.trim()) {
+      textarea.style.height = `${Math.min(Math.max(textarea.scrollHeight, 60), 200)}px`;
+    }
+    return true;
   }, [value]);
 
-  // Force correct height on first paint via layout effect
+  // Auto-resize textarea — runs on every value change AND on first mount
   useEffect(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-    // scrollHeight is available after first browser layout
     const raf = requestAnimationFrame(() => {
-      if (!textareaRef.current) return;
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+      if (!resizeTextarea()) {
+        requestAnimationFrame(resizeTextarea);
+      }
     });
     return () => cancelAnimationFrame(raf);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [resizeTextarea]);
+
+  // Re-measure after panel width animation/resizing. The quick AI panel opens
+  // from width 0, and measuring before it has width makes scrollHeight huge.
+  useEffect(() => {
+    const target = borderRef.current;
+    if (!target || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      requestAnimationFrame(resizeTextarea);
+    });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [resizeTextarea]);
 
   // GSAP border spin when sending
   useEffect(() => {
@@ -116,9 +132,8 @@ export default function AiComposer({
         });
       });
       return () => ctx.revert();
-    } else {
-      gsap.set(el, { "--angle": "0deg" });
     }
+    gsap.set(el, { "--angle": "0deg" });
   }, [isSending]);
 
   const handleFileSelect = (files: FileList | File[]) => {
@@ -191,8 +206,8 @@ export default function AiComposer({
         ref={borderRef}
         className={cn(
           "relative flex flex-col overflow-hidden rounded-[22px] border border-transparent bg-background/92 shadow-[0_18px_60px_rgba(12,18,35,0.14)] backdrop-blur-xl transition-all duration-300",
-          "text-text-primary dark:bg-background/88",
-          isDraggingFiles && "bg-surface-elevated",
+          "text-foreground dark:bg-background/88",
+          isDraggingFiles && "bg-accent",
           "focus-within:ring-2 focus-within:ring-[#0C7DF3]/10",
         )}
         style={{
@@ -224,7 +239,7 @@ export default function AiComposer({
               exit={{ opacity: 0 }}
               className="absolute inset-0 z-20 flex items-center justify-center bg-surface/50 backdrop-blur-[1px]"
             >
-              <div className="rounded-full border border-border bg-surface-elevated px-5 py-2 text-[11px] font-black uppercase tracking-wider text-text-primary shadow-none">
+              <div className="rounded-full border border-border bg-card px-5 py-2 text-[11px] font-black uppercase tracking-wider text-foreground shadow-none">
                 {t("attach")}
               </div>
             </motion.div>
@@ -240,9 +255,9 @@ export default function AiComposer({
             disabled={isSending}
             placeholder={placeholder || t("placeholderDefault")}
             className={cn(
-              "w-full resize-none appearance-none border-0 bg-transparent px-5 py-4 text-[15px] font-medium leading-relaxed outline-none ring-0 sm:px-6",
+              "w-full resize-none appearance-none overflow-hidden border-0 bg-transparent px-5 py-4 text-[15px] font-medium leading-relaxed outline-none ring-0 sm:px-6",
               isRtl ? "text-right" : "text-left",
-              "text-text-primary placeholder:text-text-muted",
+              "text-foreground placeholder:text-muted-foreground",
             )}
             style={{ minHeight: "60px", maxHeight: "200px" }}
             dir={isRtl ? "rtl" : "ltr"}
@@ -257,7 +272,7 @@ export default function AiComposer({
                 disabled={isSending}
                 aria-label={t("attach")}
                 title={t("attach")}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-text-secondary transition-all hover:border-border hover:text-text-primary active:scale-95 disabled:opacity-50"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground active:scale-95 disabled:opacity-50"
               >
                 <Paperclip className="h-3.5 w-3.5" />
               </button>
@@ -271,8 +286,8 @@ export default function AiComposer({
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full border text-[12px] font-bold transition-all active:scale-95 disabled:opacity-50",
                   isRecording 
-                    ? "border-border bg-surface text-text-primary" 
-                    : "border-border bg-background text-text-secondary hover:border-border hover:text-text-primary",
+                    ? "border-border bg-accent text-accent-foreground" 
+                    : "border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
               >
                 {isRecording ? (
@@ -290,7 +305,7 @@ export default function AiComposer({
                         type="button"
                         disabled={isSending}
                         className={cn(
-                          "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-all active:scale-95 disabled:opacity-50",
+                          "flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[11px] font-semibold capitalize transition-all active:scale-95 disabled:opacity-50",
                           modeClassNames[selectedMode],
                         )}
                       >
@@ -330,18 +345,26 @@ export default function AiComposer({
 
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
               <button
-                onClick={() => void handleSubmit()}
-                disabled={isSending || !isTyping}
-                aria-label={t("placeholderDefault")}
+                onClick={() => {
+                  if (isSending) {
+                    onStop?.();
+                    return;
+                  }
+                  void handleSubmit();
+                }}
+                disabled={!isSending && !isTyping}
+                aria-label={isSending ? "Stop response" : t("placeholderDefault")}
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 active:scale-90",
-                  isTyping
+                  isSending
+                    ? "bg-foreground text-background hover:opacity-90"
+                    : isTyping
                     ? "bg-[var(--q-user-bubble)] text-[var(--q-bg)] hover:opacity-90 shadow-sm"
-                    : "bg-surface border border-border text-text-muted",
+                    : "border border-border bg-muted text-muted-foreground",
                 )}
               >
                 {isSending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Square className="h-3.5 w-3.5 fill-current" />
                 ) : (
                   <ArrowUp className="h-5 w-5 stroke-[2.5px]" />
                 )}

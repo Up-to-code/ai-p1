@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { createDomainRouter } from "@/server/utils/create-domain-router";
 import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
 import { actionErrorJson } from "@/server/utils/response/action-error";
-import { fetchAuthMutation } from "@/server/auth/clerk-convex";
+import { fetchAuthMutation } from "@/server/auth/convex-auth";
 import { followUpPayloadSchema } from "../validation/follow-up.schema";
 import { api } from "@convex/_generated/api";
 

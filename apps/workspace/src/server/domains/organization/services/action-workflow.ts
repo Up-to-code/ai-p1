@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation } from "@/server/auth/clerk-convex";
+import { logger } from "@/lib/logger";
+import { fetchAuthMutation } from "@/server/auth/convex-auth";
 import { assertCanUseOrganizationResource } from "@/server/utils/organization/access-checker";
 import { OrganizationActionError } from "../errors/action-error";
 import type {
@@ -8,7 +9,7 @@ import type {
   OrganizationMemberForPolicy,
   OrganizationRoleForPolicy,
 } from "./access-policy";
-import { callClerkOrganization } from "./clerk-organization-proxy";
+import { callBetterAuthOrganization, getCurrentBetterAuthOrganizationRole } from "./better-auth-organization-service";
 
 type MemberListResponse = { members?: OrganizationMemberForPolicy[] } | OrganizationMemberForPolicy[];
 type InvitationListResponse = OrganizationInvitationForPolicy[];
@@ -29,10 +30,19 @@ export async function recordOrganizationAction(
   organizationId: string,
   input: { action: string; target: string; summary: string },
 ) {
-  await fetchAuthMutation(api.organizations.audit.write.recordFromHono, {
-    organizationId,
-    input,
-  });
+  try {
+    await fetchAuthMutation(api.organizations.audit.write.recordFromHono, {
+      organizationId,
+      input,
+    });
+  } catch (error) {
+    logger.warn("Organization audit record skipped", {
+      module: "organization-action-workflow",
+      organizationId,
+      action: input.action,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 }
 
 export async function requireOrganizationAction(
@@ -43,9 +53,37 @@ export async function requireOrganizationAction(
   try {
     await assertCanUseOrganizationResource(organizationId, resource, action);
   } catch (error) {
+    if (await canUseBetterAuthOrganizationResource(organizationId, resource, action)) return;
+
     const message = error instanceof Error ? error.message : "You are not allowed to perform this organization action.";
     throw new OrganizationActionError(message, 403);
   }
+}
+
+async function canUseBetterAuthOrganizationResource(
+  organizationId: string,
+  resource: OrganizationActionPermission["resource"],
+  action: string,
+) {
+  const role = await getCurrentBetterAuthOrganizationRole(organizationId);
+  if (!role) return false;
+
+  const roles = new Set(role.split(",").map((item) => item.trim()).filter(Boolean));
+  const isOwner = roles.has("owner");
+  const isAdmin = roles.has("admin");
+  const isMember = roles.has("member");
+  const hasOrgAccess = isOwner || isAdmin || isMember;
+
+  if (action === "read") {
+    if (resource === "role") return isOwner || isAdmin;
+    return hasOrgAccess;
+  }
+
+  if (resource === "organization") return isOwner || isAdmin;
+  if (resource === "member") return isOwner || isAdmin;
+  if (resource === "role") return isOwner;
+
+  return isOwner || isAdmin;
 }
 
 function unwrapMembers(data: MemberListResponse) {
@@ -53,7 +91,7 @@ function unwrapMembers(data: MemberListResponse) {
 }
 
 export async function listMembersForOrganizationAction(c: Context, organizationId: string) {
-  const data = await callClerkOrganization<MemberListResponse>(c, "/organization/list-members", {
+  const data = await callBetterAuthOrganization<MemberListResponse>(c, "/organization/list-members", {
     query: { organizationId, limit: 100, offset: 0 },
     fallback: "Members could not be loaded.",
   });
@@ -62,14 +100,14 @@ export async function listMembersForOrganizationAction(c: Context, organizationI
 }
 
 export async function listInvitationsForOrganizationAction(c: Context, organizationId: string) {
-  return callClerkOrganization<InvitationListResponse>(c, "/organization/list-invitations", {
+  return callBetterAuthOrganization<InvitationListResponse>(c, "/organization/list-invitations", {
     query: { organizationId },
     fallback: "Invitations could not be loaded.",
   });
 }
 
 export async function listRolesForOrganizationAction(c: Context, organizationId: string) {
-  return callClerkOrganization<RoleListResponse>(c, "/organization/list-roles", {
+  return callBetterAuthOrganization<RoleListResponse>(c, "/organization/list-roles", {
     query: { organizationId },
     fallback: "Work roles could not be loaded.",
   });

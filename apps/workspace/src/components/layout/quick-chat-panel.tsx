@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useReducedMotion, motion, AnimatePresence } from "framer-motion";
-import { MessageSquarePlus, ChevronDown, Clock } from "lucide-react";
+import gsap from "gsap";
+import { MessageSquarePlus, ChevronDown, Clock, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logger } from "@/lib/logger";
 import { isRtlLocale } from "@/lib/i18n/locale";
@@ -19,9 +20,8 @@ import {
 import { useAuthSession } from "@/domains/auth";
 import { useQuickChat } from "./quick-chat-context";
 import { ResizablePanel } from "@/components/ui/resizable";
-import { Markdown } from "@/components/ui/markdown";
 import AiComposer, { type ComposerMode } from "@/components/dashboard/ai-composer";
-import AIMotionLogo from "@/components/ui/ai-motion/ai-motion-logo";
+import { AiConversationThread } from "@/components/shared";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,6 +54,7 @@ function QuickChatInner({
   const reduceMotion = useReducedMotion();
   const locale = useLocale();
   const isRtl = isRtlLocale(locale);
+  const { domainContext } = useQuickChat();
 
   const threadIdRef = useRef<string | null>(activeThread?.id ?? null);
   const threadTitleRef = useRef<string>(activeThread?.title ?? "");
@@ -76,7 +77,7 @@ function QuickChatInner({
     }
   }, []);
 
-  const { messages, isStreaming, send, session: eveSession, events } = useEveChat({
+  const { messages, isStreaming, send, stop, session: eveSession, events } = useEveChat({
     organizationId,
     initialSession: activeThread?.sessionState ?? undefined,
     initialEvents: activeThread?.events ?? undefined,
@@ -136,7 +137,7 @@ function QuickChatInner({
   const handleSend = async (text: string, files?: File[]) => {
     if (!text.trim()) return;
     liveAutoScrollRef.current = true;
-    await send(text, files);
+    await send(text.trim(), files);
     setInputValue("");
   };
 
@@ -164,49 +165,32 @@ function QuickChatInner({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/ai/logo.png" alt="" width={48} height={48} className="h-12 w-12 object-contain opacity-90" />
                 <div className="space-y-1">
-                  <h2 className="text-sm font-black leading-tight tracking-tight text-text-primary">{t("welcome")}</h2>
-                  <p className="text-[11px] font-medium text-text-secondary">{t("inputPlaceholder")}</p>
+                  <h2 className="text-sm font-black leading-tight tracking-tight text-foreground">{t("welcome")}</h2>
+                  <p className="text-[11px] font-medium text-muted-foreground">{t("inputPlaceholder")}</p>
+                  {domainContext ? (
+                    <div className="mx-auto mt-2 inline-flex max-w-[220px] items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-[10px] font-semibold text-muted-foreground">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      <span className="truncate">Context: {domainContext.title}</span>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </motion.div>
           ) : (
             <motion.div
               key="messages"
-              className="flex flex-col gap-5 px-4 pb-4 pt-20"
               initial={reduceMotion ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.18 }}
             >
-              {messages.filter((m) => m.content).map((msg, i) => (
-                <div
-                  key={msg.id ?? i}
-                  className={cn("flex flex-col gap-1", msg.role === "user" ? "items-end" : "items-start")}
-                >
-                  <span className="px-1 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">
-                    {msg.role === "user" ? "you" : "qentrah"}
-                  </span>
-                  {msg.role === "user" ? (
-                    <div className="max-w-[88%] rounded-[16px] border border-[var(--q-user-bubble)] bg-[var(--q-user-bubble)] px-4 py-3 text-sm font-medium leading-relaxed text-background shadow-md">
-                      {msg.content}
-                    </div>
-                  ) : (
-                    <Markdown className="max-w-full text-sm leading-6 text-foreground [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[0.85em] [&_p]:my-1.5 [&_p]:leading-6 [&_pre]:my-2 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-foreground [&_pre]:p-3 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-background [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4">
-                      {msg.content}
-                    </Markdown>
-                  )}
-                </div>
-              ))}
-
-              {isStreaming && (
-                <div className="flex items-center gap-2 px-1">
-                  <AIMotionLogo state="thinking" size="compact" />
-                  <span className="flex gap-0.5">
-                    {[0, 1, 2].map((dot) => (
-                      <span key={dot} className="h-1.5 w-1.5 animate-bounce rounded-full bg-text-muted" style={{ animationDelay: `${dot * 0.15}s` }} />
-                    ))}
-                  </span>
-                </div>
-              )}
+              <AiConversationThread
+                messages={messages}
+                isStreaming={isStreaming}
+                variant="panel"
+                onSendPrompt={(prompt) => {
+                  void handleSend(prompt);
+                }}
+              />
               <div ref={messagesEndRef} />
             </motion.div>
           )}
@@ -219,6 +203,7 @@ function QuickChatInner({
           value={inputValue}
           onChange={setInputValue}
           onSend={handleSend}
+          onStop={stop}
           layout="thread"
           isSending={isStreaming}
           mode={composerMode}
@@ -233,10 +218,12 @@ function QuickChatInner({
 export function QuickChatPanel() {
   const locale = useLocale();
   const isRtl = isRtlLocale(locale);
-  const { isOpen } = useQuickChat();
+  const { isOpen, close } = useQuickChat();
   const session = useAuthSession();
   const organizationId = session.workspace.organizationId ?? undefined;
   const reduceMotion = useReducedMotion();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const shellRef = useRef<HTMLDivElement>(null);
 
   const [activeThread, setActiveThread] = useState<ActiveThread | null>(null);
   // Incrementing this key forces QuickChatInner to fully unmount+remount,
@@ -244,6 +231,7 @@ export function QuickChatPanel() {
   const [chatKey, setChatKey] = useState(0);
   const [threadHistory, setThreadHistory] = useState<ThreadMeta[]>([]);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   // Load history once on first open
   useEffect(() => {
@@ -276,85 +264,106 @@ export function QuickChatPanel() {
     setThreadHistory(updated);
   }, []);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!isOpen || !panel || reduceMotion) return;
+    gsap.fromTo(
+      panel,
+      { x: isRtl ? -28 : 28, opacity: 0, width: 0 },
+      { x: 0, opacity: 1, width: "100%", duration: 0.26, ease: "power3.out" },
+    );
+  }, [isOpen, isRtl, reduceMotion]);
 
-  const headerTitle = activeThread
-    ? (activeThread.title.length > 24 ? activeThread.title.slice(0, 24) + "…" : activeThread.title)
-    : "AI Chats";
+  const handleClose = useCallback(() => {
+    const panel = panelRef.current;
+    const shell = shellRef.current;
+    if (!panel || !shell || reduceMotion) {
+      close();
+      return;
+    }
+    setIsClosing(true);
+    const children = Array.from(panel.children);
+    const tl = gsap.timeline({ onComplete: close });
+    tl.set(shell, {
+      minWidth: 0,
+      overflow: "hidden",
+    }).to(children, {
+      opacity: 0,
+      y: 2,
+      duration: 0.14,
+      ease: "power1.out",
+      stagger: 0.015,
+    }).to(panel, {
+      width: 0,
+      x: isRtl ? -18 : 18,
+      opacity: 0,
+      duration: 0.26,
+      ease: "power3.in",
+    }, 0.03).to(shell, {
+      flexBasis: 0,
+      width: 0,
+      opacity: 0,
+      duration: 0.32,
+      ease: "power3.inOut",
+    }, 0);
+  }, [close, isRtl, reduceMotion]);
+
+  if (!isOpen) return null;
 
   return (
     <ResizablePanel
-      defaultSize="30%"
-      minSize="20%"
-      maxSize="45%"
+      defaultSize="38%"
+      minSize="30%"
+      maxSize="55%"
       className={cn(
-        "relative flex h-full flex-col overflow-hidden border-s border-border/50 bg-background",
+        "relative flex h-full min-w-[360px] flex-col overflow-hidden border-s border-border/50 bg-background",
+        isClosing && "min-w-0 border-s-0",
         isRtl && "font-cairo",
       )}
     >
-      {/* Ambient background */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div
-          className="absolute -inset-x-[22%] -top-[20vh] h-[68vh] opacity-90 blur-[2px]"
-          style={{
-            background: `radial-gradient(ellipse 48% 46% at 26% 18%, rgba(12,125,243,0.22), transparent 68%),
-                         radial-gradient(ellipse 40% 38% at 44% 20%, rgba(223,63,221,0.16), transparent 62%),
-                         radial-gradient(ellipse 38% 36% at 62% 18%, rgba(52,70,236,0.14), transparent 64%),
-                         radial-gradient(ellipse 28% 26% at 74% 22%, rgba(249,114,79,0.12), transparent 60%),
-                         radial-gradient(ellipse 24% 22% at 48% 50%, rgba(131,77,241,0.10), transparent 60%)`,
-          }}
-        />
-      </div>
-
-      {/* Floating header — fade+slide in */}
+      <div ref={shellRef} className="relative flex h-full w-full overflow-hidden">
+      <div ref={panelRef} className="relative ms-auto flex h-full w-full flex-col overflow-hidden">
       <motion.div
-        className="pointer-events-auto absolute inset-x-0 top-0 z-20"
+        className="pointer-events-auto z-20 shrink-0"
         initial={reduceMotion ? false : { opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="mx-3 mt-3 flex items-center justify-between rounded-2xl border border-white/[0.08] bg-background/70 px-3 py-2 shadow-lg backdrop-blur-xl">
-          <div className="flex items-center gap-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ai/logo.png" alt="" width={20} height={20} className="h-5 w-5 shrink-0 object-contain" />
-            <span className="text-[13px] font-bold text-text-primary">{headerTitle}</span>
-          </div>
+        <div className="flex h-11 items-center justify-between bg-background px-3">
           <div className="flex items-center gap-1">
-            {/* New chat */}
-            <button
-              type="button"
-              onClick={handleNewChat}
-              title="New chat"
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-accent hover:text-text-primary active:scale-95"
-            >
-              <MessageSquarePlus className="h-4 w-4" />
-            </button>
-
-            {/* History dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <button
-                    type="button"
-                    title="Conversation history"
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-accent hover:text-text-primary active:scale-95"
-                  >
-                    <ChevronDown className="h-4 w-4" />
-                  </button>
-                }
-              />
+            <div className="inline-flex h-7 overflow-hidden rounded-md bg-secondary text-secondary-foreground">
+              <button
+                type="button"
+                onClick={handleNewChat}
+                className="inline-flex items-center gap-1 px-2 text-xs font-medium transition-colors hover:bg-accent hover:text-accent-foreground active:scale-95"
+              >
+                <MessageSquarePlus className="h-3.5 w-3.5" />
+                New Chat
+              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <button
+                      type="button"
+                      title="Conversation history"
+                      className="flex w-7 items-center justify-center border-s border-border/70 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground active:scale-95"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
+                  }
+                />
               <DropdownMenuContent
                 align="end"
                 sideOffset={6}
                 className="w-64 rounded-xl border-border/60 bg-card/95 p-1 shadow-xl backdrop-blur-xl"
               >
-                <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-wider text-text-muted">
+                <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
                   Recent conversations
                 </div>
                 {threadHistory.length === 0 ? (
                   <div className="flex flex-col items-center gap-1.5 px-3 py-4 text-center">
-                    <Clock className="h-4 w-4 text-text-muted/50" />
-                    <span className="text-xs text-text-muted">No conversations yet</span>
+                    <Clock className="h-4 w-4 text-muted-foreground/50" />
+                    <span className="text-xs text-muted-foreground">No conversations yet</span>
                   </div>
                 ) : (
                   <>
@@ -364,8 +373,8 @@ export function QuickChatPanel() {
                         className="flex cursor-pointer flex-col items-start rounded-lg px-3 py-2"
                         onClick={() => void handleLoadThread(meta)}
                       >
-                        <span className="line-clamp-1 text-xs font-semibold text-text-primary">{meta.title}</span>
-                        <span className="text-[10px] text-text-muted">
+                        <span className="line-clamp-1 text-xs font-semibold text-foreground">{meta.title}</span>
+                        <span className="text-[10px] text-muted-foreground">
                           {new Date(meta.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                         </span>
                       </DropdownMenuItem>
@@ -373,7 +382,7 @@ export function QuickChatPanel() {
                     {threadHistory.length > 14 && (
                       <>
                         <DropdownMenuSeparator />
-                        <div className="px-3 py-1 text-[10px] text-text-muted">
+                        <div className="px-3 py-1 text-[10px] text-muted-foreground">
                           +{threadHistory.length - 14} more — open AI page to see all
                         </div>
                       </>
@@ -381,8 +390,18 @@ export function QuickChatPanel() {
                   </>
                 )}
               </DropdownMenuContent>
-            </DropdownMenu>
+              </DropdownMenu>
+            </div>
           </div>
+          <div className="min-w-0 flex-1" />
+          <button
+            type="button"
+            onClick={handleClose}
+            title="Close AI panel"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground active:scale-95"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       </motion.div>
 
@@ -396,10 +415,12 @@ export function QuickChatPanel() {
           onNewChat={handleNewChat}
         />
       ) : (
-        <div className="flex flex-1 items-center justify-center p-6 text-xs text-text-muted">
+        <div className="flex flex-1 items-center justify-center p-6 text-xs text-muted-foreground">
           Sign in to use AI Chats
         </div>
       )}
+      </div>
+      </div>
     </ResizablePanel>
   );
 }

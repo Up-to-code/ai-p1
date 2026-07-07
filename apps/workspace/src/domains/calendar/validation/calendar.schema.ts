@@ -3,24 +3,21 @@ import { requiredText } from "@/validation/common.schema";
 
 export const calendarEventSchema = z.object({
   title: requiredText("Title"),
-  owner: requiredText("Owner"),
+  ownerUserId: z.string().trim().optional(),
   date: requiredText("Date"),
   time: requiredText("Time"),
-  endDate: z.string().optional(),
-  endTime: z.string().optional(),
-  isMultiDay: z.boolean().optional(),
   type: z.enum(["meeting", "deadline", "reminder", "milestone", "focusBlock"]),
   status: z.enum(["confirmed", "pending", "draft"]),
+  durationMinutes: z.coerce.number().int().positive().optional(),
   clientId: z.string().optional(),
-  assetId: z.string().optional(),
   projectId: z.string().optional(),
   taskId: z.string().optional(),
   location: z.string().optional(),
+  meetingUrl: z.string().optional(),
   notes: z.string().optional(),
-  customFields: z.array(z.object({
-    label: z.string().trim(),
-    value: z.string().trim(),
-  })).optional(),
+  attendeeUserIds: z.array(z.string().trim()).optional(),
+  externalAttendees: z.array(z.string().trim()).optional(),
+  tags: z.array(z.string().trim()).optional(),
 });
 
 export type CalendarEventFormValues = z.input<typeof calendarEventSchema>;

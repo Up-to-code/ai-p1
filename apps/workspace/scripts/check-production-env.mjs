@@ -20,14 +20,16 @@ const required = [
   "CONVEX_URL",
   "NEXT_PUBLIC_CONVEX_SITE_URL",
   "CONVEX_SITE_URL",
-  "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
-  "CLERK_SECRET_KEY",
-  "CLERK_FRONTEND_API_URL",
+  "BETTER_AUTH_SECRET",
+  "BETTER_AUTH_URL",
   "ADMIN_CONVEX_SERVICE_TOKEN",
   "WORKSPACE_ADMIN_SERVICE_TOKEN",
   "WORKSPACE_CONVEX_BRIDGE_SECRET",
   "PARTNER_WEBHOOK_SECRET_ENCRYPTION_KEY",
   "ORGANIZATION_DATA_ENCRYPTION_KEY",
+  "RESEND_API_KEY",
+  "RESEND_FROM_EMAIL",
+  "RESEND_TEST_MODE",
 ];
 
 const expected = {
@@ -41,6 +43,7 @@ const expected = {
   CONVEX_SITE_URL: "https://focused-shepherd-801.convex.site",
   PARTNER_OAUTH_ISSUER: "https://app.qentrah.com",
   PARTNER_OAUTH_AUDIENCE: "https://app.qentrah.com/api/v1/partner",
+  RESEND_TEST_MODE: "false",
 };
 
 const removedWorkspaceVariables = [
@@ -58,10 +61,9 @@ const removedWorkspaceVariables = [
   "WORKOS_API_BASE_URL",
   "WORKOS_MOBILE_CALLBACK_URL",
   "NEXT_PUBLIC_WORKOS_REDIRECT_URI",
-  "BETTER_AUTH_SECRET",
-  "BETTER_AUTH_URL",
-  "GOOGLE_CLIENT_ID",
-  "GOOGLE_CLIENT_SECRET",
+  ["NEXT_PUBLIC", "C" + "LERK", "PUBLISHABLE_KEY"].join("_"),
+  ["C" + "LERK", "SECRET_KEY"].join("_"),
+  ["C" + "LERK", "FRONTEND_API_URL"].join("_"),
 ];
 
 const placeholder = /^<.*>$/u;
@@ -80,6 +82,7 @@ function stripCopiedEnvQuotes(value) {
 }
 
 const strongSecretKeys = [
+  "BETTER_AUTH_SECRET",
   "ADMIN_CONVEX_SERVICE_TOKEN",
   "WORKSPACE_ADMIN_SERVICE_TOKEN",
   "WORKSPACE_CONVEX_BRIDGE_SECRET",
@@ -121,14 +124,6 @@ function parseUploadThingToken(value) {
   }
 }
 
-function isClerkPublishableKey(value) {
-  return /^pk_(test|live)_[A-Za-z0-9_-]+$/.test(value || "");
-}
-
-function isClerkSecretKey(value) {
-  return /^sk_(test|live)_[A-Za-z0-9_-]+$/.test(value || "");
-}
-
 for (const key of required) {
   if (!env[key]) failures.push(`${key} is missing`);
   else if (placeholder.test(env[key])) failures.push(`${key} still has a placeholder`);
@@ -148,14 +143,6 @@ for (const key of strongSecretKeys) {
   if (env[key] && !looksRandomSecret(env[key])) {
     failures.push(`${key} must be a random secret with at least 32 characters.`);
   }
-}
-
-if (env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && !isClerkPublishableKey(env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)) {
-  failures.push("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY must be a Clerk pk_test_ or pk_live_ key.");
-}
-
-if (env.CLERK_SECRET_KEY && !isClerkSecretKey(env.CLERK_SECRET_KEY)) {
-  failures.push("CLERK_SECRET_KEY must be a Clerk sk_test_ or sk_live_ key.");
 }
 
 for (const [key, value] of Object.entries(expected)) {

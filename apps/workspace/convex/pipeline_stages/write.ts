@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 
 export const create = mutation({
   args: {
@@ -12,7 +12,7 @@ export const create = mutation({
   },
   returns: v.id("pipeline_stages"),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     if (!user) {
       throw new Error("Authentication required to create pipeline stages.");
     }
@@ -55,7 +55,7 @@ export const update = mutation({
       throw new Error("Pipeline stage was not found.");
     }
 
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     if (!user) {
       throw new Error("Authentication required to update pipeline stages.");
     }
@@ -80,7 +80,7 @@ export const remove = mutation({
       throw new Error("Pipeline stage was not found.");
     }
 
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     if (!user) {
       throw new Error("Authentication required to delete pipeline stages.");
     }
@@ -100,7 +100,7 @@ export const reorder = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     if (!user) {
       throw new Error("Authentication required to reorder pipeline stages.");
     }
@@ -120,7 +120,7 @@ export const seedDefaults = mutation({
   args: { organizationId: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     if (!user) {
       throw new Error("Authentication required to seed pipeline stages.");
     }

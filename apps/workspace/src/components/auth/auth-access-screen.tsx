@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "@/i18n/routing";
-import type { AuthFlowPhase, ClerkSocialProvider } from "@/domains/auth/hooks/use-headless-clerk-auth";
+import type { AuthFlowPhase, SocialProvider } from "@/domains/auth/hooks";
 import { AnimatedSphere } from "@/components/auth";
 
 type AuthAccessScreenProps = {
@@ -18,9 +18,9 @@ type AuthAccessScreenProps = {
   error?: string | null;
   phase: AuthFlowPhase;
   isPending: boolean;
-  pendingProvider?: ClerkSocialProvider | null;
+  pendingProvider?: SocialProvider | null;
   onCredentialsSubmit: (input: { emailAddress: string; firstName?: string; lastName?: string; password: string }) => void;
-  onSocialSignIn: (provider: ClerkSocialProvider) => void;
+  onSocialSignIn: (provider: SocialProvider) => void;
   onVerifyCode: (code: string) => void;
   onForgotPassword: (emailAddress: string) => void;
   onVerifyResetCode: (code: string) => void;
@@ -374,8 +374,8 @@ export function AuthAccessScreen({
 
                 {error ? <ErrorBanner message={error} /> : null}
 
-                {/* Required by Clerk for Smart CAPTCHA on sign-up flows */}
-                <div id="clerk-captcha" />
+                {/* Required by Better Auth on sign-up flows */}
+                <div id="auth-captcha" />
 
                 <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={isPending} type="submit">
                   {isEmailPending ? (

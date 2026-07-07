@@ -10,7 +10,7 @@ export const projectSchema = z.object({
   opportunityId: z.string().trim().optional(),
   status: z.enum(projectStatuses).default("planned"),
   health: z.enum(projectHealths).default("onTrack"),
-  visibility: z.enum(["private", "team", "workspace"]).default("team"),
+  visibility: z.enum(["private", "space_members", "organization"]).default("space_members"),
   startDate: z.string().trim().optional(),
   endDate: z.string().trim().optional(),
   budget: z.string().trim().optional(),

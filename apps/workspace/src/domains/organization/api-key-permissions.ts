@@ -3,7 +3,7 @@ import type {
   OrganizationApiKeyPermission,
   OrganizationApiKeyResource,
   OrganizationCapabilities,
-} from "./api/clerk-organization-api";
+} from "./api";
 import {
   clonePermissions,
   permissionActions,

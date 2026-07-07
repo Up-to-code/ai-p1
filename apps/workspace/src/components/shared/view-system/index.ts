@@ -1,6 +1,8 @@
 export { ViewSwitcherTabs } from "./view-switcher";
 export { AddViewPopover } from "./add-view-popover";
 export { ViewIcon } from "./view-icon";
+export { useViewTabs } from "./use-view-tabs";
+export { ViewTabsContent } from "./view-tabs-content";
 export {
   DEFAULT_VIEW_CATALOG,
   getViewMeta,

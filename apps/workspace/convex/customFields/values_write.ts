@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 
 export const upsertFromHono = mutation({
@@ -42,7 +42,7 @@ export const upsertFromHono = mutation({
     urlValue: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
 
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
@@ -104,7 +104,7 @@ export const deleteFromHono = mutation({
     valueId: v.id("customFieldValues"),
   },
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
 
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");

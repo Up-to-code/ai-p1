@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { requireOrgId } from "../../../lib/org-context";
 import { requireOrganizationAction, recordOrganizationAction } from "../../../lib/action-workflow";
-import { createOrganizationRole } from "../../../lib/clerk-org";
+import { createOrganizationRole } from "../../../lib/better-auth-org";
 import { assertRoleNameIsCustom, normalizeOrganizationRoleName, validatePermissionPayload } from "../../../lib/access-policy";
 
 export default defineTool({
@@ -17,7 +17,7 @@ export default defineTool({
     const normalizedRole = normalizeOrganizationRoleName(args.role);
     if (!normalizedRole) throw new Error("Work role name is required.");
     assertRoleNameIsCustom(normalizedRole);
-    const result = await createOrganizationRole(organizationId, {
+    const result = await createOrganizationRole(ctx, organizationId, {
       name: normalizedRole,
       permissions: validatePermissionPayload(args.permission),
     });

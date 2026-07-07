@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { BrandMark } from "@/components/logo";
-import { useHeadlessClerkAuth } from "../hooks/use-headless-clerk-auth";
+import { useAuthFlow } from "../hooks/use-auth-flow";
 
 type AuthCallbackClientProps = {
   callbackURL?: string | null;
@@ -13,7 +13,7 @@ type AuthCallbackClientProps = {
 
 export function AuthCallbackClient({ callbackURL, locale }: AuthCallbackClientProps) {
   const t = useTranslations("Auth.callback");
-  const auth = useHeadlessClerkAuth({ callbackURL, locale, mode: "sign-in" });
+  const auth = useAuthFlow({ callbackURL, locale, mode: "sign-in" });
   const { finalizeCallback } = auth;
 
   useEffect(() => {

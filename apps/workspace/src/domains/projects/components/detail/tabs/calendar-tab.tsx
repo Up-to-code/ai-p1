@@ -46,10 +46,8 @@ export function CalendarTab({ project, organizationId, spaceId }: CalendarTabPro
   const events = calendarResult.data?.events ?? [];
 
   const displayEvents = events.map((ev: CalendarEventType) => {
-    const start = new Date(`${ev.date}T${ev.time || "00:00"}`);
-    const end = ev.endTime
-      ? new Date(`${ev.date}T${ev.endTime}`)
-      : new Date(start.getTime() + 60 * 60 * 1000);
+    const start = ev.startAt ? new Date(ev.startAt) : new Date(`${ev.date}T${ev.time || "00:00"}`);
+    const end = ev.endAt ? new Date(ev.endAt) : new Date(start.getTime() + 60 * 60 * 1000);
     return {
       id: ev.id,
       title: ev.title,
@@ -122,10 +120,10 @@ export function CalendarTab({ project, organizationId, spaceId }: CalendarTabPro
                 if (!newTitle.trim()) return;
                 await createCalendarEventRequest(organizationId, {
                   title: newTitle,
-                  owner: "project",
                   type: newType as any,
                   date: newDate || new Date().toISOString().split("T")[0],
                   time: newTime,
+                  durationMinutes: 60,
                   status: "confirmed",
                   projectId: project.id,
                 });

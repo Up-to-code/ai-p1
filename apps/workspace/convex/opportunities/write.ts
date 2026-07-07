@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { opportunityInputValidator, opportunityValidator } from "./validators";
 
@@ -12,7 +12,7 @@ export const createFromHono = mutation({
   args: { organizationId: v.string(), input: opportunityInputValidator },
   returns: opportunityValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const now = Date.now();
     const ownerUserId = args.input.ownerUserId ?? user._id;
@@ -45,7 +45,7 @@ export const updateFromHono = mutation({
   args: { organizationId: v.string(), opportunityId: v.id("opportunities"), input: opportunityInputValidator },
   returns: opportunityValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.opportunityId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Opportunity was not found.");
@@ -77,7 +77,7 @@ export const deleteFromHono = mutation({
   args: { organizationId: v.string(), opportunityId: v.id("opportunities") },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.opportunityId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Opportunity was not found.");

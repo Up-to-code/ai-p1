@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { internalMutation, mutation, query } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import { apiKeys } from "../apiKeys";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import {
   createMcpConnectionInputValidator,
@@ -145,7 +145,7 @@ async function assertCanUseConnection(
   organizationId: string,
   connection: Doc<"organizationMcpConnections">,
 ) {
-  const user = await clerkAuthComponent.getAuthUser(ctx);
+  const user = await authUser.getAuthUser(ctx);
   if (
     mcpConnectionPrincipalType(connection) === "user" &&
     (connection.principalUserId ?? connection.createdByUserId) === user._id
@@ -200,7 +200,7 @@ export const list = query({
   args: { organizationId: v.string() },
   returns: v.array(mcpConnectionValidator),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationMember(ctx, args.organizationId);
     const canManage = await canManageMcpConnections(ctx, args.organizationId);
     const connections = await ctx.db
@@ -216,7 +216,7 @@ export const createFromHono = mutation({
   args: { organizationId: v.string(), input: createMcpConnectionInputValidator },
   returns: v.object({ connection: mcpConnectionValidator, secret: v.string() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationMember(ctx, args.organizationId);
     const principalType = args.input.principalType ?? "user";
     await assertCanCreatePrincipal(ctx, args.organizationId, principalType);

@@ -41,7 +41,7 @@ import {
   updateOrganizationMemberRole,
   type OrganizationInvitation,
   type OrganizationMember,
-} from "../../api/clerk-organization-api";
+} from "../../api";
 import {
   canManageCustomPermissions,
   formatRoleName,
@@ -56,6 +56,7 @@ import {
   type InviteMode,
   type Tab,
 } from "../../settings-view-model";
+import { invalidateOrganizationSettings, organizationSettingsKeys } from "../../settings-cache";
 import { OrganizationLogoUploader } from "../organization-logo-uploader";
 import {
   EmptyState,
@@ -94,27 +95,27 @@ export function OrganizationScreen() {
   const [customPermissionsOpen, setCustomPermissionsOpen] = useState(false);
 
   const membersQuery = useQuery({
-    queryKey: ["organization-members", organizationId],
+    queryKey: organizationSettingsKeys.members(organizationId),
     queryFn: () => listOrganizationMembers(organizationId),
     enabled: Boolean(organizationId),
   });
   const invitationsQuery = useQuery({
-    queryKey: ["organization-invitations", organizationId],
+    queryKey: organizationSettingsKeys.invitations(organizationId),
     queryFn: () => listOrganizationInvitations(organizationId),
     enabled: Boolean(organizationId),
   });
   const rolesQuery = useQuery({
-    queryKey: ["organization-roles", organizationId],
+    queryKey: organizationSettingsKeys.roles(organizationId),
     queryFn: () => listOrganizationRoles(organizationId),
     enabled: Boolean(organizationId),
   });
   const capabilitiesQuery = useQuery({
-    queryKey: ["organization-capabilities", organizationId],
+    queryKey: organizationSettingsKeys.capabilities(organizationId),
     queryFn: () => getOrganizationCapabilities(organizationId),
     enabled: Boolean(organizationId),
   });
   const organizationNotificationQuery = useQuery({
-    queryKey: ["organization-notification-settings", organizationId],
+    queryKey: organizationSettingsKeys.notifications(organizationId),
     queryFn: () => getOrganizationNotificationPreferences(organizationId),
     enabled: Boolean(
       organizationId &&
@@ -174,10 +175,7 @@ export function OrganizationScreen() {
 
   const updateProfile = useUpdateOrganizationProfileMutation(organizationId);
   const refreshOrganizationData = () => {
-    queryClient.invalidateQueries({ queryKey: ["organization-members", organizationId] });
-    queryClient.invalidateQueries({ queryKey: ["organization-invitations", organizationId] });
-    queryClient.invalidateQueries({ queryKey: ["organization-roles", organizationId] });
-    queryClient.invalidateQueries({ queryKey: ["organization-capabilities", organizationId] });
+    void invalidateOrganizationSettings(queryClient, organizationId, ["members", "invitations", "roles", "capabilities"]);
   };
 
   const authOrgMutation = useMutation({
@@ -187,7 +185,7 @@ export function OrganizationScreen() {
     mutationFn: (input: { email: string; role: string }) => createOrganizationInvitation(organizationId, input),
     onSuccess: () => {
       handleInviteDialogOpenChange(false);
-      queryClient.invalidateQueries({ queryKey: ["organization-invitations", organizationId] });
+      void invalidateOrganizationSettings(queryClient, organizationId, ["invitations"]);
       toast({ title: t("toasts.inviteCreatedTitle"), description: t("toasts.inviteEmailCreatedDesc"), type: "success" });
     },
     onError: (error) => toast({ title: t("toasts.actionFailed"), description: error.message, type: "error" }),
@@ -211,7 +209,7 @@ export function OrganizationScreen() {
   const cancelInviteMutation = useMutation({
     mutationFn: (invitationId: string) => cancelOrganizationInvitation(organizationId, invitationId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organization-invitations", organizationId] });
+      void invalidateOrganizationSettings(queryClient, organizationId, ["invitations"]);
       toast({ title: t("toasts.inviteCanceledTitle"), description: t("toasts.inviteCanceledDesc"), type: "success" });
     },
     onError: (error) => toast({ title: t("toasts.actionFailed"), description: error.message, type: "error" }),
@@ -227,7 +225,7 @@ export function OrganizationScreen() {
     mutationFn: ({ memberId, role }: { memberId: string; role: string }) => updateOrganizationMemberRole(organizationId, memberId, role),
     onSuccess: () => {
       setMemberAction(null);
-      queryClient.invalidateQueries({ queryKey: ["organization-members", organizationId] });
+      void invalidateOrganizationSettings(queryClient, organizationId, ["members"]);
       toast({ title: t("toasts.memberRoleTitle"), description: t("toasts.memberRoleDesc"), type: "success" });
     },
     onError: (error) => toast({ title: t("toasts.actionFailed"), description: error.message, type: "error" }),
@@ -236,7 +234,7 @@ export function OrganizationScreen() {
     mutationFn: (memberId: string) => removeOrganizationMember(organizationId, memberId),
     onSuccess: () => {
       setMemberAction(null);
-      queryClient.invalidateQueries({ queryKey: ["organization-members", organizationId] });
+      void invalidateOrganizationSettings(queryClient, organizationId, ["members"]);
       toast({ title: t("toasts.memberRemovedTitle"), description: t("toasts.memberRemovedDesc"), type: "success" });
     },
     onError: (error) => toast({ title: t("toasts.actionFailed"), description: error.message, type: "error" }),
@@ -244,7 +242,7 @@ export function OrganizationScreen() {
   const updateOrganizationNotificationsMutation = useMutation({
     mutationFn: (input: NotificationPreference) => updateOrganizationNotificationPreferences(organizationId, input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organization-notification-settings", organizationId] });
+      void invalidateOrganizationSettings(queryClient, organizationId, ["notifications"]);
       toast({ title: t("toasts.notificationSettingsSavedTitle"), description: t("toasts.notificationSettingsSavedDesc"), type: "success" });
     },
     onError: (error) => toast({ title: t("toasts.actionFailed"), description: error.message, type: "error" }),

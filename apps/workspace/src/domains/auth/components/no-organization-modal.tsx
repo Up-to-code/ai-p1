@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useClerk, useUser } from "@clerk/nextjs";
 import { AlertCircle, ArrowRight, Loader2, Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -15,23 +14,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { createClerkOrganization } from "@/lib/auth-client";
-
-function isOrganizationsDisabledError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.toLowerCase().includes("organizations feature is not enabled");
-}
-
-function isOrganizationSlugsDisabledError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.toLowerCase().includes("does not have slugs enabled");
-}
+import { authClient } from "@/lib/auth-client";
 
 export function NoOrganizationModal() {
   const t = useTranslations("NoOrganizationModal");
   const router = useRouter();
-  const clerk = useClerk();
-  const { isLoaded: userLoaded } = useUser();
   const [organizationName, setOrganizationName] = useState("");
   const [busyAction, setBusyAction] = useState<"create" | "">("");
   const [error, setError] = useState("");
@@ -48,26 +35,17 @@ export function NoOrganizationModal() {
     setBusyAction("create");
     setError("");
     try {
-      const organization = await createClerkOrganization(clerk, name);
-      if (!organization?.id) throw new Error(t("errorDesc"));
-      await clerk.setActive({ organization: organization.id });
+      const slug = name.toLowerCase().replace(/\s+/g, "-");
+      const result = await authClient.organization.create({ name, slug });
+      if (!result.data?.id) throw new Error(t("errorDesc"));
+      await authClient.organization.setActive({ organizationId: result.data.id });
       router.replace("/onboarding");
     } catch (caught) {
-      if (isOrganizationsDisabledError(caught)) {
-        setError(t("organizationsDisabled"));
-        return;
-      }
-      if (isOrganizationSlugsDisabledError(caught)) {
-        setError(t("slugsDisabled"));
-        return;
-      }
       setError(caught instanceof Error ? caught.message : t("errorDesc"));
     } finally {
       setBusyAction("");
     }
   }
-
-  if (!userLoaded) return null;
 
   return (
     <Dialog open>

@@ -661,3 +661,217 @@
   box-shadow: none !important;
 }
 
+.qentrah-svar-calendar,
+.qentrah-svar-calendar .wx-willow-theme,
+.qentrah-svar-calendar .wx-calendar {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.qentrah-svar-calendar .wx-willow-theme {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.qentrah-svar-calendar .wx-layout-content,
+.qentrah-svar-calendar .wx-layout-main,
+.qentrah-svar-calendar .wx-scrollable-section,
+.qentrah-svar-calendar .wx-scroll-grid,
+.qentrah-svar-calendar .wx-content {
+  min-height: 0;
+}
+
+.qentrah-svar-calendar .wx-layout-main,
+.qentrah-svar-calendar .wx-scrollable-section,
+.qentrah-svar-calendar .wx-scroll-grid {
+  flex: 1 1 auto;
+}
+
+.qentrah-svar-calendar .wx-scrollable-section {
+  height: 100%;
+}
+
+.qentrah-svar-calendar .wx-scroll-grid {
+  height: 100%;
+  min-height: 640px;
+}
+
+.qentrah-svar-calendar .wx-willow-theme,
+.qentrah-svar-calendar .wx-willow-dark-theme {
+  --wx-background: var(--background);
+  --wx-background-alt: var(--muted);
+  --wx-background-hover: var(--accent);
+  --wx-color-font: var(--foreground);
+  --wx-color-font-alt: var(--muted-foreground);
+  --wx-color-primary: var(--primary);
+  --wx-color-primary-font: var(--primary-foreground);
+  --wx-color-primary-selected: color-mix(in oklch, var(--primary) 12%, transparent);
+  --wx-color-secondary: var(--card);
+  --wx-color-secondary-hover: var(--accent);
+  --wx-color-secondary-font: var(--foreground);
+  --wx-color-secondary-border: var(--border);
+  --wx-border: 1px solid var(--border);
+  --wx-border-light: 1px solid var(--border);
+  --wx-border-medium: 1px solid var(--border);
+  --wx-button-background: var(--card);
+  --wx-button-font-color: var(--foreground);
+  --wx-button-border: 1px solid var(--border);
+  --wx-input-background: var(--card);
+  --wx-input-font-color: var(--foreground);
+  --wx-input-border: 1px solid var(--border);
+  --wx-popup-background: var(--popover);
+  --wx-calendar-grid-color: var(--border);
+  --wx-calendar-weekend-background: color-mix(in oklch, var(--muted) 28%, transparent);
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.dark .qentrah-svar-calendar .wx-willow-dark-theme {
+  --wx-background: var(--background);
+  --wx-background-alt: var(--card);
+  --wx-background-hover: var(--accent);
+  --wx-color-primary-selected: color-mix(in oklch, var(--primary) 20%, transparent);
+  --wx-calendar-weekend-background: var(--card);
+}
+
+.qentrah-svar-calendar .wx-x-headers-row,
+.qentrah-svar-calendar .wx-x-headers-sticky,
+.qentrah-svar-calendar .wx-y-headers-sticky,
+.qentrah-svar-calendar .wx-corner,
+.qentrah-svar-calendar .wx-section-sticky {
+  background: var(--background);
+}
+
+.qentrah-svar-calendar .wx-box-event,
+.qentrah-svar-calendar .wx-bar-event {
+  border: 1px solid color-mix(in oklch, var(--q-calendar-event-color, var(--primary)) 34%, transparent);
+  background: color-mix(in oklch, var(--q-calendar-event-color, var(--primary)) 18%, var(--card));
+  color: var(--foreground);
+  box-shadow: none;
+}
+
+.qentrah-svar-calendar .wx-box-event:hover,
+.qentrah-svar-calendar .wx-bar-event:hover {
+  opacity: 1;
+  background: color-mix(in oklch, var(--q-calendar-event-color, var(--primary)) 24%, var(--card));
+}
+
+.qentrah-svar-calendar .wx-grid-cell {
+  background: var(--background);
+}
+
+.qentrah-svar-calendar .wx-grid-cell.wx-weekend {
+  background: color-mix(in oklch, var(--card) 82%, var(--background));
+}
+
+.qentrah-svar-calendar .wx-grid-cell.wx-out-of-month {
+  background: color-mix(in oklch, var(--muted) 34%, var(--background));
+}
+
+.qentrah-svar-calendar .wx-grid-cell.wx-today {
+  background: color-mix(in oklch, var(--primary) 8%, var(--background));
+}
+
+.qentrah-svar-calendar .wx-grid-section {
+  background: var(--background);
+}
+
+.qentrah-svar-calendar .wx-month-day {
+  color: var(--foreground);
+}
+
+.qentrah-svar-calendar .wx-day-number,
+.qentrah-svar-calendar .wx-day-num,
+.qentrah-svar-calendar .wx-weekday-header,
+.qentrah-svar-calendar .wx-month-label {
+  color: var(--foreground);
+}
+
+.qentrah-svar-calendar .wx-out-of-month .wx-day-number,
+.qentrah-svar-calendar .wx-out-of-month .wx-day-num {
+  color: var(--muted-foreground);
+}
+
+.qentrah-svar-calendar .wx-today .wx-day-number,
+.qentrah-svar-calendar .wx-today .wx-day-num {
+  color: var(--primary);
+}
+
+.qentrah-svar-calendar .qentrah-calendar-event-meeting {
+  --q-calendar-event-color: #6f00c2;
+}
+
+.qentrah-svar-calendar .qentrah-calendar-event-deadline {
+  --q-calendar-event-color: #d93232;
+}
+
+.qentrah-svar-calendar .qentrah-calendar-event-reminder {
+  --q-calendar-event-color: #ed8e00;
+}
+
+.qentrah-svar-calendar .qentrah-calendar-event-milestone {
+  --q-calendar-event-color: #2bb673;
+}
+
+.qentrah-svar-calendar .qentrah-calendar-event-focusBlock {
+  --q-calendar-event-color: #45c5f9;
+}
+
+.qentrah-calendar-event-content {
+  display: flex;
+  min-width: 0;
+  height: 100%;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.qentrah-calendar-event-time {
+  color: color-mix(in oklch, var(--foreground) 76%, transparent);
+  white-space: nowrap;
+}
+
+.qentrah-calendar-event-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dark .qentrah-svar-calendar .wx-box-event,
+.dark .qentrah-svar-calendar .wx-bar-event {
+  border-color: color-mix(in oklch, var(--q-calendar-event-color, var(--primary)) 42%, transparent);
+  background: color-mix(in oklch, var(--q-calendar-event-color, var(--primary)) 22%, var(--card));
+  color: var(--foreground);
+}
+
+.dark .qentrah-svar-calendar .wx-box-event:hover,
+.dark .qentrah-svar-calendar .wx-bar-event:hover {
+  background: color-mix(in oklch, var(--q-calendar-event-color, var(--primary)) 30%, var(--card));
+}
+
+.dark .qentrah-svar-calendar .wx-grid-cell {
+  background: var(--background);
+}
+
+.dark .qentrah-svar-calendar .wx-grid-cell.wx-weekend {
+  background: color-mix(in oklch, var(--card) 72%, black);
+}
+
+.dark .qentrah-svar-calendar .wx-grid-cell.wx-out-of-month {
+  background: color-mix(in oklch, var(--card) 52%, black);
+}
+
+.dark .qentrah-svar-calendar .wx-grid-cell.wx-today {
+  background: color-mix(in oklch, var(--primary) 12%, var(--background));
+}
+
+.dark .qentrah-svar-calendar .wx-grid-section {
+  background: var(--background);
+}

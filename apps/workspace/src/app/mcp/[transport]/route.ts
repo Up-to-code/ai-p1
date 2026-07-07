@@ -1,8 +1,7 @@
-import { auth } from "@clerk/nextjs/server";
-import { verifyClerkToken } from "@clerk/mcp-tools/next";
 import { createMcpHandler, withMcpAuth } from "mcp-handler";
 import { fetchAction } from "convex/nextjs";
 import { api } from "@convex/_generated/api";
+import { authenticateMcpRequest } from "@/server/protocols/mcp/authorization/better-auth";
 import { mcpToolCatalog } from "@/server/protocols/mcp/tools/catalog";
 
 function textContent(value: unknown) {
@@ -13,26 +12,6 @@ function textContent(value: unknown) {
         text: typeof value === "string" ? value : JSON.stringify(value, null, 2),
       },
     ],
-  };
-}
-
-async function verifyToken(_req: Request, bearerToken?: string) {
-  const clerkAuth = await auth({ acceptsToken: "oauth_token" });
-  const authInfo = verifyClerkToken(
-    clerkAuth as Parameters<typeof verifyClerkToken>[0],
-    bearerToken,
-  );
-  if (!authInfo) return undefined;
-
-  const convexToken = await (clerkAuth as unknown as { getToken: (opts: { template: string }) => Promise<string | null> }).getToken({ template: "convex" });
-  if (!convexToken) return undefined;
-
-  return {
-    ...authInfo,
-    extra: {
-      ...authInfo.extra,
-      convexToken,
-    },
   };
 }
 
@@ -48,7 +27,10 @@ const handler = withMcpAuth(
             inputSchema: tool.inputSchema ?? {},
             annotations: tool.destructive ? { destructiveHint: true } : undefined,
           },
-          async (input: Record<string, unknown>, extra: { authInfo?: { extra?: { convexToken?: string } } }) => {
+          async (
+            input: Record<string, unknown>,
+            extra: { authInfo?: { extra?: { convexToken?: string } } },
+          ) => {
             const convexToken = extra.authInfo?.extra?.convexToken;
             if (!convexToken) throw new Error("No authentication token.");
             try {
@@ -91,7 +73,7 @@ const handler = withMcpAuth(
       basePath: "/mcp",
     },
   ),
-  verifyToken,
+  authenticateMcpRequest,
   { required: true },
 );
 

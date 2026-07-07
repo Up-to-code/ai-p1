@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { requireOrgId } from "../../../lib/org-context";
 import { requireOrganizationAction, recordOrganizationAction } from "../../../lib/action-workflow";
-import { listOrganizationMembers, listOrganizationRoles, updateOrganizationMemberRole } from "../../../lib/clerk-org";
+import { listOrganizationMembers, listOrganizationRoles, updateOrganizationMemberRole } from "../../../lib/better-auth-org";
 import { assertCanChangeMemberRole } from "../../../lib/access-policy";
 
 export default defineTool({
@@ -15,11 +15,11 @@ export default defineTool({
     const organizationId = requireOrgId(ctx);
     await requireOrganizationAction(ctx, organizationId, "member", "update");
     const [members, roles] = await Promise.all([
-      listOrganizationMembers(organizationId),
-      listOrganizationRoles(organizationId),
+      listOrganizationMembers(ctx, organizationId),
+      listOrganizationRoles(ctx, organizationId),
     ]);
     assertCanChangeMemberRole({ targetMemberId: args.memberId, nextRole: args.role, members, roles });
-    const result = await updateOrganizationMemberRole(organizationId, args.memberId, args.role);
+    const result = await updateOrganizationMemberRole(ctx, organizationId, args.memberId, args.role);
     await recordOrganizationAction(ctx, organizationId, {
       action: "organization.member.role.update",
       target: args.memberId,

@@ -1,6 +1,6 @@
 import type { Id } from "../../_generated/dataModel";
 import type { QueryCtx, MutationCtx } from "../../_generated/server";
-import { clerkAuthComponent } from "../../auth";
+import { authUser } from "../../auth";
 import {
   assertCanAccessSpace,
   assertCanPerformSpaceAction,
@@ -24,7 +24,7 @@ function presentSpace(space: any) {
 
 export const spaces_list: ReadHandler = async (ctx, args) => {
   const { organizationId, permissions } = args;
-  const user = await clerkAuthComponent.getAuthUser(ctx);
+  const user = await authUser.getAuthUser(ctx);
   const spaces = await ctx.db
     .query("spaces")
     .withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId))
@@ -39,7 +39,7 @@ export const spaces_list: ReadHandler = async (ctx, args) => {
 export const spaces_get: ReadHandler = async (ctx, args) => {
   const { organizationId, input } = args;
   const spaceId = input.spaceId as Id<"spaces">;
-  const user = await clerkAuthComponent.getAuthUser(ctx);
+  const user = await authUser.getAuthUser(ctx);
   await assertCanAccessSpace(ctx, organizationId, spaceId, user._id);
   const space = await ctx.db.get(spaceId);
   if (!space || space.organizationId !== organizationId || space.deletedAt) {
@@ -50,7 +50,7 @@ export const spaces_get: ReadHandler = async (ctx, args) => {
 
 export const spaces_create: WriteHandler = async (ctx, args) => {
   const { organizationId, input, actorId, now } = args;
-  const user = await clerkAuthComponent.getAuthUser(ctx);
+  const user = await authUser.getAuthUser(ctx);
   // Check if user can create spaces in the organization
   // For now, we'll allow creation - in production, check org role
 
@@ -106,7 +106,7 @@ export const spaces_create: WriteHandler = async (ctx, args) => {
 export const spaces_update: WriteHandler = async (ctx, args) => {
   const { organizationId, input, actorId, now } = args;
   const spaceId = input.spaceId as Id<"spaces">;
-  const user = await clerkAuthComponent.getAuthUser(ctx);
+  const user = await authUser.getAuthUser(ctx);
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "update");
 
   const existing = await ctx.db.get(spaceId);
@@ -148,7 +148,7 @@ export const spaces_update: WriteHandler = async (ctx, args) => {
 export const spaces_delete: WriteHandler = async (ctx, args) => {
   const { organizationId, input, actorId, now } = args;
   const spaceId = input.spaceId as Id<"spaces">;
-  const user = await clerkAuthComponent.getAuthUser(ctx);
+  const user = await authUser.getAuthUser(ctx);
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "delete");
 
   const existing = await ctx.db.get(spaceId);
@@ -196,7 +196,7 @@ export const spaces_delete: WriteHandler = async (ctx, args) => {
 export const space_members_list: ReadHandler = async (ctx, args) => {
   const { organizationId, input } = args;
   const spaceId = input.spaceId as Id<"spaces">;
-  const user = await clerkAuthComponent.getAuthUser(ctx);
+  const user = await authUser.getAuthUser(ctx);
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, user._id, "read");
   const members = await ctx.db
     .query("spaceMembers")
@@ -214,7 +214,7 @@ export const space_members_list: ReadHandler = async (ctx, args) => {
 export const space_members_add: WriteHandler = async (ctx, args) => {
   const { organizationId, input, actorId, now } = args;
   const spaceId = input.spaceId as Id<"spaces">;
-  const user = await clerkAuthComponent.getAuthUser(ctx);
+  const user = await authUser.getAuthUser(ctx);
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "update");
 
   const space = await ctx.db.get(spaceId);
@@ -261,7 +261,7 @@ export const space_members_add: WriteHandler = async (ctx, args) => {
 export const space_members_remove: WriteHandler = async (ctx, args) => {
   const { organizationId, input, actorId, now } = args;
   const spaceId = input.spaceId as Id<"spaces">;
-  const user = await clerkAuthComponent.getAuthUser(ctx);
+  const user = await authUser.getAuthUser(ctx);
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "update");
 
   const space = await ctx.db.get(spaceId);
@@ -319,7 +319,7 @@ export const space_members_remove: WriteHandler = async (ctx, args) => {
 export const space_members_update_role: WriteHandler = async (ctx, args) => {
   const { organizationId, input, actorId, now } = args;
   const spaceId = input.spaceId as Id<"spaces">;
-  const user = await clerkAuthComponent.getAuthUser(ctx);
+  const user = await authUser.getAuthUser(ctx);
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "update");
 
   const space = await ctx.db.get(spaceId);

@@ -19,7 +19,7 @@ import {
   getOrganizationCapabilities,
   type OrganizationMember,
   type OrganizationInvitation,
-} from "@/domains/organization/api/clerk-organization-api";
+} from "@/domains/organization/api";
 import { formatRoleName, ownerMemberCount, roleOptions } from "@/domains/organization/settings-view-model";
 
 export function TeamPageRedesigned() {

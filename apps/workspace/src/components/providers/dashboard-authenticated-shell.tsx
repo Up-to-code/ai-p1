@@ -30,7 +30,7 @@ function QuickChatToggleWrapper() {
 
   return (
     <>
-      <ResizableHandle withHandle />
+      <ResizableHandle className="bg-transparent transition-colors hover:bg-border/70" />
       <QuickChatPanel />
     </>
   );
@@ -50,7 +50,7 @@ export function DashboardAuthenticatedShell({
     session.workspace.organizationId,
   );
 
-  // 8-second timeout for loadingSession — if Clerk/Convex auth never settles
+  // 8-second timeout for loadingSession — if Better Auth/Convex auth never settles
   // (e.g. unauthenticated user hitting /ws), redirect to sign-in instead of
   // showing an infinite spinner.
   useEffect(() => {
@@ -153,7 +153,7 @@ export function DashboardAuthenticatedShell({
       <SidebarRailProvider>
         <QuickChatProvider>
         <NavigationProvider>
-          <div className="flex h-screen flex-col overflow-hidden bg-background text-text-primary">
+          <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
             {/* Full-width header */}
             <Topbar />
 
@@ -163,7 +163,7 @@ export function DashboardAuthenticatedShell({
 
               <ResizablePanelGroup orientation="horizontal">
                 {/* Main content */}
-                <ResizablePanel className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
+                <ResizablePanel defaultSize="62%" minSize="45%" className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
                   <div className="flex min-h-0 flex-1 overflow-hidden">
                     <div className="flex min-h-0 flex-1 flex-col outline-none">
                       {children}

@@ -62,6 +62,8 @@ export default function InboxPage() {
   const activeChannel = channels.find((c) => c.id === activeChannelId);
 
   const messages = useMessagesQuery(activeChannelId || undefined);
+  const isMessagesLoading = activeChannelId ? messages === undefined : false;
+  const visibleMessages = messages ?? [];
   const sendMessageMutation = useSendMessageMutation(
     orgId || undefined,
     activeChannelId || undefined,
@@ -99,7 +101,7 @@ export default function InboxPage() {
     }
   };
   const handleEditMessage = (messageId: string, content: string) => {
-    const message = messages.find((m) => m.id === messageId);
+    const message = visibleMessages.find((m) => m.id === messageId);
     if (message) {
       setEditingMessage({ id: messageId, content: message.content });
     }
@@ -240,11 +242,11 @@ export default function InboxPage() {
             {/* Message list */}
             <div className="flex-1 min-h-0">
               <MessageList
-                messages={messages}
+                messages={visibleMessages}
                 currentUserId={session.user?.id ?? ""}
                 organizationId={orgId ?? undefined}
                 onReply={(messageId) => {
-                  const message = messages.find((m) => m.id === messageId);
+                  const message = visibleMessages.find((m) => m.id === messageId);
                   if (message) {
                     setReplyTo({
                       id: messageId,
@@ -259,7 +261,7 @@ export default function InboxPage() {
                 onEdit={handleEditMessage}
                 onDelete={handleDeleteMessage}
                 onReaction={handleAddReaction}
-                isLoading={messages.isLoading}
+                isLoading={isMessagesLoading}
               />
             </div>
 
@@ -300,9 +302,9 @@ export default function InboxPage() {
         onSendToConversation={(result) => {
           // Append result title as a message to the active channel
           if (activeChannelId) {
-            sendMessageMutation.mutate(
-              `[${result.category.toUpperCase()}] ${result.title}`,
-            );
+            sendMessageMutation.mutate({
+              content: `[${result.category.toUpperCase()}] ${result.title}`,
+            });
           }
         }}
       />

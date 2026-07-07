@@ -16,6 +16,7 @@ import { WorkOsRecordDrawer } from "@/domains/work-os/components/work-os-record-
 import { useClientOptionsQuery } from "@/domains/clients/api/clients";
 import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
 import { useCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
+import { useWorkspaceOptimisticMutation } from "@/domains/cache/hooks/use-workspace-optimistic-mutation";
 import { PageHeader } from "@/components/shared/page-header";
 import {
   createOpportunityRequest,
@@ -42,6 +43,7 @@ export function OpportunitiesScreen() {
   const common = useTranslations("Common");
   const session = useAuthSession();
   const queryClient = useQueryClient();
+  const optimisticMutation = useWorkspaceOptimisticMutation();
   const { toast } = useToast();
   const workspaceStatus = session.workspace.status;
   const organizationId = workspaceStatus === "ready" ? session.workspace.organizationId ?? undefined : undefined;
@@ -165,24 +167,18 @@ export function OpportunitiesScreen() {
     if (!organizationId || opportunity.stage === targetStage) return;
 
     const values = opportunityValuesForStage(opportunity, targetStage);
-    const previousEntries = queryClient.getQueriesData<Opportunity[]>({ queryKey: ["opportunities"] });
-
     setBusyId(opportunity.id);
-    await queryClient.cancelQueries({ queryKey: ["opportunities"] });
-    queryClient.setQueriesData<Opportunity[]>({ queryKey: ["opportunities"] }, (current) => {
-      if (!current) return current;
-      return current.map((row) =>
-        row.id === opportunity.id ? { ...row, stage: targetStage, status: values.status } : row,
-      );
-    });
+    const optimistic = await optimisticMutation.patchLists<Opportunity>(
+      ["opportunities"],
+      opportunity.id,
+      { stage: targetStage, status: values.status },
+    );
 
     try {
       await updateOpportunityRequest(organizationId, opportunity.id, values);
       await queryClient.invalidateQueries({ queryKey: ["opportunities-stats"] });
     } catch (error) {
-      previousEntries.forEach(([key, data]) => {
-        if (data !== undefined) queryClient.setQueryData(key, data);
-      });
+      optimistic.rollback();
       toast({
         title: error instanceof Error ? error.message : t("actions.saveFailed"),
         type: "error",

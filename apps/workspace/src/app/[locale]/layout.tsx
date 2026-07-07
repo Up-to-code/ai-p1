@@ -1,9 +1,8 @@
-import { ClerkProvider } from "@clerk/nextjs";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
- 
+
 import { LocaleDocumentAttrs } from "@/components/i18n/locale-document-attrs";
 import { UiLocalizer } from '@/components/i18n/ui-localizer';
 import { BackendProviders } from "@/components/providers/backend-providers";
@@ -31,20 +30,18 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <ClerkProvider>
-      <NextIntlClientProvider messages={messages}>
-        <BackendProviders>
-          <ThemeProvider>
-            <TooltipProvider>
-              <ToastProvider>
-                <LocaleDocumentAttrs locale={locale} />
-                <UiLocalizer />
-                {children}
-              </ToastProvider>
-            </TooltipProvider>
-          </ThemeProvider>
-        </BackendProviders>
-      </NextIntlClientProvider>
-    </ClerkProvider>
+    <NextIntlClientProvider messages={messages}>
+      <BackendProviders>
+        <ThemeProvider>
+          <TooltipProvider>
+            <ToastProvider>
+              <LocaleDocumentAttrs locale={locale} />
+              <UiLocalizer />
+              {children}
+            </ToastProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </BackendProviders>
+    </NextIntlClientProvider>
   );
 }

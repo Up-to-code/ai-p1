@@ -1,19 +1,9 @@
-import type { QueryCtx, MutationCtx } from "../_generated/server";
-import type { Doc } from "../_generated/dataModel";
-
-/**
- * Three-Layer Permission System (Organization → Space → Project)
- * 
- * This matches the actual Convex schema:
- * - Organization (top-level tenant, managed via Clerk/WorkOS)
- * - Spaces (within organizations, with spaceMembers table)
- * - Projects (within organizations, linked to spaces via projectSpaces junction table)
- */
+import type { Doc, Id } from "../_generated/dataModel";
+import { components } from "../_generated/api";
 
 export type OrganizationRole = "owner" | "admin" | "member";
 export type SpaceRole = "admin" | "member" | "viewer";
 export type ProjectVisibility = "private" | "space_members" | "organization";
-export type SpaceVisibility = "private" | "public" | "request_only";
 
 export type Resource =
   | "organization"
@@ -23,427 +13,365 @@ export type Resource =
   | "client"
   | "deal"
   | "calendar"
-  | "media";
+  | "media"
+  | "team"
+  | "member"
+  | "role"
+  | "asset"
+  | "visibility"
+  | "integration"
+  | "apiKey"
+  | "oauthApp"
+  | "channel";
 
 export type Action = "create" | "read" | "update" | "delete";
 
-/**
- * Normalize a Clerk org role claim to our internal OrganizationRole type.
- *
- * Clerk's JWT template may emit roles in different formats depending on version
- * and dashboard configuration:
- *   - Plain:   "owner" | "admin" | "member"
- *   - Prefixed: "org:owner" | "org:admin" | "org:member"
- *
- * We accept both and strip the "org:" prefix when present.
- */
-function normalizeClerkOrgRole(raw: string): OrganizationRole | null {
+type PermissionCtx = {
+  auth: {
+    getUserIdentity: () => Promise<{ subject?: string } | null>;
+  };
+  db: any;
+  runQuery: any;
+};
+
+const organizationRoles: OrganizationRole[] = ["owner", "admin", "member"];
+
+function normalizeRoleName(raw: string) {
   const stripped = raw.startsWith("org:") ? raw.slice(4) : raw;
-  const validRoles: OrganizationRole[] = ["owner", "admin", "member"];
-  return validRoles.includes(stripped as OrganizationRole)
+  return stripped.trim();
+}
+
+function splitRoleList(raw: string) {
+  return raw
+    .split(",")
+    .map(normalizeRoleName)
+    .filter(Boolean);
+}
+
+function normalizeOrganizationRole(raw: string): OrganizationRole | null {
+  const stripped = normalizeRoleName(raw);
+  return organizationRoles.includes(stripped as OrganizationRole)
     ? (stripped as OrganizationRole)
     : null;
 }
 
-/**
- * Get user's organization role from Clerk auth identity.
- * The JWT issued by Clerk contains org_id / orgId and org_role / orgRole claims
- * that reflect the user's active organization membership.
- *
- * Convex exposes custom JWT claims with their raw claim names, so we try both
- * snake_case (Clerk's default Convex template) and camelCase variants.
- */
+function normalizeProjectVisibility(value: Doc<"projects">["visibility"]): ProjectVisibility {
+  if (value === "organization" || value === "space_members" || value === "private") return value;
+  if (value === "workspace") return "organization";
+  if (value === "team") return "space_members";
+  return "private";
+}
+
+async function getIdentityForUser(ctx: PermissionCtx, userId: string) {
+  const identity = await ctx.auth.getUserIdentity();
+  return identity?.subject === userId ? identity : null;
+}
+
+async function getTokenOrganizationRoles(
+  ctx: PermissionCtx,
+  organizationId: string,
+  userId: string,
+): Promise<string[]> {
+  const identity = await getIdentityForUser(ctx, userId);
+  if (!identity) return [];
+
+  const claims = identity as Record<string, unknown>;
+  const tokenOrgId =
+    (claims.org_id as string | undefined) ??
+    (claims.orgId as string | undefined);
+  const tokenOrgRole =
+    (claims.org_role as string | undefined) ??
+    (claims.orgRole as string | undefined);
+
+  if (tokenOrgId !== organizationId || !tokenOrgRole) return [];
+  return splitRoleList(tokenOrgRole);
+}
+
+async function getBetterAuthMembershipRole(
+  ctx: PermissionCtx,
+  organizationId: string,
+  userId: string,
+): Promise<string | null> {
+  const member = await ctx.runQuery(components.betterAuth.adapter.findOne, {
+    model: "member",
+    where: [
+      { field: "organizationId", value: organizationId },
+      { field: "userId", value: userId },
+    ],
+  });
+
+  return typeof member?.role === "string" ? member.role : null;
+}
+
+async function getOrganizationRoleNames(
+  ctx: PermissionCtx,
+  organizationId: string,
+  userId: string,
+): Promise<string[]> {
+  const tokenRoles = await getTokenOrganizationRoles(ctx, organizationId, userId);
+  if (tokenRoles.length > 0) return tokenRoles;
+
+  const membershipRole = await getBetterAuthMembershipRole(ctx, organizationId, userId);
+  return membershipRole ? splitRoleList(membershipRole) : [];
+}
+
 export async function getOrganizationRole(
-  ctx: QueryCtx,
+  ctx: PermissionCtx,
   organizationId: string,
   userId: string,
 ): Promise<OrganizationRole | null> {
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity || identity.subject !== userId) {
-    return null;
+  const roles = await getOrganizationRoleNames(ctx, organizationId, userId);
+  for (const role of roles) {
+    const normalized = normalizeOrganizationRole(role);
+    if (normalized) return normalized;
   }
-  
-  // Convex exposes custom JWT claims with their raw name — Clerk's Convex template
-  // uses snake_case (org_id / org_role). Fall back to camelCase for custom templates.
-  const claims = identity as Record<string, unknown>;
-  const tokenOrgId =
-    (claims["org_id"] as string | undefined) ??
-    (claims["orgId"] as string | undefined);
-  const tokenOrgRole =
-    (claims["org_role"] as string | undefined) ??
-    (claims["orgRole"] as string | undefined);
-  
-  // Only trust the role if it's for the requested organization
-  if (tokenOrgId && tokenOrgId === organizationId && tokenOrgRole) {
-    return normalizeClerkOrgRole(tokenOrgRole);
-  }
-  
   return null;
 }
 
-/**
- * Get user's role in a space
- */
 export async function getSpaceRole(
-  ctx: QueryCtx,
+  ctx: PermissionCtx,
   organizationId: string,
-  spaceId: Doc<"spaces">["_id"],
+  spaceId: Id<"spaces">,
   userId: string,
 ): Promise<SpaceRole | null> {
   const member = await ctx.db
     .query("spaceMembers")
-    .withIndex("by_space_user", (q) =>
+    .withIndex("by_space_user", (q: any) =>
       q.eq("organizationId", organizationId)
-       .eq("spaceId", spaceId)
-       .eq("userId", userId),
+        .eq("spaceId", spaceId)
+        .eq("userId", userId),
     )
     .first();
 
-  return member?.role ?? null;
+  return member && !member.deletedAt ? member.role : null;
 }
 
-/**
- * Check if user can access a space based on visibility and membership
- */
+async function listProjectSpaceIds(
+  ctx: PermissionCtx,
+  organizationId: string,
+  projectId: Id<"projects">,
+) {
+  const links = await ctx.db
+    .query("projectSpaces")
+    .withIndex("by_project_id", (q: any) =>
+      q.eq("organizationId", organizationId).eq("projectId", projectId),
+    )
+    .collect();
+
+  return links
+    .filter((link: { deletedAt?: number }) => !link.deletedAt)
+    .map((link: { spaceId: Id<"spaces"> }) => link.spaceId);
+}
+
 export async function canAccessSpace(
-  ctx: QueryCtx,
+  ctx: PermissionCtx,
   organizationId: string,
-  spaceId: Doc<"spaces">["_id"],
+  spaceId: Id<"spaces">,
   userId: string,
 ): Promise<boolean> {
-  const space = await ctx.db.get(spaceId) as Doc<"spaces"> | null;
-  if (!space || space.organizationId !== organizationId || space.deletedAt) {
-    return false;
-  }
+  const space = await ctx.db.get(spaceId);
+  if (!space || space.organizationId !== organizationId || space.deletedAt) return false;
 
   const orgRole = await getOrganizationRole(ctx, organizationId, userId);
-  
-  // Organization owners have access to all spaces
-  if (orgRole === "owner") {
-    return true;
-  }
+  if (orgRole === "owner") return true;
 
   const spaceRole = await getSpaceRole(ctx, organizationId, spaceId, userId);
-  
-  // Explicit member
-  if (spaceRole !== null) {
-    return true;
-  }
+  if (spaceRole) return true;
 
-  // Check visibility
-  switch (space.visibility) {
-    case "public":
-      // All org members can view public spaces
-      return orgRole !== null;
-    case "request_only":
-      // All org members can discover request_only spaces
-      return orgRole !== null;
-    case "private":
-      // Only explicit members can access private spaces
-      return false;
-    default:
-      return false;
-  }
+  return Boolean(orgRole && (space.visibility === "public" || space.visibility === "request_only"));
 }
 
-/**
- * Check if user can access a project based on visibility and membership
- */
 export async function canAccessProject(
-  ctx: QueryCtx,
+  ctx: PermissionCtx,
   organizationId: string,
-  projectId: Doc<"projects">["_id"],
+  projectId: Id<"projects">,
   userId: string,
 ): Promise<boolean> {
-  const project = await ctx.db.get(projectId) as Doc<"projects"> | null;
-  if (!project || project.organizationId !== organizationId || project.deletedAt) {
-    return false;
-  }
+  const project = await ctx.db.get(projectId);
+  if (!project || project.organizationId !== organizationId || project.deletedAt || project.isDeleted) return false;
 
   const orgRole = await getOrganizationRole(ctx, organizationId, userId);
-  
-  // Organization owners have access to all projects
-  if (orgRole === "owner") {
-    return true;
+  if (orgRole === "owner" || orgRole === "admin") return true;
+  if (project.ownerUserId === userId) return true;
+
+  const visibility = normalizeProjectVisibility(project.visibility);
+  if (visibility === "organization") return Boolean(orgRole);
+  if (visibility === "private") return false;
+
+  const spaceIds = await listProjectSpaceIds(ctx, organizationId, projectId);
+  for (const spaceId of spaceIds) {
+    if (await canAccessSpace(ctx, organizationId, spaceId, userId)) return true;
   }
 
-  // Check project visibility
-  const visibility = project.visibility ?? "private";
-  
-  switch (visibility) {
-    case "organization":
-      // All org members can access
-      return orgRole !== null;
-    case "space_members":
-      // Members of linked spaces can access
-      if (project.spaceIds && project.spaceIds.length > 0) {
-        for (const spaceId of project.spaceIds) {
-          const canAccess = await canAccessSpace(ctx, organizationId, spaceId, userId);
-          if (canAccess) {
-            return true;
-          }
-        }
-      }
-      return false;
-    case "private":
-      // Only project owner (for now - would need projectMembers table for full implementation)
-      return project.ownerUserId === userId;
-    default:
-      return false;
-  }
+  return false;
 }
 
-/**
- * Check if user can perform an action on a space
- */
 export async function canPerformSpaceAction(
-  ctx: QueryCtx,
+  ctx: PermissionCtx,
   organizationId: string,
-  spaceId: Doc<"spaces">["_id"],
+  spaceId: Id<"spaces">,
   userId: string,
   action: Action,
 ): Promise<boolean> {
   const orgRole = await getOrganizationRole(ctx, organizationId, userId);
+  if (orgRole === "owner") return true;
+  if (orgRole === "admin") return action !== "delete";
+
   const spaceRole = await getSpaceRole(ctx, organizationId, spaceId, userId);
-
-  // Organization owners have full access
-  if (orgRole === "owner") {
-    return true;
-  }
-
-  // Organization admins can read and create spaces
-  if (orgRole === "admin") {
-    if (action === "read" || action === "create") {
-      return true;
-    }
-  }
-
-  // Space-specific permissions
-  if (spaceRole === "admin") {
-    // Space admins can do everything except delete (only org owner can delete)
-    return action !== "delete";
-  }
-
+  if (spaceRole === "admin") return action !== "delete";
   if (spaceRole === "member") {
-    // Members can read and create projects (if allowed)
-    if (action === "read") {
-      return true;
-    }
+    if (action === "read" || action === "update") return true;
     if (action === "create") {
-      const space = await ctx.db.get(spaceId) as Doc<"spaces"> | null;
-      return space?.allowMemberProjectCreation ?? false;
+      const space = await ctx.db.get(spaceId);
+      return Boolean(space && !space.deletedAt && space.allowMemberProjectCreation);
     }
   }
-
-  if (spaceRole === "viewer") {
-    // Viewers can only read
-    return action === "read";
-  }
+  if (spaceRole === "viewer") return action === "read";
 
   return false;
 }
 
-/**
- * Check if user can perform an action on a project
- */
 export async function canPerformProjectAction(
-  ctx: QueryCtx,
+  ctx: PermissionCtx,
   organizationId: string,
-  projectId: Doc<"projects">["_id"],
+  projectId: Id<"projects">,
   userId: string,
   action: Action,
 ): Promise<boolean> {
+  const project = await ctx.db.get(projectId);
+  if (!project || project.organizationId !== organizationId || project.deletedAt || project.isDeleted) return false;
+
   const orgRole = await getOrganizationRole(ctx, organizationId, userId);
+  if (orgRole === "owner") return true;
+  if (orgRole === "admin") return action !== "delete";
+  if (project.ownerUserId === userId) return true;
 
-  // Organization owners have full access
-  if (orgRole === "owner") {
-    return true;
-  }
+  if (action === "read" && await canAccessProject(ctx, organizationId, projectId, userId)) return true;
 
-  // Organization admins can read and create projects
-  if (orgRole === "admin") {
-    if (action === "read" || action === "create") {
-      return true;
-    }
-  }
-
-  const project = await ctx.db.get(projectId) as Doc<"projects"> | null;
-  if (!project) {
-    return false;
-  }
-
-  // Project owner can do everything
-  if (project.ownerUserId === userId) {
-    return true;
-  }
-
-  // Check space membership for access
-  if (project.spaceIds && project.spaceIds.length > 0) {
-    for (const spaceId of project.spaceIds) {
-      const spaceRole = await getSpaceRole(ctx, organizationId, spaceId, userId);
-      
-      if (spaceRole === "admin") {
-        // Space admins can update projects in their space
-        if (action === "read" || action === "update") {
-          return true;
-        }
-      }
-      
-      if (spaceRole === "member") {
-        // Members can read and update projects
-        if (action === "read" || action === "update") {
-          return true;
-        }
-      }
-      
-      if (spaceRole === "viewer") {
-        // Viewers can only read
-        if (action === "read") {
-          return true;
-        }
-      }
-    }
+  const spaceIds = await listProjectSpaceIds(ctx, organizationId, projectId);
+  for (const spaceId of spaceIds) {
+    const spaceRole = await getSpaceRole(ctx, organizationId, spaceId, userId);
+    if (spaceRole === "admin") return action === "read" || action === "update" || action === "create";
+    if (spaceRole === "member") return action === "read" || action === "update";
+    if (spaceRole === "viewer" && action === "read") return true;
   }
 
   return false;
 }
 
-/**
- * Assert that user can access a space, throw if not
- */
-export async function assertCanAccessSpace(
-  ctx: QueryCtx,
+const memberActions: Record<Resource, Action[]> = {
+  organization: ["read"],
+  space: ["read"],
+  project: ["read"],
+  task: ["create", "read", "update"],
+  client: ["read"],
+  deal: ["read"],
+  calendar: ["create", "read", "update"],
+  media: ["read"],
+  team: ["read"],
+  member: ["read"],
+  role: ["read"],
+  asset: ["read"],
+  visibility: ["read"],
+  integration: ["read"],
+  apiKey: [],
+  oauthApp: ["read"],
+  channel: ["read"],
+};
+
+async function customRoleCanPerform(
+  ctx: PermissionCtx,
   organizationId: string,
-  spaceId: Doc<"spaces">["_id"],
+  role: string,
+  resource: Resource,
+  action: Action,
+) {
+  const customRole = await ctx.db
+    .query("organizationWorkRoles")
+    .withIndex("by_organization_role", (q: any) =>
+      q.eq("organizationId", organizationId).eq("role", role),
+    )
+    .unique();
+
+  if (!customRole) return false;
+  const actions = customRole.permission?.[resource] ?? [];
+  return Array.isArray(actions) && actions.includes(action);
+}
+
+export async function canPerformOrganizationAction(
+  ctx: PermissionCtx,
+  organizationId: string,
   userId: string,
-): Promise<void> {
-  const canAccess = await canAccessSpace(ctx, organizationId, spaceId, userId);
-  if (!canAccess) {
+  resource: Resource,
+  action: Action,
+): Promise<boolean> {
+  const roles = await getOrganizationRoleNames(ctx, organizationId, userId);
+
+  for (const role of roles) {
+    const orgRole = normalizeOrganizationRole(role);
+    if (orgRole === "owner") return true;
+    if (orgRole === "admin" && !(resource === "organization" && action === "delete")) return true;
+    if (orgRole === "member" && (memberActions[resource]?.includes(action) ?? false)) return true;
+    if (!orgRole && await customRoleCanPerform(ctx, organizationId, role, resource, action)) return true;
+  }
+
+  return false;
+}
+
+export async function assertCanAccessSpace(
+  ctx: PermissionCtx,
+  organizationId: string,
+  spaceId: Id<"spaces">,
+  userId: string,
+) {
+  if (!(await canAccessSpace(ctx, organizationId, spaceId, userId))) {
     throw new Error("PERMISSION_DENIED: You do not have access to this space");
   }
 }
 
-/**
- * Assert that user can perform an action on a space
- */
 export async function assertCanPerformSpaceAction(
-  ctx: QueryCtx,
+  ctx: PermissionCtx,
   organizationId: string,
-  spaceId: Doc<"spaces">["_id"],
+  spaceId: Id<"spaces">,
   userId: string,
   action: Action,
-): Promise<void> {
-  const canPerform = await canPerformSpaceAction(ctx, organizationId, spaceId, userId, action);
-  if (!canPerform) {
+) {
+  if (!(await canPerformSpaceAction(ctx, organizationId, spaceId, userId, action))) {
     throw new Error(`PERMISSION_DENIED: You do not have permission to ${action} this space`);
   }
 }
 
-/**
- * Assert that user can access a project
- */
 export async function assertCanAccessProject(
-  ctx: QueryCtx,
+  ctx: PermissionCtx,
   organizationId: string,
-  projectId: Doc<"projects">["_id"],
+  projectId: Id<"projects">,
   userId: string,
-): Promise<void> {
-  const canAccess = await canAccessProject(ctx, organizationId, projectId, userId);
-  if (!canAccess) {
+) {
+  if (!(await canAccessProject(ctx, organizationId, projectId, userId))) {
     throw new Error("PERMISSION_DENIED: You do not have access to this project");
   }
 }
 
-/**
- * Assert that user can perform an action on a project
- */
 export async function assertCanPerformProjectAction(
-  ctx: QueryCtx,
+  ctx: PermissionCtx,
   organizationId: string,
-  projectId: Doc<"projects">["_id"],
+  projectId: Id<"projects">,
   userId: string,
   action: Action,
-): Promise<void> {
-  const canPerform = await canPerformProjectAction(ctx, organizationId, projectId, userId, action);
-  if (!canPerform) {
+) {
+  if (!(await canPerformProjectAction(ctx, organizationId, projectId, userId, action))) {
     throw new Error(`PERMISSION_DENIED: You do not have permission to ${action} this project`);
   }
 }
 
-/**
- * Check if user can perform an action on an organization resource
- *
- * NOTE on JWT claims fallback:
- * The Clerk "convex" JWT template must include `org_id` and `org_role` claims
- * for full role-based enforcement. If those claims are absent (template not
- * configured), we fall back to a "safe default" policy:
- *   - read  → allowed for any authenticated user (low risk; the client-side
- *             guard in organization-context.ts already verified Clerk membership)
- *   - write → denied (requires confirmed role from JWT)
- * This prevents a broken JWT template from locking users out of the app while
- * still blocking unauthenticated mutations.
- */
-export async function canPerformOrganizationAction(
-  ctx: QueryCtx,
-  organizationId: string,
-  userId: string,
-  resource: Resource,
-  action: Action,
-): Promise<boolean> {
-  const orgRole = await getOrganizationRole(ctx, organizationId, userId);
-
-  if (orgRole === "owner") {
-    return true;
-  }
-
-  if (orgRole === "admin") {
-    // Admins can do most things except delete organization
-    if (resource === "organization" && action === "delete") {
-      return false;
-    }
-    return true;
-  }
-
-  if (orgRole === "member") {
-    // Members have limited permissions
-    const allowedActions: Record<Resource, Action[]> = {
-      organization: ["read"],
-      space: ["read"],
-      project: ["read", "create"],
-      task: ["create", "read", "update"],
-      client: ["read"],
-      deal: ["read"],
-      calendar: ["create", "read", "update"],
-      media: ["read"],
-    };
-
-    return allowedActions[resource]?.includes(action) ?? false;
-  }
-
-  // orgRole is null — JWT template is missing org claims.
-  // Allow reads for authenticated users as a safe fallback; deny all writes.
-  if (orgRole === null && action === "read") {
-    const identity = await ctx.auth.getUserIdentity();
-    if (identity && identity.subject === userId) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/**
- * Assert that user can perform an action on an organization resource
- */
 export async function assertCanPerformOrganizationAction(
-  ctx: QueryCtx,
+  ctx: PermissionCtx,
   organizationId: string,
   userId: string,
   resource: Resource,
   action: Action,
-): Promise<void> {
-  const canPerform = await canPerformOrganizationAction(ctx, organizationId, userId, resource, action);
-  if (!canPerform) {
+) {
+  if (!(await canPerformOrganizationAction(ctx, organizationId, userId, resource, action))) {
     throw new Error(`PERMISSION_DENIED: You do not have permission to ${action} ${resource}`);
   }
 }

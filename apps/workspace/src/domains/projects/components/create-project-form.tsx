@@ -48,7 +48,7 @@ export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProject
       opportunityId: "",
       status: "planned",
       health: "onTrack",
-      visibility: "team",
+      visibility: "space_members",
       startDate: "",
       endDate: "",
       budget: "",
@@ -164,12 +164,12 @@ export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProject
       label: t("visibilityLabel"),
       value: (
         <select
-          value={form.watch("visibility") ?? "team"}
+          value={form.watch("visibility") ?? "space_members"}
           onChange={(e) => form.setValue("visibility", e.target.value as any)}
           className="h-8 rounded-lg border-0 bg-transparent px-2 text-sm font-semibold text-foreground focus:ring-1 focus:ring-ring outline-none cursor-pointer"
         >
-          <option value="team">{t("visibilityTeam")}</option>
-          <option value="workspace">{t("visibilityPublic")}</option>
+          <option value="space_members">{t("visibilityTeam")}</option>
+          <option value="organization">{t("visibilityPublic")}</option>
           <option value="private">{t("visibilityPrivate")}</option>
         </select>
       ),

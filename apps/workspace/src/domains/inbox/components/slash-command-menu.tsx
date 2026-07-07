@@ -5,17 +5,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, User, CheckSquare, FileText, Calendar, Building2, DollarSign, FolderOpen, Bold, Italic, Code, List, ListOrdered, Quote } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import type { Editor } from "@tiptap/react";
 
 interface SlashCommand {
   id: string;
   name: string;
   description: string;
   icon: React.ElementType;
-  action: () => void;
+  action: (editor: Editor, onOpenMentionPicker: (category: string) => void) => void;
 }
 
 interface SlashCommandMenuProps {
-  editor: any;
+  editor: Editor;
   onClose: () => void;
   onOpenMentionPicker: (category: string) => void;
 }

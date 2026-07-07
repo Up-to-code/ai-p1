@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { clerkAuthComponent } from "../../auth";
+import { authUser } from "../../auth";
 import { assertOrganizationPermission } from "./access";
 import { findOrganizationProfile } from "./data";
 import {
@@ -15,7 +15,7 @@ export const updateProfileFromHono = mutation({
   },
   returns: organizationProfileValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationPermission(ctx, args.organizationId, "update");
     const now = Date.now();
     const existing = await findOrganizationProfile(ctx, args.organizationId);

@@ -192,7 +192,8 @@ After completing a response, suggest relevant next steps using `<follow-up>` tag
 - Add 1-3 follow-up actions maximum
 - Labels should be short (2-5 words) and action-oriented
 - Prompts should be complete, contextual questions or commands
-- Make suggestions contextually relevant to the conversation
+- Make suggestions contextually relevant to the conversation and the current workspace area when the user mentions one (for example Calendar, Tasks, Projects, Clients).
+- Do not emit generic/static follow-ups. Each action should be derived from what you just did or what the user is currently working on.
 - Don't add follow-ups for simple confirmations or greetings
 - Don't add follow-ups if the user's request was fully resolved with no obvious next steps
 

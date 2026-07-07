@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { fetchAuthQuery, fetchAuthMutation } from "@/server/auth/clerk-convex";
+import { fetchAuthQuery, fetchAuthMutation } from "@/server/auth/convex-auth";
 import type { CustomFieldDefinitionInput, CustomFieldValueInput } from "../validation/custom-field.schema";
 
 export async function listCustomFieldDefinitions(organizationId: string, recordType?: string) {

@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { requireOrgId } from "../../../lib/org-context";
 import { requireOrganizationAction, recordOrganizationAction } from "../../../lib/action-workflow";
-import { listOrganizationRoles, updateOrganizationRole } from "../../../lib/clerk-org";
+import { listOrganizationRoles, updateOrganizationRole } from "../../../lib/better-auth-org";
 import { assertRoleNameIsCustom, normalizeOrganizationRoleName, validatePermissionPayload } from "../../../lib/access-policy";
 
 export default defineTool({
@@ -15,14 +15,14 @@ export default defineTool({
   async execute(args, ctx) {
     const organizationId = requireOrgId(ctx);
     await requireOrganizationAction(ctx, organizationId, "role", "update");
-    const currentRole = (await listOrganizationRoles(organizationId)).find((r) => r.id === args.roleId);
+    const currentRole = (await listOrganizationRoles(ctx, organizationId)).find((r) => r.id === args.roleId);
     if (!currentRole) throw new Error("Work role was not found.");
     assertRoleNameIsCustom(currentRole.role);
 
     const nextRoleName = args.roleName ? normalizeOrganizationRoleName(args.roleName) : undefined;
     if (nextRoleName) assertRoleNameIsCustom(nextRoleName);
 
-    const result = await updateOrganizationRole(organizationId, args.roleId, {
+    const result = await updateOrganizationRole(ctx, organizationId, args.roleId, {
       name: nextRoleName,
       permissions: args.permission ? validatePermissionPayload(args.permission) : undefined,
     });

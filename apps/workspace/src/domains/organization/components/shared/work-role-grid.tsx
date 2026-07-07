@@ -10,6 +10,7 @@ export function WorkRoleGrid({
   areas,
   actionColumns,
   onToggle,
+  disabled = false,
   labels,
   getAreaLabel,
   getAreaHelp,
@@ -18,6 +19,7 @@ export function WorkRoleGrid({
   areas: WorkArea[];
   actionColumns: WorkAction[];
   onToggle: (resource: PermissionResource, action: string) => void;
+  disabled?: boolean;
   labels: Record<WorkAction | "area" | "allowedWork" | "unavailable", string>;
   getAreaLabel: (key: string) => string;
   getAreaHelp: (key: string) => string;
@@ -63,6 +65,7 @@ export function WorkRoleGrid({
                         <button
                           type="button"
                           onClick={() => onToggle(area.resource, action)}
+                          disabled={disabled}
                           aria-pressed={checked}
                           title={`${getAreaLabel(area.labelKey)}: ${labels[action]}`}
                           className={cn(
@@ -70,9 +73,10 @@ export function WorkRoleGrid({
                             checked
                               ? "border-primary bg-primary text-primary-foreground"
                               : "border-border text-muted-foreground hover:border-ring hover:text-foreground",
+                            disabled && "cursor-not-allowed opacity-55 hover:border-border hover:text-muted-foreground",
                           )}
                         >
-                          {checked ? "✓" : ""}
+                          <span className={cn("h-2 w-2 rounded-full", checked ? "bg-current" : "bg-transparent")} />
                         </button>
                       ) : (
                         <span title={labels.unavailable} className="mx-auto flex h-8 min-w-8 items-center justify-center rounded-lg border border-dashed border-border text-[10px] font-black text-muted-foreground/50">

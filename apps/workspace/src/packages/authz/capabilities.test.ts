@@ -47,6 +47,23 @@ describe("organization capability evaluator", () => {
     expect(capabilities.canReadTasks).toBe(true);
   });
 
+  it("merges object-shaped dynamic role permissions", () => {
+    const capabilities = evaluateOrganizationCapabilities({
+      memberRole: "operations",
+      dynamicRoles: [
+        {
+          role: "operations",
+          permission: { project: ["read", "update"], calendar: ["read"] },
+        },
+      ],
+    });
+
+    expect(capabilities.canReadProjects).toBe(true);
+    expect(capabilities.canUpdateProjects).toBe(true);
+    expect(capabilities.canDeleteProjects).toBe(false);
+    expect(capabilities.canReadCalendarEvents).toBe(true);
+  });
+
   it("denies unknown and missing member roles", () => {
     const unknown = evaluateOrganizationCapabilities({ memberRole: "does-not-exist" });
     const missing = evaluateOrganizationCapabilities({ memberRole: null });

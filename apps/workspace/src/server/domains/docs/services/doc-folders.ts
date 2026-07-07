@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { fetchAuthMutation } from "@/server/auth/clerk-convex";
+import { fetchAuthMutation } from "@/server/auth/convex-auth";
 import type { DocFolderPayload, DocFolderRenamePayload } from "../validation/doc.schema";
 
 export async function createDocFolder(organizationId: string, input: DocFolderPayload) {

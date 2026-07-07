@@ -9,13 +9,14 @@ import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { Link } from "@/i18n/routing";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { publicSeoLinks } from "@/lib/public-links";
-import { workspaceLinks } from "@/lib/workspace-links";
+import { getLocalizedWorkspaceUrl } from "@/lib/workspace-links";
 import { marketingNav, isLocale } from "@/lib/content";
 
 export function Navbar() {
   const localeRaw = useLocale();
   const locale = isLocale(localeRaw) ? localeRaw : "en";
   const nav = marketingNav[locale];
+  const signInUrl = getLocalizedWorkspaceUrl(locale, "sign-in");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -92,7 +93,7 @@ export function Navbar() {
 
           {/* Sign in CTA (desktop) */}
           <Link
-            href={workspaceLinks.signIn}
+            href={signInUrl}
             className={cn(
               "hidden h-9 items-center gap-1.5 rounded-xl px-4 text-[11px] font-black uppercase tracking-widest transition-all duration-200 active:scale-[0.97] md:inline-flex",
               isScrolled
@@ -153,7 +154,7 @@ export function Navbar() {
             style={{ borderColor: "var(--q-border)" }}
           >
             <Link
-              href={workspaceLinks.signIn}
+              href={signInUrl}
               className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[var(--q-accent)] text-[11px] font-black uppercase tracking-widest text-background transition-all active:scale-[0.98]"
               onClick={() => setIsMenuOpen(false)}
             >

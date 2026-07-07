@@ -8,7 +8,7 @@ import {
   createOrganizationInviteLink,
   createOrganizationMcpConnection,
   type OrganizationCapabilities,
-} from "@/domains/organization/api/clerk-organization-api";
+} from "@/domains/organization/api";
 import { expiryTimestamp } from "@/lib/utils/expiry-timestamp";
 import { shareMcpDefaultExpiry } from "../config/share.config";
 import { buildMcpPermissionsForShareAccess } from "../lib/share-mcp-permissions";

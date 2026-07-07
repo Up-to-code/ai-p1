@@ -4,7 +4,7 @@ import type {
   McpPermissionResource,
   OrganizationCapabilities,
   OrganizationMcpConnection,
-} from "./api/clerk-organization-api";
+} from "./api";
 import {
   clonePermissions,
   permissionActions,

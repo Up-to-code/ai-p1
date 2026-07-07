@@ -1,10 +1,10 @@
 "use client";
 
 import { useLayoutEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { authClient } from "@/lib/auth-client";
 import { AuthAccessScreen } from "@/components/auth/auth-access-screen";
 import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-loading";
-import { useHeadlessClerkAuth } from "../hooks/use-headless-clerk-auth";
+import { useAuthFlow } from "../hooks/use-auth-flow";
 
 const SAFE_CALLBACK_PATHS = new Set([
   "choose-org",
@@ -48,49 +48,51 @@ function resolveTarget(callbackURL: string | null | undefined, locale: string): 
       return `/${locale}${parsed.pathname}${parsed.search}`;
     }
   } catch {
-    return `/${locale}/ws`;
   }
 
   return `/${locale}/ws`;
 }
 
-type AuthEntryClientProps = {
-  callbackURL?: string | null;
+type Props = {
   locale: string;
   mode: "sign-in" | "sign-up";
+  callbackURL?: string | null;
 };
 
-export function AuthEntryClient({ callbackURL, locale, mode }: AuthEntryClientProps) {
-  const clerkAuth = useAuth();
-  const auth = useHeadlessClerkAuth({ callbackURL, locale, mode });
+export function AuthEntryClient({ locale, mode, callbackURL }: Props) {
+  const { data: session, isPending } = authClient.useSession();
+  const auth = useAuthFlow({
+    callbackURL: resolveTarget(callbackURL, locale),
+    locale,
+    mode,
+  });
 
   useLayoutEffect(() => {
-    if (clerkAuth.isLoaded && clerkAuth.isSignedIn) {
-      const target = resolveTarget(callbackURL, locale);
-      window.location.href = target;
+    if (!isPending && session?.user && callbackURL) {
+      window.location.href = resolveTarget(callbackURL, locale);
     }
-  }, [clerkAuth.isLoaded, clerkAuth.isSignedIn, callbackURL, locale]);
+  }, [isPending, session, callbackURL, locale]);
 
-  if (!clerkAuth.isLoaded) {
-    return <WorkspaceRouteLoading variant="session" />;
+  if (isPending) {
+    return <WorkspaceRouteLoading variant="auth" authMode={mode} />;
   }
 
-  if (clerkAuth.isSignedIn) {
-    return null;
+  if (session?.user) {
+    return <WorkspaceRouteLoading variant="auth" authMode={mode} />;
   }
 
   return (
     <AuthAccessScreen
       error={auth.error}
-      isPending={auth.isPending || !auth.isLoaded}
+      isPending={auth.isPending}
       mode={mode}
-      onCredentialsSubmit={auth.submitCredentials}
-      onSocialSignIn={auth.signInWithSocial}
-      onVerifyCode={auth.verifyCode}
-      onForgotPassword={auth.startForgotPassword}
-      onVerifyResetCode={auth.verifyResetCode}
-      onSubmitNewPassword={auth.submitNewPassword}
-      onGoBack={auth.goBack}
+      onCredentialsSubmit={(input) => void auth.submitCredentials(input)}
+      onSocialSignIn={(provider) => void auth.signInWithSocial(provider as any)}
+      onVerifyCode={() => {}}
+      onForgotPassword={(email) => void auth.startForgotPassword(email)}
+      onVerifyResetCode={() => {}}
+      onSubmitNewPassword={() => {}}
+      onGoBack={() => auth.goBack()}
       pendingProvider={auth.pendingProvider}
       phase={auth.phase}
     />

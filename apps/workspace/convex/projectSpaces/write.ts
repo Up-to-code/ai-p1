@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
-import { clerkAuthComponent } from "../auth";
+import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { projectSpaceInputValidator, projectSpaceValidator } from "./validators";
 
@@ -13,7 +13,7 @@ export const createFromHono = mutation({
   },
   returns: projectSpaceValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "create");
 
     // Check if this project-space relationship already exists
@@ -62,7 +62,7 @@ export const updateFromHono = mutation({
   },
   returns: projectSpaceValidator,
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "update");
 
     const existing = await ctx.db.get(args.projectSpaceId);
@@ -102,7 +102,7 @@ export const deleteFromHono = mutation({
   },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "delete");
 
     const existing = await ctx.db.get(args.projectSpaceId);

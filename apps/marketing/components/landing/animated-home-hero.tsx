@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { useLocale } from "next-intl";
 import { Link } from "@/i18n/routing";
-import { workspaceLinks } from "@/lib/workspace-links";
+import { getLocalizedWorkspaceUrl } from "@/lib/workspace-links";
 import { marketingHero, isLocale } from "@/lib/content";
 import { AnimatedSphere } from "./animated-sphere";
 
@@ -12,6 +12,7 @@ export function AnimatedHomeHero() {
   const localeRaw = useLocale();
   const locale = isLocale(localeRaw) ? localeRaw : "en";
   const hero = marketingHero[locale];
+  const signUpUrl = getLocalizedWorkspaceUrl(locale, "sign-up");
 
   const [isVisible, setIsVisible] = useState(false);
   const [wordIndex, setWordIndex] = useState(0);
@@ -101,7 +102,7 @@ export function AnimatedHomeHero() {
           }`}
         >
           <a
-            href={workspaceLinks.signUp}
+            href={signUpUrl}
             className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[var(--q-accent)] px-8 text-sm font-bold text-[var(--q-bg)] transition-all hover:bg-[var(--q-accent-hover)] group"
           >
             {hero.cta}
