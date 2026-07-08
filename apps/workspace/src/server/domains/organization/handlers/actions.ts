@@ -10,6 +10,7 @@ import {
   createOrganizationWorkRole,
   deleteOrganizationWorkRole,
   getCapabilities,
+  listPendingInvitationsForCurrentUser,
   listOrganizationInvitations,
   listOrganizationMembers,
   listOrganizationWorkRoles,
@@ -112,6 +113,15 @@ export async function handleAcceptOrganizationInvitation(c: Context) {
     return c.json({ invitation });
   } catch (error) {
     return actionErrorJson(c, error, "Organization action failed.");
+  }
+}
+
+export async function handleListCurrentUserOrganizationInvitations(c: Context) {
+  try {
+    const invitations = await listPendingInvitationsForCurrentUser(c);
+    return c.json({ invitations });
+  } catch (error) {
+    return actionErrorJson(c, error, "Invitations could not be loaded.");
   }
 }
 

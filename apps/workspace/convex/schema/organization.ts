@@ -34,6 +34,49 @@ export const organizationTables = {
     .index("by_organization_id", ["organizationId"])
     .index("by_created", ["createdAt"]),
 
+  organizationSecurityUpdates: defineTable({
+    organizationId: v.string(),
+    category: v.union(
+      v.literal("verification"),
+      v.literal("invitation"),
+      v.literal("authorization"),
+      v.literal("security"),
+      v.literal("account"),
+      v.literal("other"),
+    ),
+    title: v.string(),
+    description: v.optional(v.string()),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("active"),
+      v.literal("resolved"),
+      v.literal("archived"),
+    ),
+    severity: v.optional(v.union(
+      v.literal("info"),
+      v.literal("low"),
+      v.literal("medium"),
+      v.literal("high"),
+      v.literal("critical"),
+    )),
+    source: v.optional(v.union(
+      v.literal("manual"),
+      v.literal("system"),
+      v.literal("auth"),
+      v.literal("integration"),
+    )),
+    relatedRecordType: v.optional(v.string()),
+    relatedRecordId: v.optional(v.string()),
+    createdByUserId: v.optional(v.string()),
+    resolvedByUserId: v.optional(v.string()),
+    resolvedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_organization_id", ["organizationId"])
+    .index("by_organization_category_status_updated", ["organizationId", "category", "status", "updatedAt"])
+    .index("by_organization_status_updated", ["organizationId", "status", "updatedAt"]),
+
   organizationInviteLinks: defineTable({
     organizationId: v.string(),
     role: v.string(),

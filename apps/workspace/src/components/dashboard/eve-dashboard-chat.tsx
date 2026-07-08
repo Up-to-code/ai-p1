@@ -57,7 +57,7 @@ export function EveDashboardChat({
   );
   const t = useTranslations("Assistant");
 
-  const { messages, isStreaming, errorMessage, send, stop, reset, status, session, events } = useEveChat({
+  const { messages, isStreaming, errorMessage, send, stop, reset, status, session, events, progress } = useEveChat({
     organizationId,
     initialSession: restoredThread?.sessionState,
     initialEvents: restoredThread?.events,
@@ -321,6 +321,7 @@ export function EveDashboardChat({
               messages={messages}
               isStreaming={isStreaming}
               errorMessage={errorMessage}
+              progress={progress}
               variant="page"
               isImplementing={isImplementing}
               onSendPrompt={(prompt) => {

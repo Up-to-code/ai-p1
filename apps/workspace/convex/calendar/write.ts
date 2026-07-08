@@ -39,6 +39,7 @@ async function createEventCore(ctx: MutationCtx, args: { organizationId: string;
   const id = await ctx.db.insert("calendarEvents", {
     organizationId: args.organizationId,
     ...args.input,
+    recordState: "active",
     createdByUserId: args.actorUserId,
     createdAt: now,
     updatedAt: now,
@@ -66,7 +67,7 @@ async function deleteEventCore(ctx: MutationCtx, args: { organizationId: string;
   const existing = await ctx.db.get(args.eventId);
   if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Calendar event was not found.");
   const now = Date.now();
-  await ctx.db.patch(args.eventId, { deletedAt: now, updatedAt: now });
+  await ctx.db.patch(args.eventId, { deletedAt: now, recordState: "deleted", updatedAt: now });
   await cancelQueuedJobsForSource(ctx, args.organizationId, "calendarEvent", args.eventId);
   return { removed: true as const, now, title: existing.title };
 }

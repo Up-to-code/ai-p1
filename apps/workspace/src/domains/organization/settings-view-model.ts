@@ -75,8 +75,13 @@ export function canManageCustomPermissions(input: {
   );
 }
 
-export function formatDate(value: Date | string | number) {
-  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
+export function formatDate(value: Date | string | number | null | undefined) {
+  if (value == null || value === "") return "—";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(date);
 }
 
 export function normalizeRole(value: string) {

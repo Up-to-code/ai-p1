@@ -26,11 +26,11 @@ export function SidebarSecondaryPanel() {
   return (
     <div
       className={cn(
-        "flex h-screen shrink-0 flex-col overflow-hidden border-r border-border/50 bg-secondary transition-all duration-300 ease-in-out",
-        activeRailItem ? "w-72" : "w-0 border-0",
+        "flex h-screen shrink-0 flex-col overflow-hidden border-r border-border bg-secondary transition-all duration-300 ease-in-out",
+        activeRailItem ? "w-60" : "w-0 border-0",
       )}
     >
-      <div className="flex h-full w-72 min-w-72 flex-col overflow-hidden">
+      <div className="flex h-full w-60 min-w-60 flex-col overflow-hidden">
         {activeRailItem === "home" && <SidebarIndexPanel />}
         {activeRailItem === "ai" && <SidebarChatPanel />}
         {activeRailItem === "spaces" && !showProject && <SidebarSpacePanel />}

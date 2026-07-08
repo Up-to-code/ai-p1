@@ -41,16 +41,18 @@ describe("Workspace auth route source", () => {
     expect(authScreen).toContain("GoogleMark");
     expect(authEntry).toContain("useAuth");
     const chooseOrgClient = readSource("src/domains/auth/components/choose-organization-client.tsx");
-    expect(chooseOrgClient).toContain('router.replace("/ws")');
+    expect(chooseOrgClient).toContain("resolvedCallbackURL");
     expect(authFlow).toContain("authClient.signIn.email");
     expect(authFlow).toContain("authClient.signUp.email");
   });
 
   it("uses Better Auth Convex auth wiring", () => {
     const dashboardShell = readSource("src/components/providers/dashboard-authenticated-shell.tsx");
+    const dashboardRedirect = readSource("src/components/providers/dashboard-authenticated-shell/use-dashboard-auth-redirect.ts");
     const convexAuth = readSource("convex/auth.ts");
 
-    expect(dashboardShell).toContain("getWorkspaceAuthRedirect");
+    expect(dashboardShell).toContain("useDashboardAuthRedirect");
+    expect(dashboardRedirect).toContain("getWorkspaceAuthRedirect");
     expect(convexAuth).toContain("betterAuthClient.adapter");
     expect(convexAuth).toContain("convex({ authConfig })");
   });
@@ -66,7 +68,8 @@ describe("Workspace auth route source", () => {
       expect(arMessages).not.toContain(term);
     }
     expect(chooseOrgClient).toContain('router.replace("/onboarding")');
-    expect(chooseOrgClient).toContain('router.replace("/ws")');
+    expect(chooseOrgClient).toContain("resolvedCallbackURL");
+    expect(chooseOrgClient).toContain("api.modelization.write.seedWorkspaceDefaults");
   });
 
   it("handles Better Auth organization setup errors", () => {

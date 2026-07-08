@@ -136,48 +136,4 @@ export const userTables = {
     .index("by_source_state", ["organizationId", "sourceType", "sourceId", "state"])
     .index("by_state_scheduled", ["state", "scheduledAt"]),
 
-  userTableViews: defineTable({
-    userId: v.string(),
-    name: v.string(),
-    description: v.optional(v.string()),
-    resourceType: v.string(),
-    viewType: v.string(),
-    scope: v.union(
-      v.literal("project"),
-      v.literal("space"),
-      v.literal("workspace"),
-      v.literal("global"),
-    ),
-    scopeKey: v.optional(v.string()),
-    organizationId: v.optional(v.string()),
-    projectId: v.optional(v.string()),
-    spaceId: v.optional(v.string()),
-    config: v.object({
-      groupBy: v.optional(v.string()),
-      sortBy: v.optional(v.string()),
-      search: v.optional(v.string()),
-      density: v.optional(v.union(v.literal("compact"), v.literal("normal"))),
-      showFields: v.optional(v.boolean()),
-      filters: v.optional(
-        v.array(
-          v.object({
-            id: v.string(),
-            field: v.string(),
-            operator: v.string(),
-            value: v.optional(v.any()),
-          }),
-        ),
-      ),
-      columnWidths: v.optional(v.record(v.string(), v.number())),
-      columnVisibility: v.optional(v.record(v.string(), v.boolean())),
-      columnOrder: v.optional(v.array(v.string())),
-    }),
-    isDefault: v.optional(v.boolean()),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_resource", ["userId", "resourceType"])
-    .index("by_user_resource_view", ["userId", "resourceType", "viewType"])
-    .index("by_user_default", ["userId", "isDefault"]),
 };

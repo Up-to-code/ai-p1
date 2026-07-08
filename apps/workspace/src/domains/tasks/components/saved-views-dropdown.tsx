@@ -19,11 +19,13 @@ import {
   useSetDefaultSavedViewMutation,
   type SavedViewConfig,
   type SavedViewRecord,
+  type SavedViewResourceType,
+  type SavedViewType,
 } from "@/domains/tasks/api/saved-views"
 
 export interface SavedViewsDropdownProps {
-  resourceType: string
-  viewType: string
+  resourceType: SavedViewResourceType
+  viewType: SavedViewType
   organizationId?: string
   projectId?: string
   spaceId?: string

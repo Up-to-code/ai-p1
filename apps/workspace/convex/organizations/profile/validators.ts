@@ -26,9 +26,9 @@ export const updateOrganizationProfileInputValidator = v.object({
   brandColor: v.optional(v.string()),
 });
 
-export const emptyOrganizationProfile = (organizationId: string) => ({
+export const emptyOrganizationProfile = (organizationId: string, name = "Organization") => ({
   organizationId,
-  name: "Organization",
+  name,
   legalName: "",
   type: "",
   email: "",

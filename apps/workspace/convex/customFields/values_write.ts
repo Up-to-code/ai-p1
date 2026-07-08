@@ -76,6 +76,7 @@ export const upsertFromHono = mutation({
     if (existing) {
       await ctx.db.patch(existing._id, {
         ...valueData,
+        recordState: "active",
         updatedAt: now,
         deletedAt: undefined,
       });
@@ -90,6 +91,7 @@ export const upsertFromHono = mutation({
       recordId: args.recordId,
       type: args.type,
       ...valueData,
+      recordState: "active",
       createdAt: now,
       updatedAt: now,
     });
@@ -116,6 +118,7 @@ export const deleteFromHono = mutation({
 
     await ctx.db.patch(args.valueId, {
       deletedAt: Date.now(),
+      recordState: "deleted",
       updatedAt: Date.now(),
     });
 

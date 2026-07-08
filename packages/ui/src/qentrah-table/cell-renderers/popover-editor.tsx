@@ -38,7 +38,7 @@ export function CellPopover({
 }: CellPopoverProps) {
   const triggerRef = React.useRef<HTMLDivElement | null>(null)
   const contentRef = React.useRef<HTMLDivElement | null>(null)
-  const [position, setPosition] = React.useState<{ top: number; left: number; minWidth: number } | null>(null)
+  const [position, setPosition] = React.useState<{ top: number; left: number; minWidth: number; maxHeight: number } | null>(null)
   const [mounted, setMounted] = React.useState(false)
   React.useEffect(() => setMounted(true), [])
 
@@ -47,15 +47,35 @@ export function CellPopover({
       setPosition(null)
       return
     }
-    const cell = triggerRef.current?.closest(".ag-cell")
-    const anchor = cell ?? triggerRef.current
-    if (!anchor) return
-    const rect = (anchor as HTMLElement).getBoundingClientRect()
-    const width = minWidth ?? Math.max(rect.width, 240)
+    const trigger = triggerRef.current
+    const cell = trigger?.closest(".ag-cell")
+    const triggerRect = trigger?.getBoundingClientRect()
+    const cellRect = cell instanceof HTMLElement ? cell.getBoundingClientRect() : null
+    const anchorRect =
+      triggerRect && triggerRect.width > 0 && triggerRect.height > 0
+        ? triggerRect
+        : cellRect && cellRect.width > 0 && cellRect.height > 0
+          ? cellRect
+          : null
+    if (!anchorRect) return
+    const padding = 8
+    const estimatedHeight = 320
+    const width = minWidth ?? Math.max(anchorRect.width, 240)
+    const clampedWidth = Math.min(width, window.innerWidth - padding * 2)
+    const left =
+      align === "end"
+        ? anchorRect.right - clampedWidth
+        : anchorRect.left
+    const clampedLeft = Math.min(Math.max(padding, left), window.innerWidth - clampedWidth - padding)
+    const spaceBelow = window.innerHeight - anchorRect.bottom - padding
+    const spaceAbove = anchorRect.top - padding
+    const opensAbove = spaceBelow < Math.min(estimatedHeight, spaceAbove)
+    const maxHeight = Math.max(160, opensAbove ? spaceAbove - 6 : spaceBelow - 6)
     setPosition({
-      top: rect.bottom + 6,
-      left: align === "end" ? Math.max(8, rect.right - width) : Math.max(8, rect.left),
-      minWidth: width,
+      top: opensAbove ? Math.max(padding, anchorRect.top - Math.min(estimatedHeight, maxHeight) - 6) : anchorRect.bottom + 6,
+      left: clampedLeft,
+      minWidth: clampedWidth,
+      maxHeight,
     })
   }, [open, align, minWidth])
 
@@ -87,7 +107,7 @@ export function CellPopover({
     <>
       <div
         ref={triggerRef}
-        className="contents"
+        className="inline-flex max-w-full"
         onClick={(e) => {
           e.stopPropagation()
           onOpenChange(!open)
@@ -95,7 +115,7 @@ export function CellPopover({
       >
         {trigger}
       </div>
-      {mounted && open
+      {mounted && open && position
         ? createPortal(
             <>
               {/* Scrim behind the popover — masks the rest of the
@@ -117,13 +137,14 @@ export function CellPopover({
                 data-qentrah-cell-popover
                 style={{
                   position: "fixed",
-                  top: position?.top,
-                  left: position?.left,
-                  minWidth: position?.minWidth,
+                  top: position.top,
+                  left: position.left,
+                  minWidth: position.minWidth,
+                  maxHeight: position.maxHeight,
                   zIndex: 9999,
                 }}
                 className={cn(
-                  "rounded-lg border border-[var(--q-border)] bg-[var(--q-card)] text-foreground overflow-hidden",
+                  "rounded-lg border border-[var(--q-border)] bg-[var(--q-card)] text-foreground overflow-hidden shadow-xl",
                   className
                 )}
               >

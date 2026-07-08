@@ -38,6 +38,7 @@ async function createTaskCore(ctx: MutationCtx, args: { organizationId: string; 
     organizationId: args.organizationId,
     ...args.input,
     visibility: args.input.visibility ?? "private",
+    recordState: "active",
     createdByUserId: args.actorUserId,
     createdAt: now,
     updatedAt: now,
@@ -88,7 +89,7 @@ async function deleteTaskCore(ctx: MutationCtx, args: { organizationId: string; 
   const existing = await ctx.db.get(args.taskId);
   if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Task was not found.");
   const now = Date.now();
-  await ctx.db.patch(args.taskId, { deletedAt: now, updatedAt: now });
+  await ctx.db.patch(args.taskId, { deletedAt: now, recordState: "deleted", updatedAt: now });
   await cancelQueuedJobsForSource(ctx, args.organizationId, "task", args.taskId);
 
   if (existing.projectId) {

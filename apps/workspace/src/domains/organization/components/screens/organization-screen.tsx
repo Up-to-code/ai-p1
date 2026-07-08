@@ -343,15 +343,24 @@ export function OrganizationScreen() {
     router.push(`/${locale}/organization${query ? `?${query}` : ""}`, { scroll: false });
   }
 
+  function getInvitationId(invite: OrganizationInvitation) {
+    return invite.id || invite._id || "";
+  }
+
   function makeInviteLink(invite: OrganizationInvitation) {
+    const invitationId = getInvitationId(invite);
+    if (!invitationId) return "";
+
     const origin = typeof window === "undefined" ? "" : window.location.origin;
-    return `${origin}/${locale}/accept-invite?invitationId=${encodeURIComponent(invite.id)}`;
+    return `${origin}/${locale}/accept-invite?invitationId=${encodeURIComponent(invitationId)}`;
   }
 
   async function copyInviteLink(invite: OrganizationInvitation) {
     const link = makeInviteLink(invite);
+    if (!link) return;
+
     await navigator.clipboard?.writeText(link);
-    setCopiedInviteId(invite.id);
+    setCopiedInviteId(getInvitationId(invite) || null);
     setTimeout(() => setCopiedInviteId(null), 2000);
   }
 
@@ -606,9 +615,9 @@ export function OrganizationScreen() {
                 <EmptyState title={t("invites.emptyTitle")} description={t("invites.emptyDesc")} />
               ) : (
                 <div className="overflow-hidden rounded-2xl border border-border px-5 divide-y divide-border">
-                  {pendingInviteLinks.map((inviteLink) => (
+                  {pendingInviteLinks.map((inviteLink, index) => (
                     <PendingInviteLinkRow
-                      key={inviteLink.id}
+                      key={`link:${inviteLink.id || inviteLink.createdAt || index}`}
                       inviteLink={inviteLink}
                       onCancel={() => cancelInviteLinkMutation.mutate(inviteLink.id)}
                       canceling={cancelInviteLinkMutation.isPending || !canInviteMembers}
@@ -620,14 +629,17 @@ export function OrganizationScreen() {
                       roleLabels={defaultRoleLabels}
                     />
                   ))}
-                  {(invitationsQuery.data ?? []).map((invite) => (
+                  {(invitationsQuery.data ?? []).map((invite, index) => (
                     <PendingInviteRow
-                      key={invite.id}
+                      key={`email:${invite.id || invite.email || index}:${invite.createdAt || index}`}
                       invite={invite}
-                      copied={copiedInviteId === invite.id}
+                      copied={copiedInviteId === getInvitationId(invite)}
                       onCopy={() => copyInviteLink(invite)}
-                      onCancel={() => cancelInviteMutation.mutate(invite.id)}
-                      canceling={cancelInviteMutation.isPending || !canInviteMembers}
+                      onCancel={() => {
+                        const invitationId = getInvitationId(invite);
+                        if (invitationId) cancelInviteMutation.mutate(invitationId);
+                      }}
+                      canceling={cancelInviteMutation.isPending || !canInviteMembers || !getInvitationId(invite)}
                       roleLabels={defaultRoleLabels}
                       labels={{
                         emailTitle: t("invites.emailTitle"),

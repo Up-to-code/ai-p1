@@ -67,7 +67,7 @@ async function createClientCore(ctx: MutationCtx, args: { organizationId: string
     pipelineStage: args.input.pipelineStage ?? "new",
     source: args.input.source ?? "manual",
     visibility: args.input.visibility ?? "private",
-    isDeleted: false,
+    recordState: "active",
     createdByUserId: args.actorUserId,
     createdAt: now,
     updatedAt: now,
@@ -109,7 +109,7 @@ async function deleteClientCore(ctx: MutationCtx, args: { organizationId: string
     throw new Error("Client was not found.");
   }
   const now = Date.now();
-  await ctx.db.patch(args.clientId, { deletedAt: now, isDeleted: true, updatedAt: now });
+  await ctx.db.patch(args.clientId, { deletedAt: now, recordState: "deleted", updatedAt: now });
   await enqueueClientWebhook(ctx, args.organizationId, "client.deleted", args.clientId, { id: args.clientId, deletedAt: now }, now);
   return { removed: true as const, now, name: existing.name };
 }

@@ -1,6 +1,9 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
-import { workOsCustomFieldValueValidator } from "./validators";
+import {
+  recordStateValidator,
+  workOsCustomFieldValueValidator,
+} from "./validators";
 
 export const domainTables = {
   spaces: defineTable({
@@ -10,9 +13,20 @@ export const domainTables = {
     icon: v.optional(v.string()),
     color: v.optional(v.string()),
     slug: v.string(),
-    visibility: v.union(v.literal("private"), v.literal("public"), v.literal("request_only")),
-    defaultProjectVisibility: v.optional(v.union(v.literal("private"), v.literal("space_members"), v.literal("organization"))),
+    visibility: v.union(
+      v.literal("private"),
+      v.literal("public"),
+      v.literal("request_only"),
+    ),
+    defaultProjectVisibility: v.optional(
+      v.union(
+        v.literal("private"),
+        v.literal("space_members"),
+        v.literal("organization"),
+      ),
+    ),
     allowMemberProjectCreation: v.optional(v.boolean()),
+    recordState: recordStateValidator,
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -20,20 +34,31 @@ export const domainTables = {
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_slug", ["organizationId", "slug"])
-    .index("by_organization_updated", ["organizationId", "updatedAt"]),
+    .index("by_organization_updated", ["organizationId", "updatedAt"])
+    .index("by_org_state_updated", [
+      "organizationId",
+      "recordState",
+      "updatedAt",
+    ]),
 
   spaceMembers: defineTable({
     organizationId: v.string(),
     spaceId: v.id("spaces"),
     userId: v.string(),
     role: v.union(v.literal("admin"), v.literal("member"), v.literal("viewer")),
+    recordState: recordStateValidator,
     addedByUserId: v.string(),
     addedAt: v.number(),
     deletedAt: v.optional(v.number()),
   })
     .index("by_space_id", ["organizationId", "spaceId"])
     .index("by_user_id", ["organizationId", "userId"])
-    .index("by_space_user", ["organizationId", "spaceId", "userId"]),
+    .index("by_space_user", ["organizationId", "spaceId", "userId"])
+    .index("by_org_state_updated", [
+      "organizationId",
+      "recordState",
+      "addedAt",
+    ]),
 
   projects: defineTable({
     organizationId: v.string(),
@@ -49,14 +74,20 @@ export const domainTables = {
       v.literal("completed"),
       v.literal("archived"),
     ),
-    health: v.union(v.literal("onTrack"), v.literal("atRisk"), v.literal("blocked")),
-    visibility: v.optional(v.union(
-      v.literal("private"),
-      v.literal("space_members"),
-      v.literal("organization"),
-      v.literal("team"),
-      v.literal("workspace"),
-    )),
+    health: v.union(
+      v.literal("onTrack"),
+      v.literal("atRisk"),
+      v.literal("blocked"),
+    ),
+    visibility: v.optional(
+      v.union(
+        v.literal("private"),
+        v.literal("space_members"),
+        v.literal("organization"),
+        v.literal("team"),
+        v.literal("workspace"),
+      ),
+    ),
     startDate: v.optional(v.string()),
     endDate: v.optional(v.string()),
     budget: v.optional(v.number()),
@@ -67,30 +98,58 @@ export const domainTables = {
     isStrict: v.optional(v.boolean()),
     isRollupEnabled: v.optional(v.boolean()),
     templateId: v.optional(v.string()),
-    customTabs: v.optional(v.array(v.string())),
     progress: v.optional(v.number()),
+    recordState: recordStateValidator,
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
     deletedAt: v.optional(v.number()),
-    isDeleted: v.optional(v.boolean()),
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_status", ["organizationId", "status"])
     .index("by_organization_health", ["organizationId", "health"])
     .index("by_organization_owner", ["organizationId", "ownerUserId"])
-    .index("by_organization_deleted_updated", ["organizationId", "isDeleted", "updatedAt"])
-    .index("by_organization_deleted_status_updated", ["organizationId", "isDeleted", "status", "updatedAt"])
+    .index("by_org_state_updated", [
+      "organizationId",
+      "recordState",
+      "updatedAt",
+    ])
+    .index("by_org_status_state_updated", [
+      "organizationId",
+      "status",
+      "recordState",
+      "updatedAt",
+    ])
     .index("by_client", ["organizationId", "clientId"])
     .index("by_opportunity", ["organizationId", "opportunityId"])
-    .index("by_organization_updated", ["organizationId", "updatedAt"])
-    .index("by_updated", ["updatedAt"]),
+    .index("by_organization_updated", ["organizationId", "updatedAt"]),
+
+  projectMembers: defineTable({
+    organizationId: v.string(),
+    projectId: v.id("projects"),
+    userId: v.string(),
+    role: v.union(v.literal("admin"), v.literal("member"), v.literal("viewer")),
+    recordState: recordStateValidator,
+    addedByUserId: v.string(),
+    addedAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_project_user", ["organizationId", "projectId", "userId"])
+    .index("by_user", ["organizationId", "userId"])
+    .index("by_project_role", ["organizationId", "projectId", "role"])
+    .index("by_org_state_updated", [
+      "organizationId",
+      "recordState",
+      "updatedAt",
+    ]),
 
   projectSpaces: defineTable({
     organizationId: v.string(),
     projectId: v.id("projects"),
     spaceId: v.id("spaces"),
     isPrimary: v.boolean(),
+    recordState: recordStateValidator,
     addedByUserId: v.string(),
     addedAt: v.number(),
     deletedAt: v.optional(v.number()),
@@ -100,19 +159,37 @@ export const domainTables = {
     .index("by_space_id", ["organizationId", "spaceId"])
     .index("by_project_space", ["organizationId", "projectId", "spaceId"])
     .index("by_space_project", ["organizationId", "spaceId", "projectId"])
-    .index("by_project_primary", ["organizationId", "projectId", "isPrimary"]),
+    .index("by_project_primary", ["organizationId", "projectId", "isPrimary"])
+    .index("by_org_state_updated", [
+      "organizationId",
+      "recordState",
+      "addedAt",
+    ]),
 
   clients: defineTable({
     organizationId: v.string(),
     name: v.string(),
     type: v.union(v.literal("person"), v.literal("organization")),
     ownerUserId: v.string(),
-    status: v.union(v.literal("new"), v.literal("active"), v.literal("nurture"), v.literal("inactive"), v.literal("archived")),
+    status: v.union(
+      v.literal("new"),
+      v.literal("active"),
+      v.literal("nurture"),
+      v.literal("inactive"),
+      v.literal("archived"),
+    ),
     pipelineStage: v.optional(v.string()),
     pipelineOrder: v.optional(v.number()),
     source: v.string(),
     contact: v.optional(v.string()),
-    priority: v.optional(v.union(v.literal("low"), v.literal("normal"), v.literal("high"), v.literal("urgent"))),
+    priority: v.optional(
+      v.union(
+        v.literal("low"),
+        v.literal("normal"),
+        v.literal("high"),
+        v.literal("urgent"),
+      ),
+    ),
     budget: v.optional(v.string()),
     assetInterest: v.optional(v.string()),
     added: v.optional(v.string()),
@@ -128,21 +205,31 @@ export const domainTables = {
     encryptedEmail: v.optional(v.string()),
     encryptedPhone: v.optional(v.string()),
     piiEncryptedAt: v.optional(v.number()),
-    visibility: v.optional(v.union(v.literal("private"), v.literal("team"), v.literal("workspace"))),
+    visibility: v.optional(
+      v.union(v.literal("private"), v.literal("team"), v.literal("workspace")),
+    ),
+    recordState: recordStateValidator,
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
     deletedAt: v.optional(v.number()),
-    isDeleted: v.optional(v.boolean()),
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_type", ["organizationId", "type"])
     .index("by_organization_status", ["organizationId", "status"])
     .index("by_organization_owner", ["organizationId", "ownerUserId"])
-    .index("by_organization_deleted_updated", ["organizationId", "isDeleted", "updatedAt"])
-    .index("by_organization_deleted_type_updated", ["organizationId", "isDeleted", "type", "updatedAt"])
-    .index("by_organization_updated", ["organizationId", "updatedAt"])
-    .index("by_updated", ["updatedAt"]),
+    .index("by_org_state_updated", [
+      "organizationId",
+      "recordState",
+      "updatedAt",
+    ])
+    .index("by_org_type_state_updated", [
+      "organizationId",
+      "type",
+      "recordState",
+      "updatedAt",
+    ])
+    .index("by_organization_updated", ["organizationId", "updatedAt"]),
 
   opportunities: defineTable({
     organizationId: v.string(),
@@ -166,27 +253,35 @@ export const domainTables = {
     value: v.optional(v.number()),
     currency: v.optional(v.string()),
     source: v.optional(v.string()),
-    priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high"), v.literal("urgent")),
+    priority: v.union(
+      v.literal("low"),
+      v.literal("normal"),
+      v.literal("high"),
+      v.literal("urgent"),
+    ),
     closeDate: v.optional(v.string()),
     nextStep: v.optional(v.string()),
     ownerUserId: v.string(),
     tags: v.optional(v.array(v.string())),
     customFields: v.optional(v.array(workOsCustomFieldValueValidator)),
+    recordState: recordStateValidator,
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
     closedAt: v.optional(v.number()),
     deletedAt: v.optional(v.number()),
-    isDeleted: v.optional(v.boolean()),
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_stage", ["organizationId", "stage"])
     .index("by_organization_status", ["organizationId", "status"])
     .index("by_organization_owner", ["organizationId", "ownerUserId"])
-    .index("by_organization_deleted_updated", ["organizationId", "isDeleted", "updatedAt"])
+    .index("by_org_state_updated", [
+      "organizationId",
+      "recordState",
+      "updatedAt",
+    ])
     .index("by_client", ["organizationId", "clientId"])
-    .index("by_project", ["organizationId", "projectId"])
-    .index("by_updated", ["updatedAt"]),
+    .index("by_project", ["organizationId", "projectId"]),
 
   deals: defineTable({
     organizationId: v.string(),
@@ -222,41 +317,62 @@ export const domainTables = {
     ownerUserId: v.string(),
     tags: v.optional(v.array(v.string())),
     customFields: v.optional(v.array(workOsCustomFieldValueValidator)),
+    recordState: recordStateValidator,
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
     closedAt: v.optional(v.number()),
     deletedAt: v.optional(v.number()),
-    isDeleted: v.optional(v.boolean()),
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_stage", ["organizationId", "stage"])
     .index("by_organization_status", ["organizationId", "status"])
-    .index("by_organization_deleted_updated", ["organizationId", "isDeleted", "updatedAt"])
+    .index("by_org_state_updated", [
+      "organizationId",
+      "recordState",
+      "updatedAt",
+    ])
     .index("by_client", ["organizationId", "clientId"])
-    .index("by_project", ["organizationId", "projectId"])
-    .index("by_updated", ["updatedAt"]),
+    .index("by_project", ["organizationId", "projectId"]),
 
   tasks: defineTable({
     organizationId: v.string(),
     title: v.string(),
-    status: v.union(v.literal("todo"), v.literal("inProgress"), v.literal("waiting"), v.literal("done"), v.literal("canceled")),
+    status: v.union(
+      v.literal("todo"),
+      v.literal("inProgress"),
+      v.literal("waiting"),
+      v.literal("done"),
+      v.literal("canceled"),
+    ),
     pipelineOrder: v.optional(v.number()),
-    priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high"), v.literal("urgent")),
+    priority: v.union(
+      v.literal("low"),
+      v.literal("normal"),
+      v.literal("high"),
+      v.literal("urgent"),
+    ),
     assigneeUserId: v.optional(v.string()),
     clientId: v.optional(v.string()),
     projectId: v.optional(v.string()),
     dueDate: v.optional(v.string()),
     description: v.optional(v.string()),
-    checklist: v.optional(v.array(v.object({
-      id: v.string(),
-      title: v.string(),
-      done: v.boolean(),
-    }))),
+    checklist: v.optional(
+      v.array(
+        v.object({
+          id: v.string(),
+          title: v.string(),
+          done: v.boolean(),
+        }),
+      ),
+    ),
     tags: v.optional(v.array(v.string())),
     customFields: v.optional(v.array(workOsCustomFieldValueValidator)),
-    visibility: v.optional(v.union(v.literal("private"), v.literal("team"), v.literal("workspace"))),
+    visibility: v.optional(
+      v.union(v.literal("private"), v.literal("team"), v.literal("workspace")),
+    ),
     spaceId: v.optional(v.string()),
+    recordState: recordStateValidator,
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -268,9 +384,42 @@ export const domainTables = {
     .index("by_organization_assignee", ["organizationId", "assigneeUserId"])
     .index("by_organization_client", ["organizationId", "clientId"])
     .index("by_organization_project", ["organizationId", "projectId"])
-    .index("by_organization_project_space", ["organizationId", "projectId", "spaceId"])
+    .index("by_organization_project_space", [
+      "organizationId",
+      "projectId",
+      "spaceId",
+    ])
+    .index("by_org_state_updated", [
+      "organizationId",
+      "recordState",
+      "updatedAt",
+    ])
+    .index("by_org_project_state_updated", [
+      "organizationId",
+      "projectId",
+      "recordState",
+      "updatedAt",
+    ])
+    .index("by_org_space_state_updated", [
+      "organizationId",
+      "spaceId",
+      "recordState",
+      "updatedAt",
+    ])
+    .index("by_org_assignee_state_due", [
+      "organizationId",
+      "assigneeUserId",
+      "recordState",
+      "dueDate",
+    ])
+    .index("by_org_workflow_state_order", [
+      "organizationId",
+      "status",
+      "recordState",
+      "pipelineOrder",
+    ])
     .index("by_due", ["organizationId", "dueDate"])
-    .index("by_updated", ["updatedAt"]),
+    .index("by_organization_updated", ["organizationId", "updatedAt"]),
 
   calendarEvents: defineTable({
     organizationId: v.string(),
@@ -288,7 +437,11 @@ export const domainTables = {
       v.literal("milestone"),
       v.literal("focusBlock"),
     ),
-    status: v.union(v.literal("confirmed"), v.literal("pending"), v.literal("draft")),
+    status: v.union(
+      v.literal("confirmed"),
+      v.literal("pending"),
+      v.literal("draft"),
+    ),
     attendeeUserIds: v.optional(v.array(v.string())),
     externalAttendees: v.optional(v.array(v.string())),
     location: v.optional(v.string()),
@@ -297,6 +450,7 @@ export const domainTables = {
     tags: v.optional(v.array(v.string())),
     customFields: v.optional(v.array(workOsCustomFieldValueValidator)),
     spaceId: v.optional(v.string()),
+    recordState: recordStateValidator,
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -305,10 +459,31 @@ export const domainTables = {
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_owner", ["organizationId", "ownerUserId"])
     .index("by_organization_project", ["organizationId", "projectId"])
-    .index("by_organization_project_space", ["organizationId", "projectId", "spaceId"])
+    .index("by_organization_project_space", [
+      "organizationId",
+      "projectId",
+      "spaceId",
+    ])
+    .index("by_org_state_updated", [
+      "organizationId",
+      "recordState",
+      "updatedAt",
+    ])
+    .index("by_org_project_state_updated", [
+      "organizationId",
+      "projectId",
+      "recordState",
+      "updatedAt",
+    ])
+    .index("by_org_space_state_updated", [
+      "organizationId",
+      "spaceId",
+      "recordState",
+      "updatedAt",
+    ])
     .index("by_organization_client", ["organizationId", "clientId"])
     .index("by_start", ["organizationId", "startAt"])
-    .index("by_updated", ["updatedAt"]),
+    .index("by_organization_updated", ["organizationId", "updatedAt"]),
 
   clientFollowUps: defineTable({
     organizationId: v.string(),
@@ -333,7 +508,9 @@ export const domainTables = {
     projectId: v.optional(v.string()),
     calendarEventId: v.optional(v.string()),
     assigneeUserId: v.optional(v.string()),
-    visibility: v.optional(v.union(v.literal("private"), v.literal("team"), v.literal("workspace"))),
+    visibility: v.optional(
+      v.union(v.literal("private"), v.literal("team"), v.literal("workspace")),
+    ),
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -349,15 +526,17 @@ export const domainTables = {
   workspaceWidgetLayouts: defineTable({
     organizationId: v.string(),
     userId: v.string(),
-    widgets: v.array(v.object({
-      id: v.string(),
-      type: v.string(),
-      title: v.string(),
-      w: v.number(),
-      h: v.number(),
-      x: v.optional(v.number()),
-      y: v.optional(v.number()),
-    })),
+    widgets: v.array(
+      v.object({
+        id: v.string(),
+        type: v.string(),
+        title: v.string(),
+        w: v.number(),
+        h: v.number(),
+        x: v.optional(v.number()),
+        y: v.optional(v.number()),
+      }),
+    ),
     layout: v.optional(v.any()),
     updatedAt: v.number(),
   })
@@ -371,15 +550,24 @@ export const domainTables = {
     layout: v.string(),
     notes: v.optional(v.string()),
     updatedAt: v.number(),
-  })
-    .index("by_organization_project", ["organizationId", "projectId"]),
+  }).index("by_organization_project", ["organizationId", "projectId"]),
 
   channels: defineTable({
     id: v.string(),
     organizationId: v.string(),
     name: v.string(),
-    type: v.union(v.literal("organization"), v.literal("project"), v.literal("space"), v.literal("client"), v.literal("dm")),
-    visibility: v.union(v.literal("public"), v.literal("private"), v.literal("dm")),
+    type: v.union(
+      v.literal("organization"),
+      v.literal("project"),
+      v.literal("space"),
+      v.literal("client"),
+      v.literal("dm"),
+    ),
+    visibility: v.union(
+      v.literal("public"),
+      v.literal("private"),
+      v.literal("dm"),
+    ),
     description: v.optional(v.string()),
     projectId: v.optional(v.string()),
     projectIds: v.optional(v.array(v.string())),
@@ -391,6 +579,9 @@ export const domainTables = {
     updatedAt: v.number(),
     unreadCount: v.optional(v.number()),
     lastMessageAt: v.optional(v.number()),
+    pinnedMessageId: v.optional(v.string()),
+    pinnedBy: v.optional(v.string()),
+    pinnedAt: v.optional(v.number()),
   })
     .index("by_organization", ["organizationId"])
     .index("by_project", ["projectId"])
@@ -399,6 +590,7 @@ export const domainTables = {
 
   messages: defineTable({
     id: v.string(),
+    clientMessageId: v.optional(v.string()),
     channelId: v.string(),
     content: v.string(),
     authorId: v.string(),
@@ -406,37 +598,56 @@ export const domainTables = {
     updatedAt: v.number(),
     threadId: v.optional(v.string()),
     replyToId: v.optional(v.string()),
-    reactions: v.optional(v.array(v.object({
-      emoji: v.string(),
-      userIds: v.array(v.string()),
-    }))),
-    mentions: v.optional(v.array(v.object({
-      type: v.union(
-        v.literal("user"),
-        v.literal("task"),
-        v.literal("client"),
-        v.literal("deal"),
-        v.literal("project"),
-        v.literal("document"),
-        v.literal("file"),
-        v.literal("ai"),
+    reactions: v.optional(
+      v.array(
+        v.object({
+          emoji: v.string(),
+          userIds: v.array(v.string()),
+        }),
       ),
-      id: v.string(),
-      name: v.string(),
-    }))),
-    attachments: v.optional(v.array(v.object({
-      id: v.string(),
-      name: v.string(),
-      url: v.string(),
-      type: v.string(),
-      size: v.number(),
-    }))),
-    isDeleted: v.optional(v.boolean()),
+    ),
+    mentions: v.optional(
+      v.array(
+        v.object({
+          type: v.union(
+            v.literal("user"),
+            v.literal("task"),
+            v.literal("client"),
+            v.literal("deal"),
+            v.literal("project"),
+            v.literal("document"),
+            v.literal("file"),
+            v.literal("ai"),
+          ),
+          id: v.string(),
+          name: v.string(),
+        }),
+      ),
+    ),
+    attachments: v.optional(
+      v.array(
+        v.object({
+          id: v.string(),
+          name: v.string(),
+          url: v.string(),
+          type: v.string(),
+          size: v.number(),
+        }),
+      ),
+    ),
+    recordState: recordStateValidator,
     editedAt: v.optional(v.number()),
+    pinnedAt: v.optional(v.number()),
+    pinnedBy: v.optional(v.string()),
   })
     .index("by_channel", ["channelId"])
     .index("by_channel_created", ["channelId", "createdAt"])
-    .index("by_thread", ["threadId"]),
+    .index("by_thread", ["threadId"])
+    .index("by_channel_state_created", [
+      "channelId",
+      "recordState",
+      "createdAt",
+    ]),
 
   threads: defineTable({
     id: v.string(),
@@ -456,7 +667,11 @@ export const domainTables = {
     title: v.string(),
     description: v.optional(v.string()),
     dueDate: v.optional(v.string()),
-    status: v.union(v.literal("pending"), v.literal("completed"), v.literal("canceled")),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("completed"),
+      v.literal("canceled"),
+    ),
     order: v.optional(v.number()),
     createdByUserId: v.string(),
     createdAt: v.number(),
@@ -475,7 +690,12 @@ export const domainTables = {
     taskId: v.string(),
     dependsOnTaskId: v.string(),
     projectId: v.optional(v.string()),
-    dependencyType: v.union(v.literal("finish_to_start"), v.literal("start_to_start"), v.literal("finish_to_finish"), v.literal("start_to_finish")),
+    dependencyType: v.union(
+      v.literal("finish_to_start"),
+      v.literal("start_to_start"),
+      v.literal("finish_to_finish"),
+      v.literal("start_to_finish"),
+    ),
     createdByUserId: v.string(),
     createdAt: v.number(),
     deletedAt: v.optional(v.number()),
@@ -488,7 +708,12 @@ export const domainTables = {
   piiAccessAudit: defineTable({
     organizationId: v.string(),
     userId: v.string(),
-    resourceType: v.union(v.literal("client"), v.literal("task"), v.literal("deal"), v.literal("opportunity")),
+    resourceType: v.union(
+      v.literal("client"),
+      v.literal("task"),
+      v.literal("deal"),
+      v.literal("opportunity"),
+    ),
     resourceId: v.string(),
     accessedFields: v.array(v.string()),
     accessReason: v.string(),

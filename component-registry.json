@@ -567,11 +567,53 @@
       "name": "AiConversationThread",
       "path": "apps/workspace/src/components/shared/ai-chat/ai-conversation-thread.tsx",
       "kind": "shared-ui",
-      "summary": "Shared AI chat message renderer for full AI mode and the resizable quick AI panel. Handles user/assistant layout, thinking state, message actions, follow-up actions, suggestions, and plan cards.",
+      "summary": "Shared AI chat message renderer for full AI mode and the resizable quick AI panel. Handles user/assistant layout, thinking state, live Eve action progress, follow-up actions, suggestions, and plan cards.",
       "usedIn": ["components/dashboard/eve-dashboard-chat", "components/layout/quick-chat-panel"],
-      "props": ["messages", "isStreaming", "errorMessage", "variant", "isImplementing", "onSendPrompt", "onImplementPlan"],
+      "props": ["messages", "isStreaming", "errorMessage", "progress", "variant", "isImplementing", "onSendPrompt", "onImplementPlan"],
       "createdAt": "2026-07-07",
       "notes": "Presentation-only. Containers own Eve session, persistence, thread history, composer state, and panel sizing."
+    },
+    {
+      "name": "SidebarPanelLink",
+      "path": "apps/workspace/src/components/layout/sidebar/components/sidebar-panel-link.tsx",
+      "kind": "domain-shared",
+      "summary": "Shared Workspace sidebar panel link. Handles active route/query matching, consistent icon/label layout, and optional hover picker content.",
+      "usedIn": ["components/layout/sidebar/sidebar-domain-panels", "components/layout/sidebar/sidebar-inbox-panel"],
+      "props": ["href", "icon", "label", "paramKey", "paramValue", "clearParams", "iconPicker"],
+      "createdAt": "2026-07-07",
+      "notes": "Extracted from duplicated local PanelLink modules in sidebar domain and inbox panels."
+    },
+    {
+      "name": "TaskTableView",
+      "path": "apps/workspace/src/domains/tasks/components/views/task-table-view.tsx",
+      "kind": "domain-shared",
+      "summary": "AG Grid-backed task management table using QentrahTable with task-specific density, row placement, and shared task cell editors.",
+      "usedIn": ["domains/tasks/components/views/task-view-frame"],
+      "props": ["tasks", "onTaskUpdate", "onTaskCreate", "onTaskMove"],
+      "createdAt": "2026-07-07",
+      "updatedAt": "2026-07-08",
+      "notes": "Uses @qentrah/ui/qentrah-table renderers/editors and the qentrah-task-table skin. Supports flat mode plus ClickUp-style grouped status/priority sections with collapse, group sort, drag between groups, and group-aware add-task rows."
+    },
+    {
+      "name": "TaskBoardView",
+      "path": "apps/workspace/src/domains/tasks/components/views/task-board-view.tsx",
+      "kind": "domain-shared",
+      "summary": "Native ClickUp-style task board. Renders status columns, real task metadata, inline group-aware task creation, and stable drag/drop move events.",
+      "usedIn": ["domains/tasks/components/views/task-view-frame", "domains/projects/components/views/task-board-view"],
+      "props": ["tasks", "stages", "onCardMove", "onTaskCreate", "className"],
+      "createdAt": "2026-07-07",
+      "updatedAt": "2026-07-08",
+      "notes": "Native ClickUp-style task board with compact status columns, controlled drag/drop, inline add-task forms, and optional group-aware create callback. Replaced the SVAR render because exact board UX required local layout control."
+    },
+    {
+      "name": "TaskListView",
+      "path": "apps/workspace/src/domains/tasks/components/views/task-list-view.tsx",
+      "kind": "domain-shared",
+      "summary": "ClickUp-style grouped Task list. Shows status sections with table-like rows for name, assignee, due date, priority, and action items.",
+      "usedIn": ["domains/tasks/components/views/task-view-frame"],
+      "props": ["tasks", "statusFilter"],
+      "createdAt": "2026-07-07",
+      "notes": "Replaces the previous List tab placeholder."
     }
   ]
 }

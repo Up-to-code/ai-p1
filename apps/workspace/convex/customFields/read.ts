@@ -33,8 +33,19 @@ export const listByOrganization = query({
         required: d.required,
         options: d.options,
         appliesTo: d.appliesTo,
-        defaultValue: d.defaultValue,
-        display: d.display,
+        defaultValue:
+          d.defaultTextValue ??
+          d.defaultNumberValue ??
+          d.defaultBooleanValue ??
+          d.defaultDateValue ??
+          d.defaultSelectValue ??
+          d.defaultMultiSelectValue,
+        display: {
+          tableVisible: true,
+          boardVisible: true,
+          detailVisible: true,
+          requiredOnCreate: d.required,
+        },
         order: d.order,
       }));
   },
@@ -58,8 +69,7 @@ export const listByOrganizationForTable = query({
         (d) =>
           !d.archivedAt &&
           !d.deletedAt &&
-          d.appliesTo.includes(args.recordType as any) &&
-          d.display?.tableVisible,
+          d.appliesTo.includes(args.recordType as any),
       )
       .sort((a, b) => a.order - b.order)
       .map((d) => ({

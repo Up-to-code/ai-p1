@@ -18,14 +18,14 @@ export function Sidebar() {
       className={cn(
         "flex h-screen shrink-0 overflow-hidden transition-all duration-300 ease-in-out",
         activeRailItem
-          ? "max-w-[347px] fixed inset-y-0 left-0 z-50 md:relative"
-          : "max-w-14",
+          ? "max-w-[289px] fixed inset-y-0 left-0 z-50 md:relative"
+          : "max-w-12",
       )}
     >
       {isLoading ? <SidebarRailSkeleton /> : <SidebarRail />}
       <div
         className={cn(
-          "w-[3px] shrink-0 self-stretch bg-border/80 transition-opacity duration-300",
+          "w-px shrink-0 self-stretch bg-border transition-opacity duration-300",
           activeRailItem ? "opacity-100" : "opacity-0",
         )}
       />

@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
-import { fetchAuthQuery } from "@/server/auth/convex-auth";
+import { fetchAuthAction, fetchAuthMutation, fetchAuthQuery } from "@/server/auth/convex-auth";
 import { getOrganizationCapabilities } from "@/server/utils/organization/access-checker";
 import type { OrganizationPermissionStatement } from "@/packages/authz";
 import { OrganizationActionError } from "../errors/action-error";
@@ -44,6 +44,16 @@ export async function listOrganizationInvitations(c: Context, organizationId: st
   return listInvitations(c, organizationId);
 }
 
+export async function listPendingInvitationsForCurrentUser(c: Context) {
+  const session = await getBetterAuthSession(c);
+  const email = session.user?.email?.trim().toLowerCase();
+  if (!email) {
+    throw new OrganizationActionError("Authenticated user email is required.", 401);
+  }
+
+  return fetchAuthAction(api.organizations.invitations.actions.listPendingForEmail, { email });
+}
+
 export async function listOrganizationWorkRoles(c: Context, organizationId: string) {
   await requireOrganizationAction(organizationId, "role", "read");
   return listRoles(c, organizationId);
@@ -84,7 +94,7 @@ export async function createOrganizationEmailInvitation(
     permission: { resource: "member", action: "create" },
     prepare: () => assertCanAssignRole(c, organizationId, input.role),
     perform: () => callBetterAuthOrganization(c, "/organization/invite-member", {
-      body: { organizationId, email: input.email, role: input.role },
+      body: { organizationId, email: input.email, role: input.role, resend: true },
       fallback: "Invitation could not be created.",
     }),
     audit: {
@@ -315,6 +325,11 @@ export async function acceptOrganizationEmailInvitation(
     (await getBetterAuthSession(c).catch(() => null))?.session?.activeOrganizationId;
 
   if (organizationId) {
+    const actorUserId = (await getBetterAuthSession(c).catch(() => null))?.session?.userId;
+    await fetchAuthMutation(api.organizations.profile.write.ensureProfileFromHono, {
+      organizationId,
+      actorUserId: actorUserId ?? undefined,
+    });
     await recordOrganizationAction(organizationId, {
       action: "organization.invitation.accept",
       target: invitationId,

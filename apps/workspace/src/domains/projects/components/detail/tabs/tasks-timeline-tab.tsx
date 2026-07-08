@@ -46,15 +46,6 @@ interface TasksTimelineTabProps {
   spaceId?: string;
 }
 
-function buildDefaultTabs(customTabs: string[] | undefined): ViewItem[] {
-  if (!customTabs || customTabs.length === 0) return FALLBACK_PROJECT_TABS;
-  return customTabs.map((type, i) => ({
-    id: `project-tab-${i}-${type}`,
-    type: type as ViewType,
-    label: type.charAt(0).toUpperCase() + type.slice(1),
-  }));
-}
-
 const statusColumns: { value: TaskStatus; label: string; icon: any; color: string }[] = [
   { value: "todo", label: "To Do", icon: Circle, color: "text-muted-foreground" },
   { value: "inProgress", label: "In Progress", icon: Loader2, color: "text-blue-500" },
@@ -212,7 +203,7 @@ export function TasksTimelineTab({ project, organizationId, spaceId }: TasksTime
   const tasksResult = useTasksQuery(organizationId, { projectId: project.id, spaceId });
   const tasks = tasksResult.data ?? [];
 
-  const defaultTabs = useMemo(() => buildDefaultTabs(project.customTabs), [project.customTabs]);
+  const defaultTabs = useMemo(() => FALLBACK_PROJECT_TABS, []);
   const tasksScope = `project:${project.id}:tasks`;
 
   const {

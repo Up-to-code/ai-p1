@@ -343,8 +343,6 @@ export function TaskTableView({ projectId, organizationId }: { projectId: string
         width: 44,
         minWidth: 44,
         maxWidth: 44,
-        checkboxSelection: true,
-        headerCheckboxSelection: false,
         pinned: "left",
         sortable: false,
         filter: false,
@@ -591,7 +589,11 @@ export function TaskTableView({ projectId, organizationId }: { projectId: string
           columns={columnDefs}
           density={density}
           height="100%"
-          rowSelection="multiple"
+          rowSelection={{
+            mode: "multiRow",
+            headerCheckbox: false,
+            checkboxes: true,
+          }}
           onRowClicked={(p) => {
             if (p.data?.__groupKey) {
               toggleGroup(p.data.__groupKey)

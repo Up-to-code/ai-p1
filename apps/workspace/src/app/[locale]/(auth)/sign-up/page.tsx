@@ -9,7 +9,7 @@ export default async function SignUpPage({
   searchParams: Promise<{ callbackURL?: string }>;
 }) {
   const { locale } = await params;
-  await redirectAuthenticatedUserFromAuthEntry(locale);
   const { callbackURL } = await searchParams;
+  await redirectAuthenticatedUserFromAuthEntry(locale, callbackURL);
   return <AuthEntryClient callbackURL={callbackURL} locale={locale} mode="sign-up" />;
 }

@@ -67,6 +67,7 @@ export function PriorityFlag({
   return (
     <Tag
       {...(interactive ? { type: "button" as const, onClick } : {})}
+      data-qentrah-priority-flag
       className={cn(
         "inline-flex items-center gap-1.5 font-semibold tracking-wide whitespace-nowrap",
         "transition-[background-color,color,transform] duration-150 ease-out",

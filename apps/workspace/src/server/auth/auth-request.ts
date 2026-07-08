@@ -131,10 +131,34 @@ export async function callBetterAuth<T>(
 
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
-    throw new Error(text || res.statusText);
+    const message = betterAuthErrorMessage(text || res.statusText);
+    throw new BetterAuthRequestError(message, res.status);
   }
 
   return res.json() as Promise<T>;
+}
+
+export class BetterAuthRequestError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = "BetterAuthRequestError";
+  }
+}
+
+function betterAuthErrorMessage(value: string) {
+  try {
+    const parsed = JSON.parse(value) as { message?: unknown; error?: unknown; code?: unknown };
+    if (typeof parsed.message === "string") return parsed.message;
+    if (typeof parsed.error === "string") return parsed.error;
+    if (typeof parsed.code === "string") return parsed.code;
+  } catch {
+    // Keep the raw response body below.
+  }
+
+  return value;
 }
 
 export async function getAuthRequestSession(): Promise<AuthRequestSession> {

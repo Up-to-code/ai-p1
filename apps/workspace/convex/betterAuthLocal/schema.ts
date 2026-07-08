@@ -179,6 +179,8 @@ const invitation = defineTable({
   updatedAt: v.optional(v.union(v.null(), v.number())),
 })
   .index("organizationId", ["organizationId"])
+  .index("organizationId_status", ["organizationId", "status"])
+  .index("email_organizationId_status", ["email", "organizationId", "status"])
   .index("email", ["email"]);
 
 export const tables = {

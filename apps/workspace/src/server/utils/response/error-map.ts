@@ -22,11 +22,13 @@ const STATUS_BY_CLASS: Record<ErrorClass, ContentfulStatusCode> = {
 };
 
 export function classifyError(error: unknown): ErrorClass {
-  if (error instanceof Error && error.name === "WorkspaceReadTimeoutError") return "TIMEOUT";
+  if (error instanceof Error && error.name === "WorkspaceReadTimeoutError")
+    return "TIMEOUT";
 
   if (hasStatus(error)) {
     const status = error.status;
-    if (status === 401 || status === 403) return status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN";
+    if (status === 401 || status === 403)
+      return status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN";
     if (status === 404) return "NOT_FOUND";
     if (status === 409) return "VALIDATION";
     if (status === 429) return "RATE_LIMITED";
@@ -36,7 +38,8 @@ export function classifyError(error: unknown): ErrorClass {
 
   const message = error instanceof Error ? error.message : "";
   if (/Unauthenticated/i.test(message)) return "UNAUTHENTICATED";
-  if (/platform admin required/i.test(message)) return "PLATFORM_ADMIN_REQUIRED";
+  if (/platform admin required/i.test(message))
+    return "PLATFORM_ADMIN_REQUIRED";
   if (/permission|not have access|forbidden/i.test(message)) return "FORBIDDEN";
   if (/not found/i.test(message)) return "NOT_FOUND";
   if (/rate.?limit/i.test(message)) return "RATE_LIMITED";
@@ -46,7 +49,12 @@ export function classifyError(error: unknown): ErrorClass {
 }
 
 function hasStatus(error: unknown): error is { status: number } {
-  return typeof error === "object" && error !== null && "status" in error && typeof (error as { status: unknown }).status === "number";
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    typeof (error as { status: unknown }).status === "number"
+  );
 }
 
 export function errorStatus(error: unknown): ContentfulStatusCode {
@@ -56,10 +64,15 @@ export function errorStatus(error: unknown): ContentfulStatusCode {
 const MESSAGES: Record<ErrorClass, (error: unknown) => string> = {
   UNAUTHENTICATED: () => "Sign in again to continue.",
   PLATFORM_ADMIN_REQUIRED: () => "Platform admin required.",
-  FORBIDDEN: () => "You do not have permission to perform this action.",
+  FORBIDDEN: (error) => {
+    const message = error instanceof Error ? error.message : "";
+    if (/email verification required/i.test(message)) return message;
+    return "You do not have permission to perform this action.";
+  },
   NOT_FOUND: () => "The requested workspace record was not found.",
   RATE_LIMITED: () => "Too many requests. Try again in a moment.",
-  VALIDATION: (error) => (error instanceof Error ? error.message : "Invalid request."),
+  VALIDATION: (error) =>
+    error instanceof Error ? error.message : "Invalid request.",
   TIMEOUT: () => "Workspace data took too long to load. Try again in a moment.",
   INTERNAL: () => "Internal Server Error",
 };
@@ -72,10 +85,24 @@ export function errorMessage(error: unknown, fallback: string): string {
 
 export function httpStatusFromCode(code: string): ContentfulStatusCode {
   if (code === "UNAUTHORIZED") return 401;
-  if (code === "FORBIDDEN" || code === "ACCOUNT_INACTIVE" || code === "ROLE_PENDING" || code === "ROLE_REJECTED" || code === "VERIFICATION_REQUIRED") return 403;
+  if (
+    code === "FORBIDDEN" ||
+    code === "ACCOUNT_INACTIVE" ||
+    code === "ROLE_PENDING" ||
+    code === "ROLE_REJECTED" ||
+    code === "VERIFICATION_REQUIRED"
+  )
+    return 403;
   if (code === "NOT_FOUND") return 404;
-  if (code === "ORGANIZATION_EXISTS" || code === "INVITE_EXISTS" || code === "MEMBER_EXISTS" || code === "USERNAME_TAKEN") return 409;
+  if (
+    code === "ORGANIZATION_EXISTS" ||
+    code === "INVITE_EXISTS" ||
+    code === "MEMBER_EXISTS" ||
+    code === "USERNAME_TAKEN"
+  )
+    return 409;
   if (code === "RATE_LIMITED") return 429;
-  if (code === "AUTH_CONFIGURATION_ERROR" || code === "UPSTREAM_UNAVAILABLE") return 503;
+  if (code === "AUTH_CONFIGURATION_ERROR" || code === "UPSTREAM_UNAVAILABLE")
+    return 503;
   return 500;
 }

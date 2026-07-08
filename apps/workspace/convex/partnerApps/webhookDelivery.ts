@@ -151,7 +151,7 @@ export async function applyInboundClientUpsert(
       organizationId: args.organizationId,
       ...fields,
       ...await protectClientPii(args.organizationId, fields),
-      isDeleted: false,
+      recordState: "active",
       createdByUserId: `partner:${args.partnerAppId}`,
       createdAt: now,
       updatedAt: now,

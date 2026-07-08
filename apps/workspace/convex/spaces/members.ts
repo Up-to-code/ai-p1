@@ -99,6 +99,7 @@ export const add = mutation({
       spaceId: args.spaceId,
       userId: args.userId,
       role: args.role,
+      recordState: "active",
       addedByUserId: user._id,
       addedAt: now,
     });
@@ -215,7 +216,7 @@ export const remove = mutation({
     }
 
     const now = Date.now();
-    await ctx.db.patch(existing._id, { deletedAt: now });
+    await ctx.db.patch(existing._id, { deletedAt: now, recordState: "deleted" });
 
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,

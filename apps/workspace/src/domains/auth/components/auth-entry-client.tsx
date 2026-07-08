@@ -5,53 +5,7 @@ import { authClient } from "@/lib/auth-client";
 import { AuthAccessScreen } from "@/components/auth/auth-access-screen";
 import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-loading";
 import { useAuthFlow } from "../hooks/use-auth-flow";
-
-const SAFE_CALLBACK_PATHS = new Set([
-  "choose-org",
-  "ws",
-  "accept-invite",
-  "onboarding",
-  "dashboard",
-  "projects",
-  "tasks",
-  "calendar",
-  "clients",
-  "docs",
-  "inbox",
-  "ai",
-  "organization",
-  "settings",
-]);
-
-function resolveTarget(callbackURL: string | null | undefined, locale: string): string {
-  if (!callbackURL) return `/${locale}/choose-org`;
-
-  if (
-    callbackURL.startsWith("http://") ||
-    callbackURL.startsWith("https://") ||
-    callbackURL.startsWith("//") ||
-    callbackURL.startsWith("javascript:") ||
-    callbackURL.startsWith("data:")
-  ) {
-    return `/${locale}/ws`;
-  }
-
-  const localePrefix = new RegExp(`^/(${["en", "ar"].join("|")})/`);
-  const normalized = callbackURL.replace(localePrefix, "/");
-
-  try {
-    const parsed = new URL(normalized, "https://qentrah.local");
-    const segments = parsed.pathname.replace(/^\/+|\/+$/g, "").split("/");
-    const rootPath = segments[0] ?? "";
-
-    if (SAFE_CALLBACK_PATHS.has(rootPath)) {
-      return `/${locale}${parsed.pathname}${parsed.search}`;
-    }
-  } catch {
-  }
-
-  return `/${locale}/ws`;
-}
+import { resolveAuthEntryCallbackUrl } from "../utils/auth-callback-url";
 
 type Props = {
   locale: string;
@@ -61,17 +15,20 @@ type Props = {
 
 export function AuthEntryClient({ locale, mode, callbackURL }: Props) {
   const { data: session, isPending } = authClient.useSession();
+  const targetCallbackURL = callbackURL
+    ? resolveAuthEntryCallbackUrl(locale, callbackURL, "/choose-org")
+    : `/${locale}/choose-org`;
   const auth = useAuthFlow({
-    callbackURL: resolveTarget(callbackURL, locale),
+    callbackURL: targetCallbackURL,
     locale,
     mode,
   });
 
   useLayoutEffect(() => {
     if (!isPending && session?.user && callbackURL) {
-      window.location.href = resolveTarget(callbackURL, locale);
+      window.location.href = targetCallbackURL;
     }
-  }, [isPending, session, callbackURL, locale]);
+  }, [isPending, session, callbackURL, targetCallbackURL]);
 
   if (isPending) {
     return <WorkspaceRouteLoading variant="auth" authMode={mode} />;
@@ -86,12 +43,16 @@ export function AuthEntryClient({ locale, mode, callbackURL }: Props) {
       error={auth.error}
       isPending={auth.isPending}
       mode={mode}
-      onCredentialsSubmit={(input) => void auth.submitCredentials(input)}
+      onCredentialsSubmit={(input) => void auth.submitCredentials({
+        emailAddress: input.emailAddress,
+        password: input.password,
+        name: [input.firstName, input.lastName].filter(Boolean).join(" ").trim() || undefined,
+      })}
       onSocialSignIn={(provider) => void auth.signInWithSocial(provider as any)}
       onVerifyCode={() => {}}
       onForgotPassword={(email) => void auth.startForgotPassword(email)}
-      onVerifyResetCode={() => {}}
-      onSubmitNewPassword={() => {}}
+      onVerifyResetCode={(code) => void auth.verifyResetCode(code)}
+      onSubmitNewPassword={(password) => void auth.submitNewPassword(password)}
       onGoBack={() => auth.goBack()}
       pendingProvider={auth.pendingProvider}
       phase={auth.phase}

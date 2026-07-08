@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { PanelRightClose } from "lucide-react";
+import { ChevronsLeft } from "lucide-react";
 import { useSidebarRail } from "../sidebar-rail-context";
 
 type SidebarPanelLayoutProps = {
@@ -18,16 +18,16 @@ export function SidebarPanelLayout({ title, navbarActions, header, footer, child
   return (
     <div className="flex h-full flex-col bg-secondary">
       {/* Navbar — title + actions + close */}
-      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
-        <span className="truncate text-sm font-semibold text-foreground">{title}</span>
+      <div className="flex h-10 shrink-0 items-center justify-between border-b border-border px-3">
+        <span className="truncate text-[13px] font-semibold text-foreground">{title}</span>
         <div className="flex items-center gap-0.5">
           {navbarActions}
           <button
             type="button"
             onClick={closeAll}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            <PanelRightClose className="h-4 w-4" />
+            <ChevronsLeft className="h-4 w-4" />
           </button>
         </div>
       </div>
@@ -40,7 +40,7 @@ export function SidebarPanelLayout({ title, navbarActions, header, footer, child
       )}
 
       {/* Body — dynamic scrollable content */}
-      <div className="flex-1 overflow-y-auto p-4">{children}</div>
+      <div className="flex-1 overflow-y-auto p-2">{children}</div>
 
       {/* Footer — low-usage items (feedback, token usage, etc.) */}
       {footer && (

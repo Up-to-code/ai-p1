@@ -50,6 +50,7 @@ export interface QentrahTableProps<TRow> {
    */
   theme?: "dark" | "light" | "auto"
   height?: number | string
+  domLayout?: GridOptions<TRow>["domLayout"]
   getRowId?: (row: TRow) => string
   onCellValueChanged?: GridOptions<TRow>["onCellValueChanged"]
   onRowClicked?: GridOptions<TRow>["onRowClicked"]
@@ -89,6 +90,7 @@ const QentrahTableInner = <TRow extends { id: string }>(
     density = "compact",
     theme = "dark",
     height = "100%",
+    domLayout,
     getRowId = defaultGetRowId,
     onCellValueChanged,
     onRowClicked,
@@ -173,8 +175,8 @@ const QentrahTableInner = <TRow extends { id: string }>(
     }
   }, [resolvedMode])
 
-  const baseRowHeight = density === "compact" ? 36 : 44
-  const baseHeaderHeight = density === "compact" ? 36 : 42
+  const baseRowHeight = density === "compact" ? 28 : 44
+  const baseHeaderHeight = density === "compact" ? 28 : 42
 
   const defaultColDef: ColDef<TRow> = useMemo(
     () => ({
@@ -185,12 +187,32 @@ const QentrahTableInner = <TRow extends { id: string }>(
       suppressHeaderMenuButton: false,
       // Default motion: cells flash on value change (1s highlight).
       enableCellChangeFlash: true,
-      // Allow text selection inside cells (so users can copy values
-      // without disabling row clicks).
-      enableCellTextSelection: true,
     }),
     []
   )
+
+  const resolvedRowSelection = useMemo<GridOptions<TRow>["rowSelection"]>(() => {
+    if (rowSelection === "single") {
+      return {
+        mode: "singleRow",
+        enableClickSelection: suppressRowClickSelection ? false : true,
+      }
+    }
+    if (rowSelection === "multiple") {
+      return {
+        mode: "multiRow",
+        enableClickSelection: suppressRowClickSelection ? false : true,
+      }
+    }
+    if (rowSelection && typeof rowSelection === "object") {
+      return {
+        ...rowSelection,
+        enableClickSelection:
+          rowSelection.enableClickSelection ?? (suppressRowClickSelection ? false : true),
+      }
+    }
+    return rowSelection
+  }, [rowSelection, suppressRowClickSelection])
 
   // Default motion durations — the Qentrah feel is calm, not flashy.
   // Short flash, gentle fade. (AG Grid reads these directly from the
@@ -221,13 +243,14 @@ const QentrahTableInner = <TRow extends { id: string }>(
         getRowId={(p) => getRowId(p.data)}
         rowHeight={baseRowHeight}
         headerHeight={baseHeaderHeight}
+        domLayout={domLayout}
         getRowHeight={getRowHeight}
         animateRows={animateRows}
         cellFlashDuration={animationOptions.cellFlashDuration}
         cellFadeDuration={animationOptions.cellFadeDuration}
+        enableCellTextSelection
         suppressCellFocus={false}
-        rowSelection={rowSelection}
-        suppressRowClickSelection={suppressRowClickSelection}
+        rowSelection={resolvedRowSelection}
         stopEditingWhenCellsLoseFocus
         onCellValueChanged={onCellValueChanged}
         onRowClicked={onRowClicked}
@@ -286,6 +309,9 @@ const QENTRAH_TABLE_CSS = `
     border: 1px solid var(--q-border) !important;
     border-radius: 6px;
   }
+  .qentrah-table-wrapper:has(.ag-layout-auto-height) {
+    height: auto !important;
+  }
   .qentrah-table-wrapper .ag-header,
   .qentrah-table-wrapper .ag-header-row {
     background: var(--q-bg-secondary);
@@ -306,6 +332,10 @@ const QENTRAH_TABLE_CSS = `
     line-height: 1.2;
     color: var(--q-text-primary) !important;
     background: transparent;
+    border-right: 1px solid var(--q-cell-divider) !important;
+  }
+  .qentrah-table-wrapper .ag-cell:last-child {
+    border-right: none !important;
   }
   .qentrah-table-wrapper .ag-cell-wrapper {
     display: flex;
@@ -323,6 +353,10 @@ const QENTRAH_TABLE_CSS = `
   .qentrah-table-wrapper .ag-header-cell {
     padding-left: 12px;
     padding-right: 12px;
+    border-right: 1px solid var(--q-cell-divider);
+  }
+  .qentrah-table-wrapper .ag-header-cell:last-child {
+    border-right: none;
   }
   .qentrah-table-wrapper .ag-pinned-left-header,
   .qentrah-table-wrapper .ag-pinned-left-cols-container {
@@ -345,6 +379,91 @@ const QENTRAH_TABLE_CSS = `
   .qentrah-table-wrapper .ag-cell-inline-editing {
     border: 1px solid var(--q-cell-focus) !important;
     box-shadow: 0 0 0 1px var(--q-cell-focus-ring) !important;
+  }
+  .qentrah-table-wrapper.qentrah-table--compact .ag-header-cell-label {
+    font-size: 10px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .qentrah-table-wrapper.qentrah-table--compact .ag-cell,
+  .qentrah-table-wrapper.qentrah-table--compact .ag-header-cell {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .qentrah-table-wrapper.qentrah-task-table {
+    --q-cell-divider: color-mix(in srgb, var(--q-border) 72%, transparent);
+    --q-header-divider: color-mix(in srgb, var(--q-border-strong) 68%, transparent);
+    --q-row-hover: color-mix(in srgb, var(--q-bg-tertiary) 42%, transparent);
+    --q-cell-focus-ring: transparent;
+    --q-task-table-surface: #0d0e10;
+    --q-task-table-header: #17191c;
+    --q-task-table-cell-focus: color-mix(in srgb, var(--q-text-secondary) 22%, transparent);
+  }
+  .qentrah-table-wrapper.qentrah-task-table .ag-root-wrapper {
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-radius: 0;
+    background: var(--q-task-table-surface);
+  }
+  .qentrah-table-wrapper.qentrah-task-table .ag-header,
+  .qentrah-table-wrapper.qentrah-task-table .ag-header-row {
+    background: var(--q-task-table-header);
+    min-height: 30px !important;
+  }
+  .qentrah-table-wrapper.qentrah-task-table .ag-header-cell-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--q-text-secondary) !important;
+  }
+  .qentrah-table-wrapper.qentrah-task-table .ag-header-cell,
+  .qentrah-table-wrapper.qentrah-task-table .ag-cell {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .qentrah-table-wrapper.qentrah-task-table .ag-cell {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--q-text-primary) !important;
+  }
+  .qentrah-table-wrapper.qentrah-task-table [data-qentrah-status-pill] {
+    min-height: 22px;
+    padding: 3px 8px;
+    font-size: 12px;
+    line-height: 1;
+  }
+  .qentrah-table-wrapper.qentrah-task-table [data-qentrah-status-pill] svg,
+  .qentrah-table-wrapper.qentrah-task-table [data-qentrah-priority-flag] svg {
+    width: 14px;
+    height: 14px;
+  }
+  .qentrah-table-wrapper.qentrah-task-table [data-qentrah-status-pill] span[class*="rounded-full"] {
+    width: 8px;
+    height: 8px;
+  }
+  .qentrah-table-wrapper.qentrah-task-table [data-qentrah-priority-flag] {
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 13px;
+  }
+  .qentrah-table-wrapper.qentrah-task-table .ag-cell [class*="text-muted-foreground"] {
+    color: var(--q-text-muted);
+  }
+  .qentrah-table-wrapper.qentrah-task-table .ag-row {
+    background: var(--q-task-table-surface);
+  }
+  .qentrah-table-wrapper.qentrah-task-table .ag-layout-auto-height .ag-center-cols-viewport,
+  .qentrah-table-wrapper.qentrah-task-table .ag-layout-auto-height .ag-center-cols-container {
+    min-height: 0 !important;
+  }
+  .qentrah-table-wrapper.qentrah-task-table .ag-row-hover {
+    background: var(--q-row-hover) !important;
+  }
+  .qentrah-table-wrapper.qentrah-task-table .ag-cell-focus,
+  .qentrah-table-wrapper.qentrah-task-table .ag-cell-inline-editing {
+    border-color: var(--q-task-table-cell-focus) !important;
+    box-shadow: none !important;
   }
   .qentrah-table-wrapper .ag-overlay-no-rows-wrapper {
     background: transparent;

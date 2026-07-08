@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { recordStateValidator } from "../schema/validators";
 
 export const projectSpaceInputValidator = v.object({
   spaceId: v.id("spaces"),
@@ -12,6 +13,7 @@ export const projectSpaceValidator = v.object({
   projectId: v.id("projects"),
   spaceId: v.id("spaces"),
   isPrimary: v.boolean(),
+  recordState: recordStateValidator,
   addedByUserId: v.string(),
   addedAt: v.number(),
   deletedAt: v.optional(v.number()),

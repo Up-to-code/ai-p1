@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { isRtlLocale } from "@/lib/i18n/locale";
 import { useAuthSession } from "@/domains/auth";
-import { PanelRight } from "lucide-react";
+import { ChevronsRight } from "lucide-react";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import {
   sidebarComingSoonNav,
@@ -16,7 +16,6 @@ import {
 } from "../config/nav.config";
 import { NavTooltip } from "./nav-tooltip";
 import { IdentityAvatar } from "./identity-avatar";
-import { SidebarWorkspaceSwitcher } from "./sidebar-workspace-switcher";
 import { AiLogoIcon } from "./ai-logo-icon";
 import { useSidebarRail, type RailItemId } from "../sidebar-rail-context";
 
@@ -31,17 +30,28 @@ export function SidebarRail() {
   return (
     <aside
       className={cn(
-        "relative z-40 flex h-screen w-14 shrink-0 flex-col overflow-hidden bg-secondary",
+        "relative z-40 flex h-screen w-12 shrink-0 flex-col overflow-hidden border-r border-border bg-secondary",
         isRtl && "font-cairo",
       )}
     >
-      {/* Level 0: Workspace Switcher */}
-      <div className="flex flex-col items-center gap-1 p-2 border-b border-sidebar-border">
-        <SidebarWorkspaceSwitcher />
-      </div>
+      {/* Reopen control — shown at the top when the secondary panel is closed */}
+      {activeRailItem === null && (
+        <div className="flex flex-col gap-1 border-b border-sidebar-border p-1.5">
+          <NavTooltip label="Open sidebar">
+            <button
+              type="button"
+              onClick={toggleMain}
+              className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              aria-label="Open secondary panel"
+            >
+              <ChevronsRight className="h-[18px] w-[18px] shrink-0" />
+            </button>
+          </NavTooltip>
+        </div>
+      )}
 
       {/* Level 1: Core Navigation */}
-      <div className="flex flex-col gap-1 p-2 border-b border-sidebar-border">
+      <div className="flex flex-col gap-1 border-b border-sidebar-border p-1.5">
         {sidebarStaticNav.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -57,9 +67,9 @@ export function SidebarRail() {
                   }
                 }}
                 className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-xl transition-colors",
+                  "flex h-9 w-9 items-center justify-center rounded-md transition-colors",
                   isActive
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-accent text-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-foreground",
                 )}
               >
@@ -71,12 +81,12 @@ export function SidebarRail() {
       </div>
 
       {/* Level 2: Domain Navigation with Groups */}
-      <div className="flex-1 overflow-y-auto py-2">
+      <div className="flex-1 overflow-y-auto py-1.5">
         {sidebarNavGroups.map((group, groupIndex) => (
-          <div key={group.id} className="flex flex-col gap-1 px-2">
+          <div key={group.id} className="flex flex-col gap-1 px-1.5">
             {/* Divider between groups — skipped before the first group */}
             {groupIndex > 0 && (
-              <div className="mx-auto my-2 h-px w-6 rounded-full bg-border/60" />
+              <div className="mx-auto my-1.5 h-px w-5 rounded-full bg-border" />
             )}
 
             {/* Group Items — icons only */}
@@ -94,9 +104,9 @@ export function SidebarRail() {
                       }
                     }}
                     className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-xl transition-colors",
+                      "flex h-9 w-9 items-center justify-center rounded-md transition-colors",
                       isActive
-                        ? "bg-primary text-primary-foreground"
+                        ? "bg-accent text-foreground"
                         : "text-muted-foreground hover:bg-accent hover:text-foreground",
                     )}
                   >
@@ -116,8 +126,8 @@ export function SidebarRail() {
         ))}
 
         {/* Level 3: Coming Soon — divider + disabled icons, no label */}
-        <div className="flex flex-col gap-1 px-2">
-          <div className="mx-auto my-2 h-px w-6 rounded-full bg-border/60" />
+        <div className="flex flex-col gap-1 px-1.5">
+          <div className="mx-auto my-1.5 h-px w-5 rounded-full bg-border" />
           {sidebarComingSoonNav.map((item) => {
             const Icon = item.icon;
             return (
@@ -125,7 +135,7 @@ export function SidebarRail() {
                 <button
                   type="button"
                   disabled
-                  className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground/30 cursor-not-allowed"
+                  className="flex h-9 w-9 cursor-not-allowed items-center justify-center rounded-md text-muted-foreground/30"
                 >
                   <Icon className="h-[18px] w-[18px] shrink-0" />
                 </button>
@@ -135,29 +145,13 @@ export function SidebarRail() {
         </div>
       </div>
 
-      {/* Sidebar toggle — only shown when secondary panel is closed */}
-      {activeRailItem === null && (
-        <div className="flex flex-col gap-1 px-2 pb-1">
-          <NavTooltip label="Open sidebar">
-            <button
-              type="button"
-              onClick={toggleMain}
-              className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-              aria-label="Open secondary panel"
-            >
-              <PanelRight className="h-[18px] w-[18px] shrink-0" />
-            </button>
-          </NavTooltip>
-        </div>
-      )}
-
       {/* Level 4: User Profile */}
-      <div className="flex flex-col gap-1 p-2 border-t border-sidebar-border">
+      <div className="flex flex-col gap-1 border-t border-sidebar-border p-1.5">
         <NavTooltip label={session.user.name}>
           <WorkspaceLink
             href="/profile"
             aria-label={session.user.name}
-            className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-accent hover:text-foreground"
+            className="flex h-9 w-9 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-foreground"
           >
             <IdentityAvatar
               image={session.user.image}

@@ -48,10 +48,10 @@ export function SidebarWorkspaceSwitcher() {
             <button
               type="button"
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-xl transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                "flex h-9 w-9 items-center justify-center rounded-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
                 open
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-accent text-foreground hover:bg-accent/80",
+                  ? "bg-accent text-foreground"
+                  : "bg-card text-foreground hover:bg-accent",
               )}
               aria-label={`Current workspace: ${displayName}`}
             >
@@ -59,7 +59,7 @@ export function SidebarWorkspaceSwitcher() {
                 <img
                   src={session.organization.logo}
                   alt=""
-                  className="h-6 w-6 rounded-lg object-cover"
+                  className="h-6 w-6 rounded-md object-cover"
                 />
               ) : (
                 <span className="text-xs font-black uppercase">{initials}</span>

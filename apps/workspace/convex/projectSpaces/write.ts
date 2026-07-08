@@ -35,6 +35,7 @@ export const createFromHono = mutation({
       projectId: args.projectId,
       spaceId: args.input.spaceId,
       isPrimary: args.input.isPrimary ?? false,
+      recordState: "active",
       addedByUserId: user._id,
       addedAt: now,
     });
@@ -115,7 +116,7 @@ export const deleteFromHono = mutation({
     }
 
     const now = Date.now();
-    await ctx.db.patch(args.projectSpaceId, { deletedAt: now });
+    await ctx.db.patch(args.projectSpaceId, { deletedAt: now, recordState: "deleted" });
 
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,

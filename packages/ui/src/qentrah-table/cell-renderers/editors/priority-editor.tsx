@@ -28,7 +28,7 @@ export function PriorityEditor({
     <CellPopover
       open={open}
       onOpenChange={setOpen}
-      trigger={<PriorityFlag priority={value} />}
+      trigger={<PriorityFlag priority={value} withBackground={false} />}
     >
       <div className="w-56 py-1">
         <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">

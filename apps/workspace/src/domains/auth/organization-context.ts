@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, createElement, useContext, useMemo, type ReactNode } from "react";
+import {
+  createContext,
+  createElement,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
@@ -31,18 +39,36 @@ const OrganizationContextImpl = createContext<OrganizationContext | null>(null);
 
 export function OrganizationProvider({ children }: { children: ReactNode }) {
   const { data: session, isPending: sessionPending } = authClient.useSession();
-  const { data: activeOrg, isPending: orgPending } = authClient.useActiveOrganization();
-  const { data: organizations, isPending: orgsPending } = authClient.useListOrganizations();
+  const { data: activeOrg, isPending: orgPending } =
+    authClient.useActiveOrganization();
+  const { data: organizations, isPending: orgsPending } =
+    authClient.useListOrganizations();
   const convexAuth = useConvexAuth();
-
-  const organizationId = session?.session?.activeOrganizationId ?? activeOrg?.id ?? null;
-  const isOrganizationPending = sessionPending || orgPending;
-  const isConvexAuthenticated = convexAuth.isAuthenticated;
+  const [autoSelectingOrgId, setAutoSelectingOrgId] = useState<string | null>(
+    null,
+  );
 
   const membershipOrganizationIds = useMemo(
     () => (organizations ?? []).map((o) => o.id).filter(Boolean),
     [organizations],
   );
+  const fallbackOrganization = organizations?.[0] ?? null;
+  const fallbackOrganizationId = fallbackOrganization?.id ?? null;
+  const activeOrganizationId =
+    session?.session?.activeOrganizationId ?? activeOrg?.id ?? null;
+  const organizationId = activeOrganizationId ?? fallbackOrganizationId;
+  const shouldAutoSelectOrganization = Boolean(
+    !activeOrganizationId &&
+    fallbackOrganizationId &&
+    !sessionPending &&
+    !orgsPending,
+  );
+  const isOrganizationPending =
+    sessionPending ||
+    orgPending ||
+    (shouldAutoSelectOrganization &&
+      autoSelectingOrgId !== fallbackOrganizationId);
+  const isConvexAuthenticated = convexAuth.isAuthenticated;
 
   const hasLoadedMemberships = !orgsPending;
   const hasOrganizationAccessDenied = useMemo(
@@ -53,16 +79,46 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     [organizationId, hasLoadedMemberships, membershipOrganizationIds],
   );
 
-  const hasAnyMemberships = membershipOrganizationIds.length > 0;
+  useEffect(() => {
+    if (
+      !shouldAutoSelectOrganization ||
+      !fallbackOrganizationId ||
+      autoSelectingOrgId === fallbackOrganizationId
+    )
+      return;
+
+    let cancelled = false;
+    setAutoSelectingOrgId(fallbackOrganizationId);
+    authClient.organization
+      .setActive({ organizationId: fallbackOrganizationId })
+      .finally(() => {
+        if (!cancelled) setAutoSelectingOrgId(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    autoSelectingOrgId,
+    fallbackOrganizationId,
+    shouldAutoSelectOrganization,
+  ]);
 
   const organizationProfile = useQuery(
     api.organizations.profile.read.getProfile,
-    organizationId && isConvexAuthenticated && hasLoadedMemberships && membershipOrganizationIds.includes(organizationId) ? { organizationId } : "skip",
+    organizationId &&
+      isConvexAuthenticated &&
+      hasLoadedMemberships &&
+      membershipOrganizationIds.includes(organizationId)
+      ? { organizationId }
+      : "skip",
   );
 
-  const organizationName = organizationProfile?.name?.trim()
-    || activeOrg?.name
-    || "Workspace";
+  const organizationName =
+    organizationProfile?.name?.trim() ||
+    activeOrg?.name ||
+    fallbackOrganization?.name ||
+    "Workspace";
 
   const value = useMemo<OrganizationContext>(
     () => ({
@@ -75,14 +131,15 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       website: organizationProfile?.website,
       address: organizationProfile?.address,
       logo: organizationProfile?.logo ?? activeOrg?.logo ?? null,
-      slug: activeOrg?.slug ?? organizationId,
+      slug: activeOrg?.slug ?? fallbackOrganization?.slug ?? organizationId,
       initials: accountInitials(organizationName),
       brandColor: organizationProfile?.brandColor,
       isPending: isOrganizationPending,
       hasAccessDenied: hasOrganizationAccessDenied,
       memberships: {
         organizationIds: membershipOrganizationIds,
-        hasAccessToOrganization: (orgId: string) => membershipOrganizationIds.includes(orgId),
+        hasAccessToOrganization: (orgId: string) =>
+          membershipOrganizationIds.includes(orgId),
       },
     }),
     [
@@ -100,6 +157,9 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       activeOrg?.name,
       activeOrg?.logo,
       activeOrg?.slug,
+      fallbackOrganization?.id,
+      fallbackOrganization?.name,
+      fallbackOrganization?.slug,
       isOrganizationPending,
       hasOrganizationAccessDenied,
       membershipOrganizationIds,
@@ -112,7 +172,9 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 export function useOrganizationContext(): OrganizationContext {
   const value = useContext(OrganizationContextImpl);
   if (!value) {
-    throw new Error("useOrganizationContext must be used inside OrganizationProvider.");
+    throw new Error(
+      "useOrganizationContext must be used inside OrganizationProvider.",
+    );
   }
   return value;
 }

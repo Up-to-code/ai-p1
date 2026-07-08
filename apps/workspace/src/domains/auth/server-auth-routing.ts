@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { isAuthenticated } from "@/server/auth/auth-context";
+import { resolveAuthEntryCallbackUrl } from "./utils/auth-callback-url";
 
 function localizedPath(locale: string, path: string) {
   return `/${locale}${path}`;
@@ -15,8 +16,7 @@ export async function redirectAuthenticatedUserFromAuthEntry(locale: string, cal
   if (!authed) return; // not signed in — show the auth page
 
   if (callbackURL) {
-    const target = callbackURL.startsWith(`/${locale}`) ? callbackURL : localizedPath(locale, callbackURL);
-    redirect(target);
+    redirect(resolveAuthEntryCallbackUrl(locale, callbackURL, "/choose-org"));
   }
 
   redirect(localizedPath(locale, "/choose-org"));
@@ -27,12 +27,13 @@ export async function redirectAuthenticatedUserFromAuthEntry(locale: string, cal
  * Only redirect to sign-in if the user is NOT authenticated.
  * Authenticated users with no org are allowed to land here.
  */
-export async function redirectInvalidChooseOrganizationAccess(locale: string) {
+export async function redirectInvalidChooseOrganizationAccess(locale: string, callbackURL?: string | null) {
   const authed = await isAuthenticated().catch(() => false);
   if (!authed) {
+    const signInCallbackURL = resolveAuthEntryCallbackUrl(locale, callbackURL, "/choose-org");
     redirect(
       `${localizedPath(locale, "/sign-in")}?callbackURL=${encodeURIComponent(
-        localizedPath(locale, "/choose-org"),
+        signInCallbackURL,
       )}`,
     );
   }

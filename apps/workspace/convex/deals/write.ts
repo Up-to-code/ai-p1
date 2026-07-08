@@ -34,6 +34,7 @@ async function createDealCore(ctx: MutationCtx, args: { organizationId: string; 
     organizationId: args.organizationId,
     ...args.input,
     ownerUserId,
+    recordState: "active",
     createdByUserId: args.actorUserId,
     createdAt: now,
     updatedAt: now,
@@ -66,7 +67,7 @@ async function deleteDealCore(ctx: MutationCtx, args: { organizationId: string; 
   const existing = await ctx.db.get(args.dealId);
   if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Deal was not found.");
   const now = Date.now();
-  await ctx.db.patch(args.dealId, { deletedAt: now, isDeleted: true, updatedAt: now });
+  await ctx.db.patch(args.dealId, { deletedAt: now, recordState: "deleted", updatedAt: now });
   return { removed: true as const, now, title: existing.title };
 }
 

@@ -5,6 +5,11 @@ import { organization } from "better-auth/plugins";
 import schema from "./schema";
 
 const options = {
+  advanced: {
+    database: {
+      generateId: false,
+    },
+  },
   plugins: [
     organization({ teams: { enabled: true } }),
     convex({

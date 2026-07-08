@@ -77,7 +77,7 @@ function QuickChatInner({
     }
   }, []);
 
-  const { messages, isStreaming, send, stop, session: eveSession, events } = useEveChat({
+  const { messages, isStreaming, send, stop, session: eveSession, events, progress } = useEveChat({
     organizationId,
     initialSession: activeThread?.sessionState ?? undefined,
     initialEvents: activeThread?.events ?? undefined,
@@ -186,6 +186,7 @@ function QuickChatInner({
               <AiConversationThread
                 messages={messages}
                 isStreaming={isStreaming}
+                progress={progress}
                 variant="panel"
                 onSendPrompt={(prompt) => {
                   void handleSend(prompt);

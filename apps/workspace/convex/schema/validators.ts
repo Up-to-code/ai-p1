@@ -3,12 +3,83 @@ import { v } from "convex/values";
 export const workOsRecordResourceValidator = v.union(
   v.literal("client"),
   v.literal("deal"),
+  v.literal("doc"),
+  v.literal("media"),
   v.literal("opportunity"),
   v.literal("project"),
   v.literal("task"),
   v.literal("calendarEvent"),
   v.literal("space"),
 );
+
+export const recordStateValidator = v.union(
+  v.literal("active"),
+  v.literal("archived"),
+  v.literal("deleted"),
+);
+
+export const scopeTypeValidator = v.union(
+  v.literal("workspace"),
+  v.literal("space"),
+  v.literal("project"),
+  v.literal("resource"),
+);
+
+export const workspaceVisibilityValidator = v.union(
+  v.literal("private"),
+  v.literal("space_members"),
+  v.literal("organization"),
+);
+
+export const viewTypeValidator = v.union(
+  v.literal("table"),
+  v.literal("board"),
+  v.literal("list"),
+  v.literal("calendar"),
+  v.literal("timeline"),
+  v.literal("dashboard"),
+  v.literal("fileManager"),
+);
+
+export const savedViewValueValidator = v.union(
+  v.null(),
+  v.string(),
+  v.number(),
+  v.boolean(),
+  v.array(v.string()),
+  v.array(v.number()),
+  v.array(v.boolean()),
+);
+
+export const savedViewFilterValidator = v.object({
+  id: v.optional(v.string()),
+  field: v.string(),
+  operator: v.string(),
+  value: v.optional(savedViewValueValidator),
+});
+
+export const savedViewColumnValidator = v.object({
+  id: v.string(),
+  label: v.optional(v.string()),
+  width: v.optional(v.number()),
+  visible: v.optional(v.boolean()),
+  sortable: v.optional(v.boolean()),
+  filterable: v.optional(v.boolean()),
+});
+
+export const savedViewConfigValidator = v.object({
+  groupBy: v.optional(v.string()),
+  sortBy: v.optional(v.string()),
+  sortDirection: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
+  search: v.optional(v.string()),
+  density: v.optional(v.union(v.literal("compact"), v.literal("normal"))),
+  showFields: v.optional(v.boolean()),
+  filters: v.optional(v.array(savedViewFilterValidator)),
+  columns: v.optional(v.array(savedViewColumnValidator)),
+  columnWidths: v.optional(v.record(v.string(), v.number())),
+  columnVisibility: v.optional(v.record(v.string(), v.boolean())),
+  columnOrder: v.optional(v.array(v.string())),
+});
 
 export const workOsCustomFieldTypeValidator = v.union(
   v.literal("text"),

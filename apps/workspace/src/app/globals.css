@@ -168,62 +168,69 @@
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
+
+  /* ── Modal Motion ── */
+  --modal-open-dur: 250ms;
+  --modal-close-dur: 150ms;
+  --modal-scale: 0.96;
+  --modal-scale-close: 0.96;
+  --modal-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dark {
   /* ── Surface & Background ── */
-  --q-bg: #080808;
-  --q-bg-secondary: #111111;
-  --q-bg-tertiary: #1C1C1C;
-  --q-bg-midtone: #161616;
-  --q-bg-very-light: #222222;
-  --q-bg-light: #1C1C1C;
-  --q-bg-dark: #080808;
-  --q-bg-very-dark: #060606;
+  --q-bg: #111111;
+  --q-bg-secondary: #191919;
+  --q-bg-tertiary: #303030;
+  --q-bg-midtone: #191919;
+  --q-bg-very-light: #303030;
+  --q-bg-light: #191919;
+  --q-bg-dark: #111111;
+  --q-bg-very-dark: #0B0B0B;
 
   /* ── Surface / Card ── */
-  --q-surface: #1C1C1C;
-  --q-surface-hover: #222222;
-  --q-card: #111111;
-  --q-card-hover: #1C1C1C;
+  --q-surface: #191919;
+  --q-surface-hover: #303030;
+  --q-card: #191919;
+  --q-card-hover: #303030;
 
   /* ── Sidebar ── */
-  --q-sidebar: #222222;
-  --q-sidebar-foreground: #FFFFFF;
-  --q-sidebar-primary: #FFFFFF;
+  --q-sidebar: #191919;
+  --q-sidebar-foreground: #E0E0E0;
+  --q-sidebar-primary: #E0E0E0;
   --q-sidebar-primary-foreground: #080808;
-  --q-sidebar-accent: #2A2A2A;
-  --q-sidebar-accent-foreground: #FFFFFF;
-  --q-sidebar-border: #333333;
-  --q-sidebar-ring: #FFFFFF;
+  --q-sidebar-accent: #303030;
+  --q-sidebar-accent-foreground: #E0E0E0;
+  --q-sidebar-border: #303030;
+  --q-sidebar-ring: #E0E0E0;
 
   /* ── Topbar ── */
-  --q-topbar: #080808;
-  --q-topbar-btn: #FFFFFF;
+  --q-topbar: #191919;
+  --q-topbar-btn: #E0E0E0;
 
   /* ── Text ── */
-  --q-text-primary: #FFFFFF;
+  --q-text-primary: #E0E0E0;
   --q-text-secondary: #B0B0B0;
-  --q-text-muted: #787878;
+  --q-text-muted: #888888;
 
   /* ── Borders ── */
-  --q-border: #222222;
-  --q-border-strong: #2A2A2A;
-  --q-divider: #222222;
+  --q-border: #303030;
+  --q-border-strong: #888888;
+  --q-divider: #303030;
 
   /* ── Accent / Primary ── */
-  --q-accent: #FFFFFF;
+  --q-accent: #E0E0E0;
   --q-accent-hover: #E0E0E0;
-  --q-accent-active: #CCCCCC;
-  --q-accent-muted: #1C1C1C;
-  --q-accent-border: #2A2A2A;
+  --q-accent-active: #B0B0B0;
+  --q-accent-muted: #303030;
+  --q-accent-border: #888888;
 
   /* ── Form Inputs ── */
-  --q-input-bg: #111111;
-  --q-input-border: #222222;
+  --q-input-bg: #191919;
+  --q-input-border: #303030;
 
   /* ── User Message Bubble ── */
-  --q-user-bubble: #FFFFFF;
+  --q-user-bubble: #E0E0E0;
 
   /* ── Status ── */
   --q-success: #7F9987;
@@ -241,17 +248,17 @@
   --q-system-gray: #5D6570;
 
   /* ── Status Colors (dark) — Qentrah brand palette ── */
-  --q-status-todo-bg: rgba(160,160,160,0.18);       --q-status-todo-text: #D9D9D9;       --q-status-todo-dot: #B0B0B0;       --q-status-todo-border: rgba(190,190,190,0.45);
-  --q-status-inProgress-bg: rgba(79,128,255,0.28);  --q-status-inProgress-text: #B5C8FF; --q-status-inProgress-dot: #6E97FF; --q-status-inProgress-border: rgba(120,160,255,0.6);
-  --q-status-waiting-bg: rgba(138,92,255,0.28);     --q-status-waiting-text: #D4BFFF;    --q-status-waiting-dot: #A480FF;    --q-status-waiting-border: rgba(168,128,255,0.6);
-  --q-status-done-bg: rgba(43,182,115,0.28);        --q-status-done-text: #A8E5C2;       --q-status-done-dot: #4DCB8C;       --q-status-done-border: rgba(92,222,138,0.6);
-  --q-status-canceled-bg: rgba(217,50,50,0.28);     --q-status-canceled-text: #FFB5B5;   --q-status-canceled-dot: #E55A5A;   --q-status-canceled-border: rgba(242,113,113,0.6);
+  --q-status-todo-bg: #303030;        --q-status-todo-text: #E0E0E0;       --q-status-todo-dot: #B0B0B0;       --q-status-todo-border: #888888;
+  --q-status-inProgress-bg: #1A8CFF;  --q-status-inProgress-text: #FFFFFF; --q-status-inProgress-dot: #FFFFFF; --q-status-inProgress-border: #5DAFFF;
+  --q-status-waiting-bg: #6F52E8;     --q-status-waiting-text: #FFFFFF;    --q-status-waiting-dot: #FFFFFF;    --q-status-waiting-border: #9078F0;
+  --q-status-done-bg: #24A36B;        --q-status-done-text: #FFFFFF;       --q-status-done-dot: #FFFFFF;       --q-status-done-border: #4FC18B;
+  --q-status-canceled-bg: #6D7078;    --q-status-canceled-text: #FFFFFF;   --q-status-canceled-dot: #FFFFFF;   --q-status-canceled-border: #8B8F98;
 
   /* ── Priority Colors (dark) — Qentrah brand palette ── */
-  --q-priority-urgent-bg: rgba(217,50,50,0.26);     --q-priority-urgent-text: #FFB5B5;   --q-priority-urgent-icon: #F27171;
-  --q-priority-high-bg: rgba(217,50,50,0.26);       --q-priority-high-text: #FFB5B5;     --q-priority-high-icon: #F27171;
-  --q-priority-normal-bg: rgba(138,92,255,0.26);    --q-priority-normal-text: #D4BFFF;   --q-priority-normal-icon: #A480FF;
-  --q-priority-low-bg: rgba(160,160,160,0.18);      --q-priority-low-text: #C0C0C0;      --q-priority-low-icon: #B0B0B0;
+  --q-priority-urgent-bg: transparent; --q-priority-urgent-text: #E0E0E0; --q-priority-urgent-icon: #D92D3A;
+  --q-priority-high-bg: transparent;   --q-priority-high-text: #E0E0E0;   --q-priority-high-icon: #FFBE3D;
+  --q-priority-normal-bg: transparent; --q-priority-normal-text: #E0E0E0; --q-priority-normal-icon: #4F80FF;
+  --q-priority-low-bg: transparent;    --q-priority-low-text: #B0B0B0;    --q-priority-low-icon: #888888;
 
   /* ── shadcn/ui Aliases ── */
   --background: var(--q-bg);
@@ -266,7 +273,7 @@
   --primary-active: var(--q-accent-active);
   --secondary: var(--q-bg-secondary);
   --secondary-foreground: var(--q-text-primary);
-  --muted: var(--q-bg-secondary);
+  --muted: var(--q-bg-tertiary);
   --muted-foreground: var(--q-text-muted);
   --accent: var(--q-accent-muted);
   --accent-foreground: var(--q-accent);

@@ -1,163 +1,115 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { savedViewFilterValidator, savedViewColumnValidator, viewTypeValidator, workOsRecordResourceValidator } from "./schema/validators";
+
+const legacyViewConfigValidator = v.object({
+  type: viewTypeValidator,
+  label: v.string(),
+  filters: v.optional(v.array(savedViewFilterValidator)),
+  sortBy: v.string(),
+  sortDirection: v.union(v.literal("asc"), v.literal("desc")),
+  groupBy: v.optional(v.string()),
+  columns: v.optional(v.array(savedViewColumnValidator)),
+  density: v.union(v.literal("compact"), v.literal("normal")),
+});
 
 export const createView = mutation({
   args: {
     organizationId: v.string(),
-    domain: v.string(),
+    domain: workOsRecordResourceValidator,
     spaceId: v.optional(v.id("spaces")),
     projectId: v.optional(v.id("projects")),
-    viewConfig: v.object({
-      type: v.union(
-        v.literal("table"),
-        v.literal("board"),
-        v.literal("calendar"),
-        v.literal("gantt"),
-        v.literal("filemanager")
-      ),
-      label: v.string(),
-      filters: v.array(
-        v.object({
-          field: v.string(),
-          operator: v.union(
-            v.literal("equals"),
-            v.literal("contains"),
-            v.literal("startsWith"),
-            v.literal("endsWith"),
-            v.literal("gt"),
-            v.literal("lt"),
-            v.literal("gte"),
-            v.literal("lte")
-          ),
-          value: v.any(),
-        })
-      ),
-      sortBy: v.string(),
-      sortDirection: v.union(v.literal("asc"), v.literal("desc")),
-      groupBy: v.optional(v.string()),
-      columns: v.array(
-        v.object({
-          id: v.string(),
-          label: v.string(),
-          width: v.optional(v.number()),
-          visible: v.optional(v.boolean()),
-          sortable: v.optional(v.boolean()),
-          filterable: v.optional(v.boolean()),
-        })
-      ),
-      density: v.union(v.literal("compact"), v.literal("normal")),
-    }),
+    viewConfig: legacyViewConfigValidator,
     isDefault: v.optional(v.boolean()),
   },
+  returns: v.id("savedViews"),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthorized");
-    }
+    if (!identity) throw new Error("Unauthorized");
 
-    const userId = identity.subject;
     const now = Date.now();
+    const scope = args.projectId
+      ? { scopeType: "project" as const, scopeId: args.projectId }
+      : args.spaceId
+        ? { scopeType: "space" as const, scopeId: args.spaceId }
+        : { scopeType: "workspace" as const, scopeId: undefined };
 
-    const viewId = await ctx.db.insert("views", {
+    return await ctx.db.insert("savedViews", {
       organizationId: args.organizationId,
-      domain: args.domain,
-      spaceId: args.spaceId,
-      projectId: args.projectId,
-      userId,
-      viewConfig: args.viewConfig,
+      resourceType: args.domain,
+      viewType: args.viewConfig.type,
+      name: args.viewConfig.label,
+      ownerUserId: identity.subject,
+      scopeType: scope.scopeType,
+      scopeId: scope.scopeId,
+      visibility: "private",
+      config: {
+        filters: args.viewConfig.filters,
+        sortBy: args.viewConfig.sortBy,
+        sortDirection: args.viewConfig.sortDirection,
+        groupBy: args.viewConfig.groupBy,
+        columns: args.viewConfig.columns,
+        density: args.viewConfig.density,
+      },
       isDefault: args.isDefault,
-      createdByUserId: userId,
+      isSystemDefault: false,
+      isRemovable: true,
+      recordState: "active",
+      createdByUserId: identity.subject,
       createdAt: now,
       updatedAt: now,
     });
-
-    return viewId;
   },
 });
 
 export const updateView = mutation({
   args: {
-    viewId: v.id("views"),
-    viewConfig: v.object({
-      type: v.union(
-        v.literal("table"),
-        v.literal("board"),
-        v.literal("calendar"),
-        v.literal("gantt"),
-        v.literal("filemanager")
-      ),
-      label: v.string(),
-      filters: v.array(
-        v.object({
-          field: v.string(),
-          operator: v.union(
-            v.literal("equals"),
-            v.literal("contains"),
-            v.literal("startsWith"),
-            v.literal("endsWith"),
-            v.literal("gt"),
-            v.literal("lt"),
-            v.literal("gte"),
-            v.literal("lte")
-          ),
-          value: v.any(),
-        })
-      ),
-      sortBy: v.string(),
-      sortDirection: v.union(v.literal("asc"), v.literal("desc")),
-      groupBy: v.optional(v.string()),
-      columns: v.array(
-        v.object({
-          id: v.string(),
-          label: v.string(),
-          width: v.optional(v.number()),
-          visible: v.optional(v.boolean()),
-          sortable: v.optional(v.boolean()),
-          filterable: v.optional(v.boolean()),
-        })
-      ),
-      density: v.union(v.literal("compact"), v.literal("normal")),
-    }),
+    viewId: v.id("savedViews"),
+    viewConfig: legacyViewConfigValidator,
   },
+  returns: v.id("savedViews"),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    if (!identity) throw new Error("Unauthorized");
+
+    const view = await ctx.db.get(args.viewId);
+    if (!view) throw new Error("View not found");
+    if (view.ownerUserId !== identity.subject && view.createdByUserId !== identity.subject) {
       throw new Error("Unauthorized");
     }
 
-    const view = await ctx.db.get(args.viewId);
-    if (!view) {
-      throw new Error("View not found");
-    }
-
     await ctx.db.patch(args.viewId, {
-      viewConfig: args.viewConfig,
+      viewType: args.viewConfig.type,
+      name: args.viewConfig.label,
+      config: {
+        filters: args.viewConfig.filters,
+        sortBy: args.viewConfig.sortBy,
+        sortDirection: args.viewConfig.sortDirection,
+        groupBy: args.viewConfig.groupBy,
+        columns: args.viewConfig.columns,
+        density: args.viewConfig.density,
+      },
       updatedAt: Date.now(),
     });
-
     return args.viewId;
   },
 });
 
 export const deleteView = mutation({
-  args: {
-    viewId: v.id("views"),
-  },
+  args: { viewId: v.id("savedViews") },
+  returns: v.id("savedViews"),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    if (!identity) throw new Error("Unauthorized");
+
+    const view = await ctx.db.get(args.viewId);
+    if (!view) throw new Error("View not found");
+    if (view.ownerUserId !== identity.subject && view.createdByUserId !== identity.subject) {
       throw new Error("Unauthorized");
     }
 
-    const view = await ctx.db.get(args.viewId);
-    if (!view) {
-      throw new Error("View not found");
-    }
-
-    await ctx.db.patch(args.viewId, {
-      deletedAt: Date.now(),
-    });
-
+    const now = Date.now();
+    await ctx.db.patch(args.viewId, { recordState: "deleted", deletedAt: now, updatedAt: now });
     return args.viewId;
   },
 });
@@ -165,132 +117,75 @@ export const deleteView = mutation({
 export const getViews = query({
   args: {
     organizationId: v.string(),
-    domain: v.optional(v.string()),
+    domain: v.optional(workOsRecordResourceValidator),
     spaceId: v.optional(v.id("spaces")),
     projectId: v.optional(v.id("projects")),
   },
+  returns: v.array(v.any()),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthorized");
-    }
+    if (!identity) throw new Error("Unauthorized");
 
-    const userId = identity.subject;
-
-    let views = await ctx.db
-      .query("views")
-      .withIndex("by_user", (q) =>
-        q.eq("organizationId", args.organizationId).eq("userId", userId)
+    const domain = args.domain;
+    if (!domain) return [];
+    const views = await ctx.db
+      .query("savedViews")
+      .withIndex("by_owner_resource", (q) =>
+        q.eq("organizationId", args.organizationId).eq("ownerUserId", identity.subject).eq("resourceType", domain),
       )
       .collect();
 
-    // Filter by domain if provided
-    if (args.domain) {
-      views = views.filter((v) => v.domain === args.domain);
-    }
-
-    // Filter by space if provided
-    if (args.spaceId) {
-      views = views.filter((v) => v.spaceId === args.spaceId);
-    }
-
-    // Filter by project if provided
-    if (args.projectId) {
-      views = views.filter((v) => v.projectId === args.projectId);
-    }
-
-    // Filter out deleted views
-    return views.filter((v) => !v.deletedAt);
+    return views.filter((view) => {
+      if (view.recordState !== "active") return false;
+      if (args.projectId && (view.scopeType !== "project" || view.scopeId !== args.projectId)) return false;
+      if (args.spaceId && (view.scopeType !== "space" || view.scopeId !== args.spaceId)) return false;
+      return true;
+    });
   },
 });
 
 export const getDefaultViews = query({
   args: {
     organizationId: v.string(),
-    domain: v.string(),
+    domain: workOsRecordResourceValidator,
   },
+  returns: v.array(v.any()),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthorized");
-    }
-
-    const userId = identity.subject;
+    if (!identity) throw new Error("Unauthorized");
 
     const views = await ctx.db
-      .query("views")
-      .withIndex("by_user_domain", (q) =>
-        q.eq("organizationId", args.organizationId).eq("userId", userId).eq("domain", args.domain)
+      .query("savedViews")
+      .withIndex("by_owner_resource", (q) =>
+        q.eq("organizationId", args.organizationId).eq("ownerUserId", identity.subject).eq("resourceType", args.domain),
       )
       .collect();
-
-    return views.filter((v) => v.isDefault && !v.deletedAt);
+    return views.filter((view) => view.recordState === "active" && view.isDefault);
   },
 });
 
 export const getWorkspaceSettings = query({
-  args: {
+  args: { organizationId: v.string() },
+  returns: v.object({
     organizationId: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const settings = await ctx.db
-      .query("workspaceSettings")
-      .withIndex("by_organization_id", (q) =>
-        q.eq("organizationId", args.organizationId)
-      )
-      .first();
-
-    return settings;
-  },
+    viewScope: v.literal("workspace"),
+    defaultViews: v.optional(v.record(v.string(), v.array(viewTypeValidator))),
+    updatedAt: v.number(),
+  }),
+  handler: async (_ctx, args) => ({
+    organizationId: args.organizationId,
+    viewScope: "workspace" as const,
+    defaultViews: undefined,
+    updatedAt: 0,
+  }),
 });
 
 export const updateWorkspaceSettings = mutation({
   args: {
     organizationId: v.string(),
     viewScope: v.union(v.literal("space"), v.literal("project"), v.literal("workspace")),
-    defaultViews: v.optional(
-      v.record(
-        v.string(),
-        v.array(
-          v.union(
-            v.literal("table"),
-            v.literal("board"),
-            v.literal("calendar"),
-            v.literal("gantt"),
-            v.literal("filemanager")
-          )
-        )
-      )
-    ),
+    defaultViews: v.optional(v.record(v.string(), v.array(viewTypeValidator))),
   },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthorized");
-    }
-
-    const existingSettings = await ctx.db
-      .query("workspaceSettings")
-      .withIndex("by_organization_id", (q) =>
-        q.eq("organizationId", args.organizationId)
-      )
-      .first();
-
-    if (existingSettings) {
-      await ctx.db.patch(existingSettings._id, {
-        viewScope: args.viewScope,
-        defaultViews: args.defaultViews,
-        updatedAt: Date.now(),
-      });
-      return existingSettings._id;
-    } else {
-      const settingsId = await ctx.db.insert("workspaceSettings", {
-        organizationId: args.organizationId,
-        viewScope: args.viewScope,
-        defaultViews: args.defaultViews,
-        updatedAt: Date.now(),
-      });
-      return settingsId;
-    }
-  },
+  returns: v.null(),
+  handler: async () => null,
 });

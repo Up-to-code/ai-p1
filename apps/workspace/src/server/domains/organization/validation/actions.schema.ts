@@ -21,7 +21,9 @@ export const createOrganizationInvitationSchema = z.object({
 });
 
 export const acceptOrganizationInvitationSchema = z.object({
-  invitationId: z.string().trim().min(1),
+  invitationId: z.string().trim().min(1).refine((value) => value !== "undefined" && value !== "null", {
+    message: "Invalid invitation id.",
+  }),
 });
 
 export const updateOrganizationMemberRoleSchema = z.object({

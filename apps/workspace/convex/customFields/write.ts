@@ -79,14 +79,12 @@ export const createFromHono = mutation({
       required: args.required,
       options: args.options,
       appliesTo: args.appliesTo,
-      defaultValue: args.defaultValue,
-      display: args.display ?? {
-        tableVisible: false,
-        boardVisible: false,
-        detailVisible: true,
-        requiredOnCreate: false,
-      },
+      defaultTextValue: typeof args.defaultValue === "string" ? args.defaultValue : undefined,
+      defaultNumberValue: typeof args.defaultValue === "number" ? args.defaultValue : undefined,
+      defaultBooleanValue: typeof args.defaultValue === "boolean" ? args.defaultValue : undefined,
       order: args.order ?? maxOrder + 1,
+      scopeType: "workspace",
+      recordState: "active",
       createdByUserId: user._id,
       createdAt: now,
       updatedAt: now,
@@ -182,6 +180,7 @@ export const deleteFromHono = mutation({
     await ctx.db.patch(args.fieldId, {
       archivedAt: Date.now(),
       deletedAt: Date.now(),
+      recordState: "deleted",
       updatedAt: Date.now(),
     });
 

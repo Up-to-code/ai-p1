@@ -10,6 +10,29 @@ export const STATUSES: TaskStatus[] = [
   "canceled",
 ];
 
+export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
+  todo: "To Do",
+  inProgress: "In Progress",
+  waiting: "Waiting",
+  done: "Done",
+  canceled: "Canceled",
+};
+
+export const TASK_STATUS_COLOR: Record<TaskStatus, string> = {
+  todo: "#6b7280",
+  inProgress: "#3b82f6",
+  waiting: "#f59e0b",
+  done: "#22c55e",
+  canceled: "#ef4444",
+};
+
+export const TASK_STAGES = STATUSES.map((status, order) => ({
+  key: status,
+  name: TASK_STATUS_LABEL[status],
+  color: TASK_STATUS_COLOR[status],
+  order,
+}));
+
 export const PRIORITIES: TaskPriority[] = ["low", "normal", "high", "urgent"];
 
 export const ownershipFilters = ["all", "assignedToMe", "sentByMe"] as const;
@@ -56,6 +79,22 @@ export const DEFAULT_FORM_VALUES = {
   description: "",
   tags: "",
 };
+
+export function normalizeTaskStatus(status: unknown): TaskStatus {
+  if (status === "notStarted" || status === "not_started" || status === "not started") {
+    return "todo";
+  }
+  if (status === "complete" || status === "completed") {
+    return "done";
+  }
+  if (status === "cancelled") {
+    return "canceled";
+  }
+  if (status === "todo" || status === "inProgress" || status === "waiting" || status === "done" || status === "canceled") {
+    return status;
+  }
+  return "todo";
+}
 
 export const emptyTask: typeof DEFAULT_FORM_VALUES = {
   ...DEFAULT_FORM_VALUES,

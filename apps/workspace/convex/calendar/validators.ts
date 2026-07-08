@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { recordStateValidator } from "../schema/validators";
 
 export const calendarEventTypeValidator = v.union(
   v.literal("meeting"),
@@ -55,6 +56,7 @@ export const calendarEventValidator = v.object({
   notes: v.optional(v.string()),
   tags: v.optional(v.array(v.string())),
   customFields: v.optional(v.array(v.any())),
+  recordState: recordStateValidator,
   createdByUserId: v.string(),
   createdAt: v.number(),
   updatedAt: v.number(),

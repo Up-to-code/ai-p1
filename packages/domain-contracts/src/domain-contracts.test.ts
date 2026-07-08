@@ -4,7 +4,6 @@ import { updateProfileInputSchema } from "./profiles";
 import type { AdminOAuthAuthorizationPrompt } from "./oauth";
 import {
   workOsAssetRecordSchema,
-  workOsAutomationRuleSchema,
   workOsCalendarEventRecordSchema,
   workOsClientRecordSchema,
   workOsCustomFieldValueSchema,
@@ -151,16 +150,5 @@ describe("@qentrah/domain-contracts", () => {
         target: { recordType: "asset", recordId: "asset_1" },
       }),
     ).toThrow();
-  });
-
-  it("accepts Work OS automation recipes for core records", () => {
-    expect(
-      workOsAutomationRuleSchema.parse({
-        organizationId: "org_1",
-        name: "Create follow-up task when an opportunity moves stage",
-        trigger: { type: "stageChanged", recordType: "opportunity", nextStage: "qualified" },
-        actions: [{ type: "createTask", payload: { title: "Prepare next action" } }],
-      }).enabled,
-    ).toBe(true);
   });
 });

@@ -8,11 +8,11 @@ import { UiLocalizer } from '@/components/i18n/ui-localizer';
 import { BackendProviders } from "@/components/providers/backend-providers";
 import { ToastProvider } from "@/components/ui/toast";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { metadata, isLocale, type Locale } from "./seo/metadata";
+import { localizedWorkspaceMetadata, isLocale, type Locale } from "@/metadata/workspace";
 
 export type { Locale };
 
-export { metadata };
+export const metadata = localizedWorkspaceMetadata;
 
 export default async function RootLayout({
   children,

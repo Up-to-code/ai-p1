@@ -49,3 +49,63 @@ export const updateProfileFromHono = mutation({
     };
   },
 });
+
+export const ensureProfileFromHono = mutation({
+  args: {
+    organizationId: v.string(),
+    name: v.optional(v.string()),
+    actorUserId: v.optional(v.string()),
+  },
+  returns: organizationProfileValidator,
+  handler: async (ctx, args) => {
+    const user = await authUser.getAuthUser(ctx);
+    await assertOrganizationPermission(ctx, args.organizationId, "read");
+    const existing = await findOrganizationProfile(ctx, args.organizationId);
+    if (existing) {
+      return {
+        organizationId: existing.organizationId,
+        name: existing.name,
+        legalName: existing.legalName,
+        type: existing.type,
+        email: existing.email,
+        phone: existing.phone,
+        website: existing.website,
+        address: existing.address,
+        logo: existing.logo,
+        brandColor: existing.brandColor,
+        updatedAt: existing.updatedAt,
+      };
+    }
+
+    const now = Date.now();
+    const profile = {
+      organizationId: args.organizationId,
+      name: args.name?.trim() || "Organization",
+      legalName: "",
+      type: "",
+      email: "",
+      phone: "",
+      website: "",
+      address: "",
+      logo: undefined,
+      brandColor: undefined,
+      updatedAt: now,
+    };
+
+    await ctx.db.insert("organizations", profile);
+
+    const actorUserId = args.actorUserId ?? user._id;
+    if (actorUserId) {
+      await ctx.db.insert("organizationAuditEvents", {
+        organizationId: args.organizationId,
+        actorUserId,
+        action: "organization.profile.ensure",
+        target: args.organizationId,
+        summary: "Created missing organization profile shell.",
+        createdAt: now,
+      });
+    }
+
+    return profile;
+  },
+});

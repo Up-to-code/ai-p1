@@ -5,37 +5,95 @@ import {
   AlertCircle,
   ArrowRight,
   Building2,
-  Check,
   CheckCircle2,
-  ChevronLeft,
-  Eye,
   Loader2,
-  LogOut,
+  MailCheck,
   Plus,
 } from "lucide-react";
+import { useMutation } from "convex/react";
 import { useTranslations } from "next-intl";
+import { api } from "@convex/_generated/api";
 import { BrandMark } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Link, useRouter } from "@/i18n/routing";
+import { writeAuthHandoff } from "@/domains/auth";
+import { acceptOrganizationInvitation } from "@/domains/organization/api";
 import { authClient } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
+import { AuthAccountButton } from "./auth-account-button";
+import { resolveAuthEntryCallbackUrl } from "../utils/auth-callback-url";
 
 type ChooseOrganizationClientProps = {
+  callbackURL?: string | null;
   locale: string;
 };
 
-const createSteps = ["name", "profile", "preview"] as const;
-type CreateStep = (typeof createSteps)[number];
+type UserInvitation = {
+  id: string;
+  email?: string;
+  role: string;
+  status: string;
+  organizationId: string;
+  organizationName?: string | null;
+};
 
 function authErrorMessage(error: unknown, fallback: string) {
   if (!error) return fallback;
   if (error instanceof Error) return error.message;
   if (typeof error === "string") return error;
-  if (typeof error === "object" && "message" in error && typeof error.message === "string") {
+  if (
+    typeof error === "object" &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
     return error.message;
   }
   return fallback;
+}
+
+function authErrorText(error: unknown) {
+  return authErrorMessage(error, "").toLowerCase();
+}
+
+function isEmailVerificationRequiredError(error: unknown) {
+  const message = authErrorText(error);
+  return (
+    message.includes("email verification required") ||
+    (message.includes("verify") && message.includes("email"))
+  );
+}
+
+function isOrganizationsDisabledError(error: unknown) {
+  const message = authErrorText(error);
+  return (
+    message.includes("organization") &&
+    (message.includes("disabled") ||
+      message.includes("not enabled") ||
+      message.includes("plugin"))
+  );
+}
+
+function isOrganizationSlugsDisabledError(error: unknown) {
+  const message = authErrorText(error);
+  return (
+    message.includes("slug") &&
+    (message.includes("disabled") || message.includes("not enabled"))
+  );
+}
+
+function createOrganizationWithoutSlug(name: string) {
+  const create = authClient.organization.create as unknown as (input: {
+    name: string;
+  }) => ReturnType<typeof authClient.organization.create>;
+  return create({ name });
 }
 
 function slugify(value: string) {
@@ -49,11 +107,14 @@ function slugify(value: string) {
 
 function WorkspaceListSkeleton({ label }: { label: string }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {[0, 1, 2, 3].map((item) => (
-        <div className="min-h-28 rounded-xl border border-border/70 bg-card/70 p-4" key={item}>
+    <div className="space-y-3">
+      {[0, 1, 2].map((item) => (
+        <div
+          className="min-h-20 rounded-lg border border-border bg-card p-4"
+          key={item}
+        >
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 animate-pulse rounded-xl bg-muted" />
+            <div className="h-10 w-10 animate-pulse rounded-lg bg-muted" />
             <div className="min-w-0 flex-1 space-y-2">
               <div className="h-3 w-2/3 animate-pulse rounded-full bg-muted" />
               <div className="h-2.5 w-1/2 animate-pulse rounded-full bg-muted" />
@@ -61,51 +122,159 @@ function WorkspaceListSkeleton({ label }: { label: string }) {
           </div>
         </div>
       ))}
-      <p className="text-xs font-semibold text-muted-foreground sm:col-span-2">{label}</p>
+      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
     </div>
   );
 }
 
-export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientProps) {
+function toRouterPath(locale: string, localizedHref: string) {
+  const localePrefix = `/${locale}`;
+  return localizedHref.startsWith(`${localePrefix}/`)
+    ? localizedHref.slice(localePrefix.length)
+    : localizedHref;
+}
+
+async function listPendingUserInvitations() {
+  const response = await fetch("/api/v1/organizations/invitations/mine", {
+    credentials: "include",
+    headers: { accept: "application/json" },
+  });
+
+  if (!response.ok) {
+    let message = "Could not load invitations.";
+    try {
+      const body = (await response.json()) as { message?: string };
+      message = body.message ?? message;
+    } catch {
+      message = response.statusText || message;
+    }
+    throw new Error(message);
+  }
+
+  const payload = (await response.json()) as
+    | { invitations?: UserInvitation[] }
+    | UserInvitation[];
+  const invitations = Array.isArray(payload)
+    ? payload
+    : (payload.invitations ?? []);
+  return invitations.filter((invitation) => invitation.status === "pending");
+}
+
+export function ChooseOrganizationClient({
+  callbackURL,
+  locale,
+}: ChooseOrganizationClientProps) {
   const t = useTranslations("ChooseOrg");
   const router = useRouter();
   const { data: session, isPending: sessionPending } = authClient.useSession();
-  const { data: orgs, isPending: orgsPending } = authClient.useListOrganizations();
-  const [mode, setMode] = useState<"list" | "create">("list");
-  const [stepIndex, setStepIndex] = useState(0);
+  const { data: orgs, isPending: orgsPending } =
+    authClient.useListOrganizations();
+  const seedWorkspaceDefaults = useMutation(
+    api.modelization.write.seedWorkspaceDefaults,
+  );
+  const [createOpen, setCreateOpen] = useState(false);
   const [organizationName, setOrganizationName] = useState("");
-  const [organizationPurpose, setOrganizationPurpose] = useState("");
+  const [invitations, setInvitations] = useState<UserInvitation[]>([]);
+  const [invitationsPending, setInvitationsPending] = useState(false);
   const [busyId, setBusyId] = useState("");
   const [busyAction, setBusyAction] = useState<"create" | "sign-out" | "">("");
   const [error, setError] = useState("");
 
-  const isLoading = sessionPending || orgsPending;
-  const currentStep = createSteps[stepIndex];
+  const isInitialLoading = sessionPending || orgsPending;
   const hasOrganizations = Boolean(orgs?.length);
-  const organizationSlug = useMemo(() => slugify(organizationName), [organizationName]);
+  const currentOrganizationIds = useMemo(
+    () => new Set((orgs ?? []).map((org) => org.id)),
+    [orgs],
+  );
+  const visibleInvitations = useMemo(
+    () =>
+      invitations.filter(
+        (invitation) => !currentOrganizationIds.has(invitation.organizationId),
+      ),
+    [currentOrganizationIds, invitations],
+  );
+  const hasInvitations = visibleInvitations.length > 0;
+  const organizationSlug = useMemo(
+    () => slugify(organizationName),
+    [organizationName],
+  );
+  const resolvedCallbackURL = useMemo(
+    () => resolveAuthEntryCallbackUrl(locale, callbackURL, "/ws"),
+    [callbackURL, locale],
+  );
 
   useEffect(() => {
-    if (!isLoading && !session?.user) {
-      router.replace(`/sign-in?callbackURL=${encodeURIComponent(`/${locale}/choose-org`)}`);
+    if (!isInitialLoading && !session?.user) {
+      router.replace(
+        `/sign-in?callbackURL=${encodeURIComponent(resolvedCallbackURL)}`,
+      );
     }
-  }, [isLoading, session, locale, router]);
+  }, [isInitialLoading, session, resolvedCallbackURL, router]);
 
   useEffect(() => {
-    if (!isLoading && orgs?.length === 0) setMode("create");
-  }, [isLoading, orgs?.length]);
+    if (isInitialLoading || !session?.user) return;
 
-  const canGoNext = currentStep !== "name" || organizationName.trim().length > 1;
+    let cancelled = false;
+    setInvitationsPending(true);
+
+    listPendingUserInvitations()
+      .then((nextInvitations) => {
+        if (!cancelled) setInvitations(nextInvitations);
+      })
+      .catch((caught) => {
+        if (!cancelled) setError(authErrorMessage(caught, t("errorDesc")));
+      })
+      .finally(() => {
+        if (!cancelled) setInvitationsPending(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isInitialLoading, session?.user, t]);
+
+  async function finishOrganizationSelection(organizationId: string) {
+    const result = await authClient.organization.setActive({ organizationId });
+    if (result.error) {
+      throw new Error(authErrorMessage(result.error, t("errorDesc")));
+    }
+    writeAuthHandoff(organizationId);
+    await seedWorkspaceDefaults({ organizationId });
+    router.replace(toRouterPath(locale, resolvedCallbackURL));
+  }
 
   async function selectOrganization(organizationId: string) {
     setBusyId(organizationId);
     setError("");
     try {
-      const result = await authClient.organization.setActive({ organizationId });
-      if (result.error) {
-        throw new Error(authErrorMessage(result.error, t("errorDesc")));
-      }
-      router.replace("/ws");
+      await finishOrganizationSelection(organizationId);
     } catch (caught) {
+      setError(authErrorMessage(caught, t("errorDesc")));
+    } finally {
+      setBusyId("");
+    }
+  }
+
+  async function acceptInvitation(invitation: UserInvitation) {
+    setBusyId(`invitation:${invitation.id}`);
+    setError("");
+    try {
+      const accepted = await acceptOrganizationInvitation(invitation.id);
+      const organizationId =
+        accepted.organizationId ??
+        accepted.invitation?.organizationId ??
+        accepted.member?.organizationId ??
+        invitation.organizationId;
+
+      await finishOrganizationSelection(organizationId);
+    } catch (caught) {
+      if (isEmailVerificationRequiredError(caught)) {
+        const verifyCallbackURL = `/${locale}/choose-org?callbackURL=${encodeURIComponent(resolvedCallbackURL)}`;
+        router.push(
+          `/verify-email?callbackURL=${encodeURIComponent(verifyCallbackURL)}`,
+        );
+        return;
+      }
       setError(authErrorMessage(caught, t("errorDesc")));
     } finally {
       setBusyId("");
@@ -116,22 +285,38 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
     const name = organizationName.trim();
     if (!name) {
       setError(t("nameRequired"));
-      setStepIndex(0);
       return;
     }
 
     setBusyAction("create");
     setError("");
     try {
-      const result = await authClient.organization.create({ name, slug: organizationSlug || `workspace-${Date.now()}` });
+      let result = await authClient.organization.create({
+        name,
+        slug: organizationSlug || `workspace-${Date.now()}`,
+      });
+      if (result.error && isOrganizationSlugsDisabledError(result.error)) {
+        result = await createOrganizationWithoutSlug(name);
+      }
       if (result.error) {
+        if (isOrganizationsDisabledError(result.error)) {
+          throw new Error(t("organizationsDisabled"));
+        }
+        if (isOrganizationSlugsDisabledError(result.error)) {
+          throw new Error(t("slugsDisabled"));
+        }
         throw new Error(authErrorMessage(result.error, t("errorDesc")));
       }
       if (result.data?.id) {
-        const activeResult = await authClient.organization.setActive({ organizationId: result.data.id });
+        const activeResult = await authClient.organization.setActive({
+          organizationId: result.data.id,
+        });
         if (activeResult.error) {
           throw new Error(authErrorMessage(activeResult.error, t("errorDesc")));
         }
+        writeAuthHandoff(result.data.id);
+        await seedWorkspaceDefaults({ organizationId: result.data.id });
+        setCreateOpen(false);
         router.replace("/onboarding");
         return;
       }
@@ -156,263 +341,256 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
     }
   }
 
-  function goNext() {
-    if (!canGoNext) {
-      setError(t("nameRequired"));
-      return;
-    }
-    setError("");
-    setStepIndex((current) => Math.min(current + 1, createSteps.length - 1));
-  }
-
   return (
-    <main className="relative min-h-svh overflow-hidden bg-background text-foreground">
-      <div className="pointer-events-none absolute inset-0 opacity-80">
-        <div
-          className="absolute -left-32 top-[-22rem] h-[42rem] w-[42rem] rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, color-mix(in srgb, #F2488B 20%, transparent), transparent 66%)" }}
-        />
-        <div
-          className="absolute right-[-18rem] top-[-18rem] h-[46rem] w-[46rem] rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, color-mix(in srgb, #0C7DF3 20%, transparent), transparent 68%)" }}
-        />
-        <div
-          className="absolute bottom-[-24rem] left-1/3 h-[48rem] w-[48rem] rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, color-mix(in srgb, #834DF1 14%, transparent), transparent 70%)" }}
-        />
-      </div>
-
-      <div className="relative z-10 flex min-h-svh flex-col px-5 py-5 sm:px-8 lg:px-10">
-        <header className="flex items-center justify-between">
+    <main className="min-h-svh bg-muted/30 text-foreground">
+      <div className="mx-auto flex min-h-svh w-full max-w-4xl flex-col px-5 py-5 sm:px-8">
+        <header className="flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2">
             <BrandMark className="h-6 w-6" priority />
             <span className="text-base font-black tracking-tight">qentrah</span>
           </Link>
-          <Button
-            className="rounded-lg text-muted-foreground hover:text-foreground"
+          <AuthAccountButton
             disabled={busyAction === "sign-out"}
+            label={t("useAnotherAccount")}
+            loading={busyAction === "sign-out"}
+            loadingLabel={t("signingOut")}
             onClick={() => void handleUseAnotherAccount()}
-            size="sm"
-            type="button"
-            variant="ghost"
-          >
-            {busyAction === "sign-out" ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
-            <span className="hidden sm:inline">{busyAction === "sign-out" ? t("signingOut") : t("useAnotherAccount")}</span>
-          </Button>
+            user={session?.user}
+          />
         </header>
 
-        <section className="grid flex-1 items-center gap-10 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
-          <aside className="max-w-xl">
-            <div className="mb-6 text-xs font-black uppercase tracking-[0.08em] text-muted-foreground">
-              {t("eyebrow")}
-            </div>
-            <h1 className="text-4xl font-black leading-[0.98] tracking-0 text-foreground sm:text-6xl lg:text-7xl rtl:leading-[1.08]">
-              {hasOrganizations ? t("title") : t("createTitle")}
-            </h1>
-            <p className="mt-6 max-w-lg text-base font-medium leading-7 text-muted-foreground sm:text-lg">
-              {hasOrganizations ? t("subtitle") : t("createDesc")}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+        <section className="flex flex-1 items-center py-10">
+          <div className="w-full rounded-lg border border-border bg-card p-5 shadow-sm sm:p-7">
+            <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-start sm:justify-between">
+              <div className="max-w-xl">
+                <p className="text-xs font-black uppercase text-muted-foreground">
+                  {t("eyebrow")}
+                </p>
+                <h1 className="mt-3 text-2xl font-black tracking-0 text-foreground sm:text-3xl">
+                  {t("title")}
+                </h1>
+                <p className="mt-2 text-sm font-medium leading-6 text-muted-foreground">
+                  {t("subtitle")}
+                </p>
+              </div>
               {session?.session?.activeOrganizationId ? (
-                <Button className="rounded-lg" onClick={() => router.replace("/ws")} type="button" variant="outline">
+                <Button
+                  className="h-10 rounded-lg"
+                  onClick={() => router.replace("/ws")}
+                  type="button"
+                  variant="outline"
+                >
                   {t("continueWorkspace")}
                   <ArrowRight className="h-4 w-4 rtl:rotate-180" />
                 </Button>
               ) : null}
             </div>
-          </aside>
 
-          <section className="flex min-h-[560px] items-center justify-center">
-            <div className="w-full max-w-2xl">
             {error ? (
-              <div className="mb-5 flex items-start gap-3 rounded-lg bg-destructive/10 px-4 py-3 text-sm font-semibold leading-6 text-destructive">
+              <div className="mt-5 flex items-start gap-3 rounded-lg bg-destructive/10 px-4 py-3 text-sm font-semibold leading-6 text-destructive">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                 <p>{error}</p>
               </div>
             ) : null}
 
-            {isLoading ? (
-              <WorkspaceListSkeleton label={t("loading")} />
-            ) : mode === "list" && hasOrganizations ? (
-              <div className="space-y-4">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {orgs?.map((org) => {
-                    const isCurrent = session?.session?.activeOrganizationId === org.id;
-                    return (
-                      <button
-                        className="group min-h-32 rounded-xl border border-border bg-card p-4 text-start transition hover:border-primary/50 hover:bg-accent/40 disabled:pointer-events-none disabled:opacity-60"
-                        disabled={Boolean(busyId || busyAction)}
-                        key={org.id}
-                        onClick={() => void selectOrganization(org.id)}
-                        type="button"
-                      >
-                        <span className="flex items-start gap-3">
-                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-background">
-                            {busyId === org.id ? (
-                              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                            ) : isCurrent ? (
-                              <CheckCircle2 className="h-5 w-5 text-primary" />
-                            ) : (
-                              <Building2 className="h-5 w-5 text-muted-foreground" />
-                            )}
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-black">{org.name ?? t("untitledWorkspace")}</span>
-                            <span className="mt-1 block truncate text-xs font-semibold text-muted-foreground">
-                              {isCurrent ? t("currentWorkspace") : org.slug ?? org.id}
-                            </span>
-                          </span>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition group-hover:opacity-100 rtl:rotate-180" />
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <button
-                  className="flex w-full items-center justify-between rounded-xl px-2 py-3 text-start text-sm font-black text-muted-foreground transition hover:text-foreground disabled:pointer-events-none disabled:opacity-60"
-                  disabled={Boolean(busyId || busyAction)}
-                  onClick={() => setMode("create")}
-                  type="button"
-                >
-                  <span className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <Plus className="h-4 w-4" />
-                    </span>
-                    {t("createTitle")}
-                  </span>
-                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex min-h-[500px] flex-col">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-xs font-black uppercase tracking-[0.08em] text-muted-foreground">{t("setupAccess")}</p>
-                  {hasOrganizations ? (
-                    <Button className="rounded-lg" onClick={() => setMode("list")} type="button" variant="ghost">
-                      <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
-                      {t("existingTitle")}
-                    </Button>
-                  ) : null}
-                </div>
-
-                <div className="mt-8 grid grid-cols-3 gap-4">
-                  {createSteps.map((step, index) => {
-                    const active = index === stepIndex;
-                    const complete = index < stepIndex;
-                    return (
-                      <button
-                        className="group flex items-center gap-3 text-start"
-                        disabled={busyAction === "create" || (index > 0 && !organizationName.trim())}
-                        key={step}
-                        onClick={() => setStepIndex(index)}
-                        type="button"
-                      >
-                        <span className={cn(
-                          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-xs font-black transition",
-                          active && "border-primary bg-primary text-primary-foreground",
-                          complete && "border-primary/40 bg-primary/10 text-primary",
-                          !active && !complete && "border-border bg-card text-muted-foreground",
-                        )}>
-                          {complete ? <Check className="h-4 w-4" /> : index + 1}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-black">{t(`steps.${step}`)}</span>
-                          <span className="mt-2 block h-0.5 rounded-full bg-border">
-                            <span className={cn("block h-full rounded-full bg-primary transition-all", (active || complete) ? "w-full" : "w-0")} />
-                          </span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="flex flex-1 items-center py-10">
-                  {currentStep === "name" ? (
-                    <div className="w-full max-w-xl space-y-3">
-                      <label htmlFor="organization-name" className="text-sm font-black">{t("createNameLabel")}</label>
-                      <Input
-                        className="h-12 rounded-lg"
-                        id="organization-name"
-                        onChange={(event) => {
-                          setOrganizationName(event.target.value);
-                          setError("");
-                        }}
-                        placeholder={t("createNamePlaceholder")}
-                        value={organizationName}
-                      />
-                      <p className="text-xs font-semibold text-muted-foreground">{organizationSlug || "workspace-slug"}</p>
-                    </div>
-                  ) : null}
-
-                  {currentStep === "profile" ? (
-                    <div className="w-full max-w-xl space-y-3">
-                      <label htmlFor="organization-purpose" className="text-sm font-black">{t("profileLabel")}</label>
-                      <Input
-                        className="h-12 rounded-lg"
-                        id="organization-purpose"
-                        onChange={(event) => setOrganizationPurpose(event.target.value)}
-                        placeholder={t("profilePlaceholder")}
-                        value={organizationPurpose}
-                      />
-                      <p className="text-xs font-semibold text-muted-foreground">{t("profileHint")}</p>
-                    </div>
-                  ) : null}
-
-                  {currentStep === "preview" ? (
-                    <div className="w-full max-w-xl">
-                      <div className="flex items-start gap-4">
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                          <Building2 className="h-5 w-5 text-primary" />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-black uppercase tracking-[0.08em] text-muted-foreground">{t("previewTitle")}</p>
-                          <h3 className="mt-2 truncate text-2xl font-black">{organizationName || t("untitledWorkspace")}</h3>
-                          <p className="mt-1 truncate text-sm font-semibold text-muted-foreground">{organizationSlug || "workspace-slug"}</p>
-                          {organizationPurpose ? <p className="mt-5 text-sm font-medium leading-6 text-muted-foreground">{organizationPurpose}</p> : null}
+            <div className="mt-6 space-y-8">
+              {isInitialLoading ? (
+                <WorkspaceListSkeleton label={t("loading")} />
+              ) : (
+                <>
+                  {hasInvitations || invitationsPending ? (
+                    <section className="space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <h2 className="text-sm font-black">
+                            {t("invitedTitle")}
+                          </h2>
+                          <p className="mt-1 text-xs font-medium text-muted-foreground">
+                            {t("invitedDesc")}
+                          </p>
                         </div>
+                        {invitationsPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        ) : null}
                       </div>
-                    </div>
-                  ) : null}
-                </div>
 
-                <div className="flex items-center justify-between pt-5">
-                  <Button
-                    className="rounded-lg"
-                    disabled={stepIndex === 0 || busyAction === "create"}
-                    onClick={() => setStepIndex((current) => Math.max(current - 1, 0))}
-                    type="button"
-                    variant="outline"
-                  >
-                    <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
-                    {t("back")}
-                  </Button>
-                  <div className="flex items-center gap-2">
-                    {stepIndex < createSteps.length - 1 ? (
-                      <>
-                        <Button className="rounded-lg" disabled={!organizationName.trim()} onClick={() => setStepIndex(2)} type="button" variant="ghost">
-                          <Eye className="h-4 w-4" />
-                          {t("preview")}
-                        </Button>
-                        <Button className="rounded-lg" disabled={!canGoNext} onClick={goNext} type="button">
-                          {t("next")}
-                          <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-                        </Button>
-                      </>
-                    ) : (
-                      <Button className="rounded-lg" disabled={busyAction === "create"} onClick={() => void createOrganization()} type="button">
-                        {busyAction === "create" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                        {busyAction === "create" ? t("creating") : t("createBtn")}
-                        {busyAction === "create" ? null : <ArrowRight className="h-4 w-4 rtl:rotate-180" />}
+                      {hasInvitations ? (
+                        <div className="space-y-2">
+                          {visibleInvitations.map((invitation) => {
+                            const invitationBusy =
+                              busyId === `invitation:${invitation.id}`;
+                            return (
+                              <div
+                                className="flex flex-col gap-3 rounded-lg border border-border bg-background p-4 sm:flex-row sm:items-center sm:justify-between"
+                                key={invitation.id}
+                              >
+                                <div className="flex min-w-0 items-start gap-3">
+                                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                    {invitationBusy ? (
+                                      <Loader2 className="h-5 w-5 animate-spin" />
+                                    ) : (
+                                      <MailCheck className="h-5 w-5" />
+                                    )}
+                                  </span>
+                                  <span className="min-w-0">
+                                    <span className="block truncate text-sm font-black">
+                                      {invitation.organizationName ||
+                                        invitation.organizationId}
+                                    </span>
+                                    <span className="mt-1 block text-xs font-semibold text-muted-foreground">
+                                      {t("roleLabel")} {invitation.role}
+                                    </span>
+                                  </span>
+                                </div>
+                                <Button
+                                  className="h-10 rounded-lg sm:w-auto"
+                                  disabled={Boolean(busyId || busyAction)}
+                                  onClick={() =>
+                                    void acceptInvitation(invitation)
+                                  }
+                                  type="button"
+                                >
+                                  {invitationBusy ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <CheckCircle2 className="h-4 w-4" />
+                                  )}
+                                  {invitationBusy
+                                    ? t("acceptingInvite")
+                                    : t("acceptInvite")}
+                                </Button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : null}
+                    </section>
+                  ) : null}
+
+                  {hasOrganizations ? (
+                    <section className="space-y-3">
+                      <h2 className="text-sm font-black">
+                        {t("existingTitle")}
+                      </h2>
+                      <div className="space-y-2">
+                        {orgs?.map((org) => {
+                          const isCurrent =
+                            session?.session?.activeOrganizationId === org.id;
+                          return (
+                            <button
+                              className="group flex w-full items-center gap-3 rounded-lg border border-border bg-background p-4 text-start transition hover:border-primary/50 hover:bg-accent/40 disabled:pointer-events-none disabled:opacity-60"
+                              disabled={Boolean(busyId || busyAction)}
+                              key={org.id}
+                              onClick={() => void selectOrganization(org.id)}
+                              type="button"
+                            >
+                              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-card">
+                                {busyId === org.id ? (
+                                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                                ) : isCurrent ? (
+                                  <CheckCircle2 className="h-5 w-5 text-primary" />
+                                ) : (
+                                  <Building2 className="h-5 w-5 text-muted-foreground" />
+                                )}
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate text-sm font-black">
+                                  {org.name ?? t("untitledWorkspace")}
+                                </span>
+                                <span className="mt-1 block truncate text-xs font-semibold text-muted-foreground">
+                                  {isCurrent
+                                    ? t("currentWorkspace")
+                                    : (org.slug ?? org.id)}
+                                </span>
+                              </span>
+                              <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition group-hover:opacity-100 rtl:rotate-180" />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  ) : null}
+
+                  <section className="space-y-3 border-t border-border pt-6">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h2 className="text-sm font-black">
+                          {t("createTitle")}
+                        </h2>
+                        <p className="mt-1 text-xs font-medium text-muted-foreground">
+                          {hasOrganizations || hasInvitations
+                            ? t("createHelp")
+                            : t("noOrganizationsDesc")}
+                        </p>
+                      </div>
+                      <Button
+                        className="h-10 rounded-lg sm:w-auto"
+                        disabled={Boolean(busyId || busyAction)}
+                        onClick={() => setCreateOpen(true)}
+                        type="button"
+                      >
+                        <Plus className="h-4 w-4" />
+                        {t("createNew")}
                       </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+                    </div>
+                  </section>
+                </>
+              )}
             </div>
-          </section>
+          </div>
         </section>
       </div>
+
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="max-w-md rounded-lg p-5 sm:p-6">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-black">
+              {t("createModalTitle")}
+            </DialogTitle>
+            <DialogDescription>{t("createModalDesc")}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <label htmlFor="organization-name" className="text-sm font-black">
+              {t("createNameLabel")}
+            </label>
+            <Input
+              className="h-11 rounded-lg"
+              id="organization-name"
+              onChange={(event) => {
+                setOrganizationName(event.target.value);
+                setError("");
+              }}
+              placeholder={t("createNamePlaceholder")}
+              value={organizationName}
+            />
+            <p className="text-xs font-semibold text-muted-foreground">
+              {organizationSlug || "workspace-slug"}
+            </p>
+          </div>
+          <DialogFooter className="mt-2 rounded-b-lg">
+            <Button
+              className="h-10 rounded-lg"
+              disabled={busyAction === "create"}
+              onClick={() => setCreateOpen(false)}
+              type="button"
+              variant="outline"
+            >
+              {t("hideCreate")}
+            </Button>
+            <Button
+              className="h-10 rounded-lg"
+              disabled={busyAction === "create" || Boolean(busyId)}
+              onClick={() => void createOrganization()}
+              type="button"
+            >
+              {busyAction === "create" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : null}
+              {busyAction === "create" ? t("creating") : t("createBtn")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

@@ -18,7 +18,6 @@ export type Project = {
   tags?: string[];
   progress?: number;
   teamMemberIds?: string[];
-  customTabs?: string[];
   _creationTime: number;
   syncState?: "draft" | "blocked" | "synced";
   dataVersion?: number;

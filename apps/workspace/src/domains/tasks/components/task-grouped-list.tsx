@@ -9,8 +9,10 @@ import {
   STATUS_DOT,
   STATUS_COLUMN_BG,
   PRIORITY_COLOR,
+  STATUSES,
   getDueDateColor,
   getInitials,
+  normalizeTaskStatus,
 } from "../tasks.constants";
 import { sortPipelineTasks } from "../task-pipeline-order";
 import {
@@ -19,8 +21,6 @@ import {
   Draggable,
   type DropResult,
 } from "@hello-pangea/dnd";
-
-const BOARD_STATUSES: TaskStatus[] = ["todo", "inProgress", "waiting", "done"];
 
 const TaskCard = memo(function TaskCard({
   task,
@@ -155,13 +155,14 @@ export function TaskGroupedList({
       canceled: [],
     };
     for (const task of tasks) {
-      if (groups[task.status]) {
-        groups[task.status].push(task);
+      const status = normalizeTaskStatus(task.status);
+      if (groups[status]) {
+        groups[status].push(task);
       }
     }
 
     const result: Record<string, TaskRecord[]> = {};
-    for (const status of BOARD_STATUSES) {
+    for (const status of STATUSES) {
       result[status] = sortPipelineTasks(groups[status]);
     }
 
@@ -171,8 +172,8 @@ export function TaskGroupedList({
 
   const visibleStatuses =
     statusFilter === "all"
-      ? BOARD_STATUSES
-      : BOARD_STATUSES.filter((s) => s === statusFilter);
+      ? STATUSES
+      : STATUSES.filter((s) => s === normalizeTaskStatus(statusFilter));
 
   const handleDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;

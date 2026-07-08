@@ -18,14 +18,19 @@ function getAcceptedOrganizationId(result: OrganizationInviteLink | Organization
   );
 }
 
+function validInviteParam(value: string | null) {
+  if (!value || value === "undefined" || value === "null") return null;
+  return value;
+}
+
 export function AcceptInviteScreen() {
   const t = useTranslations("Organization.acceptInvite");
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, isPending: authPending } = authClient.useSession();
-  const invitationId = searchParams.get("invitationId");
-  const inviteToken = searchParams.get("inviteToken");
+  const invitationId = validInviteParam(searchParams.get("invitationId"));
+  const inviteToken = validInviteParam(searchParams.get("inviteToken"));
   const [status, setStatus] = useState<"idle" | "accepting" | "accepted" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const hasStartedAccepting = useRef(false);

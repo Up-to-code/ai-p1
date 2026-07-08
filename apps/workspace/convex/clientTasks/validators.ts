@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { clientPriorityValidator } from "../clients/validators";
+import { recordStateValidator } from "../schema/validators";
 
 export const clientTaskStatusValidator = v.union(
   v.literal("todo"),
@@ -49,6 +50,7 @@ export const clientTaskValidator = v.object({
   }))),
   tags: v.optional(v.array(v.string())),
   customFields: v.optional(v.array(v.any())),
+  recordState: recordStateValidator,
   createdByUserId: v.string(),
   createdAt: v.number(),
   updatedAt: v.number(),

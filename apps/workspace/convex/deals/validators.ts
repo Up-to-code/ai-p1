@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { recordStateValidator } from "../schema/validators";
 
 export const dealStageValidator = v.union(
   v.literal("lead"),
@@ -60,6 +61,7 @@ export const dealValidator = v.object({
   ownerUserId: v.string(),
   tags: v.optional(v.array(v.string())),
   customFields: v.optional(v.array(v.any())),
+  recordState: recordStateValidator,
   createdByUserId: v.string(),
   createdAt: v.number(),
   updatedAt: v.number(),

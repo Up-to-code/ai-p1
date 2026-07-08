@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Check, ChevronRight, Globe, FolderKanban, Users, MessageSquare, Building2, Layers, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,7 +20,6 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Selector, type SelectorOption } from "@/components/ui/selector";
-import { ItemSelector, type ItemSelectorOption } from "@/components/ui/item-selector";
 import type { ChannelType, ChannelVisibility } from "../types/inbox.types";
 
 interface CreateChannelWizardProps {
@@ -38,7 +36,7 @@ interface CreateChannelWizardProps {
     spaceId?: string;
     memberIds?: string[];
     dmUserId?: string;
-  }) => void;
+  }) => Promise<void> | void;
   isLoading?: boolean;
   projects?: Array<{ id: string; name: string }>;
   clients?: Array<{ id: string; name: string }>;
@@ -78,7 +76,6 @@ export function CreateChannelWizard({
   spaces = [],
   members = [],
 }: CreateChannelWizardProps) {
-  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<Step>("name");
   const [name, setName] = useState("");
   const [type, setType] = useState<ChannelType>("organization");
@@ -134,6 +131,30 @@ export function CreateChannelWizard({
     }
   };
 
+  const resetForm = () => {
+    setName("");
+    setType("organization");
+    setVisibility("public");
+    setDescription("");
+    setProjectId("");
+    setSelectedProjectIds([]);
+    setClientId("");
+    setSpaceId("");
+    setSelectedMemberIds([]);
+    setDmUserId("");
+    setShowAdvanced(false);
+    setCurrentStep("name");
+    setSubmitStatus("idle");
+    setSubmitError("");
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && !isLoading) {
+      resetForm();
+    }
+    onOpenChange(nextOpen);
+  };
+
   const handleSubmit = async () => {
     setSubmitStatus("idle");
     setSubmitError("");
@@ -152,25 +173,8 @@ export function CreateChannelWizard({
         dmUserId: type === "dm" ? dmUserId : undefined,
       });
 
-      setSubmitStatus("success");
-
-      // Reset form after success
-      setTimeout(() => {
-        setName("");
-        setType("organization");
-        setVisibility("public");
-        setDescription("");
-        setProjectId("");
-        setSelectedProjectIds([]);
-        setClientId("");
-        setSpaceId("");
-        setSelectedMemberIds([]);
-        setDmUserId("");
-        setShowAdvanced(false);
-        setCurrentStep("name");
-        setSubmitStatus("idle");
-        onOpenChange(false);
-      }, 2000);
+      resetForm();
+      onOpenChange(false);
     } catch (error) {
       setSubmitStatus("error");
       setSubmitError(error instanceof Error ? error.message : "Failed to create channel");
@@ -724,35 +728,24 @@ export function CreateChannelWizard({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl overflow-hidden">
-        <DialogHeader className="pb-4">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-2xl overflow-hidden border-border bg-card p-0 text-card-foreground">
+        <DialogHeader className="border-b border-border px-6 py-4">
           <DialogTitle>Create Channel</DialogTitle>
         </DialogHeader>
 
-        {/* Success/Error Messages */}
-        {submitStatus === "success" && (
-          <div className="mb-4 p-4 rounded-lg bg-green-50 border border-green-200">
-            <div className="flex items-center gap-2 text-green-800">
-              <Check className="h-5 w-5" />
-              <span className="font-medium">Channel created successfully!</span>
-            </div>
-            <p className="text-sm text-green-700 mt-1">The modal will close automatically.</p>
-          </div>
-        )}
-
         {submitStatus === "error" && (
-          <div className="mb-4 p-4 rounded-lg bg-red-50 border border-red-200">
-            <div className="flex items-center gap-2 text-red-800">
+          <div className="mx-6 mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+            <div className="flex items-center gap-2 text-destructive">
               <AlertCircle className="h-5 w-5" />
               <span className="font-medium">Failed to create channel</span>
             </div>
-            <p className="text-sm text-red-700 mt-1">{submitError}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{submitError}</p>
           </div>
         )}
 
         {/* Stepper */}
-        <div className="flex items-center justify-center mb-8">
+        <div className="mb-8 flex items-center justify-center px-6 pt-6">
           {STEPS.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <div className="flex flex-col items-center">
@@ -794,12 +787,12 @@ export function CreateChannelWizard({
         </div>
 
         {/* Step Content */}
-        <div className="min-h-[300px] mb-6">
+        <div className="mb-6 min-h-[300px] px-6">
           {renderStep()}
         </div>
 
         {/* Footer */}
-        <div className="flex justify-between pt-4 border-t">
+        <div className="flex justify-between border-t border-border px-6 py-4">
           <Button
             type="button"
             variant="outline"

@@ -4,6 +4,9 @@ const projectRoot = process.cwd();
 const targets = [
   `${projectRoot}/node_modules/.bin/next dev`,
   `${projectRoot}/node_modules/.bin/convex dev`,
+  `${projectRoot}/node_modules/.bin/eve dev`,
+  `/node_modules/eve/bin/eve.js dev`,
+  `msb sandbox --name eve-sbx`,
 ];
 
 function listProcesses() {

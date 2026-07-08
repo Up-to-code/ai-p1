@@ -37,6 +37,7 @@ export const create = mutation({
     const id = await ctx.db.insert("spaces", {
       organizationId: args.organizationId,
       ...args.input,
+      recordState: "active",
       createdByUserId: user._id,
       createdAt: now,
       updatedAt: now,
@@ -48,6 +49,7 @@ export const create = mutation({
       spaceId: id,
       userId: user._id,
       role: "admin",
+      recordState: "active",
       addedByUserId: user._id,
       addedAt: now,
     });
@@ -134,7 +136,7 @@ export const remove = mutation({
     const now = Date.now();
 
     // Soft delete the space
-    await ctx.db.patch(args.spaceId, { deletedAt: now, updatedAt: now });
+    await ctx.db.patch(args.spaceId, { deletedAt: now, recordState: "deleted", updatedAt: now });
 
     // Dissociate projects from this space
     const projectSpaces = await ctx.db
@@ -144,7 +146,7 @@ export const remove = mutation({
       )
       .take(500);
     for (const projectSpace of projectSpaces) {
-      await ctx.db.patch(projectSpace._id, { deletedAt: now });
+      await ctx.db.patch(projectSpace._id, { deletedAt: now, recordState: "deleted" });
     }
 
     // Soft delete space memberships
@@ -155,7 +157,7 @@ export const remove = mutation({
       )
       .take(500);
     for (const member of spaceMembers) {
-      await ctx.db.patch(member._id, { deletedAt: now });
+      await ctx.db.patch(member._id, { deletedAt: now, recordState: "deleted" });
     }
 
     await ctx.db.insert("organizationAuditEvents", {

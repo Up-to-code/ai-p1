@@ -60,7 +60,7 @@ export function NameCell({ value, status, editable = true, onCommit, maxChars = 
   const dotStyle: React.CSSProperties = {
     background: status === "done" ? "var(--q-status-done-dot)" : undefined,
     borderColor: status === "inProgress" ? "var(--q-status-inProgress-dot)"
-      : status === "todo" ? "var(--q-status-todo-dot)"
+      : status === "todo" ? "#B0B0B0"
       : status === "waiting" ? "var(--q-status-waiting-dot)"
       : undefined,
   }

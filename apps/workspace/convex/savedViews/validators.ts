@@ -1,4 +1,9 @@
 import { v } from "convex/values";
+import {
+  savedViewConfigValidator,
+  viewTypeValidator,
+  workOsRecordResourceValidator,
+} from "../schema/validators";
 
 export const userTableViewScopeValidator = v.union(
   v.literal("project"),
@@ -7,35 +12,16 @@ export const userTableViewScopeValidator = v.union(
   v.literal("global"),
 );
 
-export const userTableViewConfigValidator = v.object({
-  groupBy: v.optional(v.string()),
-  sortBy: v.optional(v.string()),
-  search: v.optional(v.string()),
-  density: v.optional(v.union(v.literal("compact"), v.literal("normal"))),
-  showFields: v.optional(v.boolean()),
-  filters: v.optional(
-    v.array(
-      v.object({
-        id: v.string(),
-        field: v.string(),
-        operator: v.string(),
-        value: v.optional(v.any()),
-      }),
-    ),
-  ),
-  columnWidths: v.optional(v.record(v.string(), v.number())),
-  columnVisibility: v.optional(v.record(v.string(), v.boolean())),
-  columnOrder: v.optional(v.array(v.string())),
-});
+export const userTableViewConfigValidator = savedViewConfigValidator;
 
 export const userTableViewValidator = v.object({
-  _id: v.string(),
+  _id: v.id("savedViews"),
   _creationTime: v.number(),
   userId: v.string(),
   name: v.string(),
   description: v.optional(v.string()),
-  resourceType: v.string(),
-  viewType: v.string(),
+  resourceType: workOsRecordResourceValidator,
+  viewType: viewTypeValidator,
   scope: userTableViewScopeValidator,
   scopeKey: v.optional(v.string()),
   organizationId: v.optional(v.string()),
@@ -50,8 +36,8 @@ export const userTableViewValidator = v.object({
 export const createUserTableViewInputValidator = v.object({
   name: v.string(),
   description: v.optional(v.string()),
-  resourceType: v.string(),
-  viewType: v.string(),
+  resourceType: workOsRecordResourceValidator,
+  viewType: viewTypeValidator,
   scope: userTableViewScopeValidator,
   scopeKey: v.optional(v.string()),
   organizationId: v.optional(v.string()),
@@ -62,7 +48,7 @@ export const createUserTableViewInputValidator = v.object({
 });
 
 export const updateUserTableViewInputValidator = v.object({
-  viewId: v.id("userTableViews"),
+  viewId: v.id("savedViews"),
   name: v.optional(v.string()),
   description: v.optional(v.string()),
   config: v.optional(userTableViewConfigValidator),

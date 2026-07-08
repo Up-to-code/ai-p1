@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { recordStateValidator } from "../schema/validators";
 
 export const spaceVisibilityValidator = v.union(
   v.literal("private"),
@@ -36,6 +37,7 @@ export const spaceValidator = v.object({
   visibility: spaceVisibilityValidator,
   defaultProjectVisibility: v.optional(spaceProjectVisibilityValidator),
   allowMemberProjectCreation: v.optional(v.boolean()),
+  recordState: recordStateValidator,
   createdByUserId: v.string(),
   createdAt: v.number(),
   updatedAt: v.number(),

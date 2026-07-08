@@ -13,12 +13,13 @@ export function actionErrorJson(c: Context, error: unknown, fallback: string) {
   const message = error instanceof Error ? error.message : String(error);
   const stack = error instanceof Error ? error.stack : undefined;
   const status = errorStatus(error);
-  console.error("[action-error]", {
+  const log = status >= 500 ? console.error : console.warn;
+  log("[action-error]", {
     path: c.req.path,
     method: c.req.method,
     fallback,
     error: message,
-    stack,
+    stack: status >= 500 ? stack : undefined,
     status,
   });
   // In development, return the actual error message so the UI can show it

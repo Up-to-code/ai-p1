@@ -22,6 +22,8 @@ interface UseAuthFlowResult {
   submitCredentials: (input: { emailAddress: string; name?: string; password: string }) => Promise<void>;
   signInWithSocial: (provider: SocialProvider) => Promise<void>;
   startForgotPassword: (emailAddress: string) => Promise<void>;
+  verifyResetCode: (code: string) => Promise<void>;
+  submitNewPassword: (password: string) => Promise<void>;
   goBack: () => void;
 }
 
@@ -34,6 +36,8 @@ export function useAuthFlow(
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingProvider, setPendingProvider] = useState<SocialProvider | null>(null);
+  const [resetEmailAddress, setResetEmailAddress] = useState("");
+  const [resetVerificationCode, setResetVerificationCode] = useState("");
 
   const finalizeCallback = async () => {
     if (options.callbackURL) {
@@ -107,15 +111,87 @@ export function useAuthFlow(
     setError(null);
 
     try {
-      const { error: forgotErr } = await authClient.requestPasswordReset({
-        email: emailAddress,
-        redirectTo: `${window.location.origin}/${options.locale}/reset-password`,
-      } as any);
+      const email = emailAddress.trim().toLowerCase();
+      const { error: forgotErr } = await (authClient as any).emailOtp.requestPasswordReset({ email });
       if (forgotErr) throw forgotErr;
+      setResetEmailAddress(email);
+      setResetVerificationCode("");
       setPhase("reset-code");
     } catch (err: any) {
       setPhase("forgot-password");
       setError(err?.message || "Failed to send reset email");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const verifyResetCode = async (code: string) => {
+    const trimmedCode = code.trim();
+    if (!resetEmailAddress || !trimmedCode) {
+      setPhase("reset-code");
+      setError("Enter the verification code sent to your email.");
+      return;
+    }
+
+    setIsPending(true);
+    setError(null);
+
+    try {
+      const emailOtpClient = (authClient as any).emailOtp;
+      const checkVerificationOtp = emailOtpClient.checkVerificationOTP ?? emailOtpClient.checkVerificationOtp;
+      const { error: checkErr } = checkVerificationOtp
+        ? await checkVerificationOtp({
+          email: resetEmailAddress,
+          otp: trimmedCode,
+          type: "forget-password",
+        })
+        : await (authClient as any).$fetch("/email-otp/check-verification-otp", {
+          method: "POST",
+          body: {
+            email: resetEmailAddress,
+            otp: trimmedCode,
+            type: "forget-password",
+          },
+        });
+      if (checkErr) throw checkErr;
+      setResetVerificationCode(trimmedCode);
+      setPhase("new-password");
+    } catch (err: any) {
+      setPhase("reset-code");
+      setError(err?.message || "Invalid or expired verification code");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const submitNewPassword = async (password: string) => {
+    if (!resetEmailAddress || !resetVerificationCode) {
+      setPhase(resetEmailAddress ? "reset-code" : "forgot-password");
+      setError("Verify the reset code before setting a new password.");
+      return;
+    }
+
+    setIsPending(true);
+    setError(null);
+
+    try {
+      const { error: resetErr } = await (authClient as any).emailOtp.resetPassword({
+        email: resetEmailAddress,
+        otp: resetVerificationCode,
+        password,
+      });
+      if (resetErr) throw resetErr;
+
+      const { error: signInError } = await authClient.signIn.email({
+        email: resetEmailAddress,
+        password,
+        callbackURL: options.callbackURL ?? undefined,
+      });
+      if (signInError) throw signInError;
+      await finalizeCallback();
+    } catch (err: any) {
+      setPhase("new-password");
+      setError(err?.message || "Failed to reset password");
     } finally {
       setIsPending(false);
     }
@@ -135,6 +211,8 @@ export function useAuthFlow(
     submitCredentials,
     signInWithSocial,
     startForgotPassword,
+    verifyResetCode,
+    submitNewPassword,
     goBack,
   };
 }

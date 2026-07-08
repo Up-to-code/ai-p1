@@ -66,7 +66,7 @@ export function PipelineStagesSettings({
   }
 
   async function saveEdit(stageId: string) {
-    await updateStage({ stageId: stageId as Id<"pipeline_stages">, name: editName, color: editColor });
+    await updateStage({ stageId: stageId as Id<"workflowStates">, name: editName, color: editColor });
     cancelEdit();
   }
 
@@ -88,7 +88,7 @@ export function PipelineStagesSettings({
   }
 
   async function handleDelete(stageId: string) {
-    await deleteStage({ stageId: stageId as Id<"pipeline_stages"> });
+    await deleteStage({ stageId: stageId as Id<"workflowStates"> });
   }
 
   async function handleMoveUp(index: number) {
@@ -98,8 +98,8 @@ export function PipelineStagesSettings({
     await reorderStages({
       organizationId,
       stageOrders: [
-        { stageId: current._id as Id<"pipeline_stages">, order: prev.order },
-        { stageId: prev._id as Id<"pipeline_stages">, order: current.order },
+        { stageId: current._id as Id<"workflowStates">, order: prev.order },
+        { stageId: prev._id as Id<"workflowStates">, order: current.order },
       ],
     });
   }
@@ -111,8 +111,8 @@ export function PipelineStagesSettings({
     await reorderStages({
       organizationId,
       stageOrders: [
-        { stageId: current._id as Id<"pipeline_stages">, order: next.order },
-        { stageId: next._id as Id<"pipeline_stages">, order: current.order },
+        { stageId: current._id as Id<"workflowStates">, order: next.order },
+        { stageId: next._id as Id<"workflowStates">, order: current.order },
       ],
     });
   }

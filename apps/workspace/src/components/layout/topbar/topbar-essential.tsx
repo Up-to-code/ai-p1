@@ -1,11 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { ChevronRight, ChevronDown, Check } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
 import { useAuthSession } from "@/domains/auth";
-import { useNavigation } from "@/domains/navigation";
-import { SpaceSwitcher } from "@/domains/spaces";
-import { ProjectSwitcher } from "@/components/layout/project-switcher";
 import { authClient } from "@/lib/auth-client";
 import { useOrganizationSwitch } from "@/components/layout/sidebar/hooks/use-organization-switch";
 import type { BetterAuthOrganization } from "@/components/layout/sidebar/lib/types";
@@ -18,8 +15,6 @@ import {
 
 export function TopbarEssential() {
   const session = useAuthSession();
-  const { spaceSlug } = useNavigation();
-
   const organizationsQuery = authClient.useListOrganizations();
   const allOrgs = useMemo(
     () =>
@@ -28,20 +23,18 @@ export function TopbarEssential() {
     [organizationsQuery.data],
   );
   const { switchingOrganizationId, switchOrganization } = useOrganizationSwitch(session.organization.id ?? "");
-
   const organizationDisplayName = session.organization.name || "Organization";
 
   return (
     <div className="flex items-center gap-1.5">
-      {/* Organization switcher dropdown — shows org image + name + plan */}
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
             <button
               type="button"
-              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-accent/50 transition-colors"
+              className="flex items-center gap-2 rounded-md px-2 py-1 transition-colors hover:bg-accent"
             >
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md text-xs font-black uppercase bg-muted">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-[10px] font-black uppercase">
                 {session.organization.logo ? (
                   <img src={session.organization.logo} alt="" className="h-full w-full object-cover" />
                 ) : (
@@ -49,7 +42,7 @@ export function TopbarEssential() {
                 )}
               </div>
               <div className="flex flex-col items-start min-w-0 leading-tight">
-                <span className="text-sm font-semibold text-foreground truncate max-w-[120px]">{organizationDisplayName}</span>
+                <span className="max-w-[120px] truncate text-[12px] font-semibold text-foreground">{organizationDisplayName}</span>
                 <span className="text-[10px] font-medium text-muted-foreground">{session.organization.type === "company" ? "Business" : "Free"}</span>
               </div>
               <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -99,15 +92,6 @@ export function TopbarEssential() {
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-
-      <SpaceSwitcher />
-
-      {spaceSlug && (
-        <>
-          <ChevronRight className="h-4 w-4 text-text-muted/40 shrink-0" />
-          <ProjectSwitcher />
-        </>
-      )}
     </div>
   );
 }

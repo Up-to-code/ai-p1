@@ -3,10 +3,13 @@ import { redirectInvalidChooseOrganizationAccess } from "@/domains/auth/server-a
 
 export default async function ChooseOrgPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ callbackURL?: string }>;
 }) {
   const { locale } = await params;
-  await redirectInvalidChooseOrganizationAccess(locale);
-  return <ChooseOrganizationClient locale={locale} />;
+  const { callbackURL } = await searchParams;
+  await redirectInvalidChooseOrganizationAccess(locale, callbackURL);
+  return <ChooseOrganizationClient callbackURL={callbackURL} locale={locale} />;
 }

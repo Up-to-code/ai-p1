@@ -1,75 +1,633 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import { QentrahTable, type QentrahColumnDef } from "@qentrah/ui";
-import type { TaskRecord, TaskStatus } from "../../tasks.types";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Check, ChevronDown, ChevronRight, Circle, GripVertical, ListFilter, Plus, Save, X } from "lucide-react";
+import {
+  AssigneeEditor,
+  DateEditor,
+  NameCell,
+  PriorityEditor,
+  QentrahTable,
+  StatusEditor,
+  type AssigneeOption,
+  type QentrahColumnDef,
+  type QentrahTableRef,
+} from "@qentrah/ui/qentrah-table";
+import type { TaskRecord } from "../../tasks.types";
+import { sortPipelineTasks } from "../../task-pipeline-order";
+import { TASK_STAGES, normalizeTaskStatus } from "../../tasks.constants";
+import { useCreateSavedViewMutation, useDefaultSavedViewQuery } from "../../api/saved-views";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const TASK_TABLE_COLUMN_DEFAULTS = {
+  filter: false,
+  sortable: false,
+  suppressHeaderMenuButton: true,
+  suppressHeaderFilterButton: true,
+} as const;
+
+const TASK_TABLE_ROW_HEIGHT = 36;
+const TASK_TABLE_COLUMNS = "48px minmax(240px,1.4fr) 180px 150px 160px 150px minmax(160px,0.9fr) 48px";
+
+type TaskCreateDefaults = Pick<Partial<TaskRecord>, "status" | "priority">;
+type TaskGroupBy = "none" | "status" | "priority";
+type SortDirection = "ascending" | "descending";
+type DragState = { id: string; group: string } | null;
 
 interface TaskTableViewProps {
   tasks: TaskRecord[];
+  organizationId?: string;
+  projectId?: string | null;
+  spaceId?: string | null;
+  onTaskUpdate?: (task: TaskRecord, changes: Partial<TaskRecord>) => void | Promise<void>;
+  onTaskCreate?: (title: string, defaults?: TaskCreateDefaults) => void | Promise<void>;
+  onTaskMove?: (itemId: string, fromStage: string, toStage: string, targetIndex: number) => void;
 }
 
-export function TaskTableView({ tasks }: TaskTableViewProps) {
-  const t = useTranslations("Tasks");
+const STATUS_GROUPS: Array<{ key: TaskRecord["status"]; label: string; color: string }> = TASK_STAGES.map((stage) => ({
+  key: stage.key,
+  label: stage.name,
+  color:
+    stage.key === "todo"
+      ? "bg-zinc-600"
+      : stage.key === "inProgress"
+        ? "bg-blue-600"
+        : stage.key === "waiting"
+          ? "bg-violet-600"
+          : stage.key === "done"
+            ? "bg-emerald-600"
+            : "bg-zinc-600",
+}));
 
-  const columns: QentrahColumnDef<TaskRecord>[] = [
-    {
-      headerName: "Task",
-      field: "title",
-      flex: 1.5,
-      minWidth: 200,
-      cellRenderer: (p: any) => (
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-foreground">{p.data?.title}</p>
-          {p.data?.description && (
-            <p className="mt-1 truncate text-xs text-muted-foreground">{p.data.description}</p>
-          )}
-        </div>
-      ),
-    },
-    {
-      headerName: "Status",
-      field: "status",
-      width: 120,
-      valueFormatter: (p: any) => {
-        const statusMap: Record<TaskStatus, string> = {
-          todo: t("statuses.todo"),
-          inProgress: t("statuses.inProgress"),
-          waiting: t("statuses.waiting"),
-          done: t("statuses.done"),
-          canceled: "Canceled",
-        };
-        return statusMap[p.value as TaskStatus] || p.value;
-      },
-    },
-    {
-      headerName: "Priority",
-      field: "priority",
-      width: 100,
-      valueFormatter: (p: any) => p.value || "\u2014",
-    },
-    {
-      headerName: "Due Date",
-      field: "dueDate",
-      width: 120,
-      valueFormatter: (p: any) => {
-        if (!p.value) return "\u2014";
-        return new Date(p.value).toLocaleDateString();
-      },
-    },
-  ];
+const PRIORITY_GROUPS: Array<{ key: TaskRecord["priority"]; label: string; color: string }> = [
+  { key: "urgent", label: "Urgent", color: "bg-red-600" },
+  { key: "high", label: "High", color: "bg-amber-500" },
+  { key: "normal", label: "Normal", color: "bg-blue-600" },
+  { key: "low", label: "Low", color: "bg-zinc-500" },
+];
+
+function AddTaskRow({
+  onTaskCreate,
+  defaults,
+}: {
+  onTaskCreate?: (title: string, defaults?: TaskCreateDefaults) => void | Promise<void>;
+  defaults?: TaskCreateDefaults;
+}) {
+  const [title, setTitle] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const canSave = title.trim().length > 0 && !isSaving;
+
+  async function save() {
+    if (!canSave) return;
+    setIsSaving(true);
+    try {
+      await onTaskCreate?.(title.trim(), defaults);
+      setTitle("");
+      setIsEditing(false);
+    } finally {
+      setIsSaving(false);
+    }
+  }
 
   return (
-    <div className="h-full p-6">
-      <div className="rounded-xl border border-border bg-card overflow-hidden h-full">
-        <QentrahTable
-          rows={tasks}
-          columns={columns}
-          density="compact"
-          height="100%"
-          rowSelection="single"
-          getRowId={(row) => row.id}
-        />
+    <div
+      onClick={() => setIsEditing(true)}
+      onDoubleClick={() => setIsEditing(true)}
+      className="grid h-9 shrink-0 cursor-text border-b border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] bg-[#0d0e10] text-[12px] text-muted-foreground hover:bg-muted/20"
+      style={{ gridTemplateColumns: TASK_TABLE_COLUMNS }}
+    >
+      <div className="flex items-center justify-center border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] text-muted-foreground">
+        <Plus className="h-3.5 w-3.5" />
       </div>
+      <div className="flex items-center gap-2 border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">
+        {isEditing ? (
+          <>
+            <Circle className="h-3 w-3 shrink-0 text-muted-foreground" />
+            <input
+              autoFocus
+              value={title}
+              onClick={(event) => event.stopPropagation()}
+              onChange={(event) => setTitle(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") void save();
+                if (event.key === "Escape") {
+                  setTitle("");
+                  setIsEditing(false);
+                }
+              }}
+              onBlur={() => {
+                if (!title.trim()) setIsEditing(false);
+              }}
+              placeholder="Task Name or type '/' for commands"
+              className="h-full min-w-0 flex-1 bg-transparent text-[12px] font-medium text-foreground outline-none placeholder:text-muted-foreground"
+            />
+          </>
+        ) : (
+          <span className="text-muted-foreground">Task Name or type '/' for commands</span>
+        )}
+      </div>
+      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)]" />
+      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)]" />
+      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)]" />
+      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)]" />
+      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)]" />
+      <div className="flex items-center justify-end gap-1 px-1">
+        {isEditing && title.trim() ? (
+          <>
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                setTitle("");
+              }}
+              onMouseDown={(event) => event.preventDefault()}
+              className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <X className="h-3 w-3" />
+            </button>
+            <button
+              type="button"
+              disabled={!canSave}
+              onClick={(event) => {
+                event.stopPropagation();
+                void save();
+              }}
+              onMouseDown={(event) => event.preventDefault()}
+              className="flex h-5 items-center gap-1 rounded bg-foreground px-1.5 text-[10px] font-semibold text-background disabled:opacity-50"
+            >
+              <Save className="h-3 w-3" />
+              Save
+            </button>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function TaskTableControls({
+  groupBy,
+  sortDirection,
+  isSaving,
+  onGroupChange,
+  onSortChange,
+  onSaveView,
+}: {
+  groupBy: TaskGroupBy;
+  sortDirection: SortDirection;
+  isSaving: boolean;
+  onGroupChange: (value: TaskGroupBy) => void;
+  onSortChange: (value: SortDirection) => void;
+  onSaveView: () => void;
+}) {
+  const groupLabel = groupBy === "none" ? "None" : groupBy === "status" ? "Status" : "Priority";
+
+  return (
+    <div className="flex h-10 shrink-0 items-center justify-between gap-3 border-b border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-background px-3">
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <button
+              type="button"
+              className="inline-flex h-7 items-center gap-2 rounded-md border border-border/80 bg-card/40 px-2.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/45 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+            />
+          }
+        >
+          <ListFilter className="h-3.5 w-3.5" />
+          <span>Group:</span>
+          <span className="text-foreground">{groupLabel}</span>
+          <ChevronDown className="h-3 w-3" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" collisionPadding={12} sideOffset={6} className="w-56 rounded-lg border border-border bg-popover p-1.5 shadow-xl">
+          <div className="px-2 py-1.5 text-[10px] font-semibold uppercase text-muted-foreground">Group by</div>
+          {[
+            ["none", "None", "Flat editable table"],
+            ["status", "Status", "Create draggable status sections"],
+            ["priority", "Priority", "Create priority sections"],
+          ].map(([value, label, description]) => (
+            <DropdownMenuItem
+              key={value}
+              onClick={() => onGroupChange(value as TaskGroupBy)}
+              className="flex items-center justify-between gap-3 rounded px-2 py-2"
+            >
+              <span className="min-w-0">
+                <span className="block text-[12px] font-semibold text-foreground">{label}</span>
+                <span className="block truncate text-[10px] text-muted-foreground">{description}</span>
+              </span>
+              {groupBy === value ? <Check className="h-3.5 w-3.5 shrink-0 text-violet-300" /> : null}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <div className="flex items-center gap-2">
+        {groupBy !== "none" ? (
+          <>
+            <button
+              type="button"
+              onClick={onSaveView}
+              disabled={isSaving}
+              className="inline-flex h-7 items-center rounded-md bg-amber-500 px-2.5 text-[11px] font-bold text-black transition-colors hover:bg-amber-400 disabled:opacity-60"
+            >
+              {isSaving ? "Saving..." : "Save view"}
+            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <button
+                    type="button"
+                    className="inline-flex h-7 items-center gap-2 rounded-md border border-border/80 bg-card/40 px-2.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/45 hover:text-foreground"
+                  />
+                }
+              >
+                {sortDirection === "ascending" ? "Ascending" : "Descending"}
+                <ChevronDown className="h-3 w-3" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" collisionPadding={12} sideOffset={6} className="w-40 rounded-lg border border-border bg-popover p-1.5 shadow-xl">
+                {[
+                  ["ascending", "Ascending"],
+                  ["descending", "Descending"],
+                ].map(([value, label]) => (
+                  <DropdownMenuItem
+                    key={value}
+                    onClick={() => onSortChange(value as SortDirection)}
+                    className="flex h-8 items-center justify-between rounded px-2 text-[12px] font-medium"
+                  >
+                    {label}
+                    {sortDirection === value ? <Check className="h-3.5 w-3.5 text-violet-300" /> : null}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+export function TaskTableView({
+  tasks,
+  organizationId,
+  projectId,
+  spaceId,
+  onTaskUpdate,
+  onTaskCreate,
+  onTaskMove,
+}: TaskTableViewProps) {
+  const tableRef = useRef<QentrahTableRef<TaskRecord>>(null);
+  const [groupBy, setGroupBy] = useState<TaskGroupBy>("none");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("descending");
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => new Set());
+  const [dragging, setDragging] = useState<DragState>(null);
+  const createSavedView = useCreateSavedViewMutation();
+  const defaultView = useDefaultSavedViewQuery({
+    resourceType: "task",
+    viewType: "table",
+    organizationId,
+    projectId: projectId ?? undefined,
+    spaceId: spaceId ?? undefined,
+  });
+  const savedViewGroupBy = defaultView.data?.config.groupBy ?? null;
+  const savedViewVersion = defaultView.data?.config.taskTableVersion ?? null;
+
+  useEffect(() => {
+    if (savedViewVersion !== 2) return;
+    if (savedViewGroupBy === "status" || savedViewGroupBy === "priority" || savedViewGroupBy === "none") {
+      setGroupBy(savedViewGroupBy);
+    }
+  }, [savedViewGroupBy, savedViewVersion]);
+
+  const rows = useMemo(
+    () => tasks.filter((task) => !task._deleted),
+    [tasks],
+  );
+
+  const assigneeOptions: AssigneeOption[] = useMemo(() => {
+    const ids = Array.from(new Set(rows.map((task) => task.assigneeUserId).filter(Boolean) as string[]));
+    return ids.map((id) => ({
+      id,
+      name: id,
+      imageUrl: null,
+    }));
+  }, [rows]);
+
+  async function updateTask(task: TaskRecord, changes: Partial<TaskRecord>) {
+    const optimistic = { ...task, ...changes };
+    tableRef.current?.applyUpdate([optimistic]);
+    try {
+      await onTaskUpdate?.(task, changes);
+    } catch {
+      tableRef.current?.applyUpdate([task]);
+    }
+  }
+
+  function saveView() {
+    if (!organizationId) return;
+    createSavedView.mutate({
+      name: groupBy === "status" ? "Tasks grouped by status" : "Tasks grouped by priority",
+      resourceType: "task",
+      viewType: "table",
+      scope: projectId ? "project" : spaceId ? "space" : "workspace",
+      scopeKey: projectId ?? spaceId ?? organizationId,
+      organizationId,
+      projectId: projectId ?? undefined,
+      spaceId: spaceId ?? undefined,
+      config: { groupBy, sortBy: sortDirection, taskTableVersion: 2 },
+      isDefault: true,
+    });
+  }
+
+  const columns = useMemo<QentrahColumnDef<TaskRecord>[]>(
+    () => [
+      {
+        ...TASK_TABLE_COLUMN_DEFAULTS,
+        headerName: "",
+        field: "id",
+        width: 48,
+        minWidth: 48,
+        maxWidth: 48,
+        pinned: "left",
+        resizable: false,
+        valueGetter: (params) => {
+          const rowIndex = params.node?.rowIndex;
+          return typeof rowIndex === "number" ? rowIndex + 1 : "";
+        },
+        cellClass: "text-muted-foreground text-[11px] justify-center",
+      },
+      {
+        ...TASK_TABLE_COLUMN_DEFAULTS,
+        headerName: "Name",
+        field: "title",
+        flex: 1.4,
+        minWidth: 240,
+        cellRenderer: (params: { data?: TaskRecord; value?: string }) => {
+          if (!params.data) return null;
+          return (
+            <NameCell
+              value={params.value ?? ""}
+              status={normalizeTaskStatus(params.data.status)}
+              onCommit={(next) => void updateTask(params.data as TaskRecord, { title: next })}
+            />
+          );
+        },
+      },
+      {
+        ...TASK_TABLE_COLUMN_DEFAULTS,
+        headerName: "Assignee",
+        field: "assigneeUserId",
+        minWidth: 180,
+        flex: 0.8,
+        cellRenderer: (params: { data?: TaskRecord; value?: string }) => {
+          if (!params.data) return null;
+          return (
+            <AssigneeEditor
+              value={params.value ?? null}
+              options={assigneeOptions}
+              emptyTrigger="dash"
+              onChange={(next) => void updateTask(params.data as TaskRecord, { assigneeUserId: next ?? "" })}
+            />
+          );
+        },
+      },
+      {
+        ...TASK_TABLE_COLUMN_DEFAULTS,
+        headerName: "Status",
+        field: "status",
+        minWidth: 150,
+        cellRenderer: (params: { data?: TaskRecord; value?: TaskRecord["status"] }) => {
+          if (!params.data) return null;
+          return (
+            <StatusEditor
+              value={normalizeTaskStatus(params.value)}
+              onChange={(next) => void updateTask(params.data as TaskRecord, { status: next as TaskRecord["status"] })}
+            />
+          );
+        },
+      },
+      {
+        ...TASK_TABLE_COLUMN_DEFAULTS,
+        headerName: "Due date",
+        field: "dueDate",
+        minWidth: 160,
+        cellRenderer: (params: { data?: TaskRecord; value?: string }) => {
+          if (!params.data) return null;
+          return (
+            <DateEditor
+              value={params.value ?? null}
+              onChange={(next) => void updateTask(params.data as TaskRecord, { dueDate: next ?? "" })}
+            />
+          );
+        },
+      },
+      {
+        ...TASK_TABLE_COLUMN_DEFAULTS,
+        headerName: "Priority AI",
+        field: "priority",
+        minWidth: 150,
+        cellRenderer: (params: { data?: TaskRecord; value?: TaskRecord["priority"] }) => {
+          if (!params.data) return null;
+          return (
+            <PriorityEditor
+              value={params.value ?? "normal"}
+              clearable
+              onClear={() => void updateTask(params.data as TaskRecord, { priority: "normal" })}
+              onChange={(next) => void updateTask(params.data as TaskRecord, { priority: next as TaskRecord["priority"] })}
+            />
+          );
+        },
+      },
+      {
+        ...TASK_TABLE_COLUMN_DEFAULTS,
+        headerName: "Action items",
+        field: "description",
+        minWidth: 160,
+        flex: 0.9,
+        cellRenderer: (params: { value?: string }) => (
+          <span className="truncate text-[12px] text-muted-foreground/70">{params.value?.trim() || "-"}</span>
+        ),
+      },
+      {
+        ...TASK_TABLE_COLUMN_DEFAULTS,
+        headerName: "+",
+        field: "updatedAt",
+        width: 48,
+        minWidth: 48,
+        maxWidth: 48,
+        resizable: false,
+        cellRenderer: () => null,
+        cellClass: "justify-center",
+      },
+    ],
+    [assigneeOptions],
+  );
+
+  const groupedSections = useMemo(() => {
+    const activeGroupBy: "status" | "priority" = groupBy === "priority" ? "priority" : "status";
+    const groupDefs = activeGroupBy === "priority" ? PRIORITY_GROUPS : STATUS_GROUPS;
+    const sections = groupDefs.map((group) => {
+      const groupRows = rows.filter((task) => {
+        if (activeGroupBy === "status") return normalizeTaskStatus(task.status) === group.key;
+        return task.priority === group.key;
+      });
+      return { ...group, rows: sortPipelineTasks(groupRows) };
+    });
+    return sortDirection === "ascending" ? sections.slice().reverse() : sections;
+  }, [groupBy, rows, sortDirection]);
+
+  function toggleGroup(groupKey: string) {
+    setCollapsedGroups((current) => {
+      const next = new Set(current);
+      if (next.has(groupKey)) next.delete(groupKey);
+      else next.add(groupKey);
+      return next;
+    });
+  }
+
+  function dropTask(targetGroup: string, targetIndex: number) {
+    if (!dragging) return;
+    if (groupBy === "status") {
+      onTaskMove?.(dragging.id, dragging.group, targetGroup, targetIndex);
+    }
+    if (groupBy === "priority") {
+      const task = rows.find((row) => row.id === dragging.id);
+      if (task) void updateTask(task, { priority: targetGroup as TaskRecord["priority"] });
+    }
+    setDragging(null);
+  }
+
+  const flatTable = (
+    <div className="min-w-[980px]">
+      <QentrahTable
+        ref={tableRef}
+        rows={rows}
+        columns={columns}
+        density="normal"
+        theme="auto"
+        height="auto"
+        domLayout="autoHeight"
+        rowSelection={{
+          mode: "multiRow",
+          headerCheckbox: true,
+          checkboxes: true,
+          hideDisabledCheckboxes: false,
+          enableClickSelection: true,
+        }}
+        suppressRowClickSelection={false}
+        animateRows={false}
+        emptyMessage="No tasks"
+        className="qentrah-task-table"
+        getRowHeight={() => TASK_TABLE_ROW_HEIGHT}
+      />
+      <AddTaskRow onTaskCreate={onTaskCreate} />
+    </div>
+  );
+
+  const groupedTable = (
+    <div className="min-w-[980px]">
+      <div
+        className="grid h-8 items-center border-b border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[#141518] text-[11px] font-semibold text-muted-foreground"
+        style={{ gridTemplateColumns: TASK_TABLE_COLUMNS }}
+      >
+        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)]" />
+        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Name</div>
+        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Assignee</div>
+        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Status</div>
+        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Due date</div>
+        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Priority AI</div>
+        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Action items</div>
+        <div className="px-3">+</div>
+      </div>
+
+      <div className="space-y-2 p-2">
+        {groupedSections.map((group) => {
+          const isCollapsed = collapsedGroups.has(group.key);
+          return (
+            <section
+              key={group.key}
+              className="overflow-hidden rounded-md border border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[#0d0e10]"
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={() => dropTask(group.key, group.rows.length)}
+            >
+              <button
+                type="button"
+                onClick={() => toggleGroup(group.key)}
+                className="flex h-8 w-full items-center gap-2 border-b border-[color-mix(in_srgb,var(--q-border)_65%,transparent)] bg-[#17191d] px-3 text-left transition-colors hover:bg-[#202228]"
+              >
+                {isCollapsed ? <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+                <span className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-black uppercase text-white ${group.color}`}>
+                  {group.label}
+                </span>
+                <span className="text-[11px] font-semibold text-muted-foreground">{group.rows.length}</span>
+              </button>
+              {!isCollapsed ? (
+                <>
+                  {group.rows.map((task, index) => (
+                    <div
+                      key={task.id}
+                      draggable
+                      onDragStart={() => setDragging({ id: task.id, group: groupBy === "priority" ? String(task.priority) : normalizeTaskStatus(task.status) })}
+                      onDragEnd={() => setDragging(null)}
+                      onDragOver={(event) => event.preventDefault()}
+                      onDrop={(event) => {
+                        event.stopPropagation();
+                        dropTask(group.key, index);
+                      }}
+                      className="group grid min-h-9 items-center border-b border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] text-[12px] last:border-b-0 hover:bg-muted/20"
+                      style={{ gridTemplateColumns: TASK_TABLE_COLUMNS }}
+                    >
+                      <div className="flex items-center justify-center gap-1 border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] text-muted-foreground">
+                        <GripVertical className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
+                        <span>{index + 1}</span>
+                      </div>
+                      <div className="min-w-0 border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] px-2">
+                        <NameCell value={task.title} status={normalizeTaskStatus(task.status)} onCommit={(next) => void updateTask(task, { title: next })} />
+                      </div>
+                      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] px-2">
+                        <AssigneeEditor value={task.assigneeUserId ?? null} options={assigneeOptions} emptyTrigger="dash" onChange={(next) => void updateTask(task, { assigneeUserId: next ?? "" })} />
+                      </div>
+                      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] px-2">
+                        <StatusEditor value={normalizeTaskStatus(task.status)} onChange={(next) => void updateTask(task, { status: next as TaskRecord["status"] })} />
+                      </div>
+                      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] px-2">
+                        <DateEditor value={task.dueDate ?? null} onChange={(next) => void updateTask(task, { dueDate: next ?? "" })} />
+                      </div>
+                      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] px-2">
+                        <PriorityEditor value={task.priority ?? "normal"} clearable onClear={() => void updateTask(task, { priority: "normal" })} onChange={(next) => void updateTask(task, { priority: next as TaskRecord["priority"] })} />
+                      </div>
+                      <div className="truncate border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] px-3 text-muted-foreground/70">
+                        {task.description?.trim() || "-"}
+                      </div>
+                      <div className="h-full" />
+                    </div>
+                  ))}
+                  <AddTaskRow onTaskCreate={onTaskCreate} defaults={groupBy === "status" ? { status: group.key as TaskRecord["status"] } : { priority: group.key as TaskRecord["priority"] }} />
+                </>
+              ) : null}
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="h-full min-h-0 overflow-auto bg-background">
+      <TaskTableControls
+        groupBy={groupBy}
+        sortDirection={sortDirection}
+        isSaving={createSavedView.isPending}
+        onGroupChange={setGroupBy}
+        onSortChange={setSortDirection}
+        onSaveView={saveView}
+      />
+      <div className="pt-2">{groupBy === "none" ? flatTable : groupedTable}</div>
     </div>
   );
 }

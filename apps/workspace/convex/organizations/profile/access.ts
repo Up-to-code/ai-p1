@@ -98,9 +98,9 @@ export async function canUseOrganizationResourceAction(
   resource: OrganizationPermissionResource,
   action: string,
 ) {
-  const user = await authUser.getAuthUser(ctx);
   // Use the permission check but catch errors to return boolean
   try {
+    const user = await authUser.getAuthUser(ctx);
     await assertCanPerformOrganizationAction(
       ctx,
       organizationId,

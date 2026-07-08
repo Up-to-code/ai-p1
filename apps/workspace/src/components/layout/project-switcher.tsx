@@ -41,7 +41,7 @@ export function ProjectSwitcher() {
   } = useProjectSwitcher();
 
   const filteredProjects = React.useMemo(() => {
-    if (!spaceSlug) return [];
+    if (!spaceSlug) return projects;
     return projects;
   }, [projects, spaceSlug]);
 
@@ -79,8 +79,6 @@ export function ProjectSwitcher() {
       document.removeEventListener("keydown", handleEscape);
     };
   }, [contextMenu]);
-
-  if (!spaceSlug) return null;
 
   return (
     <>

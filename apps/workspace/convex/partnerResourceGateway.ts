@@ -295,7 +295,7 @@ export async function writePartnerResourceThroughGateway(ctx: MutationCtx, args:
       notes: optionalString(input, "notes"),
       status: (optionalString(input, "status") ?? "new") as "new" | "active" | "nurture" | "inactive" | "archived",
       visibility: "private",
-      isDeleted: false,
+      recordState: "active",
       createdByUserId: defaults.createdByUserId,
       createdAt: now,
       updatedAt: now,
@@ -330,7 +330,7 @@ export async function writePartnerResourceThroughGateway(ctx: MutationCtx, args:
   }
 
   if (args.action === "delete") {
-    await ctx.db.patch(clientId, { deletedAt: now, isDeleted: true, updatedAt: now });
+    await ctx.db.patch(clientId, { deletedAt: now, recordState: "deleted", updatedAt: now });
     const audit = auditForActor(args.actor, "delete");
     await insertActorAudit(ctx, args.organizationId, args.actor, audit.action, clientId, audit.summary, now);
     await afterPartnerClientChange(ctx, args.organizationId, args.actor, "client.deleted", clientId, {

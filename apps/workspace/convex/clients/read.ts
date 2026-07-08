@@ -21,7 +21,6 @@ const MAX_STATS_SCAN_ITEMS = 2_000;
 function withoutPrivateClientFields(client: Doc<"clients">) {
   const safeClient = { ...client };
   delete safeClient.deletedAt;
-  delete safeClient.isDeleted;
   delete safeClient.encryptedEmail;
   delete safeClient.encryptedPhone;
   delete safeClient.piiEncryptedAt;

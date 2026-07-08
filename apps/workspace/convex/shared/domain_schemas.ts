@@ -53,7 +53,6 @@ export interface ProjectInput {
   isStrict?: boolean;
   isRollupEnabled?: boolean;
   templateId?: string;
-  customTabs?: string[];
   progress?: number;
 }
 

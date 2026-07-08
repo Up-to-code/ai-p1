@@ -4,12 +4,85 @@ import { routing } from "@/i18n/routing";
 
 export type Locale = (typeof routing.locales)[number];
 
+const siteUrl = brandDomainUrl("workspace");
+const brand = brandLabel("en");
+
 export function isLocale(locale: string): locale is Locale {
   return routing.locales.includes(locale as Locale);
 }
 
-export const metadata: Metadata = {
-  metadataBase: new URL(brandDomainUrl("workspace")),
+export const rootMetadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Qentrah: Operating System for Agencies | AI Project Management",
+    template: "%s | Qentrah",
+  },
+  description:
+    "One workspace for clients, opportunities, projects, and tasks. AI that operates your business. Built for marketing, creative, design, and service agencies.",
+  keywords: [
+    "CRM for agencies",
+    "project management for agencies",
+    "agency management software",
+    "client operations platform",
+    "all-in-one client management",
+    "AI project management",
+    "agency profitability tracking",
+    "marketing agency software",
+    "creative studio management",
+  ],
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/logo.ico", type: "image/x-icon" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/logo.ico", sizes: "192x192", type: "image/x-icon" },
+      { url: "/logo.ico", sizes: "512x512", type: "image/x-icon" },
+    ],
+    shortcut: [{ url: "/logo.ico", type: "image/x-icon" }],
+    apple: [{ url: "/logo.ico", sizes: "180x180", type: "image/x-icon" }],
+  },
+  applicationName: brand,
+  creator: brand,
+  publisher: brand,
+  authors: [{ name: brand }],
+  openGraph: {
+    type: "website",
+    url: siteUrl,
+    siteName: brand,
+    title: "Qentrah: Operating System for Agencies",
+    description:
+      "One workspace for clients, opportunities, projects, and tasks. AI that operates your business. Built for marketing, creative, design, and service agencies.",
+    images: [
+      {
+        url: "/logo.ico",
+        width: 512,
+        height: 512,
+        alt: "Qentrah - AI Client Operations Platform",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Qentrah: Operating System for Agencies",
+    description:
+      "One workspace for clients, opportunities, projects, and tasks. AI that operates your business.",
+    images: ["/logo.ico"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+};
+
+export const localizedWorkspaceMetadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   applicationName: brandProductName("workspace", "en"),
   title: {
     default: "Qentrah: AI-First Project Management for Small Teams",
@@ -27,9 +100,9 @@ export const metadata: Metadata = {
     "small business project management software",
     "Qentrah",
   ],
-  authors: [{ name: brandLabel("en") }],
-  creator: brandLabel("en"),
-  publisher: brandLabel("en"),
+  authors: [{ name: brand }],
+  creator: brand,
+  publisher: brand,
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -58,7 +131,7 @@ export const metadata: Metadata = {
         url: "/logo.ico",
         width: 512,
         height: 512,
-        alt: `${brandLabel("en")} - AI-First Project Management`,
+        alt: `${brand} - AI-First Project Management`,
       },
     ],
   },

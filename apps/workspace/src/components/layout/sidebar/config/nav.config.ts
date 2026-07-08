@@ -20,7 +20,6 @@ import {
   KanbanIcon,
   ListLinesIcon,
   SettingsIcon,
-  StatsIcon,
 } from "../components/clickup-icons";
 import { InboxIcon } from "../components/clickup-icons";
 
@@ -104,7 +103,6 @@ export const sidebarProjectNav: SidebarNavItem[] = [
 
 /** Navigation entries shown as coming soon. */
 export const sidebarComingSoonNav: SidebarNavItem[] = [
-  { name: "automations", icon: StatsIcon },
   { name: "integrations", icon: Plug },
 ];
 

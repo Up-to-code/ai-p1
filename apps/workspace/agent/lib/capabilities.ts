@@ -34,12 +34,23 @@ export type AgentOrganizationCapabilities = {
   canDeleteMedia: boolean;
 };
 
-type Resource = "organization" | "member" | "role" | "client" | "project" | "deal" | "calendar" | "task" | "media";
+type Resource =
+  | "organization"
+  | "member"
+  | "role"
+  | "client"
+  | "project"
+  | "deal"
+  | "calendar"
+  | "task"
+  | "media";
 type Action = "read" | "create" | "update" | "delete";
 
 export type Permission = { resource: Resource; actions: Action[] };
 
-export function capabilitiesToPermissions(capabilities: AgentOrganizationCapabilities): Permission[] {
+export function capabilitiesToPermissions(
+  capabilities: AgentOrganizationCapabilities,
+): Permission[] {
   const actions: Record<Resource, (Action | false)[]> = {
     organization: [
       capabilities.canReadOrganization && "read",
@@ -71,9 +82,12 @@ export function capabilitiesToPermissions(capabilities: AgentOrganizationCapabil
     ],
     deal: [
       (capabilities.canReadDeals ?? capabilities.canReadClients) && "read",
-      (capabilities.canCreateDeals ?? capabilities.canCreateClients) && "create",
-      (capabilities.canUpdateDeals ?? capabilities.canUpdateClients) && "update",
-      (capabilities.canDeleteDeals ?? capabilities.canDeleteClients) && "delete",
+      (capabilities.canCreateDeals ?? capabilities.canCreateClients) &&
+        "create",
+      (capabilities.canUpdateDeals ?? capabilities.canUpdateClients) &&
+        "update",
+      (capabilities.canDeleteDeals ?? capabilities.canDeleteClients) &&
+        "delete",
     ],
     calendar: [
       capabilities.canReadCalendarEvents && "read",
@@ -137,6 +151,7 @@ export const subagentToResource: Record<string, Resource> = {
   deals: "deal",
   calendar: "calendar",
   docs: "client",
+  channels: "organization",
   spaces: "project",
   team: "member",
   media: "media",

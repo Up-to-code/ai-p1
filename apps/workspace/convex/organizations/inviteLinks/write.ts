@@ -5,8 +5,17 @@ import { assertOrganizationResourcePermission } from "../profile/access";
 import { findInviteLinkByTokenHash, toPublicInviteLink } from "./data";
 import {
   createOrganizationInviteLinkInputValidator,
+  createOrganizationInviteLinkFromTokenInputValidator,
   organizationInviteLinkValidator,
 } from "./validators";
+
+async function hashInviteToken(token: string) {
+  const bytes = new TextEncoder().encode(token);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 export const createInviteLinkFromHono = mutation({
   args: {
@@ -53,6 +62,57 @@ export const createInviteLinkFromHono = mutation({
   },
 });
 
+export const createInviteLinkFromToken = mutation({
+  args: {
+    organizationId: v.string(),
+    input: createOrganizationInviteLinkFromTokenInputValidator,
+  },
+  returns: organizationInviteLinkValidator,
+  handler: async (ctx, args) => {
+    const token = args.input.token.trim();
+    if (!token) {
+      throw new Error("Invite token is required.");
+    }
+
+    const tokenHash = await hashInviteToken(token);
+    const user = await authUser.getAuthUser(ctx);
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
+
+    const existing = await findInviteLinkByTokenHash(ctx, tokenHash);
+    if (existing) {
+      throw new Error("Invite link token already exists.");
+    }
+
+    const now = Date.now();
+    const id = await ctx.db.insert("organizationInviteLinks", {
+      organizationId: args.organizationId,
+      role: args.input.role,
+      tokenHash,
+      status: "pending",
+      createdByUserId: user._id,
+      expiresAt: args.input.expiresAt,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    const inviteLink = await ctx.db.get(id);
+    if (!inviteLink) {
+      throw new Error("Invite link could not be created.");
+    }
+
+    await ctx.db.insert("organizationAuditEvents", {
+      organizationId: args.organizationId,
+      actorUserId: user._id,
+      action: "organization.invite_link.create",
+      target: id,
+      summary: `Created invite link for ${args.input.role}.`,
+      createdAt: now,
+    });
+
+    return toPublicInviteLink(inviteLink);
+  },
+});
+
 export const acceptInviteLinkFromHono = mutation({
   args: {
     tokenHash: v.string(),
@@ -67,6 +127,10 @@ export const acceptInviteLinkFromHono = mutation({
       throw new Error("Invite link was not found.");
     }
     if (inviteLink.status !== "pending") {
+      if (inviteLink.status === "used" && inviteLink.usedByUserId === args.userId) {
+        return toPublicInviteLink(inviteLink);
+      }
+
       throw new Error("Invite link is no longer active.");
     }
     if (inviteLink.expiresAt <= now) {

@@ -18,13 +18,13 @@ import { Input } from "@/components/ui/input";
 
 function AiLogoSmall({ className }: { className?: string }) {
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src="/ai/logo.png"
       alt=""
-      role="presentation"
-      className={cn("object-contain", className)}
       width={16}
       height={16}
+      className={cn("object-contain", className)}
     />
   );
 }
@@ -59,11 +59,14 @@ interface MentionItem {
 
 const AI_MENTION_NAME = "qentrah";
 
-const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ElementType }> = {
-  ai: { label: "Qentrah AI", icon: AiLogoSmall },
-  user: { label: "Users", icon: User },
+const CATEGORY_CONFIG: Record<
+  string,
+  { label: string; icon: React.ElementType }
+> = {
+  ai: { label: "AI", icon: AiLogoSmall },
+  user: { label: "People", icon: User },
   task: { label: "Tasks", icon: CheckSquare },
-  document: { label: "Documents", icon: FileText },
+  document: { label: "Docs", icon: FileText },
   file: { label: "Files", icon: Paperclip },
   project: { label: "Projects", icon: FolderOpen },
   client: { label: "Clients", icon: Building2 },
@@ -71,7 +74,14 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ElementType }
 };
 
 const CATEGORY_ORDER = [
-  "ai", "user", "task", "document", "file", "project", "client", "deal",
+  "ai",
+  "user",
+  "task",
+  "document",
+  "file",
+  "project",
+  "client",
+  "deal",
 ];
 
 export function MentionPicker({
@@ -82,13 +92,17 @@ export function MentionPicker({
 }: MentionPickerProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [activeCategory, setActiveCategory] = useState<string>("all");
   const containerRef = useRef<HTMLDivElement>(null);
   const session = useAuthSession();
   const [capabilities, setCapabilities] = useState<any>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     };
@@ -102,7 +116,9 @@ export function MentionPicker({
     }
   }, [organizationId]);
 
-  const [users, setUsers] = useState<Array<{ id: string; name: string; email?: string }>>([]);
+  const [users, setUsers] = useState<
+    Array<{ id: string; name: string; email?: string }>
+  >([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
 
   useEffect(() => {
@@ -122,10 +138,15 @@ export function MentionPicker({
     }
   }, [organizationId]);
 
-  const tasksResult = useTasksQuery(organizationId, { status: "all", projectId: projectId || null });
+  const tasksResult = useTasksQuery(organizationId, {
+    status: "all",
+    projectId: projectId || null,
+  });
   const tasks = Array.isArray(tasksResult) ? tasksResult : [];
 
-  const docsResult = useDocsQuery(organizationId, { projectId: projectId || null });
+  const docsResult = useDocsQuery(organizationId, {
+    projectId: projectId || null,
+  });
   const documents = Array.isArray(docsResult) ? docsResult : [];
 
   const projectsResult = useProjectsIndexQuery(organizationId);
@@ -151,27 +172,63 @@ export function MentionPicker({
     });
 
     users.forEach((user) =>
-      items.push({ id: user.id, name: user.name, type: "user" as const, subtitle: user.email, icon: User }),
+      items.push({
+        id: user.id,
+        name: user.name,
+        type: "user" as const,
+        subtitle: user.email,
+        icon: User,
+      }),
     );
 
     tasks.forEach((task) =>
-      items.push({ id: task.id, name: task.title, type: "task" as const, subtitle: task.status, icon: CheckSquare }),
+      items.push({
+        id: task.id,
+        name: task.title,
+        type: "task" as const,
+        subtitle: task.status,
+        icon: CheckSquare,
+      }),
     );
 
     documents.forEach((doc) =>
-      items.push({ id: doc.id, name: doc.title, type: "document" as const, subtitle: doc.folderId || "Root", icon: FileText }),
+      items.push({
+        id: doc.id,
+        name: doc.title,
+        type: "document" as const,
+        subtitle: doc.folderId || "Root",
+        icon: FileText,
+      }),
     );
 
     projects.forEach((project) =>
-      items.push({ id: project.id, name: project.name, type: "project" as const, subtitle: project.status || "Active", icon: FolderOpen }),
+      items.push({
+        id: project.id,
+        name: project.name,
+        type: "project" as const,
+        subtitle: project.status || "Active",
+        icon: FolderOpen,
+      }),
     );
 
     clients.forEach((client) =>
-      items.push({ id: client.id, name: client.name, type: "client" as const, subtitle: client.pipelineStage || "New", icon: Building2 }),
+      items.push({
+        id: client.id,
+        name: client.name,
+        type: "client" as const,
+        subtitle: client.pipelineStage || "New",
+        icon: Building2,
+      }),
     );
 
     deals.forEach((deal) =>
-      items.push({ id: deal.id, name: deal.title, type: "deal" as const, subtitle: deal.stage || "New", icon: DollarSign }),
+      items.push({
+        id: deal.id,
+        name: deal.title,
+        type: "deal" as const,
+        subtitle: deal.stage || "New",
+        icon: DollarSign,
+      }),
     );
 
     return items;
@@ -179,19 +236,25 @@ export function MentionPicker({
 
   // Global search across ALL categories
   const filteredItems = useMemo(() => {
-    if (!searchQuery.trim()) return allItems;
-    const query = searchQuery.toLowerCase();
-    return allItems.filter(
+    const categoryItems =
+      activeCategory === "all"
+        ? allItems
+        : allItems.filter((item) => String(item.type) === activeCategory);
+    if (!searchQuery.trim()) return categoryItems;
+    const query = searchQuery.toLowerCase().replace(/^@+/, "");
+    return categoryItems.filter(
       (item) =>
         item.name.toLowerCase().includes(query) ||
         item.subtitle?.toLowerCase().includes(query),
     );
-  }, [allItems, searchQuery]);
+  }, [activeCategory, allItems, searchQuery]);
 
   // Group filtered results by category
   const groupedItems = useMemo(() => {
     const groups: Record<string, MentionItem[]> = {};
-    CATEGORY_ORDER.forEach((cat) => { groups[cat] = []; });
+    CATEGORY_ORDER.forEach((cat) => {
+      groups[cat] = [];
+    });
     filteredItems.forEach((item) => {
       const key = String(item.type);
       if (!groups[key]) groups[key] = [];
@@ -204,7 +267,9 @@ export function MentionPicker({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelectedIndex((prev) => Math.min(prev + 1, filteredItems.length - 1));
+        setSelectedIndex((prev) =>
+          Math.min(prev + 1, filteredItems.length - 1),
+        );
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setSelectedIndex((prev) => Math.max(prev - 1, 0));
@@ -238,9 +303,36 @@ export function MentionPicker({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 10, scale: 0.95 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="fixed left-0 right-0 mx-auto max-w-xl rounded-xl border border-border bg-popover shadow-2xl z-50"
+      className="fixed left-0 right-0 z-50 mx-auto max-w-xl rounded-lg border border-border bg-popover shadow-2xl"
       style={{ bottom: "100px" }}
     >
+      <div className="flex gap-1 overflow-x-auto border-b border-border px-3 pt-3">
+        {[
+          { key: "all", label: "All" },
+          ...CATEGORY_ORDER.map((key) => ({
+            key,
+            label: CATEGORY_CONFIG[key]?.label ?? key,
+          })),
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => {
+              setActiveCategory(tab.key);
+              setSelectedIndex(0);
+            }}
+            className={cn(
+              "shrink-0 border-b-2 px-2 py-1.5 text-[11px] font-medium transition-colors",
+              activeCategory === tab.key
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {/* Global search */}
       <div className="border-b border-border p-3">
         <div className="relative">
@@ -248,8 +340,11 @@ export function MentionPicker({
           <Input
             autoFocus
             value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setSelectedIndex(0); }}
-            placeholder="Search @users, tasks, docs, projects, clients, deals..."
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setSelectedIndex(0);
+            }}
+            placeholder="Search people, tasks, docs, projects, clients..."
             className="pl-9 h-10 text-sm border-transparent bg-muted/50 focus:bg-background"
           />
         </div>
@@ -285,7 +380,9 @@ export function MentionPicker({
                     <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                       {config.label}
                     </span>
-                    <span className="text-[10px] text-muted-foreground/60">{items.length}</span>
+                    <span className="text-[10px] text-muted-foreground/60">
+                      {items.length}
+                    </span>
                   </div>
                   {items.map((item) => {
                     const globalIndex = filteredItems.indexOf(item);
@@ -297,17 +394,23 @@ export function MentionPicker({
                         onClick={() => handleSelect(item)}
                         onMouseEnter={() => setSelectedIndex(globalIndex)}
                         className={cn(
-                          "flex w-full items-center gap-3 rounded-lg mx-2 px-3 py-2 text-left transition-colors",
-                          isSelected ? "bg-accent text-accent-foreground" : "hover:bg-accent/50 text-foreground",
+                          "mx-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors",
+                          isSelected
+                            ? "bg-accent text-accent-foreground"
+                            : "hover:bg-accent/50 text-foreground",
                         )}
                       >
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
                           <Icon className="h-4 w-4 text-muted-foreground" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="truncate text-[13px] font-medium">{item.name}</div>
+                          <div className="truncate text-[13px] font-medium">
+                            {item.name}
+                          </div>
                           {item.subtitle && (
-                            <div className="truncate text-[11px] text-muted-foreground">{item.subtitle}</div>
+                            <div className="truncate text-[11px] text-muted-foreground">
+                              {item.subtitle}
+                            </div>
                           )}
                         </div>
                       </button>

@@ -17,6 +17,7 @@ import {
   handleCreateOrganizationRole,
   handleDeleteOrganizationRole,
   handleGetOrganizationCapabilities,
+  handleListCurrentUserOrganizationInvitations,
   handleListOrganizationInvitations,
   handleListOrganizationMembers,
   handleListOrganizationRoles,
@@ -32,6 +33,7 @@ export const organizationSubRouter = new Hono();
 
 organizationSubRouter.post("/invite-links/accept", handleAcceptOrganizationInviteLink);
 organizationSubRouter.post("/invitations/accept", handleAcceptOrganizationInvitation);
+organizationSubRouter.get("/invitations/mine", handleListCurrentUserOrganizationInvitations);
 organizationSubRouter.post("/:organizationId/invite-links", handleCreateOrganizationInviteLink);
 organizationSubRouter.delete("/:organizationId/invite-links/:inviteLinkId", handleCancelOrganizationInviteLink);
 

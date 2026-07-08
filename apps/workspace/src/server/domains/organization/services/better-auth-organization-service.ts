@@ -12,7 +12,11 @@ import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { logger } from "@/lib/logger";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/convex-auth";
+import {
+  fetchAuthAction,
+  fetchAuthMutation,
+  fetchAuthQuery,
+} from "@/server/auth/convex-auth";
 import {
   callBetterAuth,
   getAuthRequestSession,
@@ -29,6 +33,7 @@ import type {
   OrganizationInvitationForPolicy,
   OrganizationRoleForPolicy,
 } from "./access-policy";
+import { OrganizationActionError } from "../errors/action-error";
 
 // ---------------------------------------------------------------------------
 // Session helpers
@@ -62,7 +67,9 @@ async function callBetterAuthOrg<T>(
 // Get current session user
 // ---------------------------------------------------------------------------
 
-export async function getBetterAuthSession(_c: Context): Promise<BetterAuthWorkspaceSession> {
+export async function getBetterAuthSession(
+  _c: Context,
+): Promise<BetterAuthWorkspaceSession> {
   return getAuthRequestSession() as Promise<AuthRequestSession>;
 }
 
@@ -79,15 +86,19 @@ interface BetterAuthMember {
   user?: { id: string; email: string; name: string; image?: string | null };
 }
 
-function normalizeMember(m: BetterAuthMember, organizationId: string): OrganizationMember {
+function normalizeMember(
+  m: BetterAuthMember,
+  organizationId: string,
+): OrganizationMember {
   return {
     id: m.id,
     organizationId,
     userId: m.userId,
     role: m.role,
-    createdAt: typeof m.createdAt === "number"
-      ? new Date(m.createdAt).toISOString()
-      : (m.createdAt ?? new Date().toISOString()),
+    createdAt:
+      typeof m.createdAt === "number"
+        ? new Date(m.createdAt).toISOString()
+        : (m.createdAt ?? new Date().toISOString()),
     user: m.user
       ? {
           id: m.user.id,
@@ -108,12 +119,14 @@ export async function listOrganizationMembersBA(
   _c: Context,
   organizationId: string,
 ): Promise<OrganizationMemberForPolicy[]> {
-  const result = await callBetterAuthOrg<{ members?: BetterAuthMember[] } | BetterAuthMember[]>(
-    "/organization/list-members",
-    { method: "GET", query: { organizationId, limit: 100, offset: 0 } },
-  );
+  const result = await callBetterAuthOrg<
+    { members?: BetterAuthMember[] } | BetterAuthMember[]
+  >("/organization/list-members", {
+    method: "GET",
+    query: { organizationId, limit: 100, offset: 0 },
+  });
 
-  const members = Array.isArray(result) ? result : result.members ?? [];
+  const members = Array.isArray(result) ? result : (result.members ?? []);
   return members.map((m) => normalizeMember(m, organizationId));
 }
 
@@ -129,25 +142,53 @@ export async function getCurrentBetterAuthOrganizationRole(
   ).catch(() => null);
   if (activeRole?.role) return activeRole.role;
 
-  const result = await callBetterAuthOrg<{ members?: BetterAuthMember[] } | BetterAuthMember[]>(
-    "/organization/list-members",
-    { method: "GET", query: { organizationId, limit: 100, offset: 0 } },
-  ).catch(() => null);
+  const result = await callBetterAuthOrg<
+    { members?: BetterAuthMember[] } | BetterAuthMember[]
+  >("/organization/list-members", {
+    method: "GET",
+    query: { organizationId, limit: 100, offset: 0 },
+  }).catch(() => null);
 
-  const members = Array.isArray(result) ? result : result?.members ?? [];
+  const members = Array.isArray(result) ? result : (result?.members ?? []);
   const member = members.find((item) => item.userId === userId);
   return member?.role ?? null;
 }
 
 export async function inviteMemberBA(
-  _c: Context,
+  c: Context,
   organizationId: string,
   email: string,
   role: string,
 ): Promise<OrganizationInvitation> {
-  return callBetterAuthOrg("/organization/invite-member", {
-    body: { organizationId, email, role },
-  });
+  try {
+    return await callBetterAuthOrg("/organization/invite-member", {
+      body: { organizationId, email, role },
+    });
+  } catch (error) {
+    if (!isAlreadyInvitedError(error)) throw error;
+
+    const session = await getBetterAuthSession(c);
+    const inviterName = session.user?.name || session.user?.email || undefined;
+    const resent = await fetchAuthAction(
+      api.organizations.invitations.actions.resendPendingInvitation,
+      {
+        organizationId,
+        email,
+        inviterName,
+      },
+    );
+
+    return {
+      ...resent,
+      inviterId: resent.inviterId ?? "",
+      expiresAt: resent.expiresAt
+        ? new Date(resent.expiresAt).toISOString()
+        : "",
+      createdAt: resent.createdAt
+        ? new Date(resent.createdAt).toISOString()
+        : "",
+    };
+  }
 }
 
 export async function listInvitationsBA(
@@ -177,7 +218,11 @@ export async function cancelInvitationBA(
 export async function acceptInvitationBA(
   _c: Context,
   invitationId: string,
-): Promise<{ organizationId?: string; invitation?: { organizationId?: string; role?: string; email?: string }; member?: { organizationId?: string; role?: string } }> {
+): Promise<{
+  organizationId?: string;
+  invitation?: { organizationId?: string; role?: string; email?: string };
+  member?: { organizationId?: string; role?: string };
+}> {
   return callBetterAuthOrg("/organization/accept-invitation", {
     body: { invitationId },
   });
@@ -239,7 +284,9 @@ export async function listOrganizationRolesBA(
   _c: Context,
   organizationId: string,
 ): Promise<OrganizationRoleForPolicy[]> {
-  const customRoles = await fetchAuthQuery(api.organizations.workRoles.list, { organizationId });
+  const customRoles = await fetchAuthQuery(api.organizations.workRoles.list, {
+    organizationId,
+  });
   return [...BUILT_IN_ROLES, ...customRoles];
 }
 
@@ -249,11 +296,14 @@ export async function createOrganizationRoleBA(
   role: string,
   permission: Record<string, string[]>,
 ): Promise<OrganizationRole> {
-  const created = await fetchAuthMutation(api.organizations.workRoles.createFromHono, {
-    organizationId,
-    role,
-    permission,
-  });
+  const created = await fetchAuthMutation(
+    api.organizations.workRoles.createFromHono,
+    {
+      organizationId,
+      role,
+      permission,
+    },
+  );
   return normalizeStoredRole(created);
 }
 
@@ -263,12 +313,15 @@ export async function updateOrganizationRoleBA(
   roleId: string,
   data: { roleName?: string; permission?: Record<string, string[]> },
 ): Promise<OrganizationRole> {
-  const updated = await fetchAuthMutation(api.organizations.workRoles.updateFromHono, {
-    organizationId,
-    roleId: roleId as Id<"organizationWorkRoles">,
-    roleName: data.roleName,
-    permission: data.permission,
-  });
+  const updated = await fetchAuthMutation(
+    api.organizations.workRoles.updateFromHono,
+    {
+      organizationId,
+      roleId: roleId as Id<"organizationWorkRoles">,
+      roleName: data.roleName,
+      permission: data.permission,
+    },
+  );
   return normalizeStoredRole(updated);
 }
 
@@ -277,10 +330,13 @@ export async function deleteOrganizationRoleBA(
   organizationId: string,
   roleId: string,
 ): Promise<OrganizationRole> {
-  const deleted = await fetchAuthMutation(api.organizations.workRoles.deleteFromHono, {
-    organizationId,
-    roleId: roleId as Id<"organizationWorkRoles">,
-  });
+  const deleted = await fetchAuthMutation(
+    api.organizations.workRoles.deleteFromHono,
+    {
+      organizationId,
+      roleId: roleId as Id<"organizationWorkRoles">,
+    },
+  );
   return normalizeStoredRole(deleted);
 }
 
@@ -291,7 +347,12 @@ export async function deleteOrganizationRoleBA(
 export async function updateOrganizationIdentityBA(
   _c: Context,
   organizationId: string,
-  data: { name?: string; logo?: string | null; website?: string; [k: string]: unknown },
+  data: {
+    name?: string;
+    logo?: string | null;
+    website?: string;
+    [k: string]: unknown;
+  },
 ): Promise<unknown> {
   const update: Record<string, unknown> = {};
   if (data.name !== undefined) update.name = data.name;
@@ -312,12 +373,14 @@ export async function addMemberToOrganizationBA(
   userId: string,
   role: string,
 ): Promise<void> {
-  await callBetterAuthOrg("/organization/add-member", {
-    body: { organizationId, userId, role },
-  }).catch((err) => {
-    // Tolerate "already a member" errors
-    if (!String(err).toLowerCase().includes("already")) throw err;
-  });
+  await fetchAuthAction(
+    api.organizations.inviteLinks.actions.addMemberFromInviteLink,
+    {
+      organizationId,
+      userId,
+      role,
+    },
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -343,8 +406,9 @@ export const callBetterAuthOrganization = async <T>(
     fallback: string;
   },
 ): Promise<T> => {
-  const organizationId =
-    String(input.query?.organizationId ?? (c.req.param("organizationId") ?? ""));
+  const organizationId = String(
+    input.query?.organizationId ?? c.req.param("organizationId") ?? "",
+  );
 
   const body = input.body as Record<string, unknown> | undefined;
 
@@ -365,27 +429,53 @@ export const callBetterAuthOrganization = async <T>(
     }
 
     if (path.endsWith("/update")) {
-      return updateOrganizationIdentityBA(c, body?.organizationId as string ?? organizationId, body?.data as Record<string, unknown> ?? {}) as unknown as T;
+      return updateOrganizationIdentityBA(
+        c,
+        (body?.organizationId as string) ?? organizationId,
+        (body?.data as Record<string, unknown>) ?? {},
+      ) as unknown as T;
     }
 
     if (path.endsWith("/invite-member")) {
-      return inviteMemberBA(c, body?.organizationId as string ?? organizationId, body?.email as string, body?.role as string) as unknown as T;
+      return inviteMemberBA(
+        c,
+        (body?.organizationId as string) ?? organizationId,
+        body?.email as string,
+        body?.role as string,
+      ) as unknown as T;
     }
 
     if (path.endsWith("/cancel-invitation")) {
-      return cancelInvitationBA(c, body?.invitationId as string) as unknown as T;
+      return cancelInvitationBA(
+        c,
+        body?.invitationId as string,
+      ) as unknown as T;
     }
 
     if (path.endsWith("/update-member-role")) {
-      return updateMemberRoleBA(c, body?.organizationId as string ?? organizationId, body?.memberId as string, body?.role as string) as unknown as T;
+      return updateMemberRoleBA(
+        c,
+        (body?.organizationId as string) ?? organizationId,
+        body?.memberId as string,
+        body?.role as string,
+      ) as unknown as T;
     }
 
     if (path.endsWith("/remove-member")) {
-      return removeMemberBA(c, body?.organizationId as string ?? organizationId, body?.memberIdOrEmail as string) as unknown as T;
+      return removeMemberBA(
+        c,
+        (body?.organizationId as string) ?? organizationId,
+        body?.memberIdOrEmail as string,
+      ) as unknown as T;
     }
 
     if (path.endsWith("/create-role")) {
-      return createOrganizationRoleBA(c, organizationId, body?.role as string, body?.permission as Record<string, string[]>) as unknown as T;
+      return createOrganizationRoleBA(
+        c,
+        organizationId,
+        body?.role as string,
+        body?.permission as Record<string, string[]>,
+      ) as unknown as T;
     }
 
     if (path.endsWith("/update-role")) {
@@ -393,16 +483,26 @@ export const callBetterAuthOrganization = async <T>(
         c,
         organizationId,
         body?.roleId as string,
-        body?.data as { roleName?: string; permission?: Record<string, string[]> },
+        body?.data as {
+          roleName?: string;
+          permission?: Record<string, string[]>;
+        },
       ) as unknown as T;
     }
 
     if (path.endsWith("/delete-role")) {
-      return deleteOrganizationRoleBA(c, organizationId, body?.roleId as string) as unknown as T;
+      return deleteOrganizationRoleBA(
+        c,
+        organizationId,
+        body?.roleId as string,
+      ) as unknown as T;
     }
 
     if (path.endsWith("/accept-invitation")) {
-      return acceptInvitationBA(c, body?.invitationId as string) as unknown as T;
+      return acceptInvitationBA(
+        c,
+        body?.invitationId as string,
+      ) as unknown as T;
     }
 
     logger.warn("Unknown Better Auth organization command path", {
@@ -418,8 +518,44 @@ export const callBetterAuthOrganization = async <T>(
       organizationId,
       error: error instanceof Error ? error.message : String(error),
     });
-    throw error;
+    throw normalizeBetterAuthOrganizationError(error);
   }
 };
 
 export type { OrganizationMember as BetterAuthOrganization };
+
+function normalizeBetterAuthOrganizationError(error: unknown) {
+  if (typeof error === "object" && error !== null && "status" in error)
+    return error;
+
+  const message = error instanceof Error ? error.message : String(error);
+  const parsed = parseBetterAuthErrorBody(message);
+  if (parsed) {
+    return new OrganizationActionError(parsed.message, 400);
+  }
+
+  return error;
+}
+
+function isAlreadyInvitedError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /already invited|USER_IS_ALREADY_INVITED_TO_THIS_ORGANIZATION/i.test(
+    message,
+  );
+}
+
+function parseBetterAuthErrorBody(message: string) {
+  try {
+    const parsed = JSON.parse(message) as { message?: unknown; code?: unknown };
+    if (typeof parsed.message === "string") {
+      return {
+        message: parsed.message,
+        code: typeof parsed.code === "string" ? parsed.code : undefined,
+      };
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}

@@ -20,6 +20,7 @@ export const createFromHono = mutation({
       organizationId: args.organizationId,
       ...args.input,
       ownerUserId,
+      recordState: "active",
       createdByUserId: user._id,
       createdAt: now,
       updatedAt: now,
@@ -82,7 +83,7 @@ export const deleteFromHono = mutation({
     const existing = await ctx.db.get(args.opportunityId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Opportunity was not found.");
     const now = Date.now();
-    await ctx.db.patch(args.opportunityId, { deletedAt: now, isDeleted: true, updatedAt: now });
+    await ctx.db.patch(args.opportunityId, { deletedAt: now, recordState: "deleted", updatedAt: now });
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,

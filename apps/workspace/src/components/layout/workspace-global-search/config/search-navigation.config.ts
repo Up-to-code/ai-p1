@@ -10,7 +10,6 @@ import {
   Settings,
   UserRound,
   UsersRound,
-  Workflow,
 } from "lucide-react";
 
 export const globalSearchPageSize = 5;
@@ -38,7 +37,6 @@ type SidebarLabels = {
   projects: string;
   tasks: string;
   calendar: string;
-  automations: string;
   team: string;
   integrations: string;
   settings: string;
@@ -54,7 +52,6 @@ export function buildGlobalSearchNavigationActions(labels: SidebarLabels): Globa
     { id: "projects", label: labels.projects, href: "/projects", icon: BriefcaseBusiness },
     { id: "tasks", label: labels.tasks, href: "/tasks", icon: ListTodo },
     { id: "calendar", label: labels.calendar, href: "/calendar", icon: CalendarDays },
-    { id: "automations", label: labels.automations, href: "/automations", icon: Workflow },
     { id: "team", label: labels.team, href: "/team", icon: UsersRound },
     { id: "integrations", label: labels.integrations, href: "/web-apps", icon: Plug },
     { id: "settings", label: labels.settings, href: "/organization", icon: Settings },

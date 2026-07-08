@@ -1,87 +1,146 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
+import {
+  recordStateValidator,
+  savedViewConfigValidator,
+  scopeTypeValidator,
+  viewTypeValidator,
+  workspaceVisibilityValidator,
+  workOsRecordResourceValidator,
+} from "./validators";
 
 export const viewTables = {
-  views: defineTable({
+  surfaces: defineTable({
     organizationId: v.string(),
-    domain: v.string(), // "projects", "clients", "deals", "docs", "calendar"
-    spaceId: v.optional(v.id("spaces")),
-    projectId: v.optional(v.id("projects")),
-    userId: v.string(),
-    viewConfig: v.object({
-      type: v.union(
-        v.literal("table"),
-        v.literal("board"),
-        v.literal("calendar"),
-        v.literal("gantt"),
-        v.literal("filemanager")
-      ),
-      label: v.string(),
-      filters: v.array(
-        v.object({
-          field: v.string(),
-          operator: v.union(
-            v.literal("equals"),
-            v.literal("contains"),
-            v.literal("startsWith"),
-            v.literal("endsWith"),
-            v.literal("gt"),
-            v.literal("lt"),
-            v.literal("gte"),
-            v.literal("lte")
-          ),
-          value: v.any(),
-        })
-      ),
-      sortBy: v.string(),
-      sortDirection: v.union(v.literal("asc"), v.literal("desc")),
-      groupBy: v.optional(v.string()),
-      columns: v.array(
-        v.object({
-          id: v.string(),
-          label: v.string(),
-          width: v.optional(v.number()),
-          visible: v.optional(v.boolean()),
-          sortable: v.optional(v.boolean()),
-          filterable: v.optional(v.boolean()),
-        })
-      ),
-      density: v.union(v.literal("compact"), v.literal("normal")),
-    }),
-    isDefault: v.optional(v.boolean()),
+    scopeType: scopeTypeValidator,
+    scopeId: v.optional(v.string()),
+    key: v.string(),
+    title: v.string(),
+    ownerUserId: v.optional(v.string()),
+    visibility: workspaceVisibilityValidator,
+    recordState: recordStateValidator,
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
     deletedAt: v.optional(v.number()),
   })
-    .index("by_organization_id", ["organizationId"])
-    .index("by_organization_domain", ["organizationId", "domain"])
-    .index("by_organization_space", ["organizationId", "spaceId"])
-    .index("by_organization_project", ["organizationId", "projectId"])
-    .index("by_user", ["organizationId", "userId"])
-    .index("by_user_domain", ["organizationId", "userId", "domain"])
-    .index("by_user_space", ["organizationId", "userId", "spaceId"])
-    .index("by_user_project", ["organizationId", "userId", "projectId"])
-    .index("by_organization_updated", ["organizationId", "updatedAt"]),
+    .index("by_organization_scope", ["organizationId", "scopeType", "scopeId"])
+    .index("by_organization_state_updated", ["organizationId", "recordState", "updatedAt"])
+    .index("by_organization_key", ["organizationId", "key"]),
 
-  workspaceSettings: defineTable({
+  surfaceTabs: defineTable({
     organizationId: v.string(),
-    viewScope: v.union(v.literal("space"), v.literal("project"), v.literal("workspace")),
-    defaultViews: v.optional(
-      v.record(
-        v.string(),
-        v.array(
-          v.union(
-            v.literal("table"),
-            v.literal("board"),
-            v.literal("calendar"),
-            v.literal("gantt"),
-            v.literal("filemanager")
-          )
-        )
-      )
-    ),
+    surfaceId: v.id("surfaces"),
+    tabType: v.union(v.literal("savedView"), v.literal("record"), v.literal("system")),
+    label: v.string(),
+    icon: v.optional(v.string()),
+    order: v.number(),
+    savedViewId: v.optional(v.id("savedViews")),
+    recordType: v.optional(workOsRecordResourceValidator),
+    recordId: v.optional(v.string()),
+    systemKey: v.optional(v.string()),
+    ownerUserId: v.optional(v.string()),
+    visibility: workspaceVisibilityValidator,
+    recordState: recordStateValidator,
+    createdByUserId: v.string(),
+    createdAt: v.number(),
     updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
   })
-    .index("by_organization_id", ["organizationId"]),
+    .index("by_surface_state_order", ["organizationId", "surfaceId", "recordState", "order"])
+    .index("by_saved_view", ["organizationId", "savedViewId"])
+    .index("by_record", ["organizationId", "recordType", "recordId"]),
+
+  savedViews: defineTable({
+    organizationId: v.string(),
+    resourceType: workOsRecordResourceValidator,
+    viewType: viewTypeValidator,
+    name: v.string(),
+    description: v.optional(v.string()),
+    ownerUserId: v.optional(v.string()),
+    scopeType: scopeTypeValidator,
+    scopeId: v.optional(v.string()),
+    visibility: workspaceVisibilityValidator,
+    config: savedViewConfigValidator,
+    isDefault: v.optional(v.boolean()),
+    sourceTemplateId: v.optional(v.string()),
+    isSystemDefault: v.optional(v.boolean()),
+    isRemovable: v.boolean(),
+    recordState: recordStateValidator,
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_resource_scope_state", ["organizationId", "resourceType", "scopeType", "scopeId", "recordState"])
+    .index("by_owner_resource", ["organizationId", "ownerUserId", "resourceType"])
+    .index("by_default", ["organizationId", "resourceType", "scopeType", "scopeId", "isDefault"])
+    .index("by_state_updated", ["organizationId", "recordState", "updatedAt"]),
+
+  workflowDefinitions: defineTable({
+    organizationId: v.string(),
+    resourceType: workOsRecordResourceValidator,
+    key: v.string(),
+    name: v.string(),
+    isDefault: v.boolean(),
+    isRemovable: v.boolean(),
+    sourceTemplateId: v.optional(v.string()),
+    recordState: recordStateValidator,
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_resource_key", ["organizationId", "resourceType", "key"])
+    .index("by_resource_default", ["organizationId", "resourceType", "isDefault"])
+    .index("by_state_updated", ["organizationId", "recordState", "updatedAt"]),
+
+  workflowStates: defineTable({
+    organizationId: v.string(),
+    workflowId: v.id("workflowDefinitions"),
+    key: v.string(),
+    label: v.string(),
+    color: v.string(),
+    order: v.number(),
+    category: v.union(
+      v.literal("not_started"),
+      v.literal("active"),
+      v.literal("waiting"),
+      v.literal("terminal"),
+    ),
+    isDefault: v.boolean(),
+    isTerminal: v.boolean(),
+    isRemovable: v.boolean(),
+    sourceTemplateId: v.optional(v.string()),
+    recordState: recordStateValidator,
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_workflow_state_order", ["organizationId", "workflowId", "recordState", "order"])
+    .index("by_workflow_key", ["organizationId", "workflowId", "key"])
+    .index("by_state_updated", ["organizationId", "recordState", "updatedAt"]),
+
+  fieldLayouts: defineTable({
+    organizationId: v.string(),
+    resourceType: workOsRecordResourceValidator,
+    scopeType: scopeTypeValidator,
+    scopeId: v.optional(v.string()),
+    surfaceKey: v.union(v.literal("form"), v.literal("table"), v.literal("detail"), v.literal("board")),
+    fieldDefinitionId: v.optional(v.id("customFieldDefinitions")),
+    fieldKey: v.string(),
+    label: v.optional(v.string()),
+    order: v.number(),
+    visible: v.boolean(),
+    requiredOnCreate: v.optional(v.boolean()),
+    recordState: recordStateValidator,
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_resource_scope_surface", ["organizationId", "resourceType", "scopeType", "scopeId", "surfaceKey"])
+    .index("by_field", ["organizationId", "fieldDefinitionId"])
+    .index("by_state_updated", ["organizationId", "recordState", "updatedAt"]),
 };

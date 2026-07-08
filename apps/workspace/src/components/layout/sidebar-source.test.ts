@@ -34,7 +34,6 @@ describe("sidebar source", () => {
       '{ name: "calendar", href: "/calendar", icon: CalendarDays',
       '{ name: "docs", href: "/docs", icon: FileText',
       '{ name: "projects", href: "/spaces", icon: FolderGit2',
-      '{ name: "automations", icon: Workflow',
       '{ name: "integrations", icon: Plug',
       '{ name: "organization", href: "/settings/organization", icon: Building2',
     ];
@@ -54,7 +53,7 @@ describe("sidebar source", () => {
     const enSidebar = sidebarMessages(readSource("messages/en.json"));
     const arSidebar = sidebarMessages(readSource("messages/ar.json"));
 
-    for (const key of ["dashboard", "clients", "opportunities", "deals", "projects", "tasks", "docs", "calendar", "automations", "integrations", "organization", "settings"]) {
+    for (const key of ["dashboard", "clients", "opportunities", "deals", "projects", "tasks", "docs", "calendar", "integrations", "organization", "settings"]) {
       expect(countKey(enSidebar, key), `en:${key}`).toBe(1);
       expect(countKey(arSidebar, key), `ar:${key}`).toBe(1);
     }

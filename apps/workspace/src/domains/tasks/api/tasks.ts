@@ -6,6 +6,7 @@ import { api } from "@convex/_generated/api";
 import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import { createResourceApi } from "@/domains/resources/resource-api-factory";
 import type { TaskFormValues, TaskRecord, TaskStats } from "../tasks.types";
+import { normalizeTaskStatus } from "../tasks.constants";
 
 export type GroupBy = "none" | "status" | "priority" | "assignee" | "dueDate"
 
@@ -62,7 +63,7 @@ export function useTasksQuery(organizationId?: string, options?: { status?: Task
     if (!tasks) return undefined;
     if (!status && !search) return tasks;
     return tasks.filter((task) => {
-      if (status && status !== "all" && task.status !== status) return false;
+      if (status && status !== "all" && normalizeTaskStatus(task.status) !== normalizeTaskStatus(status)) return false;
       if (search) {
         const haystack = [task.title, task.description, task.assigneeUserId, ...(task.tags ?? [])];
         if (!haystack.some((v) => v?.toLowerCase().includes(search))) return false;

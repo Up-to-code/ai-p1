@@ -21,7 +21,6 @@ export const projectInputSchema = z.object({
   isStrict: z.boolean().optional(),
   isRollupEnabled: z.boolean().optional(),
   templateId: z.string().trim().optional(),
-  customTabs: z.array(z.string()).optional(),
   progress: z.number().min(0).max(100).optional(),
 });
 
@@ -49,13 +48,12 @@ export const projectRecordSchema = z.object({
   isStrict: z.boolean().optional(),
   isRollupEnabled: z.boolean().optional(),
   templateId: z.string().optional(),
-  customTabs: z.array(z.string()).optional(),
   progress: z.number().optional(),
+  recordState: z.enum(["active", "archived", "deleted"]).optional(),
   createdByUserId: z.string(),
   createdAt: z.number(),
   updatedAt: z.number(),
   deletedAt: z.number().optional(),
-  isDeleted: z.boolean().optional(),
 });
 
 export type ProjectStatus = z.infer<typeof projectStatusSchema>;

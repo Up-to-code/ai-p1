@@ -29,7 +29,6 @@ describe("workspace topbar source", () => {
       '{ id: "projects", label: labels.projects, href: "/projects", icon: BriefcaseBusiness }',
       '{ id: "tasks", label: labels.tasks, href: "/tasks", icon: ListTodo }',
       '{ id: "calendar", label: labels.calendar, href: "/calendar", icon: CalendarDays }',
-      '{ id: "automations", label: labels.automations, href: "/automations", icon: Workflow }',
       '{ id: "team", label: labels.team, href: "/team", icon: UsersRound }',
       '{ id: "integrations", label: labels.integrations, href: "/web-apps", icon: Plug }',
       '{ id: "settings", label: labels.settings, href: "/settings/organization", icon: Settings }',
@@ -42,5 +41,6 @@ describe("workspace topbar source", () => {
     expect(source).not.toContain('id: "usage"');
     expect(source).not.toContain('id: "activity"');
     expect(source).not.toContain('id: "assets"');
+    expect(source).not.toContain('id: "automations"');
   });
 });

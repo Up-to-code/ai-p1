@@ -51,11 +51,11 @@ export const clientRecordSchema = z.object({
   customFields: z.array(z.object({ key: z.string(), value: z.unknown() })).optional(),
   added: z.string(),
   lastContact: z.string(),
+  recordState: z.enum(["active", "archived", "deleted"]).optional(),
   createdByUserId: z.string(),
   createdAt: z.number(),
   updatedAt: z.number(),
   deletedAt: z.number().optional(),
-  isDeleted: z.boolean().optional(),
 });
 
 export type ClientType = z.infer<typeof clientTypeSchema>;

@@ -24,7 +24,6 @@ type ProjectInput = {
   isStrict?: boolean;
   isRollupEnabled?: boolean;
   templateId?: string;
-  customTabs?: string[];
   progress?: number;
 };
 
@@ -44,7 +43,7 @@ async function createProjectCore(ctx: MutationCtx, args: { organizationId: strin
     ...args.input,
     ownerUserId: args.actorUserId,
     visibility: normalizeProjectVisibility(args.input.visibility),
-    isDeleted: false,
+    recordState: "active",
     createdByUserId: args.actorUserId,
     createdAt: now,
     updatedAt: now,
@@ -80,7 +79,7 @@ async function deleteProjectCore(ctx: MutationCtx, args: { organizationId: strin
     throw new Error("Project was not found.");
   }
   const now = Date.now();
-  await ctx.db.patch(args.projectId, { deletedAt: now, isDeleted: true, updatedAt: now });
+  await ctx.db.patch(args.projectId, { deletedAt: now, recordState: "deleted", updatedAt: now });
   return { removed: true as const, now, name: existing.name };
 }
 

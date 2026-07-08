@@ -1,11 +1,13 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
+import type { Doc } from "../_generated/dataModel";
+import type { MutationCtx } from "../_generated/server";
 import {
   createUserTableViewInputValidator,
   updateUserTableViewInputValidator,
   userTableViewValidator,
 } from "./validators";
-import type { MutationCtx } from "../_generated/server";
+import { presentSavedView, scopeForInput } from "./data";
 
 export const create = mutation({
   args: { input: createUserTableViewInputValidator },
@@ -13,39 +15,43 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
+
     const userId = identity.subject;
     const now = Date.now();
+    const organizationId = args.input.organizationId ?? `personal:${userId}`;
+    const scope = scopeForInput(args.input);
 
     if (args.input.isDefault) {
       await clearDefaultFlags(ctx, userId, {
         resourceType: args.input.resourceType,
         viewType: args.input.viewType,
-        organizationId: args.input.organizationId,
-        projectId: args.input.projectId,
-        spaceId: args.input.spaceId,
+        organizationId,
       });
     }
 
-    const viewId = await ctx.db.insert("userTableViews", {
-      userId,
-      name: args.input.name,
-      description: args.input.description,
+    const viewId = await ctx.db.insert("savedViews", {
+      organizationId,
       resourceType: args.input.resourceType,
       viewType: args.input.viewType,
-      scope: args.input.scope,
-      scopeKey: args.input.scopeKey,
-      organizationId: args.input.organizationId,
-      projectId: args.input.projectId,
-      spaceId: args.input.spaceId,
+      name: args.input.name,
+      description: args.input.description,
+      ownerUserId: userId,
+      scopeType: scope.scopeType,
+      scopeId: scope.scopeId,
+      visibility: "private",
       config: args.input.config,
       isDefault: args.input.isDefault,
+      isSystemDefault: false,
+      isRemovable: true,
+      recordState: "active",
+      createdByUserId: userId,
       createdAt: now,
       updatedAt: now,
     });
 
     const inserted = await ctx.db.get(viewId);
     if (!inserted) throw new Error("Failed to create view");
-    return inserted;
+    return presentSavedView(inserted);
   },
 });
 
@@ -55,92 +61,101 @@ export const update = mutation({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
+
     const userId = identity.subject;
     const existing = await ctx.db.get(args.input.viewId);
     if (!existing) throw new Error("View not found");
-    if (existing.userId !== userId) throw new Error("Not authorized");
+    assertOwner(existing, userId);
 
     if (args.input.isDefault) {
       await clearDefaultFlags(ctx, userId, {
         resourceType: existing.resourceType,
         viewType: existing.viewType,
         organizationId: existing.organizationId,
-        projectId: existing.projectId,
-        spaceId: existing.spaceId,
       });
     }
 
-    const patch: Record<string, unknown> = { updatedAt: Date.now() };
+    const patch: Partial<Doc<"savedViews">> = { updatedAt: Date.now() };
     if (args.input.name !== undefined) patch.name = args.input.name;
     if (args.input.description !== undefined) patch.description = args.input.description;
     if (args.input.config !== undefined) patch.config = args.input.config;
     if (args.input.isDefault !== undefined) patch.isDefault = args.input.isDefault;
-    await ctx.db.patch(args.input.viewId, patch);
 
+    await ctx.db.patch(args.input.viewId, patch);
     const updated = await ctx.db.get(args.input.viewId);
     if (!updated) throw new Error("Failed to load view");
-    return updated;
+    return presentSavedView(updated);
   },
 });
 
 export const remove = mutation({
-  args: { viewId: v.id("userTableViews") },
+  args: { viewId: v.id("savedViews") },
   returns: v.null(),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
+
     const existing = await ctx.db.get(args.viewId);
     if (!existing) return null;
-    if (existing.userId !== identity.subject) throw new Error("Not authorized");
-    await ctx.db.delete(args.viewId);
+    assertOwner(existing, identity.subject);
+
+    const now = Date.now();
+    await ctx.db.patch(args.viewId, {
+      recordState: "deleted",
+      deletedAt: now,
+      updatedAt: now,
+    });
     return null;
   },
 });
 
 export const setDefault = mutation({
-  args: { viewId: v.id("userTableViews") },
+  args: { viewId: v.id("savedViews") },
   returns: v.null(),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
+
     const userId = identity.subject;
     const existing = await ctx.db.get(args.viewId);
     if (!existing) return null;
-    if (existing.userId !== userId) throw new Error("Not authorized");
+    assertOwner(existing, userId);
+
     await clearDefaultFlags(ctx, userId, {
       resourceType: existing.resourceType,
       viewType: existing.viewType,
       organizationId: existing.organizationId,
-      projectId: existing.projectId,
-      spaceId: existing.spaceId,
     });
     await ctx.db.patch(args.viewId, { isDefault: true, updatedAt: Date.now() });
     return null;
   },
 });
 
+function assertOwner(view: Doc<"savedViews">, userId: string) {
+  if (view.ownerUserId !== userId && view.createdByUserId !== userId) {
+    throw new Error("Not authorized");
+  }
+}
+
 async function clearDefaultFlags(
   ctx: MutationCtx,
   userId: string,
   args: {
-    resourceType: string;
-    viewType: string;
-    organizationId?: string;
-    projectId?: string;
-    spaceId?: string;
+    resourceType: Doc<"savedViews">["resourceType"];
+    viewType: Doc<"savedViews">["viewType"];
+    organizationId: string;
   },
 ) {
   const all = await ctx.db
-    .query("userTableViews")
-    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .query("savedViews")
+    .withIndex("by_owner_resource", (q) =>
+      q.eq("organizationId", args.organizationId).eq("ownerUserId", userId).eq("resourceType", args.resourceType),
+    )
     .collect();
-  for (const v of all) {
-    if (
-      v.isDefault &&
-      v.resourceType === args.resourceType &&
-      v.viewType === args.viewType
-    ) {
-      await ctx.db.patch(v._id, { isDefault: false, updatedAt: Date.now() });
+
+  for (const view of all) {
+    if (view.recordState === "active" && view.viewType === args.viewType && view.isDefault) {
+      await ctx.db.patch(view._id, { isDefault: false, updatedAt: Date.now() });
     }
   }
 }

@@ -79,7 +79,6 @@ export function WorkspaceGlobalSearch() {
         projects:      tSidebar("projects"),
         tasks:         tSidebar("tasks"),
         calendar:      tSidebar("calendar"),
-        automations:   tSidebar("automations"),
         team:          tSidebar("team"),
         integrations:  tSidebar("integrations"),
         settings:      tSidebar("settings"),
@@ -193,7 +192,7 @@ export function WorkspaceGlobalSearch() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="group flex min-w-0 items-center gap-2 rounded-[14px] border border-border/50 bg-secondary/70 px-3 py-1.5 text-start text-text-muted transition-all hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+          className="group flex h-7 min-w-0 items-center gap-2 rounded-md border border-border bg-secondary px-2.5 text-start text-text-muted transition-all hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
         >
           {/* Brand logo instead of Lucide Search */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -204,8 +203,8 @@ export function WorkspaceGlobalSearch() {
             height={15}
             className="h-[15px] w-[15px] shrink-0 object-contain opacity-60 transition-opacity group-hover:opacity-100"
           />
-          <span className="hidden truncate text-[13px] font-medium md:inline-block">{t("searchAnything")}</span>
-          <span className="hidden rounded-md border border-border/50 px-1.5 py-0.5 text-[10px] font-bold text-text-muted lg:inline-block">
+          <span className="hidden truncate text-[12px] font-medium md:inline-block">{t("searchAnything")}</span>
+          <span className="hidden rounded border border-border px-1.5 py-0.5 text-[9px] font-bold text-text-muted lg:inline-block">
             {t("searchShortcut")}
           </span>
         </button>

@@ -108,10 +108,10 @@ export function ViewSwitcherTabs({
   );
 
   return (
-    <div className={cn("flex items-center justify-between gap-4 px-4 py-3 border-b border-border", className)}>
+    <div className={cn("flex h-10 items-center justify-between gap-4 border-b border-border px-3", className)}>
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {leftSlot}
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex h-full flex-wrap items-center gap-0.5">
           {views.map((view, index) => {
             const meta = getViewMeta(view.type, catalog);
             const isActive = activeViewId === view.id;
@@ -137,17 +137,16 @@ export function ViewSwitcherTabs({
                   if (onRenameTab) startEditing(view.id, displayLabel);
                 }}
                 className={cn(
-                  "group relative inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all",
-                  "border",
+                  "group relative inline-flex h-full items-center gap-1.5 border-b-2 px-2.5 text-[11px] font-semibold transition-colors",
                   isActive
-                    ? "bg-background text-foreground border-border shadow-sm"
-                    : "text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/50",
+                    ? "border-foreground text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
                   isDragging && "opacity-40",
-                  isDragOver && "border-l-2 border-primary",
+                  isDragOver && "bg-muted/30",
                 )}
               >
                 {draggable && (
-                  <GripVertical className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity cursor-grab" />
+                  <GripVertical className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-50 cursor-grab" />
                 )}
                 <ViewIcon type={view.type} catalog={catalog} size={14} />
                 {isEditing ? (
@@ -161,7 +160,7 @@ export function ViewSwitcherTabs({
                     className="w-20 bg-transparent text-xs font-bold text-foreground outline-none border-b border-foreground/30"
                   />
                 ) : (
-                  <span style={isActive ? { color: meta?.color } : undefined}>
+                  <span>
                     {displayLabel}
                   </span>
                 )}
@@ -173,7 +172,7 @@ export function ViewSwitcherTabs({
                       e.stopPropagation();
                       onRemoveView(view.id);
                     }}
-                    className="ml-0.5 inline-flex h-3.5 w-3.5 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted-foreground/20 hover:text-foreground"
+                    className="ml-0.5 inline-flex h-3.5 w-3.5 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                   >
                     <X className="h-2.5 w-2.5" />
                   </span>

@@ -43,12 +43,12 @@ export const dealRecordSchema = z.object({
   ownerUserId: z.string(),
   tags: z.array(z.string()).optional(),
   customFields: z.array(z.object({ key: z.string(), value: z.unknown() })).optional(),
+  recordState: z.enum(["active", "archived", "deleted"]).optional(),
   createdByUserId: z.string(),
   createdAt: z.number(),
   updatedAt: z.number(),
   closedAt: z.number().optional(),
   deletedAt: z.number().optional(),
-  isDeleted: z.boolean().optional(),
 });
 
 export type DealStage = z.infer<typeof dealStageSchema>;

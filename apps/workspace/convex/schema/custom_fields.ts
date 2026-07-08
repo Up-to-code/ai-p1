@@ -1,11 +1,19 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
-import { workOsRecordResourceValidator, workOsCustomFieldTypeValidator, workOsCustomFieldOptionValidator, workOsCustomFieldValueValidator } from "./validators";
+import {
+  recordStateValidator,
+  scopeTypeValidator,
+  workOsRecordResourceValidator,
+  workOsCustomFieldTypeValidator,
+  workOsCustomFieldOptionValidator,
+  workOsCustomFieldValueValidator,
+} from "./validators";
 
 export const customFieldTables = {
   customFieldDefinitions: defineTable({
     organizationId: v.string(),
-    workspaceId: v.optional(v.string()),
+    scopeType: v.optional(scopeTypeValidator),
+    scopeId: v.optional(v.string()),
     templateId: v.optional(v.string()),
     key: v.string(),
     label: v.string(),
@@ -14,15 +22,14 @@ export const customFieldTables = {
     required: v.boolean(),
     options: v.optional(v.array(workOsCustomFieldOptionValidator)),
     appliesTo: v.array(workOsRecordResourceValidator),
-    defaultValue: v.optional(v.any()),
-    display: v.optional(v.object({
-      formSection: v.optional(v.string()),
-      tableVisible: v.boolean(),
-      boardVisible: v.boolean(),
-      detailVisible: v.boolean(),
-      requiredOnCreate: v.boolean(),
-    })),
+    defaultTextValue: v.optional(v.string()),
+    defaultNumberValue: v.optional(v.number()),
+    defaultBooleanValue: v.optional(v.boolean()),
+    defaultDateValue: v.optional(v.string()),
+    defaultSelectValue: v.optional(v.string()),
+    defaultMultiSelectValue: v.optional(v.array(v.string())),
     order: v.number(),
+    recordState: recordStateValidator,
     archivedAt: v.optional(v.number()),
     createdByUserId: v.string(),
     createdAt: v.number(),
@@ -32,7 +39,8 @@ export const customFieldTables = {
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_key", ["organizationId", "key"])
     .index("by_organization_template", ["organizationId", "templateId"])
-    .index("by_updated", ["updatedAt"]),
+    .index("by_org_scope", ["organizationId", "scopeType", "scopeId"])
+    .index("by_org_state_updated", ["organizationId", "recordState", "updatedAt"]),
 
   customFieldValues: defineTable({
     organizationId: v.string(),
@@ -51,6 +59,7 @@ export const customFieldTables = {
     multiSelectValue: v.optional(v.array(v.string())),
     userValue: v.optional(v.string()),
     urlValue: v.optional(v.string()),
+    recordState: recordStateValidator,
     createdAt: v.number(),
     updatedAt: v.number(),
     deletedAt: v.optional(v.number()),
@@ -58,7 +67,7 @@ export const customFieldTables = {
     .index("by_organization_record", ["organizationId", "recordType", "recordId"])
     .index("by_organization_field", ["organizationId", "fieldDefinitionId"])
     .index("by_organization_field_record", ["organizationId", "fieldDefinitionId", "recordType", "recordId"])
-    .index("by_updated", ["updatedAt"]),
+    .index("by_org_state_updated", ["organizationId", "recordState", "updatedAt"]),
 
   recordLinks: defineTable({
     organizationId: v.string(),
@@ -126,7 +135,6 @@ export const customFieldTables = {
       createdAt: v.optional(v.number()),
       updatedAt: v.optional(v.number()),
     }))),
-    automationRecipes: v.optional(v.array(v.string())),
     views: v.optional(v.array(v.object({
       recordType: workOsRecordResourceValidator,
       type: v.union(v.literal("table"), v.literal("board"), v.literal("calendar"), v.literal("detail")),
@@ -140,40 +148,4 @@ export const customFieldTables = {
     .index("by_key", ["key"])
     .index("by_organization_key", ["organizationId", "key"])
     .index("by_updated", ["updatedAt"]),
-
-  automations: defineTable({
-    organizationId: v.string(),
-    name: v.string(),
-    description: v.optional(v.string()),
-    enabled: v.boolean(),
-    trigger: v.any(),
-    conditions: v.optional(v.array(v.any())),
-    conditionMode: v.optional(v.union(v.literal("all"), v.literal("any"))),
-    actions: v.array(v.any()),
-    ownerUserId: v.optional(v.string()),
-    lastRunAt: v.optional(v.number()),
-    lastRunStatus: v.optional(v.union(v.literal("success"), v.literal("failed"), v.literal("skipped"))),
-    lastRunSummary: v.optional(v.string()),
-    createdByUserId: v.string(),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-    deletedAt: v.optional(v.number()),
-  })
-    .index("by_organization_id", ["organizationId"])
-    .index("by_organization_enabled", ["organizationId", "enabled"])
-    .index("by_organization_owner", ["organizationId", "ownerUserId"])
-    .index("by_updated", ["updatedAt"]),
-
-  pipeline_stages: defineTable({
-    organizationId: v.string(),
-    key: v.string(),
-    name: v.string(),
-    color: v.string(),
-    order: v.number(),
-    isActive: v.boolean(),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  })
-    .index("by_organization", ["organizationId"])
-    .index("by_org_key", ["organizationId", "key"]),
 };

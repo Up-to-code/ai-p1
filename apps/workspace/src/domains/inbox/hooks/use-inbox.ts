@@ -1,23 +1,47 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useAuthSession } from "@/domains/auth";
 import {
+  addReactionRequest,
+  createChannelRequest,
+  createThreadRequest,
+  deleteChannelRequest,
+  deleteMessageRequest,
+  removeReactionRequest,
+  sendMessageRequest,
+  pinMessageRequest,
+  unpinMessageRequest,
+  updateChannelRequest,
+  updateMessageRequest,
   useListChannels,
   useGetChannel,
-  useCreateChannel,
-  useUpdateChannel,
-  useDeleteChannel,
   useListMessages,
-  useSendMessage,
-  useUpdateMessage,
-  useDeleteMessage,
-  useAddReaction,
-  useRemoveReaction,
+  usePaginatedMessages,
   useGetThread,
-  useCreateThread,
 } from "../api/inbox";
-import type { Channel, Message, MessageMention } from "../types/inbox.types";
+import type {
+  Channel,
+  ChannelType,
+  ChannelVisibility,
+  Message,
+  MessageAttachment,
+  MessageMention,
+} from "../types/inbox.types";
+
+type ChannelMutationInput = {
+  name: string;
+  type: ChannelType;
+  visibility: ChannelVisibility;
+  description?: string;
+  projectId?: string;
+  projectIds?: string[];
+  clientId?: string;
+  spaceId?: string;
+  memberIds?: string[];
+  dmUserId?: string;
+};
 
 // Channels
 export function useChannelsQuery(organizationId?: string) {
@@ -26,186 +50,193 @@ export function useChannelsQuery(organizationId?: string) {
 
 export function useChannelQuery(channelId?: string) {
   const channel = useGetChannel(channelId || "");
-  const channels = useListChannels(channelId ? "" : "");
-  
-  // If using string ID, find in channels list
-  if (channelId && channels) {
-    const found = channels.find((c: Channel) => c.id === channelId);
-    return { data: found || null, isLoading: false };
-  }
-  
-  return { data: channel || null, isLoading: false };
+  return {
+    data: channel || null,
+    isLoading: channelId ? channel === undefined : false,
+  };
 }
 
 export function useCreateChannelMutation(organizationId?: string) {
-  const createChannel = useCreateChannel();
-  
-  return {
-    mutate: (channel: Partial<Channel>) => {
+  return useMutation({
+    mutationFn: (channel: ChannelMutationInput) => {
       if (!organizationId) throw new Error("Organization ID required");
-      // Remove id field as Convex generates it automatically
-      const { id, ...channelData } = channel as any;
-      return createChannel({
-        organizationId,
-        input: channelData,
-      });
+      return createChannelRequest(organizationId, channel);
     },
-    mutateAsync: async (channel: Partial<Channel>) => {
-      if (!organizationId) throw new Error("Organization ID required");
-      // Remove id field as Convex generates it automatically
-      const { id, ...channelData } = channel as any;
-      return await createChannel({
-        organizationId,
-        input: channelData,
-      });
-    },
-    isPending: (createChannel as any).isPending ?? false,
-  } as {
-    mutate: (channel: Partial<Channel>) => Promise<any>;
-    mutateAsync: (channel: Partial<Channel>) => Promise<any>;
-    isPending: boolean;
-  };
+  });
 }
 
 export function useUpdateChannelMutation(organizationId?: string) {
-  const updateChannel = useUpdateChannel();
-  
-  return {
-    mutate: ({ channelId, updates }: { channelId: string; updates: Partial<Channel> }) => {
+  return useMutation({
+    mutationFn: ({
+      channelId,
+      updates,
+    }: {
+      channelId: string;
+      updates: ChannelMutationInput;
+    }) => {
       if (!organizationId) throw new Error("Organization ID required");
-      return updateChannel({
-        organizationId,
-        channelId,
-        input: updates as any,
-      });
+      return updateChannelRequest(organizationId, channelId, updates);
     },
-    isPending: (updateChannel as any).isPending ?? false,
-  };
+  });
 }
 
 export function useDeleteChannelMutation(organizationId?: string) {
-  const deleteChannel = useDeleteChannel();
-  
-  return {
-    mutate: (channelId: string) => {
+  return useMutation({
+    mutationFn: (channelId: string) => {
       if (!organizationId) throw new Error("Organization ID required");
-      return deleteChannel({
-        organizationId,
-        channelId,
-      });
+      return deleteChannelRequest(organizationId, channelId);
     },
-    isPending: (deleteChannel as any).isPending ?? false,
-  };
+  });
 }
 
 // Messages
 export function useMessagesQuery(channelId?: string, limit = 50) {
   const messages = useListMessages(channelId || "", limit);
-  return Array.isArray(messages) ? (messages as Message[]) : [];
+  return Array.isArray(messages) ? (messages as Message[]) : undefined;
 }
 
 export function useLoadMoreMessages(channelId?: string) {
-  const [limit, setLimit] = useState(50);
-  const messages = useMessagesQuery(channelId, limit);
-  const hasMore = messages.length >= limit;
+  const { results, status, loadMore } = usePaginatedMessages(
+    channelId || "",
+    20,
+  );
+  const messages = Array.isArray(results)
+    ? ([...results].reverse() as Message[])
+    : [];
+  const hasMore = status === "CanLoadMore";
+  const isLoadingMore = status === "LoadingMore";
 
-  const loadMore = useCallback(() => {
-    setLimit((prev) => prev + 30);
-  }, []);
-
-  // Reset limit when channel changes
-  useEffect(() => {
-    setLimit(50);
-  }, [channelId]);
-
-  return { messages, loadMore, hasMore, isLoadingMore: false };
-}
-
-export function useSendMessageMutation(organizationId?: string, channelId?: string) {
-  const sendMessage = useSendMessage();
+  const loadOlder = useCallback(() => {
+    if (hasMore) loadMore(20);
+  }, [hasMore, loadMore]);
 
   return {
-    mutate: (args: { content: string; replyToId?: string; mentions?: MessageMention[] }) => {
-      if (!organizationId || !channelId) throw new Error("Organization ID and Channel ID required");
-      return sendMessage({
-        organizationId,
-        channelId,
-        input: {
-          content: args.content,
-          replyToId: args.replyToId,
-          mentions: args.mentions,
-        },
-      });
-    },
-    isPending: (sendMessage as any).isPending ?? false,
+    messages,
+    loadMore: loadOlder,
+    hasMore,
+    isInitialLoading: Boolean(channelId) && status === "LoadingFirstPage",
+    isLoadingMore,
   };
 }
 
-export function useUpdateMessageMutation(organizationId?: string, channelId?: string) {
-  const updateMessage = useUpdateMessage();
-  
-  return {
-    mutate: ({ messageId, content }: { messageId: string; content: string }) => {
-      if (!organizationId || !channelId) throw new Error("Organization ID and Channel ID required");
-      return updateMessage({
+export function useSendMessageMutation(
+  organizationId?: string,
+  channelId?: string,
+) {
+  return useMutation({
+    mutationFn: (args: {
+      content: string;
+      clientMessageId?: string;
+      replyToId?: string;
+      mentions?: MessageMention[];
+      attachments?: MessageAttachment[];
+    }) => {
+      if (!organizationId || !channelId)
+        throw new Error("Organization ID and Channel ID required");
+      return sendMessageRequest(organizationId, channelId, args);
+    },
+  });
+}
+
+export function usePinMessageMutation(
+  organizationId?: string,
+  channelId?: string,
+) {
+  return useMutation({
+    mutationFn: (messageId: string) => {
+      if (!organizationId || !channelId)
+        throw new Error("Organization ID and Channel ID required");
+      return pinMessageRequest(organizationId, channelId, messageId);
+    },
+  });
+}
+
+export function useUnpinMessageMutation(
+  organizationId?: string,
+  channelId?: string,
+) {
+  return useMutation({
+    mutationFn: () => {
+      if (!organizationId || !channelId)
+        throw new Error("Organization ID and Channel ID required");
+      return unpinMessageRequest(organizationId, channelId);
+    },
+  });
+}
+
+export function useUpdateMessageMutation(
+  organizationId?: string,
+  channelId?: string,
+) {
+  return useMutation({
+    mutationFn: ({
+      messageId,
+      content,
+    }: {
+      messageId: string;
+      content: string;
+    }) => {
+      if (!organizationId || !channelId)
+        throw new Error("Organization ID and Channel ID required");
+      return updateMessageRequest(
         organizationId,
         channelId,
         messageId,
         content,
-      });
+      );
     },
-    isPending: (updateMessage as any).isPending ?? false,
-  };
+  });
 }
 
-export function useDeleteMessageMutation(organizationId?: string, channelId?: string) {
-  const deleteMessage = useDeleteMessage();
-  
-  return {
-    mutate: (messageId: string) => {
-      if (!organizationId || !channelId) throw new Error("Organization ID and Channel ID required");
-      return deleteMessage({
-        organizationId,
-        channelId,
-        messageId,
-      });
+export function useDeleteMessageMutation(
+  organizationId?: string,
+  channelId?: string,
+) {
+  return useMutation({
+    mutationFn: (messageId: string) => {
+      if (!organizationId || !channelId)
+        throw new Error("Organization ID and Channel ID required");
+      return deleteMessageRequest(organizationId, channelId, messageId);
     },
-    isPending: (deleteMessage as any).isPending ?? false,
-  };
+  });
 }
 
-export function useAddReactionMutation(organizationId?: string, channelId?: string) {
-  const addReaction = useAddReaction();
-  
-  return {
-    mutate: ({ messageId, emoji }: { messageId: string; emoji: string }) => {
-      if (!organizationId || !channelId) throw new Error("Organization ID and Channel ID required");
-      return addReaction({
-        organizationId,
-        channelId,
-        messageId,
-        emoji,
-      });
+export function useAddReactionMutation(
+  organizationId?: string,
+  channelId?: string,
+) {
+  return useMutation({
+    mutationFn: ({
+      messageId,
+      emoji,
+    }: {
+      messageId: string;
+      emoji: string;
+    }) => {
+      if (!organizationId || !channelId)
+        throw new Error("Organization ID and Channel ID required");
+      return addReactionRequest(organizationId, channelId, messageId, emoji);
     },
-    isPending: (addReaction as any).isPending ?? false,
-  };
+  });
 }
 
-export function useRemoveReactionMutation(organizationId?: string, channelId?: string) {
-  const removeReaction = useRemoveReaction();
-  
-  return {
-    mutate: ({ messageId, emoji }: { messageId: string; emoji: string }) => {
-      if (!organizationId || !channelId) throw new Error("Organization ID and Channel ID required");
-      return removeReaction({
-        organizationId,
-        channelId,
-        messageId,
-        emoji,
-      });
+export function useRemoveReactionMutation(
+  organizationId?: string,
+  channelId?: string,
+) {
+  return useMutation({
+    mutationFn: ({
+      messageId,
+      emoji,
+    }: {
+      messageId: string;
+      emoji: string;
+    }) => {
+      if (!organizationId || !channelId)
+        throw new Error("Organization ID and Channel ID required");
+      return removeReactionRequest(organizationId, channelId, messageId, emoji);
     },
-    isPending: (removeReaction as any).isPending ?? false,
-  };
+  });
 }
 
 // Threads
@@ -215,25 +246,27 @@ export function useThreadQuery(threadId?: string) {
 }
 
 export function useCreateThreadMutation(organizationId?: string) {
-  const createThread = useCreateThread();
-  
-  return {
-    mutate: ({ channelId, parentMessageId }: { channelId: string; parentMessageId: string }) => {
+  return useMutation({
+    mutationFn: ({
+      channelId,
+      parentMessageId,
+    }: {
+      channelId: string;
+      parentMessageId: string;
+    }) => {
       if (!organizationId) throw new Error("Organization ID required");
-      return createThread({
-        organizationId,
-        channelId,
-        parentMessageId,
-      });
+      return createThreadRequest(organizationId, channelId, parentMessageId);
     },
-    isPending: (createThread as any).isPending ?? false,
-  };
+  });
 }
 
 // Hook for active channel state
 export function useInboxState() {
   const session = useAuthSession();
-  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId : undefined;
+  const orgId =
+    session.workspace.status === "ready"
+      ? session.workspace.organizationId
+      : undefined;
 
   const channelsQuery = useChannelsQuery(orgId || "");
 

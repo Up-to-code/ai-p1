@@ -5,13 +5,37 @@ import { useConvex } from "convex/react"
 import { api } from "@convex/_generated/api"
 import type { Id } from "@convex/_generated/dataModel"
 
+export type SavedViewResourceType =
+  | "client"
+  | "deal"
+  | "doc"
+  | "media"
+  | "opportunity"
+  | "project"
+  | "task"
+  | "calendarEvent"
+  | "space"
+
+export type SavedViewType =
+  | "table"
+  | "board"
+  | "list"
+  | "calendar"
+  | "timeline"
+  | "dashboard"
+  | "fileManager"
+
+export type SavedViewFilterValue = string | number | boolean | string[] | number[] | boolean[] | null
+
 export interface SavedViewConfig {
   groupBy?: string
   sortBy?: string
+  sortDirection?: "asc" | "desc"
+  taskTableVersion?: number
   search?: string
   density?: "compact" | "normal"
   showFields?: boolean
-  filters?: Array<{ id: string; field: string; operator: string; value?: unknown }>
+  filters?: Array<{ id?: string; field: string; operator: string; value?: SavedViewFilterValue }>
   columnWidths?: Record<string, number>
   columnVisibility?: Record<string, boolean>
   columnOrder?: string[]
@@ -20,13 +44,13 @@ export interface SavedViewConfig {
 export type SavedViewScope = "project" | "space" | "workspace" | "global"
 
 export interface SavedViewRecord {
-  _id: Id<"userTableViews">
+  _id: Id<"savedViews">
   _creationTime: number
   userId: string
   name: string
   description?: string
-  resourceType: string
-  viewType: string
+  resourceType: SavedViewResourceType
+  viewType: SavedViewType
   scope: SavedViewScope
   scopeKey?: string
   organizationId?: string
@@ -39,8 +63,8 @@ export interface SavedViewRecord {
 }
 
 export interface ListSavedViewsArgs {
-  resourceType?: string
-  viewType?: string
+  resourceType?: SavedViewResourceType
+  viewType?: SavedViewType
   organizationId?: string
   projectId?: string
   spaceId?: string
@@ -62,7 +86,7 @@ export function useSavedViewsQuery(args: ListSavedViewsArgs) {
   return useQuery({
     queryKey: listKey(args),
     queryFn: async (): Promise<SavedViewRecord[]> => {
-      return (await convex.query(api.userTableViews.read.list, {
+      return (await convex.query(api.savedViews.read.list, {
         resourceType: args.resourceType,
         viewType: args.viewType,
         organizationId: args.organizationId,
@@ -75,8 +99,8 @@ export function useSavedViewsQuery(args: ListSavedViewsArgs) {
 }
 
 export function useDefaultSavedViewQuery(args: {
-  resourceType: string
-  viewType: string
+  resourceType: SavedViewResourceType
+  viewType: SavedViewType
   organizationId?: string
   projectId?: string
   spaceId?: string
@@ -85,7 +109,7 @@ export function useDefaultSavedViewQuery(args: {
   return useQuery({
     queryKey: ["saved-table-views-default", args],
     queryFn: async (): Promise<SavedViewRecord | null> => {
-      return (await convex.query(api.userTableViews.read.getDefault, args)) as SavedViewRecord | null
+      return (await convex.query(api.savedViews.read.getDefault, args)) as SavedViewRecord | null
     },
     enabled: Boolean(args.resourceType && args.viewType),
   })
@@ -94,8 +118,8 @@ export function useDefaultSavedViewQuery(args: {
 export interface CreateSavedViewInput {
   name: string
   description?: string
-  resourceType: string
-  viewType: string
+  resourceType: SavedViewResourceType
+  viewType: SavedViewType
   scope: SavedViewScope
   scopeKey?: string
   organizationId?: string
@@ -110,7 +134,7 @@ export function useCreateSavedViewMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (input: CreateSavedViewInput): Promise<SavedViewRecord> => {
-      return (await convex.mutation(api.userTableViews.write.create, { input })) as SavedViewRecord
+      return (await convex.mutation(api.savedViews.write.create, { input })) as SavedViewRecord
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["saved-table-views"] })
@@ -119,7 +143,7 @@ export function useCreateSavedViewMutation() {
 }
 
 export interface UpdateSavedViewInput {
-  viewId: Id<"userTableViews">
+  viewId: Id<"savedViews">
   name?: string
   description?: string
   config?: SavedViewConfig
@@ -131,7 +155,7 @@ export function useUpdateSavedViewMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (input: UpdateSavedViewInput): Promise<SavedViewRecord> => {
-      return (await convex.mutation(api.userTableViews.write.update, { input })) as SavedViewRecord
+      return (await convex.mutation(api.savedViews.write.update, { input })) as SavedViewRecord
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["saved-table-views"] })
@@ -143,8 +167,8 @@ export function useDeleteSavedViewMutation() {
   const convex = useConvex()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (viewId: Id<"userTableViews">) => {
-      await convex.mutation(api.userTableViews.write.remove, { viewId })
+    mutationFn: async (viewId: Id<"savedViews">) => {
+      await convex.mutation(api.savedViews.write.remove, { viewId })
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["saved-table-views"] })
@@ -156,8 +180,8 @@ export function useSetDefaultSavedViewMutation() {
   const convex = useConvex()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (viewId: Id<"userTableViews">) => {
-      await convex.mutation(api.userTableViews.write.setDefault, { viewId })
+    mutationFn: async (viewId: Id<"savedViews">) => {
+      await convex.mutation(api.savedViews.write.setDefault, { viewId })
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["saved-table-views"] })

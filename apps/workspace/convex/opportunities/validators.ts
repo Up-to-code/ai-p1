@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { clientPriorityValidator } from "../clients/validators";
+import { recordStateValidator } from "../schema/validators";
 
 export const opportunityStageValidator = v.union(
   v.literal("new"),
@@ -52,9 +53,9 @@ export const opportunityValidator = v.object({
   ownerUserId: v.string(),
   tags: v.optional(v.array(v.string())),
   customFields: v.optional(v.array(v.any())),
+  recordState: recordStateValidator,
   createdByUserId: v.string(),
   createdAt: v.number(),
   updatedAt: v.number(),
   closedAt: v.optional(v.number()),
 });
-

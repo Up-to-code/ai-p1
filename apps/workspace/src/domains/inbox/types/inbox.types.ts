@@ -1,4 +1,9 @@
-export type ChannelType = "organization" | "project" | "space" | "client" | "dm";
+export type ChannelType =
+  | "organization"
+  | "project"
+  | "space"
+  | "client"
+  | "dm";
 
 export type ChannelVisibility = "public" | "private" | "dm";
 
@@ -20,10 +25,14 @@ export interface Channel {
   description?: string;
   unreadCount?: number;
   lastMessageAt?: number;
+  pinnedMessageId?: string;
+  pinnedBy?: string;
+  pinnedAt?: number;
 }
 
 export interface Message {
   id: string;
+  clientMessageId?: string;
   channelId: string;
   content: string;
   authorId: string;
@@ -36,6 +45,8 @@ export interface Message {
   attachments?: MessageAttachment[];
   isDeleted?: boolean;
   editedAt?: number;
+  pinnedAt?: number;
+  pinnedBy?: string;
 }
 
 export interface MessageReaction {
@@ -44,7 +55,15 @@ export interface MessageReaction {
 }
 
 export interface MessageMention {
-  type: "user" | "task" | "client" | "deal" | "project" | "document" | "file" | "ai";
+  type:
+    | "user"
+    | "task"
+    | "client"
+    | "deal"
+    | "project"
+    | "document"
+    | "file"
+    | "ai";
   id: string;
   name: string;
 }

@@ -24,3 +24,9 @@ export const createOrganizationInviteLinkInputValidator = v.object({
   tokenHash: v.string(),
   expiresAt: v.number(),
 });
+
+export const createOrganizationInviteLinkFromTokenInputValidator = v.object({
+  role: v.string(),
+  token: v.string(),
+  expiresAt: v.number(),
+});

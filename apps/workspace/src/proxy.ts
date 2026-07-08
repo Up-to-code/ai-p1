@@ -72,7 +72,7 @@ export default function middleware(request: NextRequest) {
       // Derive the locale from the path (default to "en")
       const localeMatch = route.match(/^\/(ar|en)\//);
       const locale = localeMatch ? localeMatch[1] : "en";
-      const callbackURL = encodeURIComponent(route);
+      const callbackURL = encodeURIComponent(`${route}${request.nextUrl.search}`);
       const signInUrl = new URL(
         `/${locale}/sign-in?callbackURL=${callbackURL}`,
         request.url,

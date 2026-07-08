@@ -17,9 +17,16 @@ export interface AssigneeEditorProps {
   onChange: (next: string | null) => void
   options: AssigneeOption[]
   placeholder?: string
+  emptyTrigger?: "avatar" | "dash"
 }
 
-export function AssigneeEditor({ value, onChange, options, placeholder = "Unassigned" }: AssigneeEditorProps) {
+export function AssigneeEditor({
+  value,
+  onChange,
+  options,
+  placeholder = "Unassigned",
+  emptyTrigger = "avatar",
+}: AssigneeEditorProps) {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState("")
 
@@ -41,6 +48,8 @@ export function AssigneeEditor({ value, onChange, options, placeholder = "Unassi
       trigger={
         selected ? (
           <AssigneeAvatar name={selected.name} imageUrl={selected.imageUrl} showName />
+        ) : emptyTrigger === "dash" ? (
+          <span className="text-[12px] text-muted-foreground/70">-</span>
         ) : (
           <AssigneeAvatar name="" showPlaceholderWhenEmpty />
         )

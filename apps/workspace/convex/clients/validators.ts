@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { recordStateValidator } from "../schema/validators";
 
 export const clientTypeValidator = v.union(
   v.literal("person"),
@@ -83,6 +84,7 @@ export const clientValidator = v.object({
   pipelineOrder: v.optional(v.number()),
   tags: v.optional(v.array(v.string())),
   customFields: v.optional(v.array(v.any())),
+  recordState: recordStateValidator,
   added: v.optional(v.string()),
   lastContact: v.optional(v.string()),
   createdByUserId: v.string(),

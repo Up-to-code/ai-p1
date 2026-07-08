@@ -26,6 +26,68 @@ export type Resource =
 
 export type Action = "create" | "read" | "update" | "delete";
 
+export const permissions = {
+  resources: {
+    organization: "organization",
+    space: "space",
+    project: "project",
+    task: "task",
+    client: "client",
+    deal: "deal",
+    calendar: "calendar",
+    media: "media",
+    team: "team",
+    member: "member",
+    role: "role",
+    asset: "asset",
+    visibility: "visibility",
+    integration: "integration",
+    apiKey: "apiKey",
+    oauthApp: "oauthApp",
+    channel: "channel",
+  },
+  actions: {
+    create: "create",
+    read: "read",
+    update: "update",
+    delete: "delete",
+  },
+} as const satisfies {
+  resources: Record<Resource, Resource>;
+  actions: Record<Action, Action>;
+};
+
+export type PermissionRecord = {
+  organizationId?: string;
+  createdBy?: string;
+  createdByUserId?: string;
+  ownerUserId?: string;
+  memberIds?: string[];
+  visibility?: string;
+  deletedAt?: number;
+  isDeleted?: boolean;
+  recordState?: string;
+};
+
+export type PermissionCheckInput = {
+  organizationId: string;
+  userId: string;
+  resource: Resource;
+  action: Action;
+  record?: PermissionRecord | null;
+};
+
+export type PermissionCheckResult = {
+  allowed: boolean;
+  reason?: string;
+  userId: string;
+  organizationId: string;
+  resource: Resource;
+  action: Action;
+  role: OrganizationRole | null;
+  permissions: Record<Action, boolean>;
+};
+
 type PermissionCtx = {
   auth: {
     getUserIdentity: () => Promise<{ subject?: string } | null>;
@@ -42,10 +104,7 @@ function normalizeRoleName(raw: string) {
 }
 
 function splitRoleList(raw: string) {
-  return raw
-    .split(",")
-    .map(normalizeRoleName)
-    .filter(Boolean);
+  return raw.split(",").map(normalizeRoleName).filter(Boolean);
 }
 
 function normalizeOrganizationRole(raw: string): OrganizationRole | null {
@@ -55,8 +114,15 @@ function normalizeOrganizationRole(raw: string): OrganizationRole | null {
     : null;
 }
 
-function normalizeProjectVisibility(value: Doc<"projects">["visibility"]): ProjectVisibility {
-  if (value === "organization" || value === "space_members" || value === "private") return value;
+function normalizeProjectVisibility(
+  value: Doc<"projects">["visibility"],
+): ProjectVisibility {
+  if (
+    value === "organization" ||
+    value === "space_members" ||
+    value === "private"
+  )
+    return value;
   if (value === "workspace") return "organization";
   if (value === "team") return "space_members";
   return "private";
@@ -108,10 +174,18 @@ async function getOrganizationRoleNames(
   organizationId: string,
   userId: string,
 ): Promise<string[]> {
-  const tokenRoles = await getTokenOrganizationRoles(ctx, organizationId, userId);
+  const tokenRoles = await getTokenOrganizationRoles(
+    ctx,
+    organizationId,
+    userId,
+  );
   if (tokenRoles.length > 0) return tokenRoles;
 
-  const membershipRole = await getBetterAuthMembershipRole(ctx, organizationId, userId);
+  const membershipRole = await getBetterAuthMembershipRole(
+    ctx,
+    organizationId,
+    userId,
+  );
   return membershipRole ? splitRoleList(membershipRole) : [];
 }
 
@@ -137,7 +211,8 @@ export async function getSpaceRole(
   const member = await ctx.db
     .query("spaceMembers")
     .withIndex("by_space_user", (q: any) =>
-      q.eq("organizationId", organizationId)
+      q
+        .eq("organizationId", organizationId)
         .eq("spaceId", spaceId)
         .eq("userId", userId),
     )
@@ -170,7 +245,8 @@ export async function canAccessSpace(
   userId: string,
 ): Promise<boolean> {
   const space = await ctx.db.get(spaceId);
-  if (!space || space.organizationId !== organizationId || space.deletedAt) return false;
+  if (!space || space.organizationId !== organizationId || space.deletedAt)
+    return false;
 
   const orgRole = await getOrganizationRole(ctx, organizationId, userId);
   if (orgRole === "owner") return true;
@@ -178,7 +254,10 @@ export async function canAccessSpace(
   const spaceRole = await getSpaceRole(ctx, organizationId, spaceId, userId);
   if (spaceRole) return true;
 
-  return Boolean(orgRole && (space.visibility === "public" || space.visibility === "request_only"));
+  return Boolean(
+    orgRole &&
+    (space.visibility === "public" || space.visibility === "request_only"),
+  );
 }
 
 export async function canAccessProject(
@@ -188,7 +267,13 @@ export async function canAccessProject(
   userId: string,
 ): Promise<boolean> {
   const project = await ctx.db.get(projectId);
-  if (!project || project.organizationId !== organizationId || project.deletedAt || project.isDeleted) return false;
+  if (
+    !project ||
+    project.organizationId !== organizationId ||
+    project.deletedAt ||
+    project.isDeleted
+  )
+    return false;
 
   const orgRole = await getOrganizationRole(ctx, organizationId, userId);
   if (orgRole === "owner" || orgRole === "admin") return true;
@@ -223,7 +308,9 @@ export async function canPerformSpaceAction(
     if (action === "read" || action === "update") return true;
     if (action === "create") {
       const space = await ctx.db.get(spaceId);
-      return Boolean(space && !space.deletedAt && space.allowMemberProjectCreation);
+      return Boolean(
+        space && !space.deletedAt && space.allowMemberProjectCreation,
+      );
     }
   }
   if (spaceRole === "viewer") return action === "read";
@@ -239,19 +326,30 @@ export async function canPerformProjectAction(
   action: Action,
 ): Promise<boolean> {
   const project = await ctx.db.get(projectId);
-  if (!project || project.organizationId !== organizationId || project.deletedAt || project.isDeleted) return false;
+  if (
+    !project ||
+    project.organizationId !== organizationId ||
+    project.deletedAt ||
+    project.isDeleted
+  )
+    return false;
 
   const orgRole = await getOrganizationRole(ctx, organizationId, userId);
   if (orgRole === "owner") return true;
   if (orgRole === "admin") return action !== "delete";
   if (project.ownerUserId === userId) return true;
 
-  if (action === "read" && await canAccessProject(ctx, organizationId, projectId, userId)) return true;
+  if (
+    action === "read" &&
+    (await canAccessProject(ctx, organizationId, projectId, userId))
+  )
+    return true;
 
   const spaceIds = await listProjectSpaceIds(ctx, organizationId, projectId);
   for (const spaceId of spaceIds) {
     const spaceRole = await getSpaceRole(ctx, organizationId, spaceId, userId);
-    if (spaceRole === "admin") return action === "read" || action === "update" || action === "create";
+    if (spaceRole === "admin")
+      return action === "read" || action === "update" || action === "create";
     if (spaceRole === "member") return action === "read" || action === "update";
     if (spaceRole === "viewer" && action === "read") return true;
   }
@@ -278,6 +376,194 @@ const memberActions: Record<Resource, Action[]> = {
   oauthApp: ["read"],
   channel: ["read"],
 };
+
+function deniedPermissionResult(
+  input: PermissionCheckInput,
+  role: OrganizationRole | null,
+  reason: string,
+): PermissionCheckResult {
+  return {
+    allowed: false,
+    reason,
+    userId: input.userId,
+    organizationId: input.organizationId,
+    resource: input.resource,
+    action: input.action,
+    role,
+    permissions: {
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+    },
+  };
+}
+
+function permissionResult(
+  input: PermissionCheckInput,
+  role: OrganizationRole | null,
+  permissionsForResource: Record<Action, boolean>,
+  reason?: string,
+): PermissionCheckResult {
+  return {
+    allowed: permissionsForResource[input.action],
+    reason: permissionsForResource[input.action] ? undefined : reason,
+    userId: input.userId,
+    organizationId: input.organizationId,
+    resource: input.resource,
+    action: input.action,
+    role,
+    permissions: permissionsForResource,
+  };
+}
+
+async function checkChannelPermissionModel(
+  ctx: PermissionCtx,
+  input: PermissionCheckInput,
+): Promise<PermissionCheckResult> {
+  const role = await getOrganizationRole(
+    ctx,
+    input.organizationId,
+    input.userId,
+  );
+  if (!role) {
+    return deniedPermissionResult(
+      input,
+      role,
+      "User is not a member of this organization",
+    );
+  }
+
+  const canCreate = role === "owner" || role === "admin" || role === "member";
+
+  if (!input.record) {
+    return permissionResult(
+      input,
+      role,
+      {
+        create: canCreate,
+        read: false,
+        update: false,
+        delete: false,
+      },
+      "Channel record is required for this permission",
+    );
+  }
+
+  if (input.record.organizationId !== input.organizationId) {
+    return deniedPermissionResult(
+      input,
+      role,
+      "Record belongs to another organization",
+    );
+  }
+
+  if (
+    input.record.deletedAt ||
+    input.record.isDeleted ||
+    input.record.recordState === "deleted"
+  ) {
+    return deniedPermissionResult(input, role, "Record is deleted");
+  }
+
+  const isOwner = role === "owner";
+  const isAdmin = role === "admin";
+  const isCreator =
+    input.record.createdBy === input.userId ||
+    input.record.createdByUserId === input.userId;
+  const isExplicitMember =
+    input.record.memberIds?.includes(input.userId) ?? false;
+  const isPublic = input.record.visibility === "public";
+
+  return permissionResult(
+    input,
+    role,
+    {
+      create: canCreate,
+      read: isOwner || isCreator || isExplicitMember || isPublic,
+      update: isOwner || isCreator || (isAdmin && isExplicitMember),
+      delete: isOwner || isCreator,
+    },
+    `User cannot ${input.action} this ${input.resource}`,
+  );
+}
+
+async function checkOrganizationPermissionModel(
+  ctx: PermissionCtx,
+  input: PermissionCheckInput,
+): Promise<PermissionCheckResult> {
+  const role = await getOrganizationRole(
+    ctx,
+    input.organizationId,
+    input.userId,
+  );
+  const create = await canPerformOrganizationAction(
+    ctx,
+    input.organizationId,
+    input.userId,
+    input.resource,
+    "create",
+  );
+  const read = await canPerformOrganizationAction(
+    ctx,
+    input.organizationId,
+    input.userId,
+    input.resource,
+    "read",
+  );
+  const update = await canPerformOrganizationAction(
+    ctx,
+    input.organizationId,
+    input.userId,
+    input.resource,
+    "update",
+  );
+  const canDelete = await canPerformOrganizationAction(
+    ctx,
+    input.organizationId,
+    input.userId,
+    input.resource,
+    "delete",
+  );
+
+  return permissionResult(
+    input,
+    role,
+    { create, read, update, delete: canDelete },
+    `User cannot ${input.action} this ${input.resource}`,
+  );
+}
+
+type PermissionModelChecker = (
+  ctx: PermissionCtx,
+  input: PermissionCheckInput,
+) => Promise<PermissionCheckResult>;
+
+const permissionModel: Partial<Record<Resource, PermissionModelChecker>> = {
+  channel: checkChannelPermissionModel,
+};
+
+export async function checkPermission(
+  ctx: PermissionCtx,
+  input: PermissionCheckInput,
+): Promise<PermissionCheckResult> {
+  const checker = permissionModel[input.resource];
+  if (checker) return checker(ctx, input);
+  return checkOrganizationPermissionModel(ctx, input);
+}
+
+export async function assertPermission(
+  ctx: PermissionCtx,
+  input: PermissionCheckInput,
+) {
+  const result = await checkPermission(ctx, input);
+  if (!result.allowed) {
+    throw new Error(
+      `PERMISSION_DENIED: ${result.reason ?? `You do not have permission to ${input.action} ${input.resource}`}`,
+    );
+  }
+  return result;
+}
 
 async function customRoleCanPerform(
   ctx: PermissionCtx,
@@ -310,9 +596,21 @@ export async function canPerformOrganizationAction(
   for (const role of roles) {
     const orgRole = normalizeOrganizationRole(role);
     if (orgRole === "owner") return true;
-    if (orgRole === "admin" && !(resource === "organization" && action === "delete")) return true;
-    if (orgRole === "member" && (memberActions[resource]?.includes(action) ?? false)) return true;
-    if (!orgRole && await customRoleCanPerform(ctx, organizationId, role, resource, action)) return true;
+    if (
+      orgRole === "admin" &&
+      !(resource === "organization" && action === "delete")
+    )
+      return true;
+    if (
+      orgRole === "member" &&
+      (memberActions[resource]?.includes(action) ?? false)
+    )
+      return true;
+    if (
+      !orgRole &&
+      (await customRoleCanPerform(ctx, organizationId, role, resource, action))
+    )
+      return true;
   }
 
   return false;
@@ -336,8 +634,12 @@ export async function assertCanPerformSpaceAction(
   userId: string,
   action: Action,
 ) {
-  if (!(await canPerformSpaceAction(ctx, organizationId, spaceId, userId, action))) {
-    throw new Error(`PERMISSION_DENIED: You do not have permission to ${action} this space`);
+  if (
+    !(await canPerformSpaceAction(ctx, organizationId, spaceId, userId, action))
+  ) {
+    throw new Error(
+      `PERMISSION_DENIED: You do not have permission to ${action} this space`,
+    );
   }
 }
 
@@ -348,7 +650,9 @@ export async function assertCanAccessProject(
   userId: string,
 ) {
   if (!(await canAccessProject(ctx, organizationId, projectId, userId))) {
-    throw new Error("PERMISSION_DENIED: You do not have access to this project");
+    throw new Error(
+      "PERMISSION_DENIED: You do not have access to this project",
+    );
   }
 }
 
@@ -359,8 +663,18 @@ export async function assertCanPerformProjectAction(
   userId: string,
   action: Action,
 ) {
-  if (!(await canPerformProjectAction(ctx, organizationId, projectId, userId, action))) {
-    throw new Error(`PERMISSION_DENIED: You do not have permission to ${action} this project`);
+  if (
+    !(await canPerformProjectAction(
+      ctx,
+      organizationId,
+      projectId,
+      userId,
+      action,
+    ))
+  ) {
+    throw new Error(
+      `PERMISSION_DENIED: You do not have permission to ${action} this project`,
+    );
   }
 }
 
@@ -371,7 +685,17 @@ export async function assertCanPerformOrganizationAction(
   resource: Resource,
   action: Action,
 ) {
-  if (!(await canPerformOrganizationAction(ctx, organizationId, userId, resource, action))) {
-    throw new Error(`PERMISSION_DENIED: You do not have permission to ${action} ${resource}`);
+  if (
+    !(await canPerformOrganizationAction(
+      ctx,
+      organizationId,
+      userId,
+      resource,
+      action,
+    ))
+  ) {
+    throw new Error(
+      `PERMISSION_DENIED: You do not have permission to ${action} ${resource}`,
+    );
   }
 }

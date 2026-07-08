@@ -4,6 +4,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import { logger } from "@/lib/logger";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/auth-context";
 import { getBetterAuthSessionUserId, addMemberToOrganizationBA } from "./better-auth-organization-service";
+import { OrganizationActionError } from "../errors/action-error";
 import type {
   AcceptOrganizationInviteLinkInput,
   CreateOrganizationInviteLinkInput,
@@ -52,20 +53,24 @@ export async function acceptOrganizationInviteLink(input: AcceptOrganizationInvi
   });
 
   if (!inviteLink) {
-    throw new Error("Invite link was not found.");
-  }
-
-  if (inviteLink.status !== "pending") {
-    throw new Error("Invite link is no longer active.");
-  }
-
-  if (inviteLink.expiresAt <= Date.now()) {
-    throw new Error("Invite link has expired.");
+    throw new OrganizationActionError("Invite link was not found.", 404);
   }
 
   const userId = await getBetterAuthSessionUserId();
   if (!userId) {
-    throw new Error("Authentication required.");
+    throw new OrganizationActionError("Authentication required.", 401);
+  }
+
+  if (inviteLink.status !== "pending") {
+    if (inviteLink.status === "used" && inviteLink.usedByUserId === userId) {
+      return inviteLink;
+    }
+
+    throw new OrganizationActionError("Invite link is no longer active.", 400);
+  }
+
+  if (inviteLink.expiresAt <= Date.now()) {
+    throw new OrganizationActionError("Invite link has expired.", 400);
   }
 
   logger.info("Accepting organization invite link", {
@@ -78,6 +83,10 @@ export async function acceptOrganizationInviteLink(input: AcceptOrganizationInvi
 
   // Add the current user to the organization via Better Auth
   await addMemberToOrganizationBA(inviteLink.organizationId, userId, inviteLink.role);
+  await fetchAuthMutation(api.organizations.profile.write.ensureProfileFromHono, {
+    organizationId: inviteLink.organizationId,
+    actorUserId: userId,
+  });
 
   return fetchAuthMutation(api.organizations.inviteLinks.write.acceptInviteLinkFromHono, {
     tokenHash,

@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { requireRunMutationCtx } from "@convex-dev/better-auth/utils";
-import { organization } from "better-auth/plugins";
+import { emailOTP, organization } from "better-auth/plugins";
 import { betterAuthClient } from "./betterAuth";
 import authConfig from "./auth.config";
 import { getAuthUser, safeGetAuthUser } from "./betterAuth";
@@ -36,25 +36,72 @@ export const createAuth = (ctx: any) => {
     },
 
     socialProviders: {
-      ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? {
-        google: {
-          clientId: process.env.GOOGLE_CLIENT_ID,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        },
-      } : {}),
-      ...(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET ? {
-        apple: {
-          clientId: process.env.APPLE_CLIENT_ID,
-          clientSecret: process.env.APPLE_CLIENT_SECRET,
-        },
-      } : {}),
+      ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+        ? {
+            google: {
+              clientId: process.env.GOOGLE_CLIENT_ID,
+              clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            },
+          }
+        : {}),
+      ...(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET
+        ? {
+            apple: {
+              clientId: process.env.APPLE_CLIENT_ID,
+              clientSecret: process.env.APPLE_CLIENT_SECRET,
+            },
+          }
+        : {}),
     },
 
     plugins: [
+      emailOTP({
+        expiresIn: 10 * 60,
+        allowedAttempts: 5,
+        sendVerificationOTP: async ({ email, otp, type }) => {
+          const subject =
+            type === "forget-password"
+              ? "Your Qentrah password reset code"
+              : "Your Qentrah verification code";
+          const intro =
+            type === "forget-password"
+              ? "Use this code to reset your Qentrah password."
+              : "Use this code to verify your Qentrah account.";
+
+          await resend.sendEmail(requireRunMutationCtx(ctx), {
+            from: getTransactionalFromEmail(),
+            to: email,
+            subject,
+            html: [
+              `<p>${intro}</p>`,
+              `<p style="font-size: 24px; font-weight: 700; letter-spacing: 0.2em;">${otp}</p>`,
+              "<p>This code expires in 10 minutes.</p>",
+              "<p>If you did not request this, you can ignore this email.</p>",
+            ].join(""),
+            text: [
+              intro,
+              "",
+              otp,
+              "",
+              "This code expires in 10 minutes.",
+              "If you did not request this, you can ignore this email.",
+            ].join("\n"),
+          });
+        },
+      }),
       organization({
         sendInvitationEmail: async ({ invitation, inviter, organization }) => {
-          const inviteUrl = `${getAppUrl()}/en/accept-invite?invitationId=${invitation.id}`;
-          const invitedBy = inviter.user.name || inviter.user.email || "A teammate";
+          const invitationId =
+            invitation.id || (invitation as { _id?: string })._id;
+          if (!invitationId) {
+            throw new Error(
+              "Invitation email could not be sent because the invitation id is missing.",
+            );
+          }
+
+          const inviteUrl = `${getAppUrl()}/en/accept-invite?invitationId=${encodeURIComponent(invitationId)}`;
+          const invitedBy =
+            inviter.user.name || inviter.user.email || "A teammate";
 
           await resend.sendEmail(requireRunMutationCtx(ctx), {
             from: getTransactionalFromEmail(),
@@ -81,6 +128,11 @@ export const createAuth = (ctx: any) => {
     baseURL: process.env.NEXT_PUBLIC_APP_URL!,
     trustedOrigins: [process.env.NEXT_PUBLIC_APP_URL!],
     trustedProxyHeaders: true,
+    advanced: {
+      database: {
+        generateId: false,
+      },
+    },
     secret: process.env.BETTER_AUTH_SECRET!,
   });
 };

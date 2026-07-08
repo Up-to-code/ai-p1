@@ -12,13 +12,12 @@ describe("global search utils", () => {
       projects: "Projects",
       tasks: "Tasks",
       calendar: "Calendar",
-      automations: "Automations",
       team: "Team",
       integrations: "Integrations",
       settings: "Settings",
     });
 
-    expect(actions).toHaveLength(11);
+    expect(actions).toHaveLength(10);
     expect(actions[0]?.id).toBe("workspace");
   });
 

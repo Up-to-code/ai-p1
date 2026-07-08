@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { recordStateValidator } from "../schema/validators";
 
 export const projectStatusValidator = v.union(
   v.literal("planned"),
@@ -42,7 +43,6 @@ export const projectInputValidator = v.object({
   isStrict: v.optional(v.boolean()),
   isRollupEnabled: v.optional(v.boolean()),
   templateId: v.optional(v.string()),
-  customTabs: v.optional(v.array(v.string())),
   progress: v.optional(v.number()),
 });
 
@@ -70,8 +70,8 @@ export const projectValidator = v.object({
   isStrict: v.optional(v.boolean()),
   isRollupEnabled: v.optional(v.boolean()),
   templateId: v.optional(v.string()),
-  customTabs: v.optional(v.array(v.string())),
   progress: v.optional(v.number()),
+  recordState: recordStateValidator,
   createdByUserId: v.string(),
   createdAt: v.number(),
   updatedAt: v.number(),

@@ -2,14 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  CheckCircle,
-  Copy,
-  FileText,
-  RefreshCw,
-  ThumbsDown,
-  ThumbsUp,
-} from "lucide-react";
+import { CheckCircle2, CircleDashed, Loader2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Markdown } from "@/components/ui/markdown";
 import {
@@ -27,10 +20,23 @@ export type AiConversationMessage = {
   reasoning?: string;
 };
 
+export type AiActionProgressItem = {
+  id: string;
+  label: string;
+  detail?: string;
+  status: "pending" | "running" | "completed" | "failed" | "rejected";
+};
+
+export type AiActionProgress = {
+  status: "idle" | "running" | "completed" | "failed" | "waiting";
+  items: AiActionProgressItem[];
+};
+
 export type AiConversationThreadProps = {
   messages: AiConversationMessage[];
   isStreaming?: boolean;
   errorMessage?: string | null;
+  progress?: AiActionProgress;
   variant?: "page" | "panel";
   isImplementing?: boolean;
   onSendPrompt: (prompt: string) => void | Promise<void>;
@@ -42,6 +48,7 @@ export function AiConversationThread({
   messages,
   isStreaming = false,
   errorMessage,
+  progress,
   variant = "page",
   isImplementing = false,
   onSendPrompt,
@@ -107,7 +114,6 @@ export function AiConversationThread({
                   {displayContent}
                 </Markdown>
               ) : null}
-              <AiMessageActions content={displayContent} />
               {suggestions ? (
                 <MessageSuggestions
                   question={suggestions.question}
@@ -137,7 +143,9 @@ export function AiConversationThread({
           </div>
         );
       })}
-      {isStreaming && !errorMessage && visibleMessages.length > 0 && !lastAssistantHasContent(messages) ? (
+      {progress && progress.items.length > 0 ? (
+        <ActionProgressCard progress={progress} compact={isPanel} />
+      ) : isStreaming && !errorMessage && visibleMessages.length > 0 && !lastAssistantHasContent(messages) ? (
         <ThinkingStatus />
       ) : null}
       {errorMessage ? (
@@ -148,6 +156,118 @@ export function AiConversationThread({
     </div>
   );
 }
+
+function ActionProgressCard({
+  progress,
+  compact,
+}: {
+  progress: AiActionProgress;
+  compact: boolean;
+}) {
+  const completedCount = progress.items.filter((item) => item.status === "completed" || item.status === "rejected").length;
+  const hasFailure = progress.items.some((item) => item.status === "failed");
+  const title =
+    progress.status === "completed"
+      ? "Completed"
+      : hasFailure || progress.status === "failed"
+        ? "Needs attention"
+        : progress.status === "waiting"
+          ? "Waiting"
+          : "Working";
+
+  return (
+    <motion.div
+      className={cn(
+        "w-full max-w-[min(720px,100%)] rounded-xl border border-border bg-card text-card-foreground shadow-xs",
+        compact ? "px-3 py-3" : "px-4 py-4",
+      )}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+      role="status"
+      aria-live="polite"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <motion.div
+            className={cn(
+              "flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
+              hasFailure ? "text-danger" : progress.status === "completed" ? "text-emerald-500" : "text-primary",
+            )}
+            animate={
+              progress.status === "running"
+                ? { scale: [1, 1.08, 1], opacity: [0.75, 1, 0.75] }
+                : { scale: 1, opacity: 1 }
+            }
+            transition={progress.status === "running" ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" } : undefined}
+          >
+            {hasFailure ? (
+              <XCircle className="h-4 w-4" />
+            ) : progress.status === "completed" ? (
+              <CheckCircle2 className="h-4 w-4" />
+            ) : (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            )}
+          </motion.div>
+          <div className="min-w-0">
+            <p className={cn("font-semibold text-foreground", compact ? "text-xs" : "text-sm")}>{title}</p>
+            <p className="text-[11px] font-medium text-muted-foreground">
+              {completedCount} of {progress.items.length} completed
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className={cn("mt-3 space-y-1.5", compact ? "text-[11px]" : "text-xs")}>
+        <AnimatePresence initial={false}>
+          {progress.items.map((item) => (
+            <motion.div
+              key={item.id}
+              className="flex items-start gap-2 rounded-lg px-2 py-1.5"
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -6 }}
+              transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <ProgressItemIcon status={item.status} />
+              <div className="min-w-0 flex-1">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="truncate font-semibold text-foreground">{item.label}</span>
+                  <span className="shrink-0 text-[10px] font-semibold uppercase text-muted-foreground">
+                    {PROGRESS_STATUS_LABEL[item.status]}
+                  </span>
+                </div>
+                {item.detail ? (
+                  <p className="mt-0.5 truncate text-muted-foreground">{item.detail}</p>
+                ) : null}
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+}
+
+function ProgressItemIcon({ status }: { status: AiActionProgressItem["status"] }) {
+  if (status === "completed" || status === "rejected") {
+    return <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />;
+  }
+  if (status === "failed") {
+    return <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-danger" />;
+  }
+  if (status === "running") {
+    return <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-primary" />;
+  }
+  return <CircleDashed className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />;
+}
+
+const PROGRESS_STATUS_LABEL: Record<AiActionProgressItem["status"], string> = {
+  pending: "Queued",
+  running: "Running",
+  completed: "Done",
+  failed: "Failed",
+  rejected: "Skipped",
+};
 
 function UserMessage({ content, compact }: { content: string; compact: boolean }) {
   return (
@@ -185,42 +305,6 @@ function AssistantHeader({ mode, isStreaming }: { mode: ResponseMode; isStreamin
       <span className="text-xs font-semibold text-foreground">
         {isStreaming ? "Thinking" : MODE_LABEL[mode]}
       </span>
-    </div>
-  );
-}
-
-function AiMessageActions({ content }: { content: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const copy = async () => {
-    if (typeof navigator === "undefined") return;
-    await navigator.clipboard?.writeText(content);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1200);
-  };
-
-  const actions = [
-    { label: copied ? "Copied" : "Copy", icon: copied ? CheckCircle : Copy, onClick: copy },
-    { label: "Retry", icon: RefreshCw },
-    { label: "Save as note", icon: FileText },
-    { label: "Good response", icon: ThumbsUp },
-    { label: "Bad response", icon: ThumbsDown },
-  ];
-
-  return (
-    <div className="flex items-center gap-1 text-muted-foreground">
-      {actions.map((action) => (
-        <button
-          key={action.label}
-          type="button"
-          onClick={action.onClick}
-          className="flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground"
-          aria-label={action.label}
-          title={action.label}
-        >
-          <action.icon className="h-3.5 w-3.5" />
-        </button>
-      ))}
     </div>
   );
 }

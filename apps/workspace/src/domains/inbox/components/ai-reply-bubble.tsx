@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Bot, X } from "lucide-react";
 
 interface AiReplyBubbleProps {
   isStreaming: boolean;
@@ -13,14 +13,7 @@ export function AiReplyBubble({ isStreaming, content, onCancel }: AiReplyBubbleP
     <div className="border-t border-border/50 bg-gradient-to-r from-[#0C7DF3]/5 to-[#834DF1]/5 px-5 py-3">
       <div className="flex items-start gap-3">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0C7DF3]/10 ring-1 ring-[#0C7DF3]/30">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/ai/logo.png"
-            alt="Qentrah AI"
-            width={18}
-            height={18}
-            className="h-[18px] w-[18px] object-contain"
-          />
+          <Bot className="h-[18px] w-[18px] text-[#0C7DF3]" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5">
@@ -46,13 +39,13 @@ export function AiReplyBubble({ isStreaming, content, onCancel }: AiReplyBubbleP
             <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
               {content}
             </div>
-          ) : !isStreaming ? (
+          ) : (
             <div className="space-y-2">
               <div className="h-3 w-full animate-pulse rounded bg-muted" />
               <div className="h-3 w-3/4 animate-pulse rounded bg-muted" />
               <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
             </div>
-          ) : null}
+          )}
         </div>
         <button
           type="button"

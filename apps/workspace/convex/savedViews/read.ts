@@ -1,12 +1,13 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { userTableViewValidator } from "./validators";
-import { listViewsForUser, getDefaultView } from "./data";
+import { listViewsForUser, getDefaultView, presentSavedView } from "./data";
+import { viewTypeValidator, workOsRecordResourceValidator } from "../schema/validators";
 
 export const list = query({
   args: {
-    resourceType: v.optional(v.string()),
-    viewType: v.optional(v.string()),
+    resourceType: v.optional(workOsRecordResourceValidator),
+    viewType: v.optional(viewTypeValidator),
     organizationId: v.optional(v.string()),
     projectId: v.optional(v.string()),
     spaceId: v.optional(v.string()),
@@ -21,21 +22,21 @@ export const list = query({
 });
 
 export const get = query({
-  args: { viewId: v.id("userTableViews") },
+  args: { viewId: v.id("savedViews") },
   returns: v.union(userTableViewValidator, v.null()),
   handler: async (ctx, args) => {
     const view = await ctx.db.get(args.viewId);
     if (!view) return null;
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity || view.userId !== identity.subject) return null;
-    return view;
+    if (!identity || (view.ownerUserId !== identity.subject && view.createdByUserId !== identity.subject)) return null;
+    return presentSavedView(view);
   },
 });
 
 export const getDefault = query({
   args: {
-    resourceType: v.string(),
-    viewType: v.string(),
+    resourceType: workOsRecordResourceValidator,
+    viewType: viewTypeValidator,
     organizationId: v.optional(v.string()),
     projectId: v.optional(v.string()),
     spaceId: v.optional(v.string()),

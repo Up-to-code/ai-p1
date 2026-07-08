@@ -63,6 +63,7 @@ export function StatusPill({
   onClick,
 }: StatusPillProps) {
   const cfg = statusConfigFor(status)
+  const isTodo = status === "todo"
   const padding = size === "xs" ? "px-2 py-[2px]" : "px-2.5 py-1"
   const textSize = size === "xs" ? "text-[10px]" : "text-[11px]"
   const radius =
@@ -79,6 +80,7 @@ export function StatusPill({
   return (
     <Tag
       {...(interactive ? { type: "button" as const, onClick } : {})}
+      data-qentrah-status-pill
       className={cn(
         "inline-flex items-center gap-1.5 font-semibold tracking-wide whitespace-nowrap",
         "transition-[background-color,color,transform] duration-150 ease-out",
@@ -91,8 +93,8 @@ export function StatusPill({
         className
       )}
       style={{
-        background: `var(${cfg.vars.bg})`,
-        color: `var(${cfg.vars.text})`,
+        background: isTodo ? "#444444" : `var(${cfg.vars.bg})`,
+        color: isTodo ? "#E0E0E0" : `var(${cfg.vars.text})`,
       }}
     >
       {cfg.check ? (
@@ -100,7 +102,7 @@ export function StatusPill({
       ) : (
         <span
           className="h-1.5 w-1.5 rounded-full"
-          style={{ background: `var(${cfg.vars.dot})` }}
+          style={{ background: isTodo ? "#B0B0B0" : `var(${cfg.vars.dot})` }}
         />
       )}
       {cfg.label}

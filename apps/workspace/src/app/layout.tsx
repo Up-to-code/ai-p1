@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
-import { brandIdentity, brandLabel, brandDomainUrl } from "@qentrah/brand-identity";
+import { brandIdentity } from "@qentrah/brand-identity";
 import { Cairo } from "next/font/google";
 import { Suspense } from "react";
 import { NavigationProgress } from "@/components/layout/navigation-progress";
 import { Analytics } from "@vercel/analytics/next";
+import { rootMetadata } from "@/metadata/workspace";
 
 import "@svar-ui/react-calendar/all.css";
+import "@svar-ui/react-kanban/all.css";
 import "./globals.css";
 
 const cairo = Cairo({
@@ -13,78 +14,7 @@ const cairo = Cairo({
   subsets: ["arabic", "latin"],
 });
 
-const siteUrl = brandDomainUrl("workspace");
-const brand = brandLabel("en");
-
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: {
-    default: "Qentrah: Operating System for Agencies | AI Project Management",
-    template: "%s | Qentrah",
-  },
-  description:
-    "One workspace for clients, opportunities, projects, and tasks. AI that operates your business. Built for marketing, creative, design, and service agencies.",
-  keywords: [
-    "CRM for agencies",
-    "project management for agencies",
-    "agency management software",
-    "client operations platform",
-    "all-in-one client management",
-    "AI project management",
-    "agency profitability tracking",
-    "marketing agency software",
-    "creative studio management",
-  ],
-  manifest: "/manifest.webmanifest",
-  icons: {
-    icon: [
-      { url: "/logo.ico", type: "image/x-icon" },
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/logo.ico", sizes: "192x192", type: "image/x-icon" },
-      { url: "/logo.ico", sizes: "512x512", type: "image/x-icon" },
-    ],
-    shortcut: [{ url: "/logo.ico", type: "image/x-icon" }],
-    apple: [{ url: "/logo.ico", sizes: "180x180", type: "image/x-icon" }],
-  },
-  applicationName: brand,
-  creator: brand,
-  publisher: brand,
-  authors: [{ name: brand }],
-  openGraph: {
-    type: "website",
-    url: siteUrl,
-    siteName: brand,
-    title: "Qentrah: Operating System for Agencies",
-    description:
-      "One workspace for clients, opportunities, projects, and tasks. AI that operates your business. Built for marketing, creative, design, and service agencies.",
-    images: [
-      {
-        url: "/logo.ico",
-        width: 512,
-        height: 512,
-        alt: "Qentrah - AI Client Operations Platform",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Qentrah: Operating System for Agencies",
-    description:
-      "One workspace for clients, opportunities, projects, and tasks. AI that operates your business.",
-    images: ["/logo.ico"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
-    },
-  },
-};
+export const metadata = rootMetadata;
 
 const themeInitScript = `
 (() => {

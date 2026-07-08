@@ -21,6 +21,19 @@ import { handleCreateCalendarEvent, handleDeleteCalendarEvent, handleUpdateCalen
 import { handleCreateTheory, handleUpdateTheory, handleDeleteTheory } from "@/server/domains/theories/handlers/theories";
 import { handleCreateDoc, handleUpdateDoc, handleDeleteDoc, handleMoveDoc } from "@/server/domains/docs/handlers/docs";
 import { handleCreateDocFolder, handleRenameDocFolder, handleDeleteDocFolder } from "@/server/domains/docs/handlers/doc-folders";
+import {
+  handleAddReaction,
+  handleCreateChannel,
+  handleCreateThread,
+  handleDeleteChannel,
+  handleDeleteMessage,
+  handlePinMessage,
+  handleRemoveReaction,
+  handleSendMessage,
+  handleUnpinMessage,
+  handleUpdateChannel,
+  handleUpdateMessage,
+} from "@/server/domains/inbox/handlers/inbox";
 
 export const crudSubRouter = new Hono();
 
@@ -118,3 +131,15 @@ crudSubRouter.post("/:organizationId/docs/:docId/move", handleMoveDoc);
 crudSubRouter.post("/:organizationId/doc-folders", handleCreateDocFolder);
 crudSubRouter.patch("/:organizationId/doc-folders/:folderId", handleRenameDocFolder);
 crudSubRouter.delete("/:organizationId/doc-folders/:folderId", handleDeleteDocFolder);
+
+crudSubRouter.post("/:organizationId/inbox/channels", handleCreateChannel);
+crudSubRouter.patch("/:organizationId/inbox/channels/:channelId", handleUpdateChannel);
+crudSubRouter.delete("/:organizationId/inbox/channels/:channelId", handleDeleteChannel);
+crudSubRouter.post("/:organizationId/inbox/channels/:channelId/messages", handleSendMessage);
+crudSubRouter.patch("/:organizationId/inbox/channels/:channelId/messages/:messageId", handleUpdateMessage);
+crudSubRouter.delete("/:organizationId/inbox/channels/:channelId/messages/:messageId", handleDeleteMessage);
+crudSubRouter.post("/:organizationId/inbox/channels/:channelId/messages/:messageId/reactions", handleAddReaction);
+crudSubRouter.delete("/:organizationId/inbox/channels/:channelId/messages/:messageId/reactions", handleRemoveReaction);
+crudSubRouter.post("/:organizationId/inbox/channels/:channelId/messages/:messageId/pin", handlePinMessage);
+crudSubRouter.delete("/:organizationId/inbox/channels/:channelId/pin", handleUnpinMessage);
+crudSubRouter.post("/:organizationId/inbox/channels/:channelId/threads", handleCreateThread);

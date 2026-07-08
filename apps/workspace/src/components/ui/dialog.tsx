@@ -31,7 +31,7 @@ function DialogOverlay({
     <div className={cn("fixed inset-0 isolate z-[100]", className)}>
       <PrimitiveBackdrop
         data-slot="dialog-overlay"
-        className="h-full w-full bg-black/10 duration-300 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0"
+        className="h-full w-full bg-black/20 opacity-100 transition-opacity duration-[var(--modal-close-dur)] ease-[var(--modal-ease)] supports-backdrop-filter:backdrop-blur-xs data-open:duration-[var(--modal-open-dur)] data-starting-style:opacity-0 data-ending-style:opacity-0 motion-reduce:duration-0"
         {...props}
       />
     </div>
@@ -53,7 +53,7 @@ function DialogContent({
         <PrimitivePopup
           data-slot="dialog-content"
           className={cn(
-            "relative z-50 grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-300 outline-none pointer-events-auto data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+            "relative z-50 grid w-full max-w-[calc(100%-2rem)] scale-100 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 outline-none pointer-events-auto transition-[opacity,transform] duration-[var(--modal-close-dur)] ease-[var(--modal-ease)] will-change-transform data-open:duration-[var(--modal-open-dur)] data-starting-style:scale-[var(--modal-scale)] data-starting-style:opacity-0 data-ending-style:scale-[var(--modal-scale-close)] data-ending-style:opacity-0 motion-reduce:duration-0",
             className
           )}
           {...props}
