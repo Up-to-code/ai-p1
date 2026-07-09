@@ -2,8 +2,9 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import { usePathname } from "@/i18n/routing";
+import { getActiveRailItem, type RailItemId } from "@/domains/navigation/route-catalog";
 
-export type RailItemId = "home" | "ws" | "ai" | "spaces" | "tasks" | "calendar" | "clients" | "opportunities" | "deals" | "theories" | "docs" | "inbox" | null;
+export type { RailItemId } from "@/domains/navigation/route-catalog";
 
 interface SidebarRailContextType {
   isMainVisible: boolean;
@@ -12,27 +13,6 @@ interface SidebarRailContextType {
   openRailItem: (item: RailItemId) => void;
   closeAll: () => void;
   closeSecondaryOnly: () => void;
-}
-
-const pathnameToRailItem: Record<string, RailItemId> = {
-  "/ws": "home",
-  "/ai": "ai",
-  "/spaces": "spaces",
-  "/inbox": "inbox",
-  "/tasks": "tasks",
-  "/calendar": "calendar",
-  "/clients": "clients",
-  "/opportunities": "opportunities",
-  "/deals": "deals",
-  "/theories": "theories",
-  "/docs": "docs",
-};
-
-function matchRailItem(pathname: string): RailItemId {
-  const entry = Object.entries(pathnameToRailItem).find(([prefix]) =>
-    pathname === prefix || pathname.startsWith(prefix + "/"),
-  );
-  return entry ? entry[1] : null;
 }
 
 const SidebarRailContext = createContext<SidebarRailContextType | undefined>(undefined);
@@ -46,7 +26,7 @@ export function SidebarRailProvider({ children }: { children: ReactNode }) {
 
   // Sync from pathname, respecting manual overrides on same domain
   useEffect(() => {
-    const matched = matchRailItem(pathname);
+    const matched = getActiveRailItem(pathname);
     const prevDomain = prevDomainRef.current;
     prevDomainRef.current = matched;
 

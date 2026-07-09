@@ -118,7 +118,7 @@ export function ProfileMenu() {
           </DropdownMenuItem>
 
           {/* Settings */}
-          <DropdownMenuItem render={<Link href="/settings" />} className="py-2 rounded-lg">
+          <DropdownMenuItem render={<Link href="/settings/general" />} className="py-2 rounded-lg">
             <Settings className="h-4 w-4 me-2" />
             <span>Settings</span>
           </DropdownMenuItem>

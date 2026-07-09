@@ -1,14 +1,12 @@
 import type { Id } from "../../_generated/dataModel";
-import type { QueryCtx, MutationCtx } from "../../_generated/server";
-import { authUser } from "../../auth";
 import {
-  assertCanAccessSpace,
   assertCanPerformSpaceAction,
 } from "../../permissions";
 import { activeWorkspaceRows } from "../../workspace/readSurface";
-import { presentWorkspaceRecord, stripDeletedFields } from "../../shared/present";
-import { spaceInputValidator, spaceValidator } from "../../spaces/validators";
-import type { ReadHandler, WriteHandler, ReadToolArgs, WriteToolArgs } from "./shared";
+import { stripDeletedFields } from "../../shared/present";
+import { requiredString, optionalString } from "../toolInputs";
+import type { ReadHandler, WriteHandler } from "./shared";
+import { isScopedSpace, scopeActorUserId, scopePolicyFromInput } from "../scopePolicy";
 
 const MAX_ORG_SPACES = 500;
 
@@ -23,14 +21,14 @@ function presentSpace(space: any) {
  */
 
 export const spaces_list: ReadHandler = async (ctx, args) => {
-  const { organizationId, permissions } = args;
-  const user = await authUser.getAuthUser(ctx);
+  const { organizationId } = args;
+  const scope = scopePolicyFromInput(args.input);
   const spaces = await ctx.db
     .query("spaces")
     .withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId))
     .take(MAX_ORG_SPACES);
 
-  return activeWorkspaceRows(spaces).map((space) => ({
+  return activeWorkspaceRows(spaces).filter((space) => space.recordState !== "deleted" && isScopedSpace(scope, space._id)).map((space) => ({
     ...space,
     id: space._id,
   }));
@@ -39,25 +37,21 @@ export const spaces_list: ReadHandler = async (ctx, args) => {
 export const spaces_get: ReadHandler = async (ctx, args) => {
   const { organizationId, input } = args;
   const spaceId = input.spaceId as Id<"spaces">;
-  const user = await authUser.getAuthUser(ctx);
-  await assertCanAccessSpace(ctx, organizationId, spaceId, user._id);
   const space = await ctx.db.get(spaceId);
-  if (!space || space.organizationId !== organizationId || space.deletedAt) {
+  if (!space || space.organizationId !== organizationId || space.deletedAt || space.recordState === "deleted" || !isScopedSpace(scopePolicyFromInput(input), spaceId)) {
     return null;
   }
   return { ...space, id: space._id };
 };
 
 export const spaces_create: WriteHandler = async (ctx, args) => {
-  const { organizationId, input, actorId, now } = args;
-  const user = await authUser.getAuthUser(ctx);
-  // Check if user can create spaces in the organization
-  // For now, we'll allow creation - in production, check org role
+  const { organizationId, input, now } = args;
+  const actorId = scopeActorUserId(input);
 
   const existing = await ctx.db
     .query("spaces")
     .withIndex("by_organization_slug", (q) =>
-      q.eq("organizationId", organizationId).eq("slug", input.slug as string),
+      q.eq("organizationId", organizationId).eq("slug", requiredString(input, "slug")),
     )
     .first();
   if (existing) {
@@ -66,14 +60,15 @@ export const spaces_create: WriteHandler = async (ctx, args) => {
 
   const id = await ctx.db.insert("spaces", {
     organizationId,
-    name: input.name as string,
-    slug: input.slug as string,
-    description: input.description as string | undefined,
-    icon: input.icon as string | undefined,
-    color: input.color as string | undefined,
-    visibility: input.visibility as "private" | "public" | "request_only",
+    name: requiredString(input, "name"),
+    slug: requiredString(input, "slug"),
+    description: optionalString(input, "description"),
+    icon: optionalString(input, "icon"),
+    color: optionalString(input, "color"),
+    visibility: input.visibility === "private" || input.visibility === "request_only" ? input.visibility : "public",
     defaultProjectVisibility: input.defaultProjectVisibility as "private" | "space_members" | "organization" | undefined,
     allowMemberProjectCreation: input.allowMemberProjectCreation as boolean | undefined,
+    recordState: "active",
     createdByUserId: actorId,
     createdAt: now,
     updatedAt: now,
@@ -85,6 +80,7 @@ export const spaces_create: WriteHandler = async (ctx, args) => {
     spaceId: id,
     userId: actorId,
     role: "admin",
+    recordState: "active",
     addedByUserId: actorId,
     addedAt: now,
   });
@@ -104,9 +100,9 @@ export const spaces_create: WriteHandler = async (ctx, args) => {
 };
 
 export const spaces_update: WriteHandler = async (ctx, args) => {
-  const { organizationId, input, actorId, now } = args;
+  const { organizationId, input, now } = args;
+  const actorId = scopeActorUserId(input);
   const spaceId = input.spaceId as Id<"spaces">;
-  const user = await authUser.getAuthUser(ctx);
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "update");
 
   const existing = await ctx.db.get(spaceId);
@@ -114,11 +110,12 @@ export const spaces_update: WriteHandler = async (ctx, args) => {
     throw new Error("Space was not found.");
   }
 
-  if (input.slug !== existing.slug) {
+  const nextSlug = optionalString(input, "slug") ?? existing.slug;
+  if (nextSlug !== existing.slug) {
     const slugConflict = await ctx.db
       .query("spaces")
       .withIndex("by_organization_slug", (q) =>
-        q.eq("organizationId", organizationId).eq("slug", input.slug as string),
+        q.eq("organizationId", organizationId).eq("slug", nextSlug),
       )
       .first();
     if (slugConflict && slugConflict._id !== spaceId) {
@@ -127,7 +124,20 @@ export const spaces_update: WriteHandler = async (ctx, args) => {
   }
 
   await ctx.db.patch(spaceId, {
-    ...input,
+    name: optionalString(input, "name") ?? existing.name,
+    slug: nextSlug,
+    description: optionalString(input, "description") ?? existing.description,
+    icon: optionalString(input, "icon") ?? existing.icon,
+    color: optionalString(input, "color") ?? existing.color,
+    visibility: input.visibility === "private" || input.visibility === "public" || input.visibility === "request_only"
+      ? input.visibility
+      : existing.visibility,
+    defaultProjectVisibility: input.defaultProjectVisibility === "private" || input.defaultProjectVisibility === "space_members" || input.defaultProjectVisibility === "organization"
+      ? input.defaultProjectVisibility
+      : existing.defaultProjectVisibility,
+    allowMemberProjectCreation: typeof input.allowMemberProjectCreation === "boolean"
+      ? input.allowMemberProjectCreation
+      : existing.allowMemberProjectCreation,
     updatedAt: now,
   });
 
@@ -136,7 +146,7 @@ export const spaces_update: WriteHandler = async (ctx, args) => {
     actorUserId: actorId,
     action: "space.update",
     target: spaceId,
-    summary: `Updated space ${input.name}.`,
+    summary: `Updated space ${optionalString(input, "name") ?? existing.name}.`,
     createdAt: now,
   });
 
@@ -146,9 +156,9 @@ export const spaces_update: WriteHandler = async (ctx, args) => {
 };
 
 export const spaces_delete: WriteHandler = async (ctx, args) => {
-  const { organizationId, input, actorId, now } = args;
+  const { organizationId, input, now } = args;
+  const actorId = scopeActorUserId(input);
   const spaceId = input.spaceId as Id<"spaces">;
-  const user = await authUser.getAuthUser(ctx);
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "delete");
 
   const existing = await ctx.db.get(spaceId);
@@ -157,7 +167,11 @@ export const spaces_delete: WriteHandler = async (ctx, args) => {
   }
 
   // Soft delete the space
-  await ctx.db.patch(spaceId, { deletedAt: now, updatedAt: now });
+  await ctx.db.patch(spaceId, {
+    deletedAt: now,
+    recordState: "deleted",
+    updatedAt: now,
+  });
 
   // Dissociate projects from this space
   const projectSpaces = await ctx.db
@@ -167,7 +181,10 @@ export const spaces_delete: WriteHandler = async (ctx, args) => {
     )
     .take(500);
   for (const projectSpace of projectSpaces) {
-    await ctx.db.patch(projectSpace._id, { deletedAt: now });
+    await ctx.db.patch(projectSpace._id, {
+      deletedAt: now,
+      recordState: "deleted",
+    });
   }
 
   // Soft delete space memberships
@@ -178,7 +195,10 @@ export const spaces_delete: WriteHandler = async (ctx, args) => {
     )
     .take(500);
   for (const member of spaceMembers) {
-    await ctx.db.patch(member._id, { deletedAt: now });
+    await ctx.db.patch(member._id, {
+      deletedAt: now,
+      recordState: "deleted",
+    });
   }
 
   await ctx.db.insert("organizationAuditEvents", {
@@ -196,8 +216,8 @@ export const spaces_delete: WriteHandler = async (ctx, args) => {
 export const space_members_list: ReadHandler = async (ctx, args) => {
   const { organizationId, input } = args;
   const spaceId = input.spaceId as Id<"spaces">;
-  const user = await authUser.getAuthUser(ctx);
-  await assertCanPerformSpaceAction(ctx, organizationId, spaceId, user._id, "read");
+  const actorId = scopeActorUserId(input);
+  await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "read");
   const members = await ctx.db
     .query("spaceMembers")
     .withIndex("by_space_id", (q) =>
@@ -212,9 +232,9 @@ export const space_members_list: ReadHandler = async (ctx, args) => {
 };
 
 export const space_members_add: WriteHandler = async (ctx, args) => {
-  const { organizationId, input, actorId, now } = args;
+  const { organizationId, input, now } = args;
+  const actorId = scopeActorUserId(input);
   const spaceId = input.spaceId as Id<"spaces">;
-  const user = await authUser.getAuthUser(ctx);
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "update");
 
   const space = await ctx.db.get(spaceId);
@@ -232,7 +252,8 @@ export const space_members_add: WriteHandler = async (ctx, args) => {
     )
     .first();
   if (existing && !existing.deletedAt) {
-    throw new Error("User is already a member of this space.");
+    if (existing.role === input.role) return { ...existing, id: existing._id };
+    throw new Error("User is already a member of this space with a different role.");
   }
 
   const id = await ctx.db.insert("spaceMembers", {
@@ -240,6 +261,7 @@ export const space_members_add: WriteHandler = async (ctx, args) => {
     spaceId,
     userId: input.userId as string,
     role: input.role as "admin" | "member" | "viewer",
+    recordState: "active",
     addedByUserId: actorId,
     addedAt: now,
   });
@@ -259,9 +281,9 @@ export const space_members_add: WriteHandler = async (ctx, args) => {
 };
 
 export const space_members_remove: WriteHandler = async (ctx, args) => {
-  const { organizationId, input, actorId, now } = args;
+  const { organizationId, input, now } = args;
+  const actorId = scopeActorUserId(input);
   const spaceId = input.spaceId as Id<"spaces">;
-  const user = await authUser.getAuthUser(ctx);
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "update");
 
   const space = await ctx.db.get(spaceId);
@@ -317,9 +339,9 @@ export const space_members_remove: WriteHandler = async (ctx, args) => {
 };
 
 export const space_members_update_role: WriteHandler = async (ctx, args) => {
-  const { organizationId, input, actorId, now } = args;
+  const { organizationId, input, now } = args;
+  const actorId = scopeActorUserId(input);
   const spaceId = input.spaceId as Id<"spaces">;
-  const user = await authUser.getAuthUser(ctx);
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "update");
 
   const space = await ctx.db.get(spaceId);
@@ -338,6 +360,8 @@ export const space_members_update_role: WriteHandler = async (ctx, args) => {
   if (!existing || existing.deletedAt) {
     throw new Error("User is not a member of this space.");
   }
+
+  if (existing.role === input.role) return { ...existing, id: existing._id };
 
   await ctx.db.patch(existing._id, { role: input.role as "admin" | "member" | "viewer" });
 

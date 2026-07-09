@@ -6,7 +6,6 @@ import {
   Filter as FilterIcon,
   ListPlus,
   Plus,
-  Search,
   Sparkles,
   Layers,
   Calendar,
@@ -75,8 +74,6 @@ export function TaskTableToolbar({
   onGroupByChange,
   sortBy,
   onSortByChange,
-  search,
-  onSearchChange,
   filters = [],
   onFiltersChange,
   onOpenFields,
@@ -91,11 +88,11 @@ export function TaskTableToolbar({
   const activeFilterCount = filters.length
 
   return (
-    <div className="flex items-center justify-between gap-2 px-3 py-1.5 bg-card border-b border-border">
+    <div className="flex items-center justify-between gap-2 border-b border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[var(--q-bg)] px-3 py-2">
       <div className="flex items-center gap-1.5">
         <Select value={groupBy} onValueChange={(v: string | null) => onGroupByChange((v ?? "none") as GroupByValue)}>
           <SelectTrigger
-            className="h-7 px-2.5 text-[11px] font-medium text-muted-foreground border-transparent bg-transparent hover:bg-muted hover:text-foreground"
+            className="h-7 rounded-md border-transparent bg-transparent px-2.5 text-[11px] font-medium text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
             size="sm"
           >
             <SelectValue>
@@ -120,7 +117,7 @@ export function TaskTableToolbar({
         <Popover open={filterOpen} onOpenChange={setFilterOpen}>
           <PopoverTrigger
             className={cn(
-              "inline-flex items-center gap-1.5 h-7 px-2.5 text-[11px] font-medium rounded-md border border-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
+              "inline-flex h-7 items-center gap-1.5 rounded-md border border-transparent px-2.5 text-[11px] font-medium text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground",
               activeFilterCount > 0 && "bg-primary/10 text-foreground border-primary/30"
             )}
           >
@@ -147,7 +144,7 @@ export function TaskTableToolbar({
 
         <Select value={sortBy} onValueChange={(v: string | null) => onSortByChange(v ?? "updated")}>
           <SelectTrigger
-            className="h-7 px-2.5 text-[11px] font-medium text-muted-foreground border-transparent bg-transparent hover:bg-muted hover:text-foreground"
+            className="h-7 rounded-md border-transparent bg-transparent px-2.5 text-[11px] font-medium text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
             size="sm"
           >
             <SelectValue>
@@ -172,7 +169,7 @@ export function TaskTableToolbar({
             variant="ghost"
             size="sm"
             onClick={onOpenFields}
-            className="h-7 px-2.5 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="h-7 rounded-md px-2.5 text-[11px] font-medium text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
           >
             <ListPlus className="h-3.5 w-3.5 mr-1.5 opacity-70" />
             Fields
@@ -183,25 +180,16 @@ export function TaskTableToolbar({
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
-          <Input
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search"
-            className="h-7 w-48 pl-8 text-[12px] bg-input border-border focus:border-ring"
-          />
-        </div>
         <form onSubmit={onCreate} className="flex items-center gap-1.5">
           <Input
             value={newTitle}
             onChange={(e) => onNewTitleChange(e.target.value)}
             placeholder="Add a task…"
-            className="h-7 w-56 text-[12px] bg-input border-border focus:border-ring"
+            className="h-7 w-56 rounded-md border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-bg-secondary)] text-[12px] focus:border-ring"
           />
           <Button
             type="submit"
-            className="h-7 px-3 text-[12px] font-medium bg-primary text-primary-foreground hover:bg-primary/90"
+            className="h-7 rounded-md bg-foreground px-3 text-[12px] font-medium text-background hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
           >
             <Plus className="h-3.5 w-3.5 mr-1" />
             Task

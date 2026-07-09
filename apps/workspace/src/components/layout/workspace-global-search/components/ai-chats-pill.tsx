@@ -35,7 +35,7 @@ export function AiChatsPill({ onClick }: { onClick: () => void }) {
       onMouseEnter={start}
       onMouseLeave={stop}
       title="Open AI Chats"
-      className="group relative flex cursor-pointer select-none items-center gap-1.5 rounded-[14px] px-3 py-1.5 focus-visible:outline-none"
+      className="group relative flex h-5 cursor-pointer select-none items-center gap-1 rounded-full px-2 focus-visible:outline-none"
       style={{
         background: `linear-gradient(var(--background),var(--background)) padding-box,${AI_GRADIENT}`,
         border: "1.5px solid transparent",
@@ -47,9 +47,9 @@ export function AiChatsPill({ onClick }: { onClick: () => void }) {
         alt=""
         width={15}
         height={15}
-        className="h-[15px] w-[15px] shrink-0 object-contain transition-transform duration-200 group-hover:scale-110"
+        className="h-3.5 w-3.5 shrink-0 object-contain transition-transform duration-200 group-hover:scale-110"
       />
-      <span className="hidden text-[13px] font-semibold text-text-muted transition-colors group-hover:text-text-primary sm:inline">
+      <span className="hidden text-[11px] font-medium text-text-muted transition-colors group-hover:text-text-primary sm:inline">
         AI Chats
       </span>
     </div>

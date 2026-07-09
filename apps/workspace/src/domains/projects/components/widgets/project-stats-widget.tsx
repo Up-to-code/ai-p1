@@ -42,7 +42,7 @@ export function ProjectStatsWidget() {
     { label: "Active", value: String(stats.active), icon: CheckCircle2, color: "text-emerald-500" },
     { label: "Completed", value: String(stats.completed), icon: CheckCircle2, color: "text-sky-500" },
     { label: "At Risk", value: String(stats.atRisk), icon: AlertTriangle, color: "text-amber-500" },
-    { label: "Budget", value: formatCurrency(stats.totalBudget), icon: DollarSign, color: "text-primary" },
+    { label: "Planned budget", value: formatCurrency(stats.totalBudget), icon: DollarSign, color: "text-primary" },
     { label: "Avg Progress", value: `${stats.avgProgress}%`, icon: TrendingUp, color: "text-indigo-500" },
   ];
 

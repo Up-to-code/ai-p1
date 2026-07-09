@@ -1,7 +1,7 @@
 "use client";
 
 import { workspaceFetch, workspaceMutation } from "@/domains/resources/workspace-resource-request";
-import type { OrganizationMcpConnection, McpConnectionPermission } from "./types";
+import type { OrganizationMcpConnection, McpConnectionPermission, McpConnectionScope } from "./types";
 
 export function listOrganizationMcpConnections(organizationId: string) {
   return workspaceFetch<{ connections: OrganizationMcpConnection[] }>(
@@ -18,6 +18,7 @@ export function createOrganizationMcpConnection(
     instructions?: string;
     principalType?: "user" | "organization";
     permissions: McpConnectionPermission[];
+    scope?: McpConnectionScope;
     expiresAt?: number;
   },
 ) {
@@ -35,6 +36,7 @@ export function updateOrganizationMcpConnection(
     name?: string;
     instructions?: string;
     permissions?: McpConnectionPermission[];
+    scope?: McpConnectionScope;
     status?: "active" | "paused";
     expiresAt?: number | null;
   },

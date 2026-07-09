@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
+import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { activeWorkspaceRows } from "../workspace/readSurface";
 import { theoryValidator } from "./validators";
@@ -8,6 +9,37 @@ const MAX_LIST_THEORIES = 500;
 
 function presentTheory<TDoc extends { _id: string }>(doc: TDoc) {
   return { ...doc, id: doc._id };
+}
+
+type TheoryAccessRow = {
+  organizationId: string;
+  createdByUserId: string;
+  isPrivate: boolean;
+  deletedAt?: number;
+};
+
+/**
+ * Private theories are personal records. Organization owners and admins retain
+ * normal access to shared theories but do not receive a private-theory bypass.
+ */
+export function canReadTheory(
+  theory: TheoryAccessRow,
+  organizationId: string,
+  authenticatedUserId: string,
+) {
+  return (
+    theory.organizationId === organizationId &&
+    !theory.deletedAt &&
+    (!theory.isPrivate || theory.createdByUserId === authenticatedUserId)
+  );
+}
+
+export function readableTheoriesForUser<TTheory extends TheoryAccessRow>(
+  theories: TTheory[],
+  organizationId: string,
+  authenticatedUserId: string,
+) {
+  return theories.filter((theory) => canReadTheory(theory, organizationId, authenticatedUserId));
 }
 
 export const list = query({
@@ -26,9 +58,10 @@ export const list = query({
 });
 
 export const listPrivate = query({
-  args: { organizationId: v.string(), userId: v.string() },
+  args: { organizationId: v.string() },
   returns: v.array(theoryValidator),
   handler: async (ctx, args) => {
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
     const theories = await ctx.db
       .query("theories")
@@ -36,8 +69,8 @@ export const listPrivate = query({
         q.eq("organizationId", args.organizationId).eq("isPrivate", true),
       )
       .take(MAX_LIST_THEORIES);
-    return activeWorkspaceRows(theories)
-      .filter((t) => t.createdByUserId === args.userId)
+    return readableTheoriesForUser(activeWorkspaceRows(theories), args.organizationId, user._id)
+      .filter((theory) => theory.isPrivate)
       .map(presentTheory);
   },
 });
@@ -46,12 +79,14 @@ export const listAll = query({
   args: { organizationId: v.string() },
   returns: v.array(theoryValidator),
   handler: async (ctx, args) => {
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
     const theories = await ctx.db
       .query("theories")
       .withIndex("by_organization", (q) => q.eq("organizationId", args.organizationId))
       .take(MAX_LIST_THEORIES);
-    return activeWorkspaceRows(theories).map(presentTheory);
+    return readableTheoriesForUser(activeWorkspaceRows(theories), args.organizationId, user._id)
+      .map(presentTheory);
   },
 });
 
@@ -59,9 +94,10 @@ export const get = query({
   args: { organizationId: v.string(), theoryId: v.id("theories") },
   returns: v.union(theoryValidator, v.null()),
   handler: async (ctx, args) => {
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
     const theory = await ctx.db.get(args.theoryId);
-    if (!theory || theory.organizationId !== args.organizationId || theory.deletedAt) return null;
+    if (!theory || !canReadTheory(theory, args.organizationId, user._id)) return null;
     return presentTheory(theory);
   },
 });
@@ -70,6 +106,7 @@ export const search = query({
   args: { organizationId: v.string(), query: v.string() },
   returns: v.array(theoryValidator),
   handler: async (ctx, args) => {
+    const user = await authUser.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
     const needle = args.query.trim().toLowerCase();
     if (!needle) return [];
@@ -77,7 +114,7 @@ export const search = query({
       .query("theories")
       .withIndex("by_organization", (q) => q.eq("organizationId", args.organizationId))
       .take(MAX_LIST_THEORIES);
-    return activeWorkspaceRows(theories)
+    return readableTheoriesForUser(activeWorkspaceRows(theories), args.organizationId, user._id)
       .filter((t) =>
         [t.title, t.content, ...(t.tags ?? [])].some((v) => v?.toLowerCase().includes(needle)),
       )

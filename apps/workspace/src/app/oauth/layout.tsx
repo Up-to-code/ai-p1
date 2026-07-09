@@ -13,12 +13,13 @@ const cairo = Cairo({
 const themeInitScript = `
 (() => {
   try {
-    const theme = window.localStorage.getItem("${brandIdentity.themeStorageKey}") === "dark" ? "dark" : "light";
+    const stored = window.localStorage.getItem("${brandIdentity.themeStorageKey}");
+    const theme = stored === "light" ? "light" : "dark";
     document.documentElement.classList.toggle("dark", theme === "dark");
     document.documentElement.style.colorScheme = theme;
   } catch {
-    document.documentElement.classList.remove("dark");
-    document.documentElement.style.colorScheme = "light";
+    document.documentElement.classList.add("dark");
+    document.documentElement.style.colorScheme = "dark";
   }
 })();
 `;

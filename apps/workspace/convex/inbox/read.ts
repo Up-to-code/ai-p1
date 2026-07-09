@@ -1,13 +1,18 @@
-import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
+import { ConvexError, v } from "convex/values";
 import { query } from "../_generated/server";
+import { findChannelByPublicId, resolveChannelAccess } from "../access/channel";
 import {
   channelValidator,
   messageValidator,
   threadValidator,
 } from "./validators";
-import { authUser } from "../auth";
-import { assertPermission, checkPermission, permissions } from "../permissions";
+
+const MAX_CHANNELS = 500;
+const DEFAULT_MESSAGE_LIMIT = 50;
+const MAX_MESSAGE_LIMIT = 200;
+const MAX_THREAD_LOOKUP_ROWS = 5_000;
+const MAX_THREAD_MESSAGES = 1_000;
 
 const channelTypeArgValidator = v.union(
   v.literal("organization"),
@@ -17,6 +22,40 @@ const channelTypeArgValidator = v.union(
   v.literal("dm"),
 );
 
+function boundedLimit(value: number | undefined) {
+  if (value === undefined || !Number.isFinite(value))
+    return DEFAULT_MESSAGE_LIMIT;
+  return Math.max(1, Math.min(Math.floor(value), MAX_MESSAGE_LIMIT));
+}
+
+function inboxError(
+  code: string,
+  message: string,
+  details: Record<string, string> = {},
+) {
+  return new ConvexError({ code, message, ...details });
+}
+
+async function findThreadByPublicId(
+  ctx: Parameters<typeof findChannelByPublicId>[0],
+  threadId: string,
+) {
+  const threads = await ctx.db
+    .query("threads")
+    .take(MAX_THREAD_LOOKUP_ROWS + 1);
+  if (threads.length > MAX_THREAD_LOOKUP_ROWS) {
+    throw inboxError(
+      "THREAD_LOOKUP_LIMIT_EXCEEDED",
+      "The thread lookup exceeded its safety bound.",
+      { threadId },
+    );
+  }
+  const thread = threads.find((candidate) => candidate.id === threadId);
+  if (!thread)
+    throw inboxError("THREAD_NOT_FOUND", "Thread was not found.", { threadId });
+  return thread;
+}
+
 export const listChannels = query({
   args: {
     organizationId: v.string(),
@@ -24,68 +63,32 @@ export const listChannels = query({
   },
   returns: v.array(channelValidator),
   handler: async (ctx, args) => {
-    const { organizationId, type } = args;
-    const user = await authUser.safeGetAuthUser(ctx);
-    if (!user) return [];
+    const access = await resolveChannelAccess(ctx, args.organizationId);
+    const channels = args.type
+      ? await ctx.db
+          .query("channels")
+          .withIndex("by_type", (q) =>
+            q.eq("organizationId", args.organizationId).eq("type", args.type!),
+          )
+          .take(MAX_CHANNELS)
+      : await ctx.db
+          .query("channels")
+          .withIndex("by_organization", (q) =>
+            q.eq("organizationId", args.organizationId),
+          )
+          .take(MAX_CHANNELS);
 
-    let channels;
-    if (type) {
-      channels = await ctx.db
-        .query("channels")
-        .withIndex("by_type", (q) =>
-          q.eq("organizationId", organizationId).eq("type", type),
-        )
-        .collect();
-    } else {
-      channels = await ctx.db
-        .query("channels")
-        .withIndex("by_organization", (q) =>
-          q.eq("organizationId", organizationId),
-        )
-        .collect();
-    }
-
-    const visibleChannels = [];
-    for (const channel of channels) {
-      const permission = await checkPermission(ctx, {
-        organizationId,
-        userId: user._id,
-        resource: permissions.resources.channel,
-        action: permissions.actions.read,
-        record: channel,
-      });
-      if (!permission.allowed) continue;
-      visibleChannels.push({
-        ...channel,
-        unreadCount: channel.unreadCount ?? 0,
-        lastMessageAt: channel.lastMessageAt ?? 0,
-      });
-    }
-
-    return visibleChannels;
+    return access.filterReadable(channels);
   },
 });
 
 export const getChannel = query({
-  args: {
-    channelId: v.string(),
-  },
+  args: { channelId: v.string() },
   returns: channelValidator,
   handler: async (ctx, args) => {
-    const channels = await ctx.db.query("channels").collect();
-
-    const channel = channels.find((c) => c.id === args.channelId);
-    if (!channel) {
-      throw new Error("Channel not found");
-    }
-    const user = await authUser.getAuthUser(ctx);
-    await assertPermission(ctx, {
-      organizationId: channel.organizationId,
-      userId: user._id,
-      resource: permissions.resources.channel,
-      action: permissions.actions.read,
-      record: channel,
-    });
+    const channel = await findChannelByPublicId(ctx, args.channelId);
+    const access = await resolveChannelAccess(ctx, channel.organizationId);
+    await access.assertCanRead(channel);
     return channel;
   },
 });
@@ -97,27 +100,18 @@ export const listMessages = query({
   },
   returns: v.array(messageValidator),
   handler: async (ctx, args) => {
-    const { channelId, limit = 50 } = args;
-
-    const channels = await ctx.db.query("channels").collect();
-    const channel = channels.find((candidate) => candidate.id === channelId);
-    if (!channel) throw new Error("Channel not found");
-    const user = await authUser.getAuthUser(ctx);
-    await assertPermission(ctx, {
-      organizationId: channel.organizationId,
-      userId: user._id,
-      resource: permissions.resources.channel,
-      action: permissions.actions.read,
-      record: channel,
-    });
+    const channel = await findChannelByPublicId(ctx, args.channelId);
+    const access = await resolveChannelAccess(ctx, channel.organizationId);
+    await access.assertCanRead(channel);
 
     const messages = await ctx.db
       .query("messages")
-      .withIndex("by_channel_created", (q) => q.eq("channelId", channelId))
+      .withIndex("by_channel_state_created", (q) =>
+        q.eq("channelId", channel.id).eq("recordState", "active"),
+      )
       .order("desc")
-      .take(limit);
-
-    return messages.filter((msg) => msg.recordState === "active").reverse();
+      .take(boundedLimit(args.limit));
+    return messages.reverse();
   },
 });
 
@@ -134,70 +128,101 @@ export const listMessagesPage = query({
     pageStatus: v.optional(v.any()),
   }),
   handler: async (ctx, args) => {
-    const channels = await ctx.db.query("channels").collect();
-    const channel = channels.find(
-      (candidate) => candidate.id === args.channelId,
-    );
-    if (!channel) throw new Error("Channel not found");
-
-    const user = await authUser.getAuthUser(ctx);
-    await assertPermission(ctx, {
-      organizationId: channel.organizationId,
-      userId: user._id,
-      resource: permissions.resources.channel,
-      action: permissions.actions.read,
-      record: channel,
-    });
+    const channel = await findChannelByPublicId(ctx, args.channelId);
+    const access = await resolveChannelAccess(ctx, channel.organizationId);
+    await access.assertCanRead(channel);
 
     return ctx.db
       .query("messages")
       .withIndex("by_channel_state_created", (q) =>
-        q.eq("channelId", args.channelId).eq("recordState", "active"),
+        q.eq("channelId", channel.id).eq("recordState", "active"),
       )
       .order("desc")
-      .paginate(args.paginationOpts);
+      .paginate({
+        ...args.paginationOpts,
+        numItems: Math.min(args.paginationOpts.numItems, MAX_MESSAGE_LIMIT),
+      });
   },
 });
 
 export const getThread = query({
-  args: {
-    threadId: v.string(),
-  },
+  args: { threadId: v.string() },
   returns: v.object({
     thread: threadValidator,
     messages: v.array(messageValidator),
   }),
   handler: async (ctx, args) => {
-    const threads = await ctx.db.query("threads").collect();
+    const thread = await findThreadByPublicId(ctx, args.threadId);
+    const channel = await findChannelByPublicId(ctx, thread.channelId);
+    const access = await resolveChannelAccess(ctx, channel.organizationId);
+    await access.assertCanRead(channel);
 
-    const thread = threads.find((t) => t.id === args.threadId);
-    if (!thread) {
-      throw new Error("Thread not found");
+    if (thread.channelId !== channel.id) {
+      throw inboxError(
+        "THREAD_CHANNEL_MISMATCH",
+        "Thread does not belong to this channel.",
+        {
+          threadId: args.threadId,
+          channelId: channel.id,
+        },
+      );
     }
-
-    const channels = await ctx.db.query("channels").collect();
-    const channel = channels.find(
-      (candidate) => candidate.id === thread.channelId,
+    const parentMessages = await ctx.db
+      .query("messages")
+      .withIndex("by_channel", (q) => q.eq("channelId", channel.id))
+      .take(MAX_THREAD_MESSAGES + 1);
+    if (parentMessages.length > MAX_THREAD_MESSAGES) {
+      throw inboxError(
+        "THREAD_MESSAGE_LIMIT_EXCEEDED",
+        "The channel is too large for a safe thread ownership check.",
+        { threadId: args.threadId, channelId: channel.id },
+      );
+    }
+    const parent = parentMessages.find(
+      (message) =>
+        message.id === thread.parentMessageId &&
+        message.channelId === channel.id &&
+        message.recordState === "active",
     );
-    if (!channel) throw new Error("Channel not found");
-    const user = await authUser.getAuthUser(ctx);
-    await assertPermission(ctx, {
-      organizationId: channel.organizationId,
-      userId: user._id,
-      resource: permissions.resources.channel,
-      action: permissions.actions.read,
-      record: channel,
-    });
+    if (!parent) {
+      throw inboxError(
+        "THREAD_PARENT_MISMATCH",
+        "Thread parent does not belong to this channel.",
+        {
+          threadId: args.threadId,
+          channelId: channel.id,
+        },
+      );
+    }
 
     const messages = await ctx.db
       .query("messages")
-      .withIndex("by_thread", (q) => q.eq("threadId", args.threadId))
+      .withIndex("by_thread", (q) => q.eq("threadId", thread.id))
       .order("asc")
-      .collect();
-
+      .take(MAX_THREAD_MESSAGES + 1);
+    if (messages.length > MAX_THREAD_MESSAGES) {
+      throw inboxError(
+        "THREAD_MESSAGE_LIMIT_EXCEEDED",
+        "The thread exceeded its read safety bound.",
+        { threadId: args.threadId, channelId: channel.id },
+      );
+    }
+    const visibleMessages = messages.filter(
+      (message) =>
+        message.channelId === channel.id && message.recordState === "active",
+    );
     return {
-      thread,
-      messages: messages.filter((msg) => msg.recordState === "active"),
+      thread: {
+        ...thread,
+        messageCount: 1 + visibleMessages.length,
+        participantIds: [
+          ...new Set([
+            parent.authorId,
+            ...visibleMessages.map((message) => message.authorId),
+          ]),
+        ],
+      },
+      messages: visibleMessages,
     };
   },
 });

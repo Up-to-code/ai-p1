@@ -14,6 +14,8 @@
  * Nothing else needs to change.
  */
 
+import { getSupportedPersistentParams, isInternalHref } from "@/domains/navigation/route-catalog";
+
 export interface PersistentParamConfig {
   key: string;
   /** Path prefixes that should NOT receive this param. */
@@ -75,11 +77,7 @@ export function forwardPersistentParams(
   extraParams?: Record<string, string>,
 ): string {
   // Pass through non-navigable hrefs unchanged
-  if (
-    href.startsWith("http") ||
-    href.startsWith("//") ||
-    href.startsWith("#")
-  ) {
+  if (!isInternalHref(href)) {
     return href;
   }
 
@@ -91,6 +89,7 @@ export function forwardPersistentParams(
     const value = current.get(config.key);
     if (!value) continue;
     if (config.skipPaths?.some((prefix) => path.startsWith(prefix))) continue;
+    if (!getSupportedPersistentParams(path).includes(config.key)) continue;
     if (dest.has(config.key)) continue; // destination wins
     dest.set(config.key, value);
   }

@@ -5,7 +5,6 @@ import {
   Building2,
   Clock,
   LayoutGrid,
-  Lightbulb,
   Plug,
   Shield,
   UserRound,
@@ -22,6 +21,7 @@ import {
   SettingsIcon,
 } from "../components/clickup-icons";
 import { InboxIcon } from "../components/clickup-icons";
+import { isProductCapabilityEnabled, type ProductCapability } from "@/domains/capabilities/product-capabilities";
 
 export type SidebarNavItem = {
   name: string;
@@ -32,6 +32,8 @@ export type SidebarNavItem = {
   opensPanel?: boolean;
   /** Optional group label for organizing items */
   group?: string;
+  /** Product capability required before this destination is enabled. */
+  capability?: ProductCapability;
 };
 
 export type SidebarNavGroup = {
@@ -43,11 +45,11 @@ export type SidebarNavGroup = {
 /** Static top-section navigation entries (always visible, personal). */
 export const sidebarStaticNav: SidebarNavItem[] = [
   { name: "home", href: "/ws", icon: HomeIcon, label: "Home", opensPanel: true },
-  { name: "inbox", href: "/inbox", icon: InboxIcon, label: "Inbox", opensPanel: true },
+  { name: "inbox", href: "/ws/inbox", icon: InboxIcon, label: "Inbox", opensPanel: true },
 ];
 
 /** Primary workspace-level navigation entries. */
-export const sidebarPrimaryNav: SidebarNavItem[] = [
+const sidebarPrimaryNavManifest: SidebarNavItem[] = [
   { name: "ai", href: "/ai", icon: Bot, label: "AI", group: "workspace" },
   { name: "spaces", icon: LayoutGrid, label: "Spaces", group: "workspace", opensPanel: true },
   { name: "clients", href: "/clients", icon: UserRound, group: "crm" },
@@ -55,11 +57,20 @@ export const sidebarPrimaryNav: SidebarNavItem[] = [
   { name: "deals", href: "/deals", icon: BadgeDollarSign, group: "crm" },
   { name: "tasks", href: "/tasks", icon: ListLinesIcon, group: "productivity" },
   { name: "calendar", href: "/calendar", icon: CalendarIcon, group: "productivity" },
-  { name: "theories", href: "/theories", icon: Lightbulb, group: "productivity" },
   { name: "docs", href: "/docs", icon: DocumentLinesIcon, group: "productivity" },
   { name: "team", href: "/team", icon: Users, group: "team" },
-  { name: "time-tracking", href: "/time-tracking", icon: Clock, group: "productivity" },
+  {
+    name: "time-tracking",
+    href: "/time-tracking",
+    icon: Clock,
+    group: "productivity",
+    capability: "timeTracking",
+  },
 ];
+
+export const sidebarPrimaryNav: SidebarNavItem[] = sidebarPrimaryNavManifest.filter(
+  (item) => !item.capability || isProductCapabilityEnabled(item.capability),
+);
 
 /** Grouped navigation for sidebar */
 export const sidebarNavGroups: SidebarNavGroup[] = [
@@ -109,7 +120,7 @@ export const sidebarComingSoonNav: SidebarNavItem[] = [
 /** Workspace settings navigation. */
 export const sidebarWorkspaceNav: SidebarNavItem[] = [
   { name: "organization", href: "/organization", icon: Building2 },
-  { name: "workspaceSettings", href: "/settings", icon: SettingsIcon },
+  { name: "workspaceSettings", href: "/settings/general", icon: SettingsIcon },
 ];
 
 export const sidebarVisibleThreadLimit = 3;

@@ -85,6 +85,11 @@ export type McpConnectionPermission = {
   actions: McpPermissionAction[];
 };
 
+export type McpConnectionScope =
+  | { type: "organization" }
+  | { type: "space"; spaceIds: string[] }
+  | { type: "project"; projectIds: string[] };
+
 export type OrganizationMcpConnection = {
   _id: string;
   id: string;
@@ -95,6 +100,7 @@ export type OrganizationMcpConnection = {
   name: string;
   instructions?: string;
   permissions: McpConnectionPermission[];
+  scope: McpConnectionScope;
   status: "active" | "paused" | "draft" | "revoked";
   principalType: "user" | "organization";
   principalUserId?: string;

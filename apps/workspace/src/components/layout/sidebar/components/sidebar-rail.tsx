@@ -30,7 +30,7 @@ export function SidebarRail() {
   return (
     <aside
       className={cn(
-        "relative z-40 flex h-screen w-12 shrink-0 flex-col overflow-hidden border-r border-border bg-secondary",
+        "relative z-40 flex h-screen w-12 shrink-0 flex-col overflow-hidden border-r border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-bg)]",
         isRtl && "font-cairo",
       )}
     >
@@ -41,7 +41,7 @@ export function SidebarRail() {
             <button
               type="button"
               onClick={toggleMain}
-              className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
               aria-label="Open secondary panel"
             >
               <ChevronsRight className="h-[18px] w-[18px] shrink-0" />
@@ -69,8 +69,8 @@ export function SidebarRail() {
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-md transition-colors",
                   isActive
-                    ? "bg-accent text-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                    ? "bg-[var(--q-bg-tertiary)] text-foreground"
+                    : "text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground",
                 )}
               >
                 <Icon className="h-[18px] w-[18px] shrink-0" />
@@ -106,8 +106,8 @@ export function SidebarRail() {
                     className={cn(
                       "flex h-9 w-9 items-center justify-center rounded-md transition-colors",
                       isActive
-                        ? "bg-accent text-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                        ? "bg-[var(--q-bg-tertiary)] text-foreground"
+                        : "text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground",
                     )}
                   >
                     {item.name === "ai" ? (
@@ -151,7 +151,7 @@ export function SidebarRail() {
           <WorkspaceLink
             href="/profile"
             aria-label={session.user.name}
-            className="flex h-9 w-9 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-foreground"
+            className="flex h-9 w-9 items-center justify-center rounded-md transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
           >
             <IdentityAvatar
               image={session.user.image}

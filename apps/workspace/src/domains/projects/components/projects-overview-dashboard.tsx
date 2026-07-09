@@ -30,7 +30,6 @@ const DEFAULT_WIDGETS: ActiveWidget[] = [
   { id: "status", type: "status", title: "By Status", w: 4, h: 4, x: 4, y: 0 },
   { id: "health", type: "health", title: "By Health", w: 4, h: 3, x: 8, y: 0 },
   { id: "recent", type: "recent", title: "Recent Projects", w: 6, h: 4, x: 0, y: 4 },
-  { id: "budget", type: "budget", title: "Budget Overview", w: 6, h: 3, x: 6, y: 4 },
 ];
 
 function WidgetContent({ type }: { type: string }) {

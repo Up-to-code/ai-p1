@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import type { SpaceFormValues } from "../validation/space.schema";
@@ -22,25 +22,28 @@ export interface Space {
 }
 
 export function useWorkspaceSpacesQuery(organizationId?: string) {
+  const { isAuthenticated } = useConvexAuth();
   const result = useQuery(
     api.spaces.read.listAccessible,
-    organizationId ? { organizationId } : "skip",
+    organizationId && isAuthenticated ? { organizationId } : "skip",
   );
   return result ?? undefined;
 }
 
 export function useSpaceOptionsQuery(organizationId?: string) {
+  const { isAuthenticated } = useConvexAuth();
   const result = useQuery(
     api.spaces.read.options,
-    organizationId ? { organizationId } : "skip",
+    organizationId && isAuthenticated ? { organizationId } : "skip",
   );
   return result ?? undefined;
 }
 
 export function useSpaceQuery(organizationId?: string, spaceId?: string) {
+  const { isAuthenticated } = useConvexAuth();
   const result = useQuery(
     api.spaces.read.getBySlug,
-    organizationId && spaceId ? { organizationId, slug: spaceId } : "skip",
+    organizationId && spaceId && isAuthenticated ? { organizationId, slug: spaceId } : "skip",
   );
   return result ?? undefined;
 }

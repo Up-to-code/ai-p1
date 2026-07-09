@@ -52,8 +52,11 @@ describe("getWorkspaceAuthRedirect", () => {
     expect(getWorkspaceAuthRedirect({ isSignedIn: false, workspaceStatus: "noOrganization", locale: "ar", isAuthHandoffPending: true })).toBeNull();
   });
 
-  it("sends signed-in users without an active organization to choose-org", () => {
-    expect(getWorkspaceAuthRedirect({ isSignedIn: true, workspaceStatus: "noOrganization", locale: "en" })).toBe("/en/choose-org");
+  it("keeps signed-in users without an active organization in the workspace shell", () => {
+    expect(getWorkspaceAuthRedirect({ isSignedIn: true, workspaceStatus: "noOrganization", locale: "en" })).toBeNull();
+  });
+
+  it("sends signed-in users with denied organization access to choose-org", () => {
     expect(getWorkspaceAuthRedirect({ isSignedIn: true, workspaceStatus: "organizationAccessDenied", locale: "en" })).toBe("/en/choose-org");
   });
 

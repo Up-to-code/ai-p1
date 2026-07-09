@@ -12,9 +12,7 @@ import {
   Share2,
   TrendingUp,
   Users,
-  BarChart3,
   Plus,
-  Lightbulb,
 } from "lucide-react";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { SidebarPanelLayout } from "./sidebar-panel-layout";
@@ -92,21 +90,6 @@ export function SidebarDealsPanel() {
         <div className="mx-4 my-2 h-px bg-border/50" />
         <SidebarPanelLink href="/deals?sort=value" icon={BadgeDollarSign} label="By value" paramKey="sort" paramValue="value" />
         <SidebarPanelLink href="/deals?sort=date" icon={Clock} label="By date" paramKey="sort" paramValue="date" />
-      </div>
-    </SidebarPanelLayout>
-  );
-}
-
-export function SidebarTheoriesPanel() {
-  return (
-    <SidebarPanelLayout
-      title="Theories"
-    >
-      <div className="flex flex-col gap-2">
-        <SidebarPanelLink href="/theories" icon={Lightbulb} label="All theories" clearParams={["filter"]} />
-        <SidebarPanelLink href="/theories?filter=shared" icon={Share2} label="Shared" paramKey="filter" paramValue="shared" />
-        <div className="mx-4 my-2 h-px bg-border/50" />
-        <SidebarPanelLink href="/theories?filter=private" icon={UserRound} label="My private" paramKey="filter" paramValue="private" />
       </div>
     </SidebarPanelLayout>
   );

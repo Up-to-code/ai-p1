@@ -1,5 +1,6 @@
 import type { Doc } from "../_generated/dataModel";
 import type { McpAction, McpPermission, McpResource } from "./validators";
+import { normalizeMcpScope } from "./scopePolicy";
 
 export type McpConnectionPrincipalType = "user" | "organization";
 
@@ -40,6 +41,7 @@ export function presentMcpConnection(connection: Doc<"organizationMcpConnections
     name: connection.name,
     instructions: connection.instructions,
     permissions: normalizeMcpPermissions(connection.permissions),
+    scope: normalizeMcpScope(connection.scope),
     status: connection.status,
     principalType,
     principalUserId: principalType === "user"

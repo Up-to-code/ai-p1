@@ -46,6 +46,6 @@ export function getWorkspaceAuthRedirect({
   if (!isSignedIn) {
     return `https://www.qentrah.com/${locale}`;
   }
-  if (workspaceStatus === "noOrganization" || workspaceStatus === "organizationAccessDenied") return `/${locale}/choose-org`;
+  if (workspaceStatus === "organizationAccessDenied") return `/${locale}/choose-org`;
   return null;
 }

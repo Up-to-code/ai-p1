@@ -1,13 +1,23 @@
 "use client";
 
-import { useCallback, useRef, useState, useEffect } from "react";
-import { getItem, setItem } from "@/domains/storage";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
+import { logger } from "@/lib/logger";
 
-interface DashboardConfig {
+export interface DashboardConfig {
   widgetConfig: string;
   layout: string;
   notes?: string;
+  updatedAt?: number;
 }
+
+type DashboardPatch = {
+  widgetConfig?: string;
+  layout?: string;
+  notes?: string;
+};
 
 interface UseDashboardPersistenceReturn {
   config: DashboardConfig | null;
@@ -15,113 +25,91 @@ interface UseDashboardPersistenceReturn {
   saveWidgetConfig: (config: string) => void;
   saveLayout: (layout: string) => void;
   saveNotes: (notes: string) => void;
-  save: (partial: Partial<DashboardConfig>) => void;
+  save: (partial: DashboardPatch) => void;
   lastSyncedAt: number | null;
   isSyncing: boolean;
   syncStatus: "idle" | "syncing" | "synced" | "error";
 }
 
-const DEBOUNCE_MS = 5000;
+const DEBOUNCE_MS = 500;
+
+export function mergeDashboardPatches(
+  current: DashboardPatch,
+  next: DashboardPatch,
+): DashboardPatch {
+  return { ...current, ...next };
+}
 
 export function useDashboardPersistence(
   projectId: string,
   organizationId: string | undefined,
-  syncToServer?: (config: DashboardConfig) => Promise<void>,
 ): UseDashboardPersistenceReturn {
-  const [config, setConfig] = useState<DashboardConfig | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [lastSyncedAt, setLastSyncedAt] = useState<number | null>(null);
-  const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "synced" | "error">("idle");
-
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingRef = useRef<DashboardConfig | null>(null);
-
-  // Load from IndexedDB on mount
-  useEffect(() => {
-    getItem("layouts", `project-dashboard-${projectId}`).then((entry) => {
-      if (entry) {
-        try {
-          setConfig(entry.value as unknown as DashboardConfig);
-        } catch {
-          setConfig({ widgetConfig: "[]", layout: "[]" });
-        }
-      } else {
-        setConfig({ widgetConfig: "[]", layout: "[]" });
-      }
-      setIsLoaded(true);
-    });
-  }, [projectId]);
-
-  // Debounced sync to server
-  const triggerSync = useCallback(
-    (data: DashboardConfig) => {
-      if (!syncToServer || !organizationId) return;
-
-      if (timerRef.current) clearTimeout(timerRef.current);
-
-      pendingRef.current = data;
-      setSyncStatus("idle");
-
-      timerRef.current = setTimeout(async () => {
-        const toSync = pendingRef.current;
-        if (!toSync) return;
-
-        setSyncStatus("syncing");
-        try {
-          await syncToServer(toSync);
-          setLastSyncedAt(Date.now());
-          setSyncStatus("synced");
-        } catch {
-          setSyncStatus("error");
-        }
-      }, DEBOUNCE_MS);
-    },
-    [organizationId, syncToServer],
+  const dashboard = useQuery(
+    api.projectDashboards.get,
+    organizationId && projectId
+      ? { organizationId, projectId: projectId as Id<"projects"> }
+      : "skip",
   );
+  const upsert = useMutation(api.projectDashboards.upsert);
+  const [lastSyncedAt, setLastSyncedAt] = useState<number | null>(null);
+  const [syncStatus, setSyncStatus] = useState<
+    "idle" | "syncing" | "synced" | "error"
+  >("idle");
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingRef = useRef<DashboardPatch>({});
+
+  const flush = useCallback(async () => {
+    const patch = pendingRef.current;
+    pendingRef.current = {};
+    if (!organizationId || !projectId || Object.keys(patch).length === 0) return;
+
+    setSyncStatus("syncing");
+    try {
+      await upsert({
+        organizationId,
+        projectId: projectId as Id<"projects">,
+        patch,
+      });
+      setLastSyncedAt(Date.now());
+      setSyncStatus("synced");
+    } catch (error) {
+      logger.error("project_dashboard.save_failed", {
+        organizationId,
+        projectId,
+        error,
+      });
+      setSyncStatus("error");
+    }
+  }, [organizationId, projectId, upsert]);
 
   const save = useCallback(
-    (partial: Partial<DashboardConfig>) => {
-      setConfig((prev) => {
-        if (!prev) return prev;
-        const next = { ...prev, ...partial };
-        // Write to IndexedDB immediately
-        setItem("layouts", `project-dashboard-${projectId}`, next as unknown as Record<string, unknown>);
-        // Debounce server sync
-        triggerSync(next);
-        return next;
-      });
-    },
-    [projectId, triggerSync],
-  );
+    (partial: DashboardPatch) => {
+      if (!organizationId || !projectId) return;
 
-  const saveWidgetConfig = useCallback(
-    (widgetConfig: string) => save({ widgetConfig }),
-    [save],
-  );
-
-  const saveLayout = useCallback(
-    (layout: string) => save({ layout }),
-    [save],
-  );
-
-  const saveNotes = useCallback(
-    (notes: string) => save({ notes }),
-    [save],
-  );
-
-  // Cleanup
-  useEffect(() => {
-    return () => {
+      pendingRef.current = mergeDashboardPatches(pendingRef.current, partial);
       if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
+      setSyncStatus("idle");
+      timerRef.current = setTimeout(() => {
+        timerRef.current = null;
+        void flush();
+      }, DEBOUNCE_MS);
+    },
+    [flush, organizationId, projectId],
+  );
+
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    },
+    [],
+  );
 
   return {
-    config,
-    isLoaded,
-    saveWidgetConfig,
-    saveLayout,
-    saveNotes,
+    config: dashboard ?? null,
+    isLoaded: dashboard !== undefined,
+    saveWidgetConfig: (widgetConfig) => save({ widgetConfig }),
+    saveLayout: (layout) => save({ layout }),
+    saveNotes: (notes) => save({ notes }),
     save,
     lastSyncedAt,
     isSyncing: syncStatus === "syncing",

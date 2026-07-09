@@ -99,7 +99,7 @@ function AddTaskRow({
     <div
       onClick={() => setIsEditing(true)}
       onDoubleClick={() => setIsEditing(true)}
-      className="grid h-9 shrink-0 cursor-text border-b border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] bg-[#0d0e10] text-[12px] text-muted-foreground hover:bg-muted/20"
+      className="grid h-9 shrink-0 cursor-text border-b border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] bg-[var(--q-bg)] text-[12px] text-muted-foreground hover:bg-[var(--q-bg-secondary)]"
       style={{ gridTemplateColumns: TASK_TABLE_COLUMNS }}
     >
       <div className="flex items-center justify-center border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] text-muted-foreground">
@@ -147,7 +147,7 @@ function AddTaskRow({
                 setTitle("");
               }}
               onMouseDown={(event) => event.preventDefault()}
-              className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
             >
               <X className="h-3 w-3" />
             </button>
@@ -189,13 +189,13 @@ function TaskTableControls({
   const groupLabel = groupBy === "none" ? "None" : groupBy === "status" ? "Status" : "Priority";
 
   return (
-    <div className="flex h-10 shrink-0 items-center justify-between gap-3 border-b border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-background px-3">
+    <div className="flex h-10 shrink-0 items-center justify-between gap-3 border-b border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[var(--q-bg)] px-3">
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
             <button
               type="button"
-              className="inline-flex h-7 items-center gap-2 rounded-md border border-border/80 bg-card/40 px-2.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/45 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+              className="inline-flex h-7 items-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-transparent px-2.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
             />
           }
         >
@@ -242,7 +242,7 @@ function TaskTableControls({
                 render={
                   <button
                     type="button"
-                    className="inline-flex h-7 items-center gap-2 rounded-md border border-border/80 bg-card/40 px-2.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted/45 hover:text-foreground"
+                    className="inline-flex h-7 items-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-transparent px-2.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
                   />
                 }
               >
@@ -503,7 +503,7 @@ export function TaskTableView({
   }
 
   const flatTable = (
-    <div className="min-w-[980px]">
+    <div className="min-w-[980px] overflow-hidden rounded-lg">
       <QentrahTable
         ref={tableRef}
         rows={rows}
@@ -530,9 +530,9 @@ export function TaskTableView({
   );
 
   const groupedTable = (
-    <div className="min-w-[980px]">
+    <div className="min-w-[980px] overflow-hidden rounded-lg">
       <div
-        className="grid h-8 items-center border-b border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[#141518] text-[11px] font-semibold text-muted-foreground"
+        className="grid h-8 items-center border-b border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[var(--q-bg-secondary)] text-[11px] font-semibold text-muted-foreground"
         style={{ gridTemplateColumns: TASK_TABLE_COLUMNS }}
       >
         <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)]" />
@@ -551,14 +551,14 @@ export function TaskTableView({
           return (
             <section
               key={group.key}
-              className="overflow-hidden rounded-md border border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[#0d0e10]"
+              className="overflow-hidden rounded-md border border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[var(--q-bg)]"
               onDragOver={(event) => event.preventDefault()}
               onDrop={() => dropTask(group.key, group.rows.length)}
             >
               <button
                 type="button"
                 onClick={() => toggleGroup(group.key)}
-                className="flex h-8 w-full items-center gap-2 border-b border-[color-mix(in_srgb,var(--q-border)_65%,transparent)] bg-[#17191d] px-3 text-left transition-colors hover:bg-[#202228]"
+                className="flex h-8 w-full items-center gap-2 border-b border-[color-mix(in_srgb,var(--q-border)_65%,transparent)] bg-[var(--q-bg-secondary)] px-3 text-left transition-colors hover:bg-[var(--q-bg-tertiary)]"
               >
                 {isCollapsed ? <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
                 <span className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-black uppercase text-white ${group.color}`}>
@@ -618,7 +618,7 @@ export function TaskTableView({
   );
 
   return (
-    <div className="h-full min-h-0 overflow-auto bg-background">
+    <div className="h-full min-h-0 overflow-auto bg-[var(--q-bg)] p-2">
       <TaskTableControls
         groupBy={groupBy}
         sortDirection={sortDirection}

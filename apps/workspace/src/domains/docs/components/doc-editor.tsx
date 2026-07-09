@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FolderOpen,
   Globe,
@@ -11,18 +11,22 @@ import {
   X,
   Plus,
   Trash2,
+  Tags,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   WorkOsDocEditor,
   type DocEditorMetaField,
+  type DocEditorMentionOption,
 } from "@/components/shared/work-os-doc-editor";
 import { DeleteRecordDialog } from "@/components/shared/crud-ui";
-import { updateDocRequest, deleteDocRequest } from "../api/docs";
+import { deleteDocRequest, useDocsQuery, useUpdateDocMutation } from "../api/docs";
+import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import type { DocFormValues, DocRecord, CustomField } from "../docs.types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { logger } from "@/lib/logger";
 import { CustomFieldsModal } from "./custom-fields-modal";
 
 function formFromDoc(doc: DocRecord): DocFormValues {
@@ -35,6 +39,17 @@ function formFromDoc(doc: DocRecord): DocFormValues {
     tags: (doc.tags ?? []).join(", "),
     customFields: doc.customFields ?? [],
   };
+}
+
+function persistedDocFormKey(values: DocFormValues) {
+  return JSON.stringify({
+    title: values.title,
+    content: values.content,
+    folderId: values.folderId,
+    projectId: values.projectId,
+    visibility: values.visibility,
+    tags: values.tags,
+  });
 }
 
 const VISIBILITY_OPTIONS = [
@@ -58,47 +73,160 @@ export function DocEditor({
 }) {
   const t = useTranslations("Docs");
   const toast = useToast();
+  const updateDoc = useUpdateDocMutation();
+  const relatedDocsResult = useDocsQuery(organizationId, {
+    projectId: doc.projectId ?? undefined,
+  });
+  const relatedTasksResult = useTasksQuery(organizationId, {
+    projectId: doc.projectId ?? null,
+  });
 
   const [draft, setDraft] = useState<DocFormValues>(() => formFromDoc(doc));
+  const [lastPersistedKey, setLastPersistedKey] = useState(() => persistedDocFormKey(formFromDoc(doc)));
   const [busyId, setBusyId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [showCustomFieldsModal, setShowCustomFieldsModal] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const savedSnapshot = formFromDoc(doc);
-  const hasUnsavedChanges = JSON.stringify(draft) !== JSON.stringify(savedSnapshot);
+  const latestDraftRef = useRef(draft);
+  const lastPersistedKeyRef = useRef(lastPersistedKey);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveVersionRef = useRef(0);
 
-  const updateDraft = useCallback((partial: Partial<DocFormValues>) => {
-    setDraft((current) => ({ ...current, ...partial }));
+  const hasUnsavedChanges = persistedDocFormKey(draft) !== lastPersistedKey;
+
+  const markPersisted = useCallback((key: string) => {
+    lastPersistedKeyRef.current = key;
+    setLastPersistedKey(key);
   }, []);
 
-  const saveDraft = useCallback(async () => {
+  useEffect(() => {
+    latestDraftRef.current = draft;
+  }, [draft]);
+
+  useEffect(() => {
+    const nextServerDraft = formFromDoc(doc);
+    const nextServerKey = persistedDocFormKey(nextServerDraft);
+    const currentKey = persistedDocFormKey(latestDraftRef.current);
+    const hasLocalChanges = currentKey !== lastPersistedKeyRef.current;
+
+    if (!hasLocalChanges || currentKey === nextServerKey) {
+      latestDraftRef.current = nextServerDraft;
+      setDraft(nextServerDraft);
+      markPersisted(nextServerKey);
+    }
+  }, [
+    doc.id,
+    doc.title,
+    doc.content,
+    doc.folderId,
+    doc.projectId,
+    doc.visibility,
+    doc.tags,
+    doc.updatedAt,
+    markPersisted,
+  ]);
+
+  const persistDraft = useCallback(async (nextDraft: DocFormValues, options?: { showToast?: boolean }) => {
+    const nextKey = persistedDocFormKey(nextDraft);
+    if (nextKey === lastPersistedKeyRef.current) return;
+
+    const saveVersion = ++saveVersionRef.current;
     setBusyId("patch");
     try {
-      await updateDocRequest(organizationId, doc.id, draft);
-      toast.toast({ title: t("form.savedToast"), type: "success" });
+      await updateDoc(organizationId, doc.id, nextDraft);
+      markPersisted(nextKey);
+      if (options?.showToast) {
+        toast.toast({ title: t("form.savedToast"), type: "success" });
+      }
       onSaved?.();
     } catch (error) {
-      throw error;
-    } finally {
-      setBusyId(null);
-    }
-  }, [draft, organizationId, doc.id, toast, onSaved, t]);
-
-  // Auto-save on blur
-  const handleBodyBlur = useCallback(
-    (html: string) => {
-      if (html !== draft.content) {
-        updateDraft({ content: html });
-        // Auto-save when body changes
-        updateDocRequest(organizationId, doc.id, {
-          ...draft,
-          content: html,
-        }).catch(() => {});
+      logger.error("docs.save_failed", { docId: doc.id, error });
+      if (options?.showToast) {
+        toast.toast({ title: "Document could not be saved.", type: "error" });
       }
+    } finally {
+      if (saveVersion === saveVersionRef.current) setBusyId(null);
+    }
+  }, [doc.id, markPersisted, onSaved, organizationId, t, toast, updateDoc]);
+
+  const scheduleAutosave = useCallback(
+    (nextDraft: DocFormValues) => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        saveTimerRef.current = null;
+        void persistDraft(nextDraft);
+      }, 700);
     },
-    [draft, organizationId, doc.id, updateDraft],
+    [persistDraft],
   );
+
+  const updateDraft = useCallback(
+    (partial: Partial<DocFormValues>, options?: { autosave?: boolean }) => {
+      setDraft((current) => {
+        const next = { ...current, ...partial };
+        latestDraftRef.current = next;
+        if (options?.autosave) scheduleAutosave(next);
+        return next;
+      });
+    },
+    [scheduleAutosave],
+  );
+
+  const flushAutosave = useCallback(
+    (options?: { showToast?: boolean }) => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = null;
+      }
+      return persistDraft(latestDraftRef.current, options);
+    },
+    [persistDraft],
+  );
+
+  const saveDraft = useCallback(() => {
+    void flushAutosave({ showToast: true });
+  }, [flushAutosave]);
+
+  const handleBodyBlur = useCallback((html: string) => {
+    const next = { ...latestDraftRef.current, content: html };
+    latestDraftRef.current = next;
+    setDraft(next);
+    void flushAutosave();
+  }, [flushAutosave]);
+
+  const mentionOptions = useMemo<DocEditorMentionOption[]>(() => {
+    const docOptions =
+      relatedDocsResult.data
+        ?.filter((relatedDoc) => relatedDoc.id !== doc.id)
+        .slice(0, 40)
+        .map((relatedDoc) => ({
+          id: relatedDoc.id,
+          label: relatedDoc.title || "Untitled document",
+          helper: ["Document", ...(relatedDoc.tags ?? []).slice(0, 3)].join(" · "),
+          type: "doc" as const,
+          href: `/docs/${relatedDoc.id}`,
+        })) ?? [];
+
+    const taskOptions =
+      relatedTasksResult.data
+        ?.slice(0, 40)
+        .map((task) => ({
+          id: task.id,
+          label: task.title || "Untitled task",
+          helper: ["Task", task.status, task.priority].filter(Boolean).join(" · "),
+          type: "task" as const,
+          href: `/tasks/${task.id}`,
+        })) ?? [];
+
+    return [...docOptions, ...taskOptions];
+  }, [doc.id, relatedDocsResult.data, relatedTasksResult.data]);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, []);
 
   const fields: DocEditorMetaField[] = [
     {
@@ -108,7 +236,7 @@ export function DocEditor({
       value: (
         <select
           value={draft.visibility}
-          onChange={(e) => updateDraft({ visibility: e.target.value as DocFormValues["visibility"] })}
+          onChange={(e) => updateDraft({ visibility: e.target.value as DocFormValues["visibility"] }, { autosave: true })}
           className="h-6 rounded-lg border border-border bg-card px-2 text-[11px] font-medium text-foreground outline-none"
         >
           {VISIBILITY_OPTIONS.map((opt) => (
@@ -117,6 +245,19 @@ export function DocEditor({
             </option>
           ))}
         </select>
+      ),
+    },
+    {
+      key: "tags",
+      icon: <Tags className="h-3.5 w-3.5" />,
+      label: "Tags",
+      value: (
+        <input
+          value={draft.tags}
+          onChange={(event) => updateDraft({ tags: event.target.value }, { autosave: true })}
+          placeholder="Add labels, comma separated"
+          className="h-7 w-full rounded-lg border border-transparent bg-transparent px-2 text-xs text-foreground outline-none transition-colors placeholder:text-muted-foreground hover:border-border hover:bg-card focus:border-border focus:bg-card"
+        />
       ),
     },
   ];
@@ -223,21 +364,19 @@ export function DocEditor({
           isSaving={busyId === "patch"}
           onTitleBlur={(v) => {
             if (v !== draft.title) {
-              updateDraft({ title: v });
-              // Auto-save title
-              updateDocRequest(organizationId, doc.id, {
-                ...draft,
-                title: v,
-              }).catch(() => {});
+              const next = { ...latestDraftRef.current, title: v };
+              latestDraftRef.current = next;
+              setDraft(next);
+              void persistDraft(next);
             }
           }}
           onBodyChange={(html) => {
-            if (html !== draft.content) {
-              // Defer state update to avoid setState during render
-              requestAnimationFrame(() => updateDraft({ content: html }));
+            if (html !== latestDraftRef.current.content) {
+              updateDraft({ content: html }, { autosave: true });
             }
           }}
           onBodyBlur={handleBodyBlur}
+          mentionOptions={mentionOptions}
           compactFormatting
         />
       </div>

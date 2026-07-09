@@ -18,7 +18,7 @@ export function Sidebar() {
       className={cn(
         "flex h-screen shrink-0 overflow-hidden transition-all duration-300 ease-in-out",
         activeRailItem
-          ? "max-w-[289px] fixed inset-y-0 left-0 z-50 md:relative"
+          ? "max-w-[412px] fixed inset-y-0 left-0 z-50 md:relative"
           : "max-w-12",
       )}
     >

@@ -1,11 +1,14 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { internalMutation, mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
-import { authUser } from "../auth";
-import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import { resolveProjectAccess } from "../access/project";
 import { presentWorkspaceRecord, stripDeletedFields } from "../shared/present";
-import { normalizeProjectVisibility, projectInputValidator, projectValidator } from "./validators";
+import {
+  normalizeProjectVisibility,
+  projectInputValidator,
+  projectValidator,
+} from "./validators";
 
 type ProjectInput = {
   name: string;
@@ -36,7 +39,39 @@ function presentProject(project: Doc<"projects">) {
   };
 }
 
-async function createProjectCore(ctx: MutationCtx, args: { organizationId: string; input: ProjectInput; actorUserId: string }) {
+function projectNotFoundError(
+  organizationId: string,
+  projectId: Id<"projects">,
+) {
+  return new ConvexError({
+    code: "PROJECT_NOT_FOUND",
+    message: "Project was not found.",
+    organizationId,
+    projectId,
+  });
+}
+
+async function requireActiveProject(
+  ctx: MutationCtx,
+  organizationId: string,
+  projectId: Id<"projects">,
+) {
+  const project = await ctx.db.get(projectId);
+  if (
+    !project ||
+    project.organizationId !== organizationId ||
+    project.deletedAt ||
+    project.recordState === "deleted"
+  ) {
+    throw projectNotFoundError(organizationId, projectId);
+  }
+  return project;
+}
+
+async function createProjectCore(
+  ctx: MutationCtx,
+  args: { organizationId: string; input: ProjectInput; actorUserId: string },
+) {
   const now = Date.now();
   const id = await ctx.db.insert("projects", {
     organizationId: args.organizationId,
@@ -54,13 +89,24 @@ async function createProjectCore(ctx: MutationCtx, args: { organizationId: strin
   return { presented: presentProject(project), now };
 }
 
-async function updateProjectCore(ctx: MutationCtx, args: { organizationId: string; projectId: Id<"projects">; input: ProjectInput; actorUserId: string }) {
-  const existing = await ctx.db.get(args.projectId);
-  if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
-    throw new Error("Project was not found.");
-  }
+async function updateProjectCore(
+  ctx: MutationCtx,
+  args: {
+    organizationId: string;
+    projectId: Id<"projects">;
+    input: ProjectInput;
+    actorUserId: string;
+  },
+) {
+  const existing = await requireActiveProject(
+    ctx,
+    args.organizationId,
+    args.projectId,
+  );
 
-  const nextVisibility = normalizeProjectVisibility(args.input.visibility ?? existing.visibility);
+  const nextVisibility = normalizeProjectVisibility(
+    args.input.visibility ?? existing.visibility,
+  );
   const now = Date.now();
   await ctx.db.patch(args.projectId, {
     ...args.input,
@@ -69,17 +115,29 @@ async function updateProjectCore(ctx: MutationCtx, args: { organizationId: strin
   });
 
   const project = await ctx.db.get(args.projectId);
-  if (!project) throw new Error("Project was not found.");
+  if (!project) throw projectNotFoundError(args.organizationId, args.projectId);
   return { presented: presentProject(project), now };
 }
 
-async function deleteProjectCore(ctx: MutationCtx, args: { organizationId: string; projectId: Id<"projects">; actorUserId: string }) {
-  const existing = await ctx.db.get(args.projectId);
-  if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
-    throw new Error("Project was not found.");
-  }
+async function deleteProjectCore(
+  ctx: MutationCtx,
+  args: {
+    organizationId: string;
+    projectId: Id<"projects">;
+    actorUserId: string;
+  },
+) {
+  const existing = await requireActiveProject(
+    ctx,
+    args.organizationId,
+    args.projectId,
+  );
   const now = Date.now();
-  await ctx.db.patch(args.projectId, { deletedAt: now, recordState: "deleted", updatedAt: now });
+  await ctx.db.patch(args.projectId, {
+    deletedAt: now,
+    recordState: "deleted",
+    updatedAt: now,
+  });
   return { removed: true as const, now, name: existing.name };
 }
 
@@ -90,16 +148,16 @@ export const createFromHono = mutation({
   },
   returns: projectValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "create");
+    const access = await resolveProjectAccess(ctx, args.organizationId);
+    await access.assertCanCreate();
     const { presented, now } = await createProjectCore(ctx, {
       organizationId: args.organizationId,
       input: args.input,
-      actorUserId: user._id,
+      actorUserId: access.actor.userId,
     });
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
-      actorUserId: user._id,
+      actorUserId: access.actor.userId,
       action: "project.create",
       target: presented.id,
       summary: `Created project ${args.input.name}.`,
@@ -117,17 +175,22 @@ export const updateFromHono = mutation({
   },
   returns: projectValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "update");
+    const access = await resolveProjectAccess(ctx, args.organizationId);
+    const existing = await requireActiveProject(
+      ctx,
+      args.organizationId,
+      args.projectId,
+    );
+    access.assertCanUpdate(existing);
     const { presented, now } = await updateProjectCore(ctx, {
       organizationId: args.organizationId,
       projectId: args.projectId,
       input: args.input,
-      actorUserId: user._id,
+      actorUserId: access.actor.userId,
     });
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
-      actorUserId: user._id,
+      actorUserId: access.actor.userId,
       action: "project.update",
       target: args.projectId,
       summary: `Updated project ${args.input.name}.`,
@@ -144,16 +207,21 @@ export const deleteFromHono = mutation({
   },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "delete");
+    const access = await resolveProjectAccess(ctx, args.organizationId);
+    const existing = await requireActiveProject(
+      ctx,
+      args.organizationId,
+      args.projectId,
+    );
+    access.assertCanDelete(existing);
     const { now, name } = await deleteProjectCore(ctx, {
       organizationId: args.organizationId,
       projectId: args.projectId,
-      actorUserId: user._id,
+      actorUserId: access.actor.userId,
     });
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
-      actorUserId: user._id,
+      actorUserId: access.actor.userId,
       action: "project.delete",
       target: args.projectId,
       summary: `Deleted project ${name}.`,

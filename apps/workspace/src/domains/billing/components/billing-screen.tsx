@@ -271,7 +271,7 @@ export function BillingScreen() {
         )}
 
         <div className="text-center">
-          <Link href="/organization?tab=billing">
+          <Link href="/settings/billing">
             <Button
               variant="ghost"
               size="sm"

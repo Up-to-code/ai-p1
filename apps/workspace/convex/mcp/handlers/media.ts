@@ -5,6 +5,7 @@ import {
   type ReadHandler, type WriteHandler, type ReadToolArgs, type WriteToolArgs,
   TOOL_SCAN_LIMIT, assertConnectionPermission, mediaResourcePermission, audit,
 } from "./shared";
+import { scopeActorUserId } from "../scopePolicy";
 
 export const mediaList: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
   const limit = listLimit(args.input);
@@ -44,7 +45,7 @@ export const mediaAttachUrl: WriteHandler = async (ctx: MutationCtx, args: Write
     sortOrder: existing.length,
     shareVisibility: "private",
     isCover: false,
-    createdByUserId: args.actorId,
+    createdByUserId: scopeActorUserId(args.input),
     createdAt: args.now,
     updatedAt: args.now,
   });

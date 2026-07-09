@@ -3,15 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowUp,
-  Bold,
   ChevronDown,
-  Italic,
-  List,
-  ListOrdered,
   Loader2,
   Mic,
   Plus,
-  Quote,
   FileText,
   X,
   AtSign,
@@ -25,12 +20,9 @@ import {
 import { LinkInsertPopover } from "./link-insert-popover";
 import type { MessageMention, MessageAttachment } from "../types/inbox.types";
 import { AnimatePresence } from "framer-motion";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import { SlashCommandMenu } from "./slash-command-menu";
 import { setItem, getItem, removeItem } from "@/domains/storage";
 import { uploadFiles } from "@/lib/uploadthing";
+import { YooptaRichTextEditor } from "@/components/shared/yoopta-rich-text-editor";
 
 interface MessageComposerProps {
   onSend: (
@@ -132,7 +124,7 @@ export function MessageComposer({
   const [showActionPopover, setShowActionPopover] = useState(false);
   const [showLinkPopover, setShowLinkPopover] = useState(false);
   const [showMentionPicker, setShowMentionPicker] = useState(false);
-  const [showSlashMenu, setShowSlashMenu] = useState(false);
+  const [composerHtml, setComposerHtml] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -146,125 +138,52 @@ export function MessageComposer({
     };
   }, []);
 
-  // TipTap editor
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        bold: {} as any,
-        italic: {} as any,
-        strike: {} as any,
-        code: {} as any,
-        bulletList: {} as any,
-        orderedList: {} as any,
-        blockquote: {} as any,
-      }),
-      Placeholder.configure({ placeholder }),
-    ],
-    content: "",
-    editorProps: {
-      attributes: {
-        class:
-          "focus:outline-none min-h-[44px] max-h-[168px] overflow-y-auto px-3 py-2.5 text-[13px] leading-6 text-foreground placeholder:text-muted-foreground [&_a]:text-sky-300 [&_a]:underline [&_a]:underline-offset-2 [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5",
-      },
-      handleKeyDown: (_view, event) => {
-        if (
-          event.key === "Enter" &&
-          !event.shiftKey &&
-          !showMentionPicker &&
-          !showSlashMenu
-        ) {
-          event.preventDefault();
-          handleSend();
-          return true;
-        }
-        if (event.key === "@" && !showMentionPicker && !showSlashMenu) {
-          setShowMentionPicker(true);
-        }
-        if (event.key === "/" && !showMentionPicker && !showSlashMenu) {
-          setShowSlashMenu(true);
-        }
-        if (event.key === " " && showMentionPicker) {
-          setShowMentionPicker(false);
-        }
-        if (event.key === " " && showSlashMenu) {
-          setShowSlashMenu(false);
-        }
-        if (event.key === "Escape") {
-          setShowMentionPicker(false);
-          setShowSlashMenu(false);
-        }
-        return false;
-      },
-    },
-  });
+  useEffect(() => {
+    setComposerHtml(editingMessage?.content ?? "");
+  }, [editingMessage]);
 
   useEffect(() => {
-    editor?.commands.focus();
-  }, [editor]);
-
-  useEffect(() => {
-    if (editingMessage && editor) {
-      editor.commands.setContent(editingMessage.content);
-    } else if (!editingMessage && editor) {
-      editor.commands.clearContent();
-    }
-  }, [editingMessage, editor]);
-
-  useEffect(() => {
-    if (editor) {
-      const updateTyping = () => {
-        setIsTyping(!editor.isEmpty);
-      };
-      editor.on("update", updateTyping);
-      updateTyping();
-      return () => {
-        editor.off("update", updateTyping);
-      };
-    }
-  }, [editor]);
+    setIsTyping(Boolean(getTextPreview(composerHtml).trim()));
+  }, [composerHtml]);
 
   // Auto-save draft to IndexedDB (debounced)
   const draftKey = channelId ? `inbox:draft:${channelId}` : null;
   const draftTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
-    if (!editor || !draftKey) return;
-    const saveDraft = () => {
-      const html = editor.getHTML();
-      const text = editor.getText();
-      if (text.trim()) {
+    if (!draftKey) return;
+    clearTimeout(draftTimerRef.current);
+    draftTimerRef.current = setTimeout(() => {
+      const text = getTextPreview(composerHtml);
+      if (text) {
         setItem(
           "layouts",
           draftKey,
-          JSON.stringify({ html, text, savedAt: Date.now() }),
+          JSON.stringify({ html: composerHtml, text, savedAt: Date.now() }),
         ).catch(() => {});
       } else {
         removeItem("layouts", draftKey).catch(() => {});
       }
-    };
-    editor.on("update", () => {
-      clearTimeout(draftTimerRef.current);
-      draftTimerRef.current = setTimeout(saveDraft, 500);
-    });
+    }, 500);
     return () => clearTimeout(draftTimerRef.current);
-  }, [editor, draftKey]);
+  }, [composerHtml, draftKey]);
 
   // Restore draft on channel change
   useEffect(() => {
-    if (!editor || !draftKey) return;
+    if (!draftKey || editingMessage) return;
     getItem("layouts", draftKey)
       .then((raw: any) => {
         if (raw && typeof raw === "string") {
           try {
             const draft = JSON.parse(raw);
             if (draft.html && draft.text) {
-              editor.commands.setContent(draft.html);
+              setComposerHtml(draft.html);
             }
           } catch {}
         }
       })
       .catch(() => {});
-  }, [draftKey, editor]);
+  }, [draftKey, editingMessage]);
 
   const uploadComposerAttachments = async () => {
     if (!organizationId) return attachments;
@@ -303,7 +222,7 @@ export function MessageComposer({
   };
 
   const handleSend = async () => {
-    const text = editor?.getText() || "";
+    const text = getTextPreview(composerHtml);
     if ((!text.trim() && attachments.length === 0) || disabled || isUploading) {
       return;
     }
@@ -318,7 +237,7 @@ export function MessageComposer({
     }
 
     const content = text.trim()
-      ? editor?.getHTML() || ""
+      ? composerHtml
       : `<p>${uploadedAttachments.map((attachment) => attachment.name).join(", ")}</p>`;
     onSend(
       content,
@@ -329,7 +248,7 @@ export function MessageComposer({
           )
         : undefined,
     );
-    editor?.commands.clearContent();
+    setComposerHtml("");
     setMentions([]);
     attachments.forEach(revokeLocalAttachmentUrl);
     setAttachments([]);
@@ -339,10 +258,9 @@ export function MessageComposer({
   };
 
   const handleMentionSelect = (mention: MessageMention) => {
-    editor?.commands.insertContent(`@${mention.name} `);
+    setComposerHtml((current) => `${current || "<p></p>"}<p>@${mention.name}</p>`);
     setMentions((prev) => [...prev, mention]);
     setShowMentionPicker(false);
-    editor?.view.focus();
   };
 
   const handleAction = (action: ComposerAction) => {
@@ -418,11 +336,8 @@ export function MessageComposer({
       ? rawUrl
       : `https://${rawUrl}`;
     const text = label || normalizedUrl;
-    editor?.commands.insertContent(
-      `<a href="${normalizedUrl}" target="_blank" rel="noreferrer">${text}</a>&nbsp;`,
-    );
+    setComposerHtml((current) => `${current || "<p></p>"}<p><a href="${normalizedUrl}" target="_blank" rel="noreferrer">${text}</a></p>`);
     setShowLinkPopover(false);
-    editor?.view.focus();
   };
 
   const attachmentIconMap: Record<
@@ -435,44 +350,6 @@ export function MessageComposer({
     "insert-link": { icon: FileText, accent: "text-amber-500" },
     mention: { icon: AtSign, accent: "text-rose-500" },
   };
-
-  const formatActions = [
-    {
-      id: "bold",
-      icon: Bold,
-      label: "Bold",
-      active: editor?.isActive("bold"),
-      run: () => editor?.chain().focus().toggleBold().run(),
-    },
-    {
-      id: "italic",
-      icon: Italic,
-      label: "Italic",
-      active: editor?.isActive("italic"),
-      run: () => editor?.chain().focus().toggleItalic().run(),
-    },
-    {
-      id: "bullet",
-      icon: List,
-      label: "Bullet list",
-      active: editor?.isActive("bulletList"),
-      run: () => editor?.chain().focus().toggleBulletList().run(),
-    },
-    {
-      id: "ordered",
-      icon: ListOrdered,
-      label: "Numbered list",
-      active: editor?.isActive("orderedList"),
-      run: () => editor?.chain().focus().toggleOrderedList().run(),
-    },
-    {
-      id: "quote",
-      icon: Quote,
-      label: "Quote",
-      active: editor?.isActive("blockquote"),
-      run: () => editor?.chain().focus().toggleBlockquote().run(),
-    },
-  ];
 
   return (
     <div className="shrink-0 border-t border-border/50 bg-background">
@@ -539,20 +416,6 @@ export function MessageComposer({
         )}
       </AnimatePresence>
 
-      {/* Slash command menu */}
-      <AnimatePresence>
-        {showSlashMenu && editor && (
-          <SlashCommandMenu
-            editor={editor}
-            onClose={() => setShowSlashMenu(false)}
-            onOpenMentionPicker={() => {
-              setShowSlashMenu(false);
-              setShowMentionPicker(true);
-            }}
-          />
-        )}
-      </AnimatePresence>
-
       <div ref={composerRef} className="px-4 py-2">
         <div
           className={cn(
@@ -590,7 +453,14 @@ export function MessageComposer({
                 })}
               </div>
             )}
-            <EditorContent editor={editor} />
+            <YooptaRichTextEditor
+              value={composerHtml}
+              onChange={setComposerHtml}
+              placeholder={placeholder}
+              className="rounded-none border-0 bg-transparent shadow-none"
+              editorClassName="max-h-[168px] min-h-[44px] overflow-y-auto px-3 py-2.5 text-[13px] leading-6"
+              minHeightClassName=""
+            />
           </div>
 
           <div className="flex min-h-9 items-center justify-between gap-2 border-t border-border/40 px-2 py-1">
@@ -631,24 +501,6 @@ export function MessageComposer({
                 <AtSign className="h-3.5 w-3.5" />
               </button>
               <div className="mx-1 h-5 w-px bg-border/70" />
-              {formatActions.map((action) => {
-                const Icon = action.icon;
-                return (
-                  <button
-                    key={action.id}
-                    type="button"
-                    disabled={disabled || !editor}
-                    onClick={action.run}
-                    title={action.label}
-                    className={cn(
-                      "flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40",
-                      action.active && "bg-primary/10 text-primary",
-                    )}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                  </button>
-                );
-              })}
             </div>
             <div className="flex items-center gap-1">
               <button

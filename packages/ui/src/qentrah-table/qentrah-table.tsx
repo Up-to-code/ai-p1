@@ -88,7 +88,7 @@ const QentrahTableInner = <TRow extends { id: string }>(
     rows,
     columns,
     density = "compact",
-    theme = "dark",
+    theme = "auto",
     height = "100%",
     domLayout,
     getRowId = defaultGetRowId,
@@ -133,35 +133,25 @@ const QentrahTableInner = <TRow extends { id: string }>(
   // Track the page's actual theme by watching the `.dark` class on the
   // document root. This respects an explicit theme set by the app
   // (ThemeProvider, next-themes, etc.) — not just the OS preference.
-  const [systemIsDark, setSystemIsDark] = useState<boolean>(() => {
+  const [appIsDark, setAppIsDark] = useState<boolean>(() => {
     if (typeof window === "undefined") return true
-    if (document.documentElement.classList.contains("dark")) return true
-    return !window.matchMedia?.("(prefers-color-scheme: light)").matches
+    return document.documentElement.classList.contains("dark")
   })
 
   useEffect(() => {
     if (typeof document === "undefined") return
     const root = document.documentElement
     const compute = () => root.classList.contains("dark")
-    setSystemIsDark(compute())
+    setAppIsDark(compute())
     const observer = new MutationObserver(() => {
-      setSystemIsDark(compute())
+      setAppIsDark(compute())
     })
     observer.observe(root, { attributes: true, attributeFilter: ["class"] })
-    if (typeof window !== "undefined" && window.matchMedia) {
-      const mql = window.matchMedia("(prefers-color-scheme: light)")
-      const onChange = () => setSystemIsDark(compute())
-      mql.addEventListener?.("change", onChange)
-      return () => {
-        observer.disconnect()
-        mql.removeEventListener?.("change", onChange)
-      }
-    }
     return () => observer.disconnect()
   }, [])
 
   const resolvedMode: "dark" | "light" =
-    theme === "light" ? "light" : theme === "dark" ? "dark" : systemIsDark ? "dark" : "light"
+    theme === "light" ? "light" : theme === "dark" ? "dark" : appIsDark ? "dark" : "light"
 
   // Publish the active AG Grid theme mode on `<html>`. AG Grid reads
   // `data-ag-theme-mode` from any ancestor of the grid root to apply the
@@ -309,6 +299,15 @@ const QENTRAH_TABLE_CSS = `
     border: 1px solid var(--q-border) !important;
     border-radius: 6px;
   }
+  .qentrah-table-wrapper.qentrah-flat-table .ag-root-wrapper {
+    background: var(--q-bg);
+    border: 0 !important;
+    border-radius: 0;
+  }
+  .qentrah-table-wrapper.qentrah-flat-table .ag-header,
+  .qentrah-table-wrapper.qentrah-flat-table .ag-header-row {
+    background: var(--q-bg);
+  }
   .qentrah-table-wrapper:has(.ag-layout-auto-height) {
     height: auto !important;
   }
@@ -395,13 +394,12 @@ const QENTRAH_TABLE_CSS = `
     --q-header-divider: color-mix(in srgb, var(--q-border-strong) 68%, transparent);
     --q-row-hover: color-mix(in srgb, var(--q-bg-tertiary) 42%, transparent);
     --q-cell-focus-ring: transparent;
-    --q-task-table-surface: #0d0e10;
-    --q-task-table-header: #17191c;
+    --q-task-table-surface: var(--q-bg);
+    --q-task-table-header: var(--q-bg);
     --q-task-table-cell-focus: color-mix(in srgb, var(--q-text-secondary) 22%, transparent);
   }
   .qentrah-table-wrapper.qentrah-task-table .ag-root-wrapper {
-    border-left: 0 !important;
-    border-right: 0 !important;
+    border: 0 !important;
     border-radius: 0;
     background: var(--q-task-table-surface);
   }

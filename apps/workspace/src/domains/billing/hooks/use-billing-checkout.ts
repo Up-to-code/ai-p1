@@ -28,7 +28,7 @@ export function useBillingCheckout({
             planId: "qentrah_workspace",
             seats: effectiveSeats,
             locale,
-            returnUrl: window.location.origin + `/${locale}/billing`,
+            returnUrl: window.location.origin + `/${locale}/settings/billing`,
           }),
         },
       );

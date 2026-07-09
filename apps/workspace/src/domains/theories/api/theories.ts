@@ -30,10 +30,10 @@ export function useTheoriesQuery(organizationId?: string) {
   };
 }
 
-export function usePrivateTheoriesQuery(organizationId?: string, userId?: string) {
+export function usePrivateTheoriesQuery(organizationId?: string, _legacyUserId?: string) {
   const theories = useQuery(
     api.theories.read.listPrivate,
-    organizationId && userId ? { organizationId, userId } : "skip",
+    organizationId ? { organizationId } : "skip",
   );
   return {
     data: theories?.filter((t) => !t.deletedAt),

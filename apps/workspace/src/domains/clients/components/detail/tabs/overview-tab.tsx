@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { type Client } from "../../../store/clients.types";
 import { type ClientFormValues } from "../../../validation/client.schema";
 import { EditableText } from "@/components/ui/editable-text";
-import { TiptapEditor } from "@/components/ui/tiptap-editor";
+import { YooptaRichTextEditor } from "@/components/shared/yoopta-rich-text-editor";
 import { useClientTasksQuery } from "../../../api/client-tasks";
 import { useClientFollowUpsQuery } from "../../../api/client-follow-ups";
 import { useOpportunitiesQuery } from "@/domains/opportunities/api/opportunities";
@@ -377,7 +377,7 @@ export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
                 Content
               </label>
               <div className="rounded-xl border border-border bg-card overflow-hidden min-h-[220px]">
-                <TiptapEditor
+                <YooptaRichTextEditor
                   value={noteContent}
                   onChange={setNoteContent}
                   placeholder="Start typing note details (Markdown supported)..."

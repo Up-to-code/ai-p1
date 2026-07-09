@@ -1,5 +1,10 @@
-import { BillingScreen } from "@/domains/billing";
+import { redirect } from "next/navigation";
 
-export default function BillingPage() {
-  return <BillingScreen />;
+export default async function BillingPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  redirect(`/${locale}/settings/billing`);
 }

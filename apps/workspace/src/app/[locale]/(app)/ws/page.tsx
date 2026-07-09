@@ -1,14 +1,5 @@
-"use client";
-
-import { useNavigation } from "@/domains/navigation";
-import { TaskTableView } from "@/domains/projects/components/views/task-table-view";
+import { WorkspaceHomeScreen } from "@/domains/workspace/components/workspace-home-screen";
 
 export default function WsPage() {
-  const { orgId, projectId } = useNavigation();
-
-  return (
-    <div className="p-4">
-      <TaskTableView projectId={projectId ?? ""} organizationId={orgId ?? ""} />
-    </div>
-  );
+  return <WorkspaceHomeScreen />;
 }

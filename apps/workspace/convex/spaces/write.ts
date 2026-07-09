@@ -1,6 +1,7 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
+import { resolveSpaceAccess } from "../access/space";
 import { authUser } from "../auth";
 import { assertCanPerformSpaceAction } from "../permissions";
 import { presentWorkspaceRecord, stripDeletedFields } from "../shared/present";
@@ -18,10 +19,8 @@ export const create = mutation({
   },
   returns: spaceValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
-    // Check if user can create spaces in the organization
-    // For now, we'll allow creation - in production, check org role
-    // await assertCanPerformOrganizationAction(ctx, args.organizationId, user._id, "space", "create");
+    const access = await resolveSpaceAccess(ctx, args.organizationId);
+    await access.assertCanCreate();
 
     const existing = await ctx.db
       .query("spaces")
@@ -30,7 +29,12 @@ export const create = mutation({
       )
       .first();
     if (existing) {
-      throw new Error("A space with this slug already exists in this organization.");
+      throw new ConvexError({
+        code: "SPACE_SLUG_CONFLICT",
+        message: "A space with this slug already exists in this organization.",
+        organizationId: args.organizationId,
+        slug: args.input.slug,
+      });
     }
 
     const now = Date.now();
@@ -38,7 +42,7 @@ export const create = mutation({
       organizationId: args.organizationId,
       ...args.input,
       recordState: "active",
-      createdByUserId: user._id,
+      createdByUserId: access.actor.userId,
       createdAt: now,
       updatedAt: now,
     });
@@ -47,16 +51,16 @@ export const create = mutation({
     await ctx.db.insert("spaceMembers", {
       organizationId: args.organizationId,
       spaceId: id,
-      userId: user._id,
+      userId: access.actor.userId,
       role: "admin",
       recordState: "active",
-      addedByUserId: user._id,
+      addedByUserId: access.actor.userId,
       addedAt: now,
     });
 
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
-      actorUserId: user._id,
+      actorUserId: access.actor.userId,
       action: "space.create",
       target: id,
       summary: `Created space ${args.input.name}.`,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getItem, setItem, removeItem } from "./adapters/indexeddb-adapter";
 
 interface UseIndexedDbConfigResult<T> {
@@ -10,39 +10,59 @@ interface UseIndexedDbConfigResult<T> {
   isLoaded: boolean;
 }
 
+export interface UseIndexedDbConfigOptions {
+  onError?: (error: unknown, operation: "read" | "write" | "reset") => void;
+}
+
 export function useIndexedDbConfig<T>(
   store: "layouts" | "cache" | "drafts",
   key: string,
   defaults: T,
+  options?: UseIndexedDbConfigOptions,
 ): UseIndexedDbConfigResult<T> {
+  const onError = options?.onError;
   const [value, setValueState] = useState<T>(defaults);
   const [isLoaded, setIsLoaded] = useState(false);
-  const initialized = useRef(false);
-
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-
-    getItem(store, key).then((entry) => {
-      if (entry) {
-        setValueState(entry.value as T);
-      }
-      setIsLoaded(true);
-    });
-  }, [store, key]);
+    let cancelled = false;
+    setValueState(defaults);
+    setIsLoaded(false);
+    getItem(store, key)
+      .then((entry) => {
+        if (cancelled) return;
+        if (entry) setValueState(entry.value as T);
+        setIsLoaded(true);
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        onError?.(error, "read");
+        setIsLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [defaults, key, onError, store]);
 
   const setValue = useCallback(
     async (next: T) => {
       setValueState(next);
-      await setItem(store, key, next as Record<string, unknown>);
+      try {
+        await setItem(store, key, next as Record<string, unknown>);
+      } catch (error: unknown) {
+        onError?.(error, "write");
+      }
     },
-    [store, key],
+    [key, onError, store],
   );
 
   const reset = useCallback(async () => {
     setValueState(defaults);
-    await removeItem(store, key);
-  }, [store, key, defaults]);
+    try {
+      await removeItem(store, key);
+    } catch (error: unknown) {
+      onError?.(error, "reset");
+    }
+  }, [defaults, key, onError, store]);
 
   return { value, setValue, reset, isLoaded };
 }

@@ -9,10 +9,23 @@ import {
   type ReadHandler, type WriteHandler, type ReadToolArgs, type WriteToolArgs,
   TOOL_SCAN_LIMIT, clientSearchValues, audit,
 } from "./shared";
+import { isScopedClient, scopeActorUserId, scopePolicyFromInput } from "../scopePolicy";
 
 export const clientsList: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
   const limit = listLimit(args.input);
   const search = searchTerm(args.input);
+  const scope = scopePolicyFromInput(args.input);
+  if (scope.scopeType !== "organization") {
+    const clients = [];
+    for (const clientId of scope.clientIds) {
+      const client = await ctx.db.get(clientId as Id<"clients">);
+      if (client && client.organizationId === args.organizationId && !client.deletedAt && client.recordState !== "deleted") clients.push(client);
+    }
+    const filtered = search
+      ? clients.filter((client) => clientSearchValues(client).some((value) => value.toLowerCase().includes(search)))
+      : clients;
+    return mcpPublicWorkspacePage({ page: filtered.slice(0, limit), isDone: true, continueCursor: "" });
+  }
   if (!search) {
     const page = await ctx.db
       .query("clients")
@@ -31,6 +44,7 @@ export const clientsList: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs
 
 export const clientsGet: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
   const client = await ctx.db.get(requiredString(args.input, "clientId") as Id<"clients">);
+  if (client && (!isScopedClient(scopePolicyFromInput(args.input), client._id) || client.recordState === "deleted")) throw new Error("Client was not found.");
   return presentWorkspaceRecord(assertPublicWorkspaceRecord(assertActiveWorkspaceRecord(client, args.organizationId, "Client"), "Client"));
 };
 
@@ -39,7 +53,7 @@ export const clientsCreate: WriteHandler = async (ctx: MutationCtx, args: WriteT
   const result = await ctx.runMutation(internal.clients.write.createInternal, {
     organizationId: args.organizationId,
     input: { ...client, visibility: "workspace", source: "mcp" },
-    actorUserId: args.actorId,
+    actorUserId: scopeActorUserId(args.input),
   });
   await audit(ctx, args.organizationId, args.connectionId, "client.create", result.id, `Created client ${client.name}.`);
   return presentWorkspaceRecord(result);
@@ -52,7 +66,7 @@ export const clientsUpdate: WriteHandler = async (ctx: MutationCtx, args: WriteT
     organizationId: args.organizationId,
     clientId,
     input: client,
-    actorUserId: args.actorId,
+    actorUserId: scopeActorUserId(args.input),
   });
   await audit(ctx, args.organizationId, args.connectionId, "client.update", clientId, `Updated client ${client.name ?? ""}.`);
   return presentWorkspaceRecord(result);
@@ -63,7 +77,7 @@ export const clientsDelete: WriteHandler = async (ctx: MutationCtx, args: WriteT
   const result = await ctx.runMutation(internal.clients.write.deleteInternal, {
     organizationId: args.organizationId,
     clientId,
-    actorUserId: args.actorId,
+    actorUserId: scopeActorUserId(args.input),
   });
   await audit(ctx, args.organizationId, args.connectionId, "client.delete", clientId, `Deleted client.`);
   return result;

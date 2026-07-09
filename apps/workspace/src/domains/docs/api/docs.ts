@@ -1,9 +1,11 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useCallback } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
-import type { DocFormValues, DocFolderFormValues, DocRecord, DocFolder, CustomField } from "../docs.types";
+import type { DocFormValues, DocFolderFormValues, DocRecord, DocFolder } from "../docs.types";
 
 export function useDocsQuery(
   organizationId?: string,
@@ -73,7 +75,6 @@ export function docPayloadFromForm(values: DocFormValues) {
       .split(",")
       .map((tag) => tag.trim())
       .filter(Boolean),
-    customFields: values.customFields,
   };
 }
 
@@ -99,6 +100,20 @@ export async function updateDocRequest(organizationId: string, docId: string, va
     body: docPayloadFromForm(values),
     fallbackMessage: "Doc request failed.",
   });
+}
+
+export function useUpdateDocMutation() {
+  const updateDoc = useMutation(api.clientDocs.write.updateFromHono);
+
+  return useCallback(
+    (organizationId: string, docId: string, values: DocFormValues) =>
+      updateDoc({
+        organizationId,
+        docId: docId as Id<"docs">,
+        input: docPayloadFromForm(values),
+      }),
+    [updateDoc],
+  );
 }
 
 export async function deleteDocRequest(organizationId: string, docId: string) {

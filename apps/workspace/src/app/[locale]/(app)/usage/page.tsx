@@ -1,5 +1,10 @@
-import { UsageScreen } from "@/domains/usage";
+import { redirect } from "next/navigation";
 
-export default function UsagePage() {
-  return <UsageScreen />;
+export default async function UsagePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  redirect(`/${locale}/settings/ai-usage`);
 }

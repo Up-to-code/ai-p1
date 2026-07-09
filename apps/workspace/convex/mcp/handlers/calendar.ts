@@ -8,16 +8,40 @@ import {
   type ReadHandler, type WriteHandler, type ReadToolArgs, type WriteToolArgs,
   listEvents, audit,
 } from "./shared";
+import { isScopedResourceLink, scopeActorUserId, scopePolicyFromInput } from "../scopePolicy";
+
+async function scopedListEvents(ctx: QueryCtx, args: ReadToolArgs, startAt: number, endAt: number) {
+  const scope = scopePolicyFromInput(args.input);
+  if (scope.scopeType === "organization") {
+    return listEvents(ctx, args.organizationId, startAt, endAt, listLimit(args.input), listCursor(args.input), optionalString(args.input, "spaceId"));
+  }
+  const events = await ctx.db
+    .query("calendarEvents")
+    .withIndex("by_start", (q) => q.eq("organizationId", args.organizationId).gte("startAt", startAt).lt("startAt", endAt))
+    .take(200);
+  const page = events
+    .filter((event) => event.recordState !== "deleted" && isScopedResourceLink(scope, event))
+    .slice(0, listLimit(args.input));
+  return listEventsResult(page);
+}
+
+function listEventsResult(page: Array<{ _id: string; deletedAt?: number; startAt: number } & Record<string, unknown>>) {
+  return {
+    items: page.filter((event) => !event.deletedAt).sort((a, b) => a.startAt - b.startAt).map(presentWorkspaceRecord),
+    isDone: true,
+    continueCursor: "",
+  };
+}
 
 export const calendarListToday: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
   const now = new Date();
   const start = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
   const end = start + 24 * 60 * 60 * 1000;
-  return listEvents(ctx, args.organizationId, start, end, listLimit(args.input), listCursor(args.input), optionalString(args.input, "spaceId"));
+  return scopedListEvents(ctx, args, start, end);
 };
 
 export const calendarListRange: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
-  return listEvents(ctx, args.organizationId, requiredNumber(args.input, "startAt"), requiredNumber(args.input, "endAt"), listLimit(args.input), listCursor(args.input), optionalString(args.input, "spaceId"));
+  return scopedListEvents(ctx, args, requiredNumber(args.input, "startAt"), requiredNumber(args.input, "endAt"));
 };
 
 export const calendarListMonth: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
@@ -25,11 +49,13 @@ export const calendarListMonth: ReadHandler = async (ctx: QueryCtx, args: ReadTo
   const month = requiredNumber(args.input, "month");
   const start = Date.UTC(year, month - 1, 1);
   const end = Date.UTC(year, month, 1);
-  return listEvents(ctx, args.organizationId, start, end, listLimit(args.input), listCursor(args.input), optionalString(args.input, "spaceId"));
+  return scopedListEvents(ctx, args, start, end);
 };
 
 export const calendarGet: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
   const event = await ctx.db.get(requiredString(args.input, "eventId") as Id<"calendarEvents">);
+  const scope = scopePolicyFromInput(args.input);
+  if (event && (!isScopedResourceLink(scope, event) || event.recordState === "deleted")) throw new Error("Calendar event was not found.");
   return presentWorkspaceRecord(assertActiveWorkspaceRecord(event, args.organizationId, "Calendar event"));
 };
 
@@ -39,7 +65,7 @@ export const calendarCreate: WriteHandler = async (ctx: MutationCtx, args: Write
   const result = await ctx.runMutation(internal.calendar.write.createInternal, {
     organizationId: args.organizationId,
     input: event,
-    actorUserId: args.actorId,
+    actorUserId: scopeActorUserId(args.input),
   });
   await audit(ctx, args.organizationId, args.connectionId, "calendar.create", result.id, `Scheduled ${event.title}.`);
   return presentWorkspaceRecord(result);
@@ -47,13 +73,20 @@ export const calendarCreate: WriteHandler = async (ctx: MutationCtx, args: Write
 
 export const calendarUpdate: WriteHandler = async (ctx: MutationCtx, args: WriteToolArgs) => {
   const eventId = requiredString(args.input, "eventId") as Id<"calendarEvents">;
-  const patch = calendarInput(args.input);
+  const existing = assertActiveWorkspaceRecord(await ctx.db.get(eventId), args.organizationId, "Calendar event");
+  const parsed = calendarInput(args.input);
+  const patch = {
+    ...parsed,
+    projectId: Object.prototype.hasOwnProperty.call(args.input, "projectId") ? parsed.projectId : existing.projectId as Id<"projects"> | undefined,
+    clientId: Object.prototype.hasOwnProperty.call(args.input, "clientId") ? parsed.clientId : existing.clientId as Id<"clients"> | undefined,
+    taskId: Object.prototype.hasOwnProperty.call(args.input, "taskId") ? parsed.taskId : existing.taskId as Id<"tasks"> | undefined,
+  };
   await assertCalendarLinks(ctx, args.organizationId, patch);
   const result = await ctx.runMutation(internal.calendar.write.updateInternal, {
     organizationId: args.organizationId,
     eventId,
     input: patch,
-    actorUserId: args.actorId,
+    actorUserId: scopeActorUserId(args.input),
   });
   await audit(ctx, args.organizationId, args.connectionId, "calendar.update", eventId, `Updated.`);
   return presentWorkspaceRecord(result);
@@ -64,7 +97,7 @@ export const calendarDelete: WriteHandler = async (ctx: MutationCtx, args: Write
   const result = await ctx.runMutation(internal.calendar.write.deleteInternal, {
     organizationId: args.organizationId,
     eventId,
-    actorUserId: args.actorId,
+    actorUserId: scopeActorUserId(args.input),
   });
   await audit(ctx, args.organizationId, args.connectionId, "calendar.delete", eventId, `Deleted.`);
   return result;

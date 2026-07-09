@@ -19,7 +19,7 @@ export default async function WorkspaceHome({
   }
 
   if (isAuthenticated) {
-    redirect(`/${locale}/choose-org`);
+    redirect(`/${locale}/ws`);
   }
 
   redirect(new URL(`/${locale}`, brandDomainUrl("root")).toString());

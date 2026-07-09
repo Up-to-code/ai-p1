@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import { TopbarEssential } from "./topbar-essential";
 import { TopbarSearch } from "./topbar-search";
 import { TopbarActions } from "./topbar-actions";
-import { ProjectSwitcher, SpaceSwitcher } from "./topbar-helpers";
 
 export function Topbar() {
   const locale = useLocale();
@@ -24,20 +23,14 @@ export function Topbar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 grid h-11 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-border bg-background px-3 backdrop-blur-xl backdrop-saturate-150 transition-all duration-300",
+        "sticky top-0 z-30 flex h-11 items-center gap-3 border-b border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-bg)] px-2.5 transition-colors",
         isRtlLocale(locale) && "font-cairo",
       )}
     >
-      <div className="flex min-w-0 items-center gap-2">
+      <div className="flex min-w-0 shrink-0 items-center gap-2">
         <TopbarEssential />
-        <div className="hidden min-w-0 md:block">
-          <SpaceSwitcher />
-        </div>
-        <div className="hidden min-w-0 xl:block">
-          <ProjectSwitcher />
-        </div>
       </div>
-      <div className="flex justify-center">
+      <div className="flex min-w-0 flex-1 justify-center">
         <TopbarSearch />
       </div>
       <TopbarActions />

@@ -13,6 +13,7 @@ export type Resource =
   | "client"
   | "deal"
   | "calendar"
+  | "document"
   | "media"
   | "team"
   | "member"
@@ -35,6 +36,7 @@ export const permissions = {
     client: "client",
     deal: "deal",
     calendar: "calendar",
+    document: "document",
     media: "media",
     team: "team",
     member: "member",
@@ -202,6 +204,16 @@ export async function getOrganizationRole(
   return null;
 }
 
+export async function hasOrganizationMembership(
+  ctx: PermissionCtx,
+  organizationId: string,
+  userId: string,
+): Promise<boolean> {
+  return (
+    (await getOrganizationRoleNames(ctx, organizationId, userId)).length > 0
+  );
+}
+
 export async function getSpaceRole(
   ctx: PermissionCtx,
   organizationId: string,
@@ -365,6 +377,7 @@ const memberActions: Record<Resource, Action[]> = {
   client: ["read"],
   deal: ["read"],
   calendar: ["create", "read", "update"],
+  document: ["read"],
   media: ["read"],
   team: ["read"],
   member: ["read"],

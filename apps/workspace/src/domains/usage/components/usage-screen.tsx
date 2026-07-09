@@ -23,7 +23,7 @@ export function UsageScreen() {
 
   if (session.workspace.status !== "ready") {
     return (
-      <div className="min-h-screen bg-muted/50/50 dark:bg-[#0A0A0A]">
+      <div className="min-h-screen bg-muted/50/50 dark:bg-[#070707]">
         <WorkspaceQueryState status={session.workspace.status} variant="dashboard" />
       </div>
     );

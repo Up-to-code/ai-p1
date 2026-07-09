@@ -17,7 +17,7 @@ export function RouteTransitionOverlay() {
   function getThemeBg(): string {
     try {
       return window.localStorage.getItem(brandIdentity.themeStorageKey) === "dark"
-        ? "#0E0E0E"
+        ? "#070707"
         : "#FAF8F4";
     } catch {
       return "#FAF8F4";
@@ -39,7 +39,7 @@ export function RouteTransitionOverlay() {
     const bg = getThemeBg();
     const color = getThemeColor();
     document.documentElement.style.backgroundColor = bg;
-    document.documentElement.style.colorScheme = bg === "#0E0E0E" ? "dark" : "light";
+    document.documentElement.style.colorScheme = bg === "#070707" ? "dark" : "light";
     document.body.style.backgroundColor = bg;
     document.body.style.color = color;
   }, []);
@@ -54,7 +54,7 @@ export function RouteTransitionOverlay() {
 
     // Force inline styles so background is always correct
     document.documentElement.style.backgroundColor = bg;
-    document.documentElement.style.colorScheme = bg === "#0E0E0E" ? "dark" : "light";
+    document.documentElement.style.colorScheme = bg === "#070707" ? "dark" : "light";
     document.body.style.backgroundColor = bg;
     document.body.style.color = color;
 

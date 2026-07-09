@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { TiptapEditor } from "@/components/ui/tiptap-editor";
+import { YooptaRichTextEditor } from "@/components/shared/yoopta-rich-text-editor";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface TasksCalendarTabProps {
@@ -425,7 +425,7 @@ export function TasksCalendarTab({ client, organizationId }: TasksCalendarTabPro
             <div className="space-y-1.5 flex flex-col">
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Description & Notes</label>
               <div className="rounded-xl border border-border bg-card overflow-hidden min-h-[220px]">
-                <TiptapEditor
+                <YooptaRichTextEditor
                   value={newDescription}
                   onChange={setNewDescription}
                   placeholder="Add interesting progress, links, or context (Markdown supported)..."

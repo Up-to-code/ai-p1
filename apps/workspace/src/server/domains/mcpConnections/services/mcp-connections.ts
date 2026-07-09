@@ -3,12 +3,32 @@ import type { Id } from "@convex/_generated/dataModel";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/convex-auth";
 import type { CreateMcpConnectionPayload, UpdateMcpConnectionPayload } from "../validation/mcp-connection.schema";
 
+type ConvexMcpScope =
+  | { type: "organization" }
+  | { type: "space"; spaceIds: Id<"spaces">[] }
+  | { type: "project"; projectIds: Id<"projects">[] };
+
+function toConvexMcpScope(
+  scope: CreateMcpConnectionPayload["scope"] | NonNullable<UpdateMcpConnectionPayload["scope"]>,
+): ConvexMcpScope {
+  if (scope.type === "space") {
+    return { type: "space", spaceIds: scope.spaceIds as Id<"spaces">[] };
+  }
+  if (scope.type === "project") {
+    return { type: "project", projectIds: scope.projectIds as Id<"projects">[] };
+  }
+  return { type: "organization" };
+}
+
 export function listMcpConnections(organizationId: string) {
   return fetchAuthQuery(api.mcp.connections.list, { organizationId });
 }
 
 export function createMcpConnection(organizationId: string, input: CreateMcpConnectionPayload) {
-  return fetchAuthMutation(api.mcp.connections.createFromHono, { organizationId, input });
+  return fetchAuthMutation(api.mcp.connections.createFromHono, {
+    organizationId,
+    input: { ...input, scope: toConvexMcpScope(input.scope) },
+  });
 }
 
 export function updateMcpConnection(
@@ -16,10 +36,14 @@ export function updateMcpConnection(
   connectionId: string,
   input: UpdateMcpConnectionPayload,
 ) {
+  const { scope, ...rest } = input;
   return fetchAuthMutation(api.mcp.connections.updateFromHono, {
     organizationId,
     connectionId: connectionId as Id<"organizationMcpConnections">,
-    input,
+    input: {
+      ...rest,
+      ...(scope ? { scope: toConvexMcpScope(scope) } : {}),
+    },
   });
 }
 

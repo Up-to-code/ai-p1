@@ -16,8 +16,8 @@ type Props = {
 export function AuthEntryClient({ locale, mode, callbackURL }: Props) {
   const { data: session, isPending } = authClient.useSession();
   const targetCallbackURL = callbackURL
-    ? resolveAuthEntryCallbackUrl(locale, callbackURL, "/choose-org")
-    : `/${locale}/choose-org`;
+    ? resolveAuthEntryCallbackUrl(locale, callbackURL, "/ws")
+    : `/${locale}/ws`;
   const auth = useAuthFlow({
     callbackURL: targetCallbackURL,
     locale,

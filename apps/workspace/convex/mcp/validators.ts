@@ -69,6 +69,7 @@ export const mcpConnectionValidator = v.object({
   name: v.string(),
   instructions: v.optional(v.string()),
   permissions: v.array(mcpPermissionValidator),
+  scope: mcpScopeValidator,
   status: v.union(v.literal("active"), v.literal("paused"), v.literal("draft"), v.literal("revoked")),
   principalType: mcpConnectionPrincipalTypeValidator,
   principalUserId: v.optional(v.string()),
@@ -97,3 +98,8 @@ export type McpPermission = {
   resource: McpResource;
   actions: McpAction[];
 };
+
+export type McpScope =
+  | { type: "organization"; spaceIds?: undefined; projectIds?: undefined }
+  | { type: "space"; spaceIds: Array<import("../_generated/dataModel").Id<"spaces">>; projectIds?: undefined }
+  | { type: "project"; projectIds: Array<import("../_generated/dataModel").Id<"projects">>; spaceIds?: undefined };

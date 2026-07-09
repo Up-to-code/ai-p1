@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Search, Sparkles, ListTodo, PieChart, Calculator, FolderKanban, Users, StickyNote, MessageSquare, Bookmark, TrendingUp, DollarSign, X } from "lucide-react";
+import { Search, Sparkles, ListTodo, PieChart, Calculator, FolderKanban, Users, StickyNote, MessageSquare, Bookmark, TrendingUp, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -25,7 +25,6 @@ const WIDGET_OPTIONS: WidgetOption[] = [
   { type: "notes", title: "Notes", description: "Add rich text notes for this project", icon: StickyNote, color: "text-amber-500 bg-amber-500/10", defaultWidth: 6, defaultHeight: 4 },
   { type: "workload", title: "Workload by Status", description: "Pie chart showing tasks by status", icon: PieChart, color: "text-teal-500 bg-teal-500/10", defaultWidth: 6, defaultHeight: 4 },
   { type: "progress-chart", title: "Progress Chart", description: "Project progress with task breakdown", icon: TrendingUp, color: "text-indigo-500 bg-indigo-500/10", defaultWidth: 6, defaultHeight: 4 },
-  { type: "budget-chart", title: "Budget Tracker", description: "Budget utilization and spending overview", icon: DollarSign, color: "text-emerald-500 bg-emerald-500/10", defaultWidth: 6, defaultHeight: 4 },
   { type: "ai-brain", title: "AI Brain", description: "Generate ideas and content with a custom prompt", icon: Sparkles, color: "text-purple-500 bg-purple-500/10", defaultWidth: 4, defaultHeight: 4 },
   { type: "calculation", title: "Calculation", description: "Calculate sums, averages, and so much more", icon: Calculator, color: "text-indigo-500 bg-indigo-500/10", defaultWidth: 4, defaultHeight: 4 },
   { type: "portfolio", title: "Portfolio", description: "Categorize and track progress of Lists & Folders", icon: FolderKanban, color: "text-orange-500 bg-orange-500/10", defaultWidth: 12, defaultHeight: 6 },
@@ -60,7 +59,6 @@ export function AddWidgetModal({ isOpen, onClose, onSelectWidget }: AddWidgetMod
       "notes": "notes",
       "workload": "workload",
       "progress-chart": "progressChart",
-      "budget-chart": "budgetChart",
       "ai-brain": "aiBrain",
       "calculation": "calculation",
       "portfolio": "portfolio",
@@ -186,7 +184,7 @@ export function AddWidgetModal({ isOpen, onClose, onSelectWidget }: AddWidgetMod
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 flex flex-col bg-[#0e0e0e] dark:bg-[#0e0e0e]">
+          <div className="flex-1 flex flex-col bg-[var(--q-bg)]">
             <div className="p-3 border-b border-border/30 flex items-center justify-between">
               <div className="relative flex-1 max-w-sm ml-2">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

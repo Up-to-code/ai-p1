@@ -11,6 +11,7 @@ import {
   taskInput,
   requiredString,
 } from "./toolInputs";
+import { attachScopePolicyInput, type EffectiveScopePolicy } from "./scopePolicy";
 
 type Input = Record<string, unknown>;
 
@@ -62,14 +63,20 @@ export async function executeMcpToolCall(
 ) {
   const permission = toolPermissions[args.tool];
   if (!permission) throw new Error("Unknown tool.");
+  const input = inputObject(args.input);
 
   const validation = await ctx.runQuery(api.mcp.connections.validateConnection, {
     publicId: args.publicId,
     secret: args.secret,
     resource: permission.resource,
     action: permission.action,
+    tool: args.tool,
+    input,
   });
-  if (!validation.ok || !validation.organizationId || !validation.connectionId || !validation.keyId) {
+  if (
+    !validation.ok || !validation.organizationId || !validation.connectionId || !validation.keyId ||
+    !validation.scope || !validation.actorUserId
+  ) {
     throw new Error(validation.reason ?? "Agent link is not allowed.");
   }
 
@@ -81,11 +88,19 @@ export async function executeMcpToolCall(
   });
   if (!reserved.ok) throw new Error(reserved.reason ?? "Agent link is not available.");
 
+  const policy: EffectiveScopePolicy = {
+    organizationId: validation.organizationId,
+    actorUserId: validation.actorUserId,
+    scope: validation.scope as EffectiveScopePolicy["scope"],
+    spaceIds: validation.scopeSpaceIds ?? [],
+    projectIds: validation.scopeProjectIds ?? [],
+    clientIds: validation.scopeClientIds ?? [],
+  };
   const common = {
     organizationId: validation.organizationId,
     connectionId: validation.connectionId,
     tool: args.tool,
-    input: inputObject(args.input),
+    input: attachScopePolicyInput(input, policy),
     appBaseUrl: args.appBaseUrl,
     permissions: validation.permissions ?? [],
     instructions: validation.instructions,
@@ -101,10 +116,7 @@ export async function executeMcpToolCall(
     };
   }
 
-  // MCP tools are always allowed to execute directly - no approval required
-  // Policy evaluation happens at connection creation time, not at tool call time
   return readTools.has(args.tool)
     ? await ctx.runQuery(internal.mcp.tools.readTool, common)
     : await ctx.runMutation(internal.mcp.tools.writeTool, common);
 }
-// test change Mon Jun 15 13:52:36 EEST 2026

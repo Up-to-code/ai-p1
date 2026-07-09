@@ -29,7 +29,14 @@ describe("MCP connection lifecycle", () => {
       keyLast4: "1234",
       principalType: "user",
       principalUserId: "user_1",
+      scope: { type: "organization" },
       expiresAt: 50,
+    });
+  });
+
+  it("presents missing legacy scope as Organization scope", () => {
+    expect(presentMcpConnection(connection({ scope: undefined })).scope).toEqual({
+      type: "organization",
     });
   });
 

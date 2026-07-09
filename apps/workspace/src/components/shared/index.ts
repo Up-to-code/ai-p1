@@ -17,6 +17,10 @@ export {
   type DocEditorMetaField,
   type DocEditorMentionOption,
 } from "./work-os-doc-editor";
+export {
+  YooptaRichTextEditor,
+  type YooptaRichTextEditorProps,
+} from "./yoopta-rich-text-editor";
 export { InfiniteScrollSentinel } from "./infinite-scroll-sentinel";
 export { BadgeSelect, type BadgeSelectOption } from "./badge-select";
 export { ReviewInput, StarRatingPicker, type ReviewInputProps, type ReviewInputSubmission, type ReviewInputUser } from "./review-input";

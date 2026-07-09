@@ -34,8 +34,9 @@ function setThemeCookie(theme: Theme) {
 }
 
 function readStoredTheme(): Theme {
-  if (typeof window === "undefined") return "light";
-  return window.localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
+  if (typeof window === "undefined") return "dark";
+  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+  return stored === "light" ? "light" : "dark";
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

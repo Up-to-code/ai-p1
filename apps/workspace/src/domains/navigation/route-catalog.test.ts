@@ -1,0 +1,57 @@
+import { describe, expect, it } from "vitest";
+import { forwardPersistentParams } from "@/lib/workspace-nav-params";
+import { getActiveRailItem, getRouteId } from "./route-catalog";
+
+describe("route catalog", () => {
+  it("selects the active rail item without confusing /ws with nested routes", () => {
+    expect(getActiveRailItem("/ws")).toBe("home");
+    expect(getActiveRailItem("/ws-extra")).toBeNull();
+    expect(getActiveRailItem("/ai")).toBe("ai");
+    expect(getRouteId("/ws")).toBe("ws");
+    expect(getRouteId("/ai")).toBe("ai");
+  });
+
+  it("matches nested canonical routes and locale-prefixed routes", () => {
+    expect(getRouteId("/tasks/123")).toBe("tasks");
+    expect(getRouteId("/ar/projects/123/overview")).toBe("projects");
+    expect(getRouteId("/organization-extra")).toBeNull();
+  });
+
+  it("restores the legacy domain panels for direct and nested routes", () => {
+    expect(getActiveRailItem("/clients")).toBe("clients");
+    expect(getActiveRailItem("/clients/123")).toBe("clients");
+    expect(getActiveRailItem("/opportunities")).toBe("opportunities");
+    expect(getActiveRailItem("/opportunities/123")).toBe("opportunities");
+    expect(getActiveRailItem("/deals")).toBe("deals");
+    expect(getActiveRailItem("/deals/123")).toBe("deals");
+  });
+
+  it("resolves reviewed legacy aliases to the intended destination", () => {
+    expect(getRouteId("/ws/inbox")).toBe("inbox");
+    expect(getRouteId("/ws/channels")).toBe("channels");
+    expect(getRouteId("/inbox/channels")).toBe("channels");
+    expect(getRouteId("/organization/channels")).toBe("channels");
+    expect(getRouteId("/ws/spaces")).toBe("spaces");
+    expect(getRouteId("/inbox/spaces")).toBe("spaces");
+    expect(getRouteId("/organization/spaces")).toBe("spaces");
+  });
+
+  it("strips persistent params that are not supported by the destination", () => {
+    const current = new URLSearchParams("project=p1&space=s1&mode=ai&threadId=t1&state=encoded");
+    expect(forwardPersistentParams("/organization", current)).toBe("/organization");
+    expect(forwardPersistentParams("/tasks", current)).toBe("/tasks?project=p1&space=s1");
+    expect(forwardPersistentParams("/ws", current)).toBe("/ws");
+    expect(forwardPersistentParams("/ai", current)).toBe("/ai?mode=ai&threadId=t1&state=encoded");
+    expect(forwardPersistentParams("/inbox", current)).toBe("/inbox");
+    expect(forwardPersistentParams("/spaces", current)).toBe("/spaces");
+    expect(forwardPersistentParams("/projects", current)).toBe("/projects");
+    expect(forwardPersistentParams("/clients", current)).toBe("/clients");
+    expect(forwardPersistentParams("/opportunities", current)).toBe("/opportunities");
+    expect(forwardPersistentParams("/deals", current)).toBe("/deals");
+  });
+
+  it("does not treat protocol-relative links as internal workspace links", () => {
+    const current = new URLSearchParams("project=p1");
+    expect(forwardPersistentParams("//example.com/tasks", current)).toBe("//example.com/tasks");
+  });
+});

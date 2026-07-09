@@ -9,6 +9,7 @@ import {
   type ReadHandler, type WriteHandler, type ReadToolArgs, type WriteToolArgs,
   TOOL_SCAN_LIMIT, hasInputKey, scopedProjectId, scopedClientId, taskSearchValues, audit,
 } from "./shared";
+import { isScopedResourceLink, scopeActorUserId, scopePolicyFromInput } from "../scopePolicy";
 
 export const tasksList: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
   const limit = listLimit(args.input);
@@ -16,6 +17,23 @@ export const tasksList: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) 
   const projectId = scopedProjectId(args.input);
   const clientId = scopedClientId(args.input);
   const spaceId = optionalString(args.input, "spaceId");
+  const scope = scopePolicyFromInput(args.input);
+  if (scope.scopeType !== "organization") {
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
+      .order("desc")
+      .take(TOOL_SCAN_LIMIT);
+    const scoped = tasks.filter((task) => task.recordState !== "deleted" && isScopedResourceLink(scope, task));
+    const filtered = search
+      ? scoped.filter((task) => taskSearchValues(task).some((value) => value.toLowerCase().includes(search)))
+      : scoped;
+    return mcpPublicWorkspacePage({
+      page: filtered.slice(0, limit),
+      isDone: true,
+      continueCursor: "",
+    });
+  }
   if (!search) {
     const query = spaceId && projectId
       ? ctx.db
@@ -64,6 +82,10 @@ export const tasksList: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) 
 
 export const tasksGet: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
   const task = await ctx.db.get(requiredString(args.input, "taskId") as Id<"tasks">);
+  const scope = scopePolicyFromInput(args.input);
+  if (task && (!isScopedResourceLink(scope, task) || task.recordState === "deleted")) {
+    throw new Error("Task was not found.");
+  }
   return presentWorkspaceRecord(assertPublicWorkspaceRecord(assertActiveWorkspaceRecord(task, args.organizationId, "Task"), "Task"));
 };
 
@@ -73,7 +95,7 @@ export const tasksCreate: WriteHandler = async (ctx: MutationCtx, args: WriteToo
   const result = await ctx.runMutation(internal.clientTasks.write.createInternal, {
     organizationId: args.organizationId,
     input: { ...task, visibility: "workspace" },
-    actorUserId: args.actorId,
+    actorUserId: scopeActorUserId(args.input),
   });
   await audit(ctx, args.organizationId, args.connectionId, "client.task.create", result.id, `Created task ${task.title}.`);
   return presentWorkspaceRecord(result);
@@ -88,7 +110,7 @@ export const tasksUpdate: WriteHandler = async (ctx: MutationCtx, args: WriteToo
     organizationId: args.organizationId,
     taskId,
     input: patch,
-    actorUserId: args.actorId,
+    actorUserId: scopeActorUserId(args.input),
   });
   await audit(ctx, args.organizationId, args.connectionId, "client.task.update", taskId, `Updated task ${existing.title}.`);
   return presentWorkspaceRecord(result);
@@ -113,7 +135,7 @@ export const tasksComplete: WriteHandler = async (ctx: MutationCtx, args: WriteT
       ...(existing.dueDate ? { dueDate: existing.dueDate } : {}),
       visibility: existing.visibility ?? "workspace",
     },
-    actorUserId: args.actorId,
+    actorUserId: scopeActorUserId(args.input),
   });
   await audit(ctx, args.organizationId, args.connectionId, "client.task.update", taskId, `Completed task ${existing.title}.`);
   return presentWorkspaceRecord(result);
@@ -124,7 +146,7 @@ export const tasksDelete: WriteHandler = async (ctx: MutationCtx, args: WriteToo
   const result = await ctx.runMutation(internal.clientTasks.write.deleteInternal, {
     organizationId: args.organizationId,
     taskId,
-    actorUserId: args.actorId,
+    actorUserId: scopeActorUserId(args.input),
   });
   await audit(ctx, args.organizationId, args.connectionId, "client.task.delete", taskId, `Deleted task.`);
   return result;

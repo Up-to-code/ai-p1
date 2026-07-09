@@ -270,7 +270,7 @@ export function DocsPageRedesigned({
       </div>
 
       {/* Breadcrumb bar */}
-      <div className="flex shrink-0 items-center gap-2 border-b border-border bg-muted/30 px-6 py-3">
+      <div className="flex shrink-0 items-center gap-2 border-b border-border bg-[var(--q-bg)] px-6 py-3">
         <Button
           type="button"
           variant="ghost"
@@ -279,7 +279,7 @@ export function DocsPageRedesigned({
           className={cn(
             "h-8 rounded-lg px-3 text-xs font-medium",
             selectedFolderId === null
-              ? "bg-card text-foreground"
+              ? "bg-[var(--q-bg-secondary)] text-foreground"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
@@ -297,7 +297,7 @@ export function DocsPageRedesigned({
               className={cn(
                 "h-8 rounded-lg px-3 text-xs font-medium",
                 folder.id === selectedFolderId
-                  ? "bg-card text-foreground"
+                  ? "bg-[var(--q-bg-secondary)] text-foreground"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -306,7 +306,7 @@ export function DocsPageRedesigned({
           </div>
         ))}
         <div className="ml-auto flex items-center gap-2">
-          <div className="flex h-8 items-center gap-2 rounded-lg border border-border bg-card px-3 focus-within:ring-2 focus-within:ring-ring/20">
+          <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[var(--q-bg-secondary)] px-3 focus-within:ring-2 focus-within:ring-ring/20">
             <Search className="h-3.5 w-3.5 text-muted-foreground" />
             <input
               value={search}
@@ -319,9 +319,9 @@ export function DocsPageRedesigned({
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto bg-muted/20">
+      <div className="flex-1 overflow-auto bg-[var(--q-bg)]">
         {showNewFolder ? (
-          <div className="m-6 flex gap-2 items-center p-4 border border-dashed border-border bg-muted/30 rounded-lg">
+          <div className="flex items-center gap-2 border-b border-border px-6 py-4">
             <input
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
@@ -360,7 +360,7 @@ export function DocsPageRedesigned({
         ) : null}
 
         {showFolderGuidance && (
-          <div className="m-6 p-6 border border-border bg-card rounded-lg">
+          <div className="border-b border-border px-6 py-5">
             <div className="flex items-start gap-3">
               <div className="shrink-0 mt-0.5">
                 <Info className="h-5 w-5 text-muted-foreground" />
@@ -408,7 +408,7 @@ export function DocsPageRedesigned({
             columns={columns}
             onRowClicked={handleRowClick}
             getRowId={(row) => row.id}
-            className="h-full"
+            className="qentrah-flat-table h-full"
             suppressRowClickSelection={false}
             rowSelection="single"
           />

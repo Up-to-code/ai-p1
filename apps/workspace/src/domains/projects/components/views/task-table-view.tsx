@@ -556,7 +556,7 @@ export function TaskTableView({ projectId, organizationId }: { projectId: string
   if (isLoading) return <TaskTableSkeleton />;
 
   return (
-    <div className="w-full h-full font-sans overflow-hidden flex flex-col">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-[var(--q-bg)] font-sans">
       <TaskTableToolbar
         groupBy={groupBy}
         onGroupByChange={setGroupBy}
@@ -582,13 +582,14 @@ export function TaskTableView({ projectId, organizationId }: { projectId: string
         />
       </TaskTableToolbar>
 
-      <div className="flex-1 min-h-0">
+      <div className="min-h-0 flex-1 bg-[var(--q-bg)]">
         <QentrahTable
           ref={tableRef}
           rows={groupedRows}
           columns={columnDefs}
           density={density}
           height="100%"
+          className="qentrah-task-table"
           rowSelection={{
             mode: "multiRow",
             headerCheckbox: false,

@@ -70,8 +70,8 @@ export function SidebarPanelLink({
         className={cn(
           "flex h-7 w-full items-center gap-2 rounded-md px-2 text-[12px] font-medium transition-colors",
           isActive
-            ? "bg-accent font-semibold text-accent-foreground"
-            : "text-muted-foreground hover:bg-accent hover:text-foreground",
+            ? "bg-[var(--q-bg-tertiary)] font-semibold text-foreground"
+            : "text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground",
         )}
       >
         <Icon className="h-3.5 w-3.5 shrink-0" />
@@ -88,7 +88,7 @@ export function SidebarPanelLink({
                   event.preventDefault();
                   event.stopPropagation();
                 }}
-                className="absolute right-1 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100"
+                className="absolute right-1 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded opacity-0 transition-opacity hover:bg-[var(--q-bg-secondary)] group-hover:opacity-100"
               >
                 <MoreHorizontal className="h-3 w-3 text-muted-foreground" />
               </button>

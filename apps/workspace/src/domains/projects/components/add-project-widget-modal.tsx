@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Search, TrendingUp, PieChart, ListTodo, StickyNote, DollarSign, Clock, BarChart3, Activity, Target, X } from "lucide-react";
+import { Search, TrendingUp, PieChart, ListTodo, StickyNote, Clock, BarChart3, Activity, Target, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type ProjectWidgetType = "stats" | "status" | "health" | "recent" | "budget" | "progress" | "timeline" | "activity" | "goals" | "team-load";
+export type ProjectWidgetType = "stats" | "status" | "health" | "recent" | "progress" | "timeline" | "activity" | "goals" | "team-load";
 
 export interface ProjectWidgetOption {
   type: ProjectWidgetType;
@@ -23,7 +23,6 @@ const PROJECT_WIDGET_OPTIONS: ProjectWidgetOption[] = [
   { type: "status", title: "Projects by Status", description: "Donut chart showing project distribution by status", icon: PieChart, color: "text-teal-500 bg-teal-500/10", defaultWidth: 4, defaultHeight: 4 },
   { type: "health", title: "Projects by Health", description: "Donut chart showing on track, at risk, and blocked projects", icon: Activity, color: "text-emerald-500 bg-emerald-500/10", defaultWidth: 4, defaultHeight: 4 },
   { type: "recent", title: "Recent Projects", description: "List of recently created or updated projects", icon: Clock, color: "text-sky-500 bg-sky-500/10", defaultWidth: 6, defaultHeight: 4 },
-  { type: "budget", title: "Budget Overview", description: "Total budget breakdown by project status", icon: DollarSign, color: "text-amber-500 bg-amber-500/10", defaultWidth: 6, defaultHeight: 4 },
   { type: "progress", title: "Progress Tracker", description: "Average progress and completion rates across projects", icon: TrendingUp, color: "text-indigo-500 bg-indigo-500/10", defaultWidth: 6, defaultHeight: 4 },
   { type: "timeline", title: "Project Timeline", description: "Projects with upcoming deadlines and milestones", icon: Target, color: "text-rose-500 bg-rose-500/10", defaultWidth: 6, defaultHeight: 4 },
   { type: "activity", title: "Activity Feed", description: "Recent changes and updates across all projects", icon: ListTodo, color: "text-violet-500 bg-violet-500/10", defaultWidth: 6, defaultHeight: 4 },

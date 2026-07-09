@@ -17,7 +17,6 @@ import { OverviewTab } from "./tabs/overview-tab";
 import { TasksTimelineTab } from "./tabs/tasks-timeline-tab";
 import { CalendarTab } from "./tabs/calendar-tab";
 import { DocumentsTab } from "./tabs/documents-tab";
-import { BudgetTab } from "./tabs/budget-tab";
 import { TeamTab } from "./tabs/team-tab";
 import { ActivityTab } from "./tabs/activity-tab";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -110,7 +109,6 @@ export function ProjectDetailLayout({ projectId }: { projectId: string }) {
             { value: "tasks", label: "Tasks & Timeline" },
             { value: "calendar", label: "Calendar" },
             { value: "documents", label: "Files" },
-            { value: "budget", label: "Budget" },
             { value: "team", label: "Team" },
             { value: "activity", label: "Activity" },
           ]}
@@ -144,10 +142,6 @@ export function ProjectDetailLayout({ projectId }: { projectId: string }) {
           {workspaceOrganizationId && (
             <DocumentsTab project={project} organizationId={workspaceOrganizationId} />
           )}
-        </TabsContent>
-
-        <TabsContent value="budget" className="mt-6 border-none p-0 outline-none">
-          <BudgetTab project={project} onUpdate={handleUpdateProject} />
         </TabsContent>
 
         <TabsContent value="team" className="mt-6 border-none p-0 outline-none">

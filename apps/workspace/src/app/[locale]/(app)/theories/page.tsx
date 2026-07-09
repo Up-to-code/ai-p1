@@ -1,5 +1,10 @@
-import { TheoriesScreen } from "@/domains/theories";
+import { redirect } from "next/navigation";
 
-export default function TheoriesPage() {
-  return <TheoriesScreen />;
+export default async function TheoriesPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  redirect(`/${locale}/ws`);
 }

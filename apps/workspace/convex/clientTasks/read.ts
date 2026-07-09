@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
-import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import { resolveTaskAccess } from "../access/task";
 import { activeDueWorkspaceRows, activeWorkspaceRows, boundedWorkspaceReadLimit } from "../workspace/readSurface";
 import { clientTaskValidator } from "./validators";
 
@@ -65,7 +65,7 @@ export const list = query({
   args: { organizationId: v.string(), assigneeUserId: v.optional(v.string()) },
   returns: v.array(clientTaskValidator),
   handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
+    const access = await resolveTaskAccess(ctx, args.organizationId);
     const tasks = args.assigneeUserId
       ? await ctx.db
           .query("tasks")
@@ -76,7 +76,7 @@ export const list = query({
           .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
           .take(MAX_LIST_TASKS);
 
-    return activeDueWorkspaceRows(tasks).map(presentTask);
+    return (await access.filterReadable(activeDueWorkspaceRows(tasks))).map(presentTask);
   },
 });
 
@@ -84,14 +84,14 @@ export const options = query({
   args: { organizationId: v.string(), limit: v.optional(v.number()) },
   returns: v.array(v.object({ id: v.string(), title: v.string() })),
   handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
+    const access = await resolveTaskAccess(ctx, args.organizationId);
     const limit = boundedWorkspaceReadLimit(args.limit, 100, 200);
     const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_due", (q) => q.eq("organizationId", args.organizationId))
       .take(limit);
 
-    return activeWorkspaceRows(tasks).map((task) => ({ id: task._id, title: task.title }));
+    return (await access.filterReadable(activeWorkspaceRows(tasks))).map((task) => ({ id: task._id, title: task.title }));
   },
 });
 
@@ -99,14 +99,15 @@ export const listByProject = query({
   args: { organizationId: v.string(), projectId: v.string(), limit: v.optional(v.number()) },
   returns: v.array(clientTaskValidator),
   handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "task", "read");
+    const access = await resolveTaskAccess(ctx, args.organizationId);
+    await access.assertValidLinks({ projectId: args.projectId });
     const limit = boundedWorkspaceReadLimit(args.limit, 100, 300);
     const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_organization_project", (q) => q.eq("organizationId", args.organizationId).eq("projectId", args.projectId))
       .take(limit);
 
-    return activeDueWorkspaceRows(tasks).map(presentTask);
+    return (await access.filterReadable(activeDueWorkspaceRows(tasks))).map(presentTask);
   },
 });
 
@@ -114,7 +115,8 @@ export const listBySpace = query({
   args: { organizationId: v.string(), projectId: v.string(), spaceId: v.string(), limit: v.optional(v.number()) },
   returns: v.array(clientTaskValidator),
   handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "task", "read");
+    const access = await resolveTaskAccess(ctx, args.organizationId);
+    await access.assertValidLinks({ projectId: args.projectId, spaceId: args.spaceId });
     const limit = boundedWorkspaceReadLimit(args.limit, 100, 300);
     const tasks = await ctx.db
       .query("tasks")
@@ -125,7 +127,7 @@ export const listBySpace = query({
       )
       .take(limit);
 
-    return activeDueWorkspaceRows(tasks).map(presentTask);
+    return (await access.filterReadable(activeDueWorkspaceRows(tasks))).map(presentTask);
   },
 });
 
@@ -133,9 +135,10 @@ export const get = query({
   args: { organizationId: v.string(), taskId: v.id("tasks") },
   returns: v.union(clientTaskValidator, v.null()),
   handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
+    const access = await resolveTaskAccess(ctx, args.organizationId);
     const task = await ctx.db.get(args.taskId);
     if (!task || task.organizationId !== args.organizationId || task.deletedAt) return null;
+    if (!(await access.canRead(task))) return null;
     return presentTask(task);
   },
 });
@@ -150,12 +153,12 @@ export const stats = query({
     done: v.number(),
   }),
   handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
+    const access = await resolveTaskAccess(ctx, args.organizationId);
     const today = new Date().toISOString().slice(0, 10);
-    const tasks = activeWorkspaceRows(await ctx.db
+    const tasks = await access.filterReadable(activeWorkspaceRows(await ctx.db
       .query("tasks")
       .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
-      .take(MAX_LIST_TASKS));
+      .take(MAX_LIST_TASKS)));
 
     return {
       total: tasks.length,
@@ -184,7 +187,8 @@ export const listGrouped = query({
     flat: v.array(clientTaskValidator),
   }),
   handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
+    const access = await resolveTaskAccess(ctx, args.organizationId);
+    if (args.projectId) await access.assertValidLinks({ projectId: args.projectId });
 
     const base = activeDueWorkspaceRows(
       args.projectId
@@ -200,7 +204,7 @@ export const listGrouped = query({
             .take(MAX_GROUPED_TASKS),
     );
 
-    const flat = base.map(presentTask);
+    const flat = (await access.filterReadable(base)).map(presentTask);
 
     if (args.groupBy === "none") {
       return { groupBy: "none" as const, groups: [], flat };

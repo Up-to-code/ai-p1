@@ -10,6 +10,7 @@ import {
   mcpConnectionValidator,
   mcpPermissionValidator,
   mcpResourceValidator,
+  mcpScopeValidator,
   updateMcpConnectionInputValidator,
   type McpAction,
   type McpPermission,
@@ -18,9 +19,6 @@ import {
 import {
   hasMcpPermission,
   mcpPermissionRecord,
-  mcpRoleCanUseAction,
-  mcpRoleList,
-  parseMcpCustomPermission,
 } from "./connectionPermissions";
 import {
   mcpConnectionPrincipalType,
@@ -29,53 +27,20 @@ import {
   presentMcpConnection,
   visibleMcpConnections,
 } from "./connectionLifecycle";
+import {
+  assertToolCallInScope,
+  canActorUseMcpPermission,
+  resolveScopePolicy,
+  type EffectiveScopePolicy,
+} from "./scopePolicy";
 
 const MAX_TOOL_CALLS_PER_MINUTE = 120;
 const MAX_CONNECTION_LIST_ITEMS = 500;
 const MINUTE_MS = 60 * 1000;
 
-async function findOrganizationMember(
-  ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
-  organizationId: string,
-  userId: string,
-) {
-  void ctx;
-  return { organizationId, userId, role: "owner" };
-}
-
-async function listOrganizationRoles(
-  ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
-  organizationId: string,
-) {
-  void ctx;
-  void organizationId;
-  return [] as Array<{ role: string; permission: string }>;
-}
-
-async function canUserUseMcpAction(
-  ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
-  organizationId: string,
-  userId: string,
-  resource: McpResource,
-  action: McpAction,
-) {
-  const member = await findOrganizationMember(ctx, organizationId, userId);
-  if (!member) return false;
-
-  const customRoles = await listOrganizationRoles(ctx, organizationId);
-  const customPermissionByRole = new Map(
-    customRoles.map((role) => [role.role, parseMcpCustomPermission(role.permission)]),
-  );
-
-  return mcpRoleList(member.role).some((roleName) =>
-    mcpRoleCanUseAction(roleName, customPermissionByRole, resource, action),
-  );
-}
-
 async function filterLivePermissions(
   ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
-  organizationId: string,
-  userId: string,
+  policy: EffectiveScopePolicy,
   permissions: McpPermission[],
 ) {
   const filtered: McpPermission[] = [];
@@ -83,7 +48,7 @@ async function filterLivePermissions(
   for (const permission of permissions) {
     const actions: McpAction[] = [];
     for (const action of permission.actions) {
-      if (await canUserUseMcpAction(ctx, organizationId, userId, permission.resource, action)) {
+      if (await canActorUseMcpPermission(ctx, policy, permission.resource, action)) {
         actions.push(action);
       }
     }
@@ -99,12 +64,14 @@ function organizationResourceForMcp(resource: McpResource) {
 
 async function assertDelegatedPermissions(
   ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
-  organizationId: string,
+  policy: EffectiveScopePolicy,
   permissions: McpPermission[],
 ) {
   for (const permission of permissions) {
     for (const action of permission.actions) {
-      await assertOrganizationResourcePermission(ctx, organizationId, organizationResourceForMcp(permission.resource), action);
+      if (!(await canActorUseMcpPermission(ctx, policy, permission.resource, action))) {
+        throw new Error(`PERMISSION_DENIED: You cannot delegate ${action} ${organizationResourceForMcp(permission.resource)}.`);
+      }
     }
   }
 }
@@ -220,7 +187,12 @@ export const createFromHono = mutation({
     await assertOrganizationMember(ctx, args.organizationId);
     const principalType = args.input.principalType ?? "user";
     await assertCanCreatePrincipal(ctx, args.organizationId, principalType);
-    await assertDelegatedPermissions(ctx, args.organizationId, args.input.permissions);
+    const scopePolicy = await resolveScopePolicy(ctx, {
+      organizationId: args.organizationId,
+      actorUserId: user._id,
+      scope: args.input.scope,
+    });
+    await assertDelegatedPermissions(ctx, scopePolicy, args.input.permissions);
     const now = Date.now();
     const key = await apiKeys.create(ctx, {
       name: args.input.name,
@@ -238,7 +210,7 @@ export const createFromHono = mutation({
       name: args.input.name,
       instructions: args.input.instructions,
       permissions: args.input.permissions,
-      scope: args.input.scope,
+      scope: scopePolicy.scope,
       status: "active",
       principalType,
       principalUserId: principalType === "user" ? user._id : undefined,
@@ -287,14 +259,21 @@ export const updateFromHono = mutation({
 
     const now = Date.now();
     const principalType = mcpConnectionPrincipalType(existing);
-    if (args.input.permissions) {
-      await assertDelegatedPermissions(ctx, args.organizationId, args.input.permissions);
-    }
+    const scopePolicy = await resolveScopePolicy(ctx, {
+      organizationId: args.organizationId,
+      actorUserId: existing.principalUserId ?? existing.createdByUserId,
+      scope: args.input.scope ?? existing.scope,
+    });
+    await assertDelegatedPermissions(
+      ctx,
+      scopePolicy,
+      args.input.permissions ?? normalizeMcpPermissions(existing.permissions),
+    );
     const patch = {
       ...(args.input.name ? { name: args.input.name } : {}),
       ...(args.input.instructions !== undefined ? { instructions: args.input.instructions } : {}),
       ...(args.input.permissions ? { permissions: args.input.permissions } : {}),
-      ...(args.input.scope !== undefined ? { scope: args.input.scope } : {}),
+      scope: scopePolicy.scope,
       ...(args.input.status ? { status: args.input.status } : {}),
       ...(args.input.expiresAt !== undefined
         ? { expiresAt: args.input.expiresAt === null ? undefined : args.input.expiresAt }
@@ -408,6 +387,8 @@ export const validateConnection = query({
     secret: v.string(),
     resource: v.optional(mcpResourceValidator),
     action: v.optional(mcpActionValidator),
+    tool: v.optional(v.string()),
+    input: v.optional(v.any()),
   },
   returns: v.object({
     ok: v.boolean(),
@@ -419,6 +400,11 @@ export const validateConnection = query({
     name: v.optional(v.string()),
     instructions: v.optional(v.string()),
     permissions: v.optional(v.array(mcpPermissionValidator)),
+    scope: v.optional(mcpScopeValidator),
+    actorUserId: v.optional(v.string()),
+    scopeSpaceIds: v.optional(v.array(v.id("spaces"))),
+    scopeProjectIds: v.optional(v.array(v.id("projects"))),
+    scopeClientIds: v.optional(v.array(v.id("clients"))),
   }),
   handler: async (ctx, args) => {
     const key = await apiKeys.validate(ctx, { token: args.secret });
@@ -435,14 +421,37 @@ export const validateConnection = query({
     if (connection.expiresAt && connection.expiresAt <= Date.now()) {
       return { ok: false, reason: "expired" };
     }
-    const principalType = mcpConnectionPrincipalType(connection);
     const principalUserId = connection.principalUserId ?? connection.createdByUserId;
+    let scopePolicy: EffectiveScopePolicy;
+    try {
+      scopePolicy = await resolveScopePolicy(ctx, {
+        organizationId: connection.organizationId,
+        actorUserId: principalUserId,
+        scope: connection.scope,
+      });
+    } catch (error) {
+      const data = error && typeof error === "object" && "data" in error
+        ? (error as { data?: { code?: string } }).data
+        : undefined;
+      return { ok: false, reason: data?.code ?? "scope_denied" };
+    }
     const storedPermissions = normalizeMcpPermissions(connection.permissions);
-    const livePermissions = principalType === "organization"
-      ? storedPermissions
-      : await filterLivePermissions(ctx, connection.organizationId, principalUserId, storedPermissions);
+    const livePermissions = await filterLivePermissions(ctx, scopePolicy, storedPermissions);
     if (args.resource && args.action && !hasMcpPermission(livePermissions, args.resource, args.action)) {
       return { ok: false, reason: "permission_denied" };
+    }
+    if (args.tool) {
+      try {
+        const input = args.input && typeof args.input === "object" && !Array.isArray(args.input)
+          ? args.input as Record<string, unknown>
+          : {};
+        await assertToolCallInScope(ctx, scopePolicy, args.tool, input);
+      } catch (error) {
+        const data = error && typeof error === "object" && "data" in error
+          ? (error as { data?: { code?: string } }).data
+          : undefined;
+        return { ok: false, reason: data?.code ?? "scope_denied" };
+      }
     }
 
     return {
@@ -454,6 +463,11 @@ export const validateConnection = query({
       name: connection.name,
       instructions: connection.instructions,
       permissions: livePermissions,
+      scope: scopePolicy.scope,
+      actorUserId: scopePolicy.actorUserId,
+      scopeSpaceIds: scopePolicy.spaceIds,
+      scopeProjectIds: scopePolicy.projectIds,
+      scopeClientIds: scopePolicy.clientIds,
     };
   },
 });

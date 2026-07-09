@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, FileText } from "lucide-react";
+import { Loader2, FileText, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { isRtlLocale } from "@/lib/i18n/locale";
 import { useRouter } from "@/i18n/routing";
@@ -188,23 +188,15 @@ export function WorkspaceGlobalSearch() {
   return (
     <>
       {/* ── Topbar trigger ──────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2">
+      <div className="flex h-7 w-full max-w-[360px] items-center rounded-md border border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-bg-secondary)] px-2 transition-colors hover:bg-[var(--q-bg-tertiary)]">
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="group flex h-7 min-w-0 items-center gap-2 rounded-md border border-border bg-secondary px-2.5 text-start text-text-muted transition-all hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+          className="group flex min-w-0 flex-1 items-center gap-1.5 text-start text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none"
         >
-          {/* Brand logo instead of Lucide Search */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/ai/logo.png"
-            alt=""
-            width={15}
-            height={15}
-            className="h-[15px] w-[15px] shrink-0 object-contain opacity-60 transition-opacity group-hover:opacity-100"
-          />
-          <span className="hidden truncate text-[12px] font-medium md:inline-block">{t("searchAnything")}</span>
-          <span className="hidden rounded border border-border px-1.5 py-0.5 text-[9px] font-bold text-text-muted lg:inline-block">
+          <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <span className="truncate text-[12px] font-medium">Search</span>
+          <span className="hidden text-[10px] font-medium text-muted-foreground md:inline">
             {t("searchShortcut")}
           </span>
         </button>

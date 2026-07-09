@@ -119,7 +119,7 @@ function OverviewPanel({ project }: { project: Project }) {
         />
         {project.budget != null && (
           <ProjectStatCard
-            label="Budget"
+            label="Planned budget"
             value={`$${project.budget.toLocaleString()}`}
           />
         )}

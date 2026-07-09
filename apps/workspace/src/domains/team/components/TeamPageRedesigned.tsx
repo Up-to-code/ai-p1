@@ -1,30 +1,141 @@
 "use client";
 
-import { useState } from 'react';
+import { Crown, Shield, UserCog, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Plus, Users, Mail, Shield, Crown, UserCog, Trash2, EllipsisVertical } from "lucide-react";
-import { QentrahTable, type QentrahColumnDef } from "@qentrah/ui";
-import { DomainHeader, type HeaderAction } from "@/components/shared/domain/DomainHeader";
-import { type ViewMode } from "@/components/shared/view-system/ViewSwitcher";
-import { ViewLoading } from "@/components/shared/loading/ViewLoading";
-import { EmptyWorkspace, WorkspaceQueryState } from "@/components/shared/crud-ui";
-import { useAuthSession } from "@/domains/auth";
 import { useQuery } from "@tanstack/react-query";
-import { cn } from "@/lib/utils";
+import { QentrahTable, type QentrahColumnDef } from "@qentrah/ui";
 import { Button } from "@/components/ui/button";
 import {
-  listOrganizationMembers,
-  listOrganizationInvitations,
-  listOrganizationRoles,
+  DomainHeader,
+  type HeaderAction,
+} from "@/components/shared/domain/DomainHeader";
+import {
+  EmptyWorkspace,
+  ErrorState,
+  LoadingState,
+  WorkspaceQueryState,
+} from "@/components/shared/crud-ui";
+import { useAuthSession } from "@/domains/auth";
+import {
   getOrganizationCapabilities,
-  type OrganizationMember,
+  listOrganizationInvitations,
+  listOrganizationMembers,
+  listOrganizationRoles,
+  type OrganizationCapabilities,
   type OrganizationInvitation,
+  type OrganizationMember,
 } from "@/domains/organization/api";
-import { formatRoleName, ownerMemberCount, roleOptions } from "@/domains/organization/settings-view-model";
+import {
+  formatRoleName,
+  isOwner,
+  roleOptions,
+} from "@/domains/organization/settings-view-model";
+import { cn } from "@/lib/utils";
+
+type TeamRow = {
+  id: string;
+  type: "member" | "invitation";
+  name: string;
+  email: string;
+  role: string;
+  joinedAt: Date | string;
+  status: "active" | "pending";
+};
+
+type DefaultRoleLabels = Record<"owner" | "admin" | "member", string>;
+
+export type TeamSurfaceState = "loading" | "error" | "empty" | "ready";
+
+export const teamAvailableViews = ["table"] as const;
+export const teamHeaderActions: readonly HeaderAction[] = [];
+
+export function buildTeamRows(
+  members: OrganizationMember[],
+  invitations: OrganizationInvitation[],
+): TeamRow[] {
+  return [
+    ...members.map((member) => ({
+      id: member.id,
+      type: "member" as const,
+      name: member.user?.name || member.user?.email || "Unknown",
+      email: member.user?.email || "Unknown",
+      role: member.role,
+      joinedAt: member.createdAt,
+      status: "active" as const,
+    })),
+    ...invitations
+      .filter((invitation) => invitation.status === "pending")
+      .map((invitation) => ({
+        id: invitation.id,
+        type: "invitation" as const,
+        name: invitation.email,
+        email: invitation.email,
+        role: invitation.role,
+        joinedAt: invitation.createdAt,
+        status: "pending" as const,
+      })),
+  ];
+}
+
+export function getTeamSurfaceState({
+  isPending,
+  isError,
+  rowCount,
+}: {
+  isPending: boolean;
+  isError: boolean;
+  rowCount: number;
+}): TeamSurfaceState {
+  if (isError) return "error";
+  if (isPending) return "loading";
+  return rowCount === 0 ? "empty" : "ready";
+}
+
+export function normalizeTeamRole(role: string) {
+  return role
+    .split(",")
+    .map((part) => part.trim().replace(/^org:/, ""))
+    .filter(Boolean)
+    .join(", ");
+}
+
+export function teamPermissionState(
+  capabilities:
+    | Pick<
+        OrganizationCapabilities,
+        "canInviteMembers" | "canUpdateMembers" | "canRemoveMembers"
+      >
+    | undefined,
+) {
+  return capabilities?.canInviteMembers ||
+    capabilities?.canUpdateMembers ||
+    capabilities?.canRemoveMembers
+    ? "manage"
+    : "read-only";
+}
+
+export function teamRolePresentation(
+  role: string,
+  availableRoles: string[],
+  labels: DefaultRoleLabels,
+) {
+  const normalizedRole = normalizeTeamRole(role);
+  const knownRole = availableRoles.find(
+    (candidate) => normalizeTeamRole(candidate) === normalizedRole,
+  );
+  const presentedRole = knownRole ?? normalizedRole;
+  const owner = isOwner(presentedRole);
+  const admin = !owner && presentedRole === "admin";
+
+  return {
+    isOwner: owner,
+    isAdmin: admin,
+    label: formatRoleName(presentedRole, labels),
+  };
+}
 
 export function TeamPageRedesigned() {
   const t = useTranslations("Organization");
-  const [activeView, setActiveView] = useState<ViewMode>('table');
   const session = useAuthSession();
   const organizationId = session.organization.id ?? "";
   const workspaceStatus = session.workspace.status;
@@ -34,78 +145,78 @@ export function TeamPageRedesigned() {
     queryFn: () => listOrganizationMembers(organizationId),
     enabled: Boolean(organizationId),
   });
-
   const invitationsQuery = useQuery({
     queryKey: ["organization-invitations", organizationId],
     queryFn: () => listOrganizationInvitations(organizationId),
     enabled: Boolean(organizationId),
   });
-
   const rolesQuery = useQuery({
     queryKey: ["organization-roles", organizationId],
     queryFn: () => listOrganizationRoles(organizationId),
     enabled: Boolean(organizationId),
   });
-
   const capabilitiesQuery = useQuery({
     queryKey: ["organization-capabilities", organizationId],
     queryFn: () => getOrganizationCapabilities(organizationId),
     enabled: Boolean(organizationId),
   });
 
+  const teamQueries = [
+    membersQuery,
+    invitationsQuery,
+    rolesQuery,
+    capabilitiesQuery,
+  ];
   const members = membersQuery.data ?? [];
   const invitations = invitationsQuery.data ?? [];
-  const customRoles = rolesQuery.data ?? [];
-  const capabilities = capabilitiesQuery.data;
-  const canInviteMembers = capabilities?.canInviteMembers ?? false;
-  const canUpdateMembers = capabilities?.canUpdateMembers ?? false;
-  const canRemoveMembers = capabilities?.canRemoveMembers ?? false;
+  const tableData = buildTeamRows(members, invitations);
+  const availableRoles = roleOptions(rolesQuery.data ?? []);
+  const roleLabels = {
+    owner: t("roles.defaultLabels.owner"),
+    admin: t("roles.defaultLabels.admin"),
+    member: t("roles.defaultLabels.member"),
+  };
+  const surfaceState = getTeamSurfaceState({
+    isPending: teamQueries.some((query) => query.isPending),
+    isError: teamQueries.some((query) => query.isError),
+    rowCount: tableData.length,
+  });
+  const queryError = teamQueries.find((query) => query.isError)?.error;
+  const errorDescription =
+    queryError instanceof Error
+      ? queryError.message
+      : "Team data could not be loaded. Try again.";
 
-  // Combine members and invitations for the table
-  const tableData = [
-    ...members.map((member) => ({
-      id: member.id,
-      type: 'member' as const,
-      name: member.user?.name || member.user?.email || 'Unknown',
-      email: member.user?.email || 'Unknown',
-      role: member.role,
-      joinedAt: member.createdAt,
-      status: 'active' as const,
-    })),
-    ...invitations.map((invite) => ({
-      id: invite.id,
-      type: 'invitation' as const,
-      name: invite.email,
-      email: invite.email,
-      role: invite.role,
-      joinedAt: invite.createdAt,
-      status: 'pending' as const,
-    })),
-  ];
-
-  const columns: QentrahColumnDef<any>[] = [
+  const columns: QentrahColumnDef<TeamRow>[] = [
     {
       headerName: "Name",
       field: "name",
       flex: 1.5,
       minWidth: 200,
-      cellRenderer: (p: any) => {
-        const isOwner = p.data?.role === 'org:admin' && p.data?.type === 'member';
+      cellRenderer: (params: { data?: TeamRow }) => {
+        const presentation = teamRolePresentation(
+          params.data?.role ?? "member",
+          availableRoles,
+          roleLabels,
+        );
         return (
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
-              {p.data?.name?.charAt(0).toUpperCase() || 'U'}
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
+              {params.data?.name?.charAt(0).toUpperCase() || "U"}
             </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-sm font-medium text-foreground truncate">
-                {p.data?.name}
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-medium text-foreground">
+                {params.data?.name}
               </span>
-              <span className="text-xs text-muted-foreground truncate">
-                {p.data?.email}
+              <span className="truncate text-xs text-muted-foreground">
+                {params.data?.email}
               </span>
             </div>
-            {isOwner && (
-              <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+            {presentation.isOwner && (
+              <Crown
+                className="h-3.5 w-3.5 shrink-0 text-amber-500"
+                aria-label="Owner"
+              />
             )}
           </div>
         );
@@ -115,21 +226,27 @@ export function TeamPageRedesigned() {
       headerName: "Role",
       field: "role",
       width: 140,
-      cellRenderer: (p: any) => {
-        const role = p.data?.role;
-        const isAdmin = role === 'org:admin';
-        const isMember = role === 'org:member';
-        // Simple role display without formatRoleName for now
-        const roleLabel = isAdmin ? 'Admin' : isMember ? 'Member' : role;
+      cellRenderer: (params: { data?: TeamRow }) => {
+        const presentation = teamRolePresentation(
+          params.data?.role ?? "member",
+          availableRoles,
+          roleLabels,
+        );
+        const RoleIcon =
+          presentation.isOwner || presentation.isAdmin ? Shield : UserCog;
+
         return (
           <div className="flex items-center gap-1.5">
-            {isAdmin ? (
-              <Shield className="h-3.5 w-3.5 text-primary" />
-            ) : (
-              <UserCog className="h-3.5 w-3.5 text-muted-foreground" />
-            )}
+            <RoleIcon
+              className={cn(
+                "h-3.5 w-3.5",
+                presentation.isOwner || presentation.isAdmin
+                  ? "text-primary"
+                  : "text-muted-foreground",
+              )}
+            />
             <span className="text-xs font-medium text-foreground">
-              {roleLabel}
+              {presentation.label}
             </span>
           </div>
         );
@@ -139,152 +256,144 @@ export function TeamPageRedesigned() {
       headerName: "Status",
       field: "status",
       width: 100,
-      cellRenderer: (p: any) => {
-        const status = p.data?.status;
+      cellRenderer: (params: { data?: TeamRow }) => {
+        const status = params.data?.status;
         return (
-          <span className={cn(
-            "text-xs font-medium px-2 py-0.5 rounded-full",
-            status === 'active'
-              ? "bg-green-500/10 text-green-600 dark:text-green-400"
-              : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-          )}>
-            {status === 'active' ? 'Active' : 'Pending'}
+          <span
+            className={cn(
+              "rounded-full px-2 py-0.5 text-xs font-medium",
+              status === "active"
+                ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                : "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+            )}
+          >
+            {status === "active" ? "Active" : "Pending"}
           </span>
         );
       },
     },
     {
-      headerName: "Joined",
+      headerName: "Added",
       field: "joinedAt",
       width: 120,
-      valueFormatter: (p: any) => {
-        if (!p.value) return "—";
-        return new Date(p.value).toLocaleDateString(undefined, {
+      valueFormatter: (params: { value?: Date | string }) => {
+        if (!params.value) return "-";
+        return new Date(params.value).toLocaleDateString(undefined, {
           month: "short",
           day: "numeric",
           year: "numeric",
         });
       },
     },
-    {
-      headerName: "Actions",
-      field: "actions",
-      width: 80,
-      cellRenderer: (p: any) => {
-        const isOwner = p.data?.role === 'org:admin';
-        const canRemove = canRemoveMembers && !isOwner;
-        return (
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              disabled={!canRemove}
-            >
-              <EllipsisVertical className="h-3.5 w-3.5 text-muted-foreground" />
-            </Button>
-          </div>
-        );
-      },
-    },
   ];
 
-  const actions: HeaderAction[] = [
-    {
-      label: t("actions.inviteMember"),
-      icon: <Plus className="w-4 h-4" />,
-      onClick: () => {},
-      variant: "primary",
-      disabled: !canInviteMembers,
-    },
-  ];
-
-  const availableViews: ViewMode[] = ['table', 'board', 'dashboard', 'widgets'];
-
-  if (workspaceStatus !== "ready") {
+  const unavailableWorkspaceStatus =
+    workspaceStatus === "ready" ? "noOrganization" : workspaceStatus;
+  if (workspaceStatus !== "ready" || !organizationId) {
     return (
-      <div className="flex flex-col h-screen">
-        <DomainHeader
-          domain="Team"
-          currentSection="All Members"
-          actions={actions}
-          availableViews={availableViews}
-          activeView={activeView}
-          onViewChange={setActiveView}
+      <TeamPageLayout currentSection="All Members">
+        <WorkspaceQueryState
+          status={unavailableWorkspaceStatus}
+          variant="table"
         />
-        <div className="flex-1 flex items-center justify-center">
-          <WorkspaceQueryState status={workspaceStatus} variant="table" />
-        </div>
-      </div>
+      </TeamPageLayout>
     );
   }
 
-  if (tableData.length === 0) {
+  if (surfaceState === "loading") {
     return (
-      <div className="flex flex-col h-screen">
-        <DomainHeader
-          domain="Team"
-          currentSection="All Members"
-          actions={actions}
-          availableViews={availableViews}
-          activeView={activeView}
-          onViewChange={setActiveView}
+      <TeamPageLayout currentSection="All Members">
+        <LoadingState variant="table" />
+      </TeamPageLayout>
+    );
+  }
+
+  if (surfaceState === "error") {
+    return (
+      <TeamPageLayout currentSection="All Members">
+        <ErrorState
+          title="Team data could not be loaded"
+          description={errorDescription}
+          action={
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                for (const query of teamQueries) {
+                  if (query.isError) void query.refetch();
+                }
+              }}
+            >
+              Try again
+            </Button>
+          }
         />
-        <div className="flex-1 flex items-center justify-center">
-          <EmptyWorkspace
-            icon={Users}
-            title="No team members yet"
-            description="Invite team members to collaborate on projects"
+      </TeamPageLayout>
+    );
+  }
+
+  if (surfaceState === "empty") {
+    return (
+      <TeamPageLayout currentSection="All Members">
+        <EmptyWorkspace
+          icon={Users}
+          title="No team members or invitations yet"
+          description="People will appear here after they join or are invited."
+        />
+      </TeamPageLayout>
+    );
+  }
+
+  const activeMemberCount = members.length;
+  const pendingInvitationCount = tableData.filter(
+    (row) => row.type === "invitation",
+  ).length;
+  const permissionState = teamPermissionState(capabilitiesQuery.data);
+  const currentSection =
+    pendingInvitationCount > 0
+      ? `${activeMemberCount} member${activeMemberCount === 1 ? "" : "s"}, ${pendingInvitationCount} pending`
+      : `${activeMemberCount} member${activeMemberCount === 1 ? "" : "s"}`;
+
+  return (
+    <TeamPageLayout
+      currentSection={
+        permissionState === "read-only"
+          ? `${currentSection} - Read-only`
+          : currentSection
+      }
+    >
+      <div className="h-full w-full p-6">
+        <div className="h-full overflow-hidden rounded-xl border border-border bg-card">
+          <QentrahTable
+            rows={tableData}
+            columns={columns}
+            density="compact"
+            height="100%"
+            getRowId={(row) => row.id}
           />
         </div>
       </div>
-    );
-  }
+    </TeamPageLayout>
+  );
+}
 
+function TeamPageLayout({
+  currentSection,
+  children,
+}: {
+  currentSection: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex h-screen flex-col">
       <DomainHeader
         domain="Team"
-        currentSection={`${tableData.length} member${tableData.length !== 1 ? "s" : ""}`}
-        actions={actions}
-        availableViews={availableViews}
-        activeView={activeView}
-        onViewChange={setActiveView}
+        currentSection={currentSection}
+        actions={[...teamHeaderActions]}
+        showViewSwitcher={false}
       />
-
-      <div className="flex-1 overflow-hidden">
-        {activeView === 'table' && (
-          <div className="h-full p-6">
-            <div className="rounded-xl border border-border bg-card overflow-hidden h-full">
-              <QentrahTable
-                rows={tableData}
-                columns={columns}
-                density="compact"
-                height="100%"
-                rowSelection="single"
-                getRowId={(row) => row.id}
-              />
-            </div>
-          </div>
-        )}
-
-        {activeView === 'board' && (
-          <div className="h-full p-6">
-            <ViewLoading style="board" message="Board view coming soon" />
-          </div>
-        )}
-
-        {activeView === 'dashboard' && (
-          <div className="h-full p-6">
-            <ViewLoading style="skeleton" message="Dashboard view coming soon" />
-          </div>
-        )}
-
-        {activeView === 'widgets' && (
-          <div className="h-full p-6">
-            <ViewLoading style="skeleton" message="Widgets view coming soon" />
-          </div>
-        )}
+      <div className="flex flex-1 items-center justify-center overflow-hidden">
+        {children}
       </div>
     </div>
   );

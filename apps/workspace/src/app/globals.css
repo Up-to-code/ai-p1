@@ -179,33 +179,33 @@
 
 .dark {
   /* ── Surface & Background ── */
-  --q-bg: #111111;
-  --q-bg-secondary: #191919;
-  --q-bg-tertiary: #303030;
-  --q-bg-midtone: #191919;
-  --q-bg-very-light: #303030;
-  --q-bg-light: #191919;
-  --q-bg-dark: #111111;
-  --q-bg-very-dark: #0B0B0B;
+  --q-bg: #070707;
+  --q-bg-secondary: #111113;
+  --q-bg-tertiary: #18181A;
+  --q-bg-midtone: #111113;
+  --q-bg-very-light: #18181A;
+  --q-bg-light: #111113;
+  --q-bg-dark: #070707;
+  --q-bg-very-dark: #070707;
 
   /* ── Surface / Card ── */
-  --q-surface: #191919;
-  --q-surface-hover: #303030;
-  --q-card: #191919;
-  --q-card-hover: #303030;
+  --q-surface: #111113;
+  --q-surface-hover: #18181A;
+  --q-card: #111113;
+  --q-card-hover: #18181A;
 
   /* ── Sidebar ── */
-  --q-sidebar: #191919;
+  --q-sidebar: #070707;
   --q-sidebar-foreground: #E0E0E0;
   --q-sidebar-primary: #E0E0E0;
   --q-sidebar-primary-foreground: #080808;
-  --q-sidebar-accent: #303030;
+  --q-sidebar-accent: #18181A;
   --q-sidebar-accent-foreground: #E0E0E0;
-  --q-sidebar-border: #303030;
+  --q-sidebar-border: #222326;
   --q-sidebar-ring: #E0E0E0;
 
   /* ── Topbar ── */
-  --q-topbar: #191919;
+  --q-topbar: #070707;
   --q-topbar-btn: #E0E0E0;
 
   /* ── Text ── */
@@ -214,20 +214,20 @@
   --q-text-muted: #888888;
 
   /* ── Borders ── */
-  --q-border: #303030;
+  --q-border: #222326;
   --q-border-strong: #888888;
-  --q-divider: #303030;
+  --q-divider: #222326;
 
   /* ── Accent / Primary ── */
   --q-accent: #E0E0E0;
   --q-accent-hover: #E0E0E0;
   --q-accent-active: #B0B0B0;
-  --q-accent-muted: #303030;
+  --q-accent-muted: #18181A;
   --q-accent-border: #888888;
 
   /* ── Form Inputs ── */
-  --q-input-bg: #191919;
-  --q-input-border: #303030;
+  --q-input-bg: #111113;
+  --q-input-border: #222326;
 
   /* ── User Message Bubble ── */
   --q-user-bubble: #E0E0E0;
@@ -248,7 +248,7 @@
   --q-system-gray: #5D6570;
 
   /* ── Status Colors (dark) — Qentrah brand palette ── */
-  --q-status-todo-bg: #303030;        --q-status-todo-text: #E0E0E0;       --q-status-todo-dot: #B0B0B0;       --q-status-todo-border: #888888;
+  --q-status-todo-bg: #18181A;        --q-status-todo-text: #E0E0E0;       --q-status-todo-dot: #B0B0B0;       --q-status-todo-border: #888888;
   --q-status-inProgress-bg: #1A8CFF;  --q-status-inProgress-text: #FFFFFF; --q-status-inProgress-dot: #FFFFFF; --q-status-inProgress-border: #5DAFFF;
   --q-status-waiting-bg: #6F52E8;     --q-status-waiting-text: #FFFFFF;    --q-status-waiting-dot: #FFFFFF;    --q-status-waiting-border: #9078F0;
   --q-status-done-bg: #24A36B;        --q-status-done-text: #FFFFFF;       --q-status-done-dot: #FFFFFF;       --q-status-done-border: #4FC18B;
@@ -539,69 +539,6 @@
   to { opacity: 1; }
 }
 
-/* ── WorkOsDocEditor — Tiptap body styles ── */
-.doc-editor-body {
-  caret-color: var(--q-text-primary);
-}
-
-.doc-editor-body.is-editor-empty::before {
-  color: var(--q-text-muted);
-  opacity: 0.5;
-  float: left;
-  height: 0;
-  pointer-events: none;
-}
-
-.doc-editor-body h1 { font-size: 1.5rem; font-weight: 700; line-height: 1.3; margin: 1.5rem 0 0.5rem; }
-.doc-editor-body h2 { font-size: 1.2rem; font-weight: 700; line-height: 1.4; margin: 1.25rem 0 0.4rem; }
-.doc-editor-body h3 { font-size: 1rem;   font-weight: 700; line-height: 1.4; margin: 1rem 0 0.4rem; }
-.doc-editor-body p { margin: 0.25rem 0; }
-.doc-editor-body ul { list-style: disc; padding-inline-start: 1.4rem; margin: 0.4rem 0; }
-.doc-editor-body ol { list-style: decimal; padding-inline-start: 1.4rem; margin: 0.4rem 0; }
-.doc-editor-body li { margin: 0.2rem 0; }
-
-.doc-editor-body blockquote {
-  border-inline-start: 3px solid var(--q-border);
-  padding-inline-start: 1rem;
-  color: var(--q-text-secondary);
-  font-style: italic;
-  margin: 0.75rem 0;
-}
-
-.doc-editor-body code {
-  font-family: var(--font-mono);
-  font-size: 0.8em;
-  background: var(--q-bg-tertiary);
-  border-radius: 4px;
-  padding: 0.1em 0.4em;
-}
-.doc-editor-body pre {
-  background: var(--q-bg-tertiary);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  overflow-x: auto;
-  margin: 0.75rem 0;
-}
-.doc-editor-body pre code { background: none; padding: 0; }
-
-.doc-editor-body hr {
-  border: none;
-  border-top: 1px solid var(--q-border);
-  margin: 1.5rem 0;
-}
-
-.doc-editor-body .mention {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--q-accent) 12%, transparent);
-  color: var(--q-accent);
-  font-weight: 600;
-  padding: 0 0.3em;
-}
-
-.doc-editor-body ::selection { background: color-mix(in srgb, var(--q-accent) 18%, transparent); }
-
 /* ── Modal Animations ── */
 @keyframes border-rotate {
   0% { background-position: 0% 50%; }
@@ -881,4 +818,287 @@
 
 .dark .qentrah-svar-calendar .wx-grid-section {
   background: var(--background);
+}
+
+.doc-page-editor,
+.yoopta-document-editor {
+  background: transparent;
+  --yoopta-ui-background: 0 0% 100%;
+  --yoopta-ui-foreground: 0 0% 8%;
+  --yoopta-ui-muted: 0 0% 96%;
+  --yoopta-ui-muted-foreground: 0 0% 42%;
+  --yoopta-ui-border: 0 0% 86%;
+  --yoopta-ui-ring: 0 0% 12%;
+  --yoopta-ui-accent: 0 0% 94%;
+  --yoopta-ui-accent-foreground: 0 0% 8%;
+  --yoopta-ui-primary: 24 96% 53%;
+  --yoopta-ui-primary-foreground: 0 0% 100%;
+  --yoopta-ui-shadow: 0 12px 28px color-mix(in srgb, #000 14%, transparent);
+  --yoopta-ui-shadow-lg: 0 16px 44px color-mix(in srgb, #000 18%, transparent);
+  --yoopta-ui-shadow-xl: 0 22px 60px color-mix(in srgb, #000 22%, transparent);
+}
+
+.doc-page-editor,
+.yoopta-document-editor,
+.yoopta-document-editor [data-yoopta-editor],
+.yoopta-document-editor [data-slate-editor="true"],
+.yoopta-document-editor [contenteditable="true"],
+.yoopta-document-editor [data-yoopta-block],
+.yoopta-document-editor [data-yoopta-block-id],
+.yoopta-document-editor .yoopta-sortable-block {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.dark .doc-page-editor,
+.dark .yoopta-document-editor {
+  --yoopta-ui-background: 0 0% 7%;
+  --yoopta-ui-foreground: 0 0% 92%;
+  --yoopta-ui-muted: 0 0% 13%;
+  --yoopta-ui-muted-foreground: 0 0% 62%;
+  --yoopta-ui-border: 0 0% 20%;
+  --yoopta-ui-ring: 0 0% 86%;
+  --yoopta-ui-accent: 0 0% 15%;
+  --yoopta-ui-accent-foreground: 0 0% 92%;
+}
+
+.yoopta-document-editor [data-slate-editor="true"],
+.yoopta-document-editor [contenteditable="true"] {
+  min-height: inherit;
+  background: transparent !important;
+}
+
+.yoopta-document-editor .yoopta-sortable-block {
+  position: relative;
+  padding: 1px 0;
+}
+
+.yoopta-document-editor p {
+  margin: 0.45rem 0;
+  color: var(--foreground);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.yoopta-document-editor h1 {
+  margin: 2rem 0 0.75rem;
+  color: var(--foreground);
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.12;
+}
+
+.yoopta-document-editor h2 {
+  margin: 1.65rem 0 0.65rem;
+  color: var(--foreground);
+  font-size: 1.65rem;
+  font-weight: 700;
+  line-height: 1.22;
+}
+
+.yoopta-document-editor h3 {
+  margin: 1.25rem 0 0.55rem;
+  color: var(--foreground);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.yoopta-document-editor ul,
+.yoopta-document-editor ol {
+  margin: 0.45rem 0 0.45rem 1.5rem;
+  padding-inline-start: 1.2rem;
+  line-height: 1.75;
+}
+
+.yoopta-document-editor ul {
+  list-style: disc;
+}
+
+.yoopta-document-editor ol {
+  list-style: decimal;
+}
+
+.yoopta-document-editor li {
+  margin: 0.25rem 0;
+  padding-inline-start: 0.25rem;
+}
+
+.yoopta-document-editor blockquote {
+  margin: 1rem 0;
+  border-inline-start: 3px solid var(--border);
+  padding-inline-start: 1rem;
+  color: var(--muted-foreground);
+  font-style: italic;
+  line-height: 1.75;
+}
+
+.yoopta-document-editor code {
+  border-radius: 4px;
+  background: var(--muted);
+  padding: 0.12rem 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+}
+
+.yoopta-document-editor pre,
+.yoopta-document-editor [class*="code-block"] {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--muted);
+}
+
+.yoopta-document-editor mark {
+  border-radius: 3px;
+  background: #fef08a;
+  color: inherit;
+}
+
+.yoopta-document-editor a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.yoopta-document-editor [data-slate-placeholder="true"] {
+  color: var(--muted-foreground) !important;
+  opacity: 0.55 !important;
+}
+
+.doc-page-editor .yoopta-ui-floating-toolbar {
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid hsl(var(--yoopta-ui-border));
+  border-radius: 8px;
+  background: hsl(var(--yoopta-ui-background));
+  color: hsl(var(--yoopta-ui-foreground));
+  padding: 4px;
+  box-shadow: var(--yoopta-ui-shadow-xl);
+}
+
+.doc-page-editor .yoopta-ui-floating-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.doc-page-editor .yoopta-ui-floating-toolbar-separator {
+  width: 1px;
+  height: 22px;
+  margin: 0 4px;
+  background: hsl(var(--yoopta-ui-border));
+}
+
+.doc-page-editor .yoopta-ui-floating-toolbar-button {
+  display: inline-flex;
+  min-width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: hsl(var(--yoopta-ui-foreground));
+  cursor: pointer;
+}
+
+.doc-page-editor .yoopta-ui-floating-toolbar-button:hover,
+.doc-page-editor .yoopta-ui-floating-toolbar-button[data-active="true"] {
+  background: hsl(var(--yoopta-ui-accent));
+}
+
+.doc-page-editor .yoopta-ui-slash-command-root,
+.doc-page-editor .yoopta-ui-slash-command-content,
+.doc-page-editor .yoopta-ui-action-menu-list-content {
+  width: min(360px, 90vw);
+  max-height: 380px;
+  overflow: hidden auto;
+  border: 1px solid hsl(var(--yoopta-ui-border));
+  border-radius: 10px;
+  background: hsl(var(--yoopta-ui-background));
+  color: hsl(var(--yoopta-ui-foreground));
+  box-shadow: var(--yoopta-ui-shadow-xl);
+}
+
+.doc-page-editor .yoopta-ui-slash-command-input-wrapper {
+  border-bottom: 1px solid hsl(var(--yoopta-ui-border));
+  padding: 8px;
+}
+
+.doc-page-editor .yoopta-ui-slash-command-input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: hsl(var(--yoopta-ui-foreground));
+  font-size: 13px;
+  outline: 0;
+}
+
+.doc-page-editor .yoopta-ui-slash-command-list,
+.doc-page-editor .yoopta-ui-action-menu-list-group {
+  padding: 6px;
+}
+
+.doc-page-editor .yoopta-ui-slash-command-group-heading {
+  padding: 8px 10px 4px;
+  color: hsl(var(--yoopta-ui-muted-foreground));
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.doc-page-editor .yoopta-ui-slash-command-item,
+.doc-page-editor .yoopta-ui-action-menu-list-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: hsl(var(--yoopta-ui-foreground));
+  padding: 8px;
+  text-align: left;
+}
+
+.doc-page-editor .yoopta-ui-slash-command-item:hover,
+.doc-page-editor .yoopta-ui-slash-command-item[data-selected="true"],
+.doc-page-editor .yoopta-ui-action-menu-list-item:hover,
+.doc-page-editor .yoopta-ui-action-menu-list-item[data-selected="true"] {
+  background: hsl(var(--yoopta-ui-accent));
+}
+
+.doc-page-editor .yoopta-ui-slash-command-item-icon,
+.doc-page-editor .yoopta-ui-action-menu-list-item-icon {
+  display: flex;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid hsl(var(--yoopta-ui-border));
+  border-radius: 8px;
+  background: hsl(var(--yoopta-ui-muted));
+}
+
+.doc-page-editor .yoopta-ui-slash-command-item-title,
+.doc-page-editor .yoopta-ui-action-menu-list-item-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.doc-page-editor .yoopta-ui-slash-command-item-description,
+.doc-page-editor .yoopta-ui-action-menu-list-item-description {
+  color: hsl(var(--yoopta-ui-muted-foreground));
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.doc-page-editor .yoopta-ui-slash-command-footer {
+  border-top: 1px solid hsl(var(--yoopta-ui-border));
+  padding: 6px 10px;
+  color: hsl(var(--yoopta-ui-muted-foreground));
+  font-size: 11px;
 }

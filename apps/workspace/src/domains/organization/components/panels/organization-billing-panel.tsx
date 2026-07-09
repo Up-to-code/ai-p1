@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard } from "lucide-react";
+import { ArrowUpRight, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -92,7 +92,7 @@ export function OrganizationBillingPanel({
 
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             <StatusPill label={status} tone={subscriptionTone(status)} />
-            <LocaleLink href="/billing">
+            <LocaleLink href="/settings/billing">
               <Button
                 variant="outline"
                 size="sm"
@@ -143,16 +143,16 @@ export function OrganizationBillingPanel({
       </div>
 
       {/* ── Payment history ────────────────────────────── */}
-      <LocaleLink href="/usage">
+      <LocaleLink href="/settings/ai-usage">
         <Button
           variant="outline"
           size="sm"
           className="gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest"
         >
-          {isRtl ? "سجل المدفوعات والاستخدام" : "View usage & payment history"}
+          <ArrowUpRight className="h-3.5 w-3.5" />
+          {isRtl ? "إدارة الاستخدام والمدفوعات" : "Manage usage & payments"}
         </Button>
       </LocaleLink>
     </div>
   );
 }
-

@@ -330,7 +330,7 @@ function BoardTaskCard({
         event.stopPropagation();
         onDrop(index);
       }}
-      className="rounded-md border border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[#101113] p-2.5 text-card-foreground shadow-sm transition-colors hover:border-foreground/30 hover:bg-[#141518]"
+      className="rounded-md border border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-bg-secondary)] p-2.5 text-card-foreground shadow-sm transition-colors hover:border-foreground/30 hover:bg-[var(--q-bg-tertiary)]"
     >
       <div className="flex items-start gap-2">
         {task.status === "done" ? (

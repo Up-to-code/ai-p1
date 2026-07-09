@@ -31,7 +31,6 @@ const DEFAULT_WIDGETS: ActiveWidget[] = [
   { id: "default-workload", type: "workload", title: "Workload by Status", w: 6, h: 4 },
   { id: "default-notes", type: "notes", title: "Notes", w: 6, h: 4 },
   { id: "default-progress", type: "progress-chart", title: "Progress", w: 6, h: 4 },
-  { id: "default-budget", type: "budget-chart", title: "Budget", w: 6, h: 4 },
 ];
 
 function WidgetShell({
@@ -132,7 +131,11 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
 
   // Load widgets from persistence
   useEffect(() => {
-    if (!isLoaded || !config) return;
+    if (!isLoaded) return;
+    if (!config) {
+      setWidgets(DEFAULT_WIDGETS);
+      return;
+    }
     try {
       const parsed = JSON.parse(config.widgetConfig) as ActiveWidget[];
       if (parsed.length > 0) {
