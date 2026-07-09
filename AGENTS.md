@@ -18,9 +18,16 @@ This is a single-context repo: read root `CONTEXT.md` and the decision log under
 Fix all bugs in the Qentrah Product Development project in priority waves, from MCP infrastructure through UX, data consistency, feature expansion, and documentation.
 
 ### Constraints & Preferences
-- Work through all 5 waves sequentially.
-- Use Qentrah MCP endpoint for task tracking.
-- Premium model quota exhausted until June 28.
+- Work through the roadmap waves sequentially and keep each implementation packet issue-sized.
+- Track durable work in GitHub Issues for `Up-to-code/anan-0.1.2`.
+- Use low-effort agents for mechanical work, medium-effort agents for isolated domain work, and reserve high effort for exceptional cross-domain blockers.
+
+### Current Checkpoint
+- **Commit `47385fbb`** — Consolidated Trust Foundation, navigation, capability gates, editor safety, dashboard persistence, and workspace UI work is pushed to `main` and `origin/main`.
+- **Trust Foundation F0/F1.1-F1.6** — Space, Project, Task, Document, Channel, dashboard, and MCP access adapters are implemented with focused tests.
+- **Navigation/UI foundation** — Canonical route redirects, route catalog, sidebar persistence, Team truthful states, and unsupported capability gates are implemented.
+- **Roadmap source of truth** — `docs/architecture/qentrah-agent-execution-roadmap.md` defines the remaining packets.
+- **Issue tracker** — Issues #10-#12 were reconciled and remain open for incomplete legacy scopes. Issues #14-#19 track the next verified packets.
 
 ### Done
 - **Wave 1A: MCP Slow Response** — Optimized `tool-executor.ts` to use direct `get` queries (tasks_get, tasks_update, tasks_complete, calendar_get) instead of fetching all records client-side. Added `calendar.read.get` Convex query.
@@ -59,7 +66,9 @@ Fix all bugs in the Qentrah Product Development project in priority waves, from 
 - **Clerk→BetterAuth Wave 4 – Client-Side Cleanup (this session)**: Rewrote `choose-organization-client.tsx`, `accept-invite-screen.tsx`, `no-organization-modal.tsx` to use Better Auth hooks. Rewrote `use-account-context.ts` removing `@clerk/nextjs` imports. Deleted `use-headless-clerk-auth.ts` + test. Rewrote `onboarding/page.tsx`. Updated barrel exports and `auth-access-screen.tsx`. Deprecated `clerkMembershipOrganizationIds`. Remaining Clerk imports: `proxy.ts` (Wave 5), MCP routes (Wave 6), `clerk-organization-proxy.ts` + `invite-links.ts` (Wave 4 server), `clerk-convex.ts` (Wave 7/8), Eve `clerk-auth.ts` (Wave 7).
 
 ### Blocked
-- (none)
+- Full cross-domain security regression coverage is tracked in issue #14.
+- MCP feature expansion is still incomplete; see issue #10.
+- Platform readiness audit artifacts are still missing; see issue #12.
 
 ## Key Decisions
 - TanStack Query optimistic updates for Projects and Deals (same pattern as Clients), rather than custom hooks used by Tasks/Docs.
@@ -78,15 +87,14 @@ Fix all bugs in the Qentrah Product Development project in priority waves, from 
 - **Base UI `render` prop over `asChild`**: `@base-ui/react/menu` doesn't support `asChild` (Radix API). Uses `render` prop for custom trigger elements. Using `asChild` causes nested `<button>` + `asChild` DOM leak.
 
 ## Next Steps
-- **Wave 4**: MCP Feature Expansion — Document/Folder/Comment/Tag CRUD, Time Tracking module schema + MCP tools. Includes adding missing Convex tables (`milestones`, `taskDependencies`, `piiAccessAudit`) to the data model and running `npx convex codegen` to resolve remaining `convex/` TypeScript errors.
-- **Wave 5**: Platform Readiness Audit, Engineering Audit Checklist, Competitive Gap Analysis.
-- Update Qentrah MCP tasks to reflect completion.
-- **Clerk→BetterAuth remaining waves**:
-  - Wave 4 server: Rewrite `clerk-organization-proxy.ts` → `better-auth-organization-service.ts`, delete `invite-links.ts` server handler
-  - Wave 5: Rewrite `src/proxy.ts` to check `better-auth.session_token` cookie instead of `clerkMiddleware`
-  - Wave 6: Swap `verifyToken` in MCP routes to use Better Auth session
-  - Wave 7: Create `agent/auth/better-auth.ts`, delete `clerk-auth.ts` + ESM loader scripts
-  - Wave 8: `npm uninstall @clerk/nextjs @clerk/backend @clerk/mcp-tools @clerk/types`, remove Clerk env vars, verify 0 Clerk imports
+- **Issue #14 / F1.7**: Build the cross-domain security regression matrix.
+- **Issue #10**: Complete MCP Document, Comment, Tag, Milestone, dependency, and TimeEntry feature expansion.
+- **Issue #12**: Create the platform-readiness audit, engineering checklist, and competitive gap analysis.
+- **Issue #15 / W2.2**: Implement the personalized Workspace command center.
+- **Issue #16 / Wave 3**: Implement the canonical TaskWorkspace.
+- **Issue #17 / Wave 4**: Complete the shared Work Editor cutover.
+- **Issue #18 / Wave 5**: Implement the agency operating loop.
+- **Issue #19 / Wave 6**: Implement durable agentic execution.
 
 ## Relevant Files
 - `apps/workspace/src/server/domains/agents/services/tool-executor.ts`: MCP tool dispatch — direct get queries
