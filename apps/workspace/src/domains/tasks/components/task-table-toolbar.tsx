@@ -88,8 +88,8 @@ export function TaskTableToolbar({
   const activeFilterCount = filters.length
 
   return (
-    <div className="flex items-center justify-between gap-2 border-b border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[var(--q-bg)] px-3 py-2">
-      <div className="flex items-center gap-1.5">
+    <div className="flex flex-col gap-1 border-b border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[var(--q-bg)] px-3 py-2">
+      <div className="flex min-w-0 items-center gap-1.5">
         <Select value={groupBy} onValueChange={(v: string | null) => onGroupByChange((v ?? "none") as GroupByValue)}>
           <SelectTrigger
             className="h-7 rounded-md border-transparent bg-transparent px-2.5 text-[11px] font-medium text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
@@ -179,7 +179,7 @@ export function TaskTableToolbar({
         {children}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-end gap-2">
         <form onSubmit={onCreate} className="flex items-center gap-1.5">
           <Input
             value={newTitle}

@@ -23,11 +23,14 @@ export function Topbar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 grid h-11 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 border-b border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-bg)] px-2.5 transition-colors",
+        "sticky top-0 z-30 grid h-12 grid-cols-[minmax(180px,1fr)_minmax(320px,460px)_minmax(230px,1fr)] items-center gap-3 border-b border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-bg)] px-3 transition-colors",
         isRtlLocale(locale) && "font-cairo",
       )}
     >
-      <div aria-hidden="true" />
+      <div className="flex min-w-0 items-center gap-2">
+        <img src="/brand-logo.svg" alt="" className="h-6 w-6 object-contain" />
+        <span className="truncate text-sm font-semibold tracking-tight text-foreground">Qentrah</span>
+      </div>
       <div className="flex min-w-0 justify-center">
         <TopbarSearch />
       </div>

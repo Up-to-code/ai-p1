@@ -188,7 +188,7 @@ export function WorkspaceGlobalSearch() {
   return (
     <>
       {/* ── Topbar trigger ──────────────────────────────────────────────── */}
-      <div className="flex h-7 w-full max-w-[360px] items-center rounded-md border border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-bg-secondary)] px-2 transition-colors hover:bg-[var(--q-bg-tertiary)]">
+      <div className="flex h-8 w-full max-w-[420px] items-center rounded-md border border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-bg-secondary)] px-2 transition-colors hover:bg-[var(--q-bg-tertiary)]">
         <button
           type="button"
           onClick={() => setOpen(true)}
