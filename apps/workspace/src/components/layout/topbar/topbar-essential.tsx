@@ -202,7 +202,7 @@ export function TopbarEssential() {
           render={
             <button
               type="button"
-              className="flex h-8 min-w-[148px] items-center gap-2 rounded-md px-2 transition-colors hover:bg-[var(--q-bg-secondary)]"
+              className="flex h-9 min-w-[154px] items-center gap-2 rounded-lg px-2 text-left transition-colors hover:bg-[var(--q-bg-secondary)]"
             >
               <div className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[var(--q-bg-secondary)] text-[10px] font-black uppercase">
                 {session.organization.logo ? (
@@ -211,9 +211,9 @@ export function TopbarEssential() {
                   currentInitials
                 )}
               </div>
-              <div className="flex min-w-0 flex-1 flex-col items-start leading-tight">
-                <span className="w-full truncate text-[12px] font-semibold text-foreground">{organizationDisplayName}</span>
-                <span className="text-[10px] font-medium text-muted-foreground">{currentPlan}</span>
+              <div className="flex min-w-0 flex-1 flex-col items-start text-left leading-tight">
+                <span className="w-full truncate text-left text-[12px] font-semibold text-foreground">{organizationDisplayName}</span>
+                <span className="w-full truncate text-left text-[10px] font-medium text-muted-foreground">{currentPlan}</span>
               </div>
               <ChevronDown className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             </button>

@@ -50,7 +50,7 @@ export function WorkspaceGlobalSearch() {
 
   const debouncedQuery = useDebouncedValue(query.trim(), 300);
   const hasQuery = debouncedQuery.length > 0;
-  const { toggle: toggleQuickChat } = useQuickChat();
+  const { isOpen: isQuickChatOpen, toggle: toggleQuickChat } = useQuickChat();
 
   // ── Data queries — only fire when relevant tab is active ─────────────────
   const searchOrgId = hasQuery ? organizationId : undefined;
@@ -200,7 +200,7 @@ export function WorkspaceGlobalSearch() {
             {t("searchShortcut")}
           </span>
         </button>
-        <AiChatsPill onClick={toggleQuickChat} />
+        <AiChatsPill isActive={isQuickChatOpen} onClick={toggleQuickChat} />
       </div>
 
       {/* ── Command palette ──────────────────────────────────────────────── */}
