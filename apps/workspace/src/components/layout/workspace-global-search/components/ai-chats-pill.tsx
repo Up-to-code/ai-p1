@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
 const AI_GRADIENT =
   "conic-gradient(from var(--angle,0deg),#0C7DF3 0deg,#45C5F9 48deg,#3446EC 95deg,#834DF1 145deg,#DF3FDD 190deg,#F2488B 238deg,#F9724F 292deg,#EBA7E7 330deg,#0C7DF3 360deg) border-box";
 
-export function AiChatsPill({ isActive, onClick }: { isActive: boolean; onClick: () => void }) {
+export function AiChatsPill({ onClick }: { onClick: () => void }) {
+  const [isHovered, setIsHovered] = useState(false);
   const elRef = useRef<HTMLDivElement>(null);
   const ctxRef = useRef<gsap.Context | null>(null);
 
@@ -24,10 +25,10 @@ export function AiChatsPill({ isActive, onClick }: { isActive: boolean; onClick:
     if (elRef.current) gsap.set(elRef.current, { "--angle": "0deg" });
   };
   useEffect(() => {
-    if (isActive) start();
+    if (isHovered) start();
     else stop();
     return () => { ctxRef.current?.revert(); };
-  }, [isActive]);
+  }, [isHovered]);
 
   return (
     <div
@@ -36,13 +37,15 @@ export function AiChatsPill({ isActive, onClick }: { isActive: boolean; onClick:
       tabIndex={0}
       onClick={onClick}
       onKeyDown={(e) => e.key === "Enter" && onClick()}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       title="Open AI Chats"
-      aria-pressed={isActive}
+      aria-pressed={isHovered}
       className={`group relative flex h-6 cursor-pointer select-none items-center gap-1 rounded-md px-2 transition-colors focus-visible:outline-none ${
-        isActive ? "text-foreground" : "text-muted-foreground hover:bg-[var(--q-bg-tertiary)]"
+        isHovered ? "text-foreground" : "text-muted-foreground hover:bg-[var(--q-bg-tertiary)]"
       }`}
       style={{
-        ...(isActive
+        ...(isHovered
           ? {
               background: `linear-gradient(var(--q-bg-secondary),var(--q-bg-secondary)) padding-box,${AI_GRADIENT}`,
               border: "1.5px solid transparent",
