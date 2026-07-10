@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { ChevronsLeft } from "lucide-react";
 import { useSidebarRail } from "../sidebar-rail-context";
+import { SidebarPanelModeSwitch } from "./sidebar-panel-mode-switch";
 
 type SidebarPanelLayoutProps = {
   title: string;
@@ -17,14 +18,19 @@ export function SidebarPanelLayout({ title, navbarActions, header, footer, child
 
   return (
     <div className="flex h-full flex-col bg-[var(--q-bg-secondary)] dark:bg-[#0b0b0c]">
-      {/* Navbar — title + actions + close */}
+      {/* Navbar — mode, title, actions, and close */}
       <div className="flex h-10 shrink-0 items-center justify-between border-b border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] px-3">
-        <span className="truncate text-[13px] font-semibold text-foreground">{title}</span>
+        <div className="flex min-w-0 items-center gap-2">
+          <SidebarPanelModeSwitch />
+          <span className="truncate text-[13px] font-semibold text-foreground">{title}</span>
+        </div>
         <div className="flex items-center gap-0.5">
           {navbarActions}
           <button
             type="button"
             onClick={closeAll}
+            aria-label="Close secondary panel"
+            title="Close secondary panel"
             className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
           >
             <ChevronsLeft className="h-4 w-4" />

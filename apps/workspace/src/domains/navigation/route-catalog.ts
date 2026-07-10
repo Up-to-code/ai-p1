@@ -1,7 +1,6 @@
 export type RailItemId =
   | "home"
   | "ws"
-  | "ai"
   | "spaces"
   | "tasks"
   | "calendar"
@@ -43,7 +42,7 @@ const aiParams = ["mode", "threadId", "state"] as const;
 
 export const ROUTE_CATALOG: readonly RouteCatalogEntry[] = [
   { id: "ws", path: "/ws", persistentParams: [], railItem: "home" },
-  { id: "ai", path: "/ai", persistentParams: aiParams, railItem: "ai" },
+  { id: "ai", path: "/ai", persistentParams: aiParams, railItem: "home" },
   { id: "tasks", path: "/tasks", persistentParams: contextParams, railItem: "tasks" },
   { id: "calendar", path: "/calendar", persistentParams: contextParams, railItem: "calendar" },
   { id: "docs", path: "/docs", persistentParams: contextParams, railItem: "docs" },

@@ -6,7 +6,7 @@ describe("route catalog", () => {
   it("selects the active rail item without confusing /ws with nested routes", () => {
     expect(getActiveRailItem("/ws")).toBe("home");
     expect(getActiveRailItem("/ws-extra")).toBeNull();
-    expect(getActiveRailItem("/ai")).toBe("ai");
+    expect(getActiveRailItem("/ai")).toBe("home");
     expect(getRouteId("/ws")).toBe("ws");
     expect(getRouteId("/ai")).toBe("ai");
   });
@@ -48,6 +48,21 @@ describe("route catalog", () => {
     expect(forwardPersistentParams("/clients", current)).toBe("/clients");
     expect(forwardPersistentParams("/opportunities", current)).toBe("/opportunities");
     expect(forwardPersistentParams("/deals", current)).toBe("/deals");
+  });
+
+  it("switches secondary panel modes without leaking AI parameters into Workspace", () => {
+    const current = new URLSearchParams("mode=ai&threadId=t1&state=encoded");
+
+    expect(forwardPersistentParams("/ai", current)).toBe(
+      "/ai?mode=ai&threadId=t1&state=encoded",
+    );
+    expect(
+      forwardPersistentParams("/ws", current, {
+        mode: "",
+        threadId: "",
+        state: "",
+      }),
+    ).toBe("/ws");
   });
 
   it("does not treat protocol-relative links as internal workspace links", () => {

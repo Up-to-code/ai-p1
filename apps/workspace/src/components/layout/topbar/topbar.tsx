@@ -23,17 +23,18 @@ export function Topbar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 flex h-11 items-center gap-3 border-b border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-bg)] px-2.5 transition-colors",
+        "sticky top-0 z-30 grid h-11 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 border-b border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-bg)] px-2.5 transition-colors",
         isRtlLocale(locale) && "font-cairo",
       )}
     >
-      <div className="flex min-w-0 shrink-0 items-center gap-2">
-        <TopbarEssential />
-      </div>
-      <div className="flex min-w-0 flex-1 justify-center">
+      <div aria-hidden="true" />
+      <div className="flex min-w-0 justify-center">
         <TopbarSearch />
       </div>
-      <TopbarActions />
+      <div className="flex min-w-0 items-center justify-end gap-2">
+        <TopbarEssential />
+        <TopbarActions />
+      </div>
     </header>
   );
 }

@@ -16,7 +16,6 @@ import {
 } from "../config/nav.config";
 import { NavTooltip } from "./nav-tooltip";
 import { IdentityAvatar } from "./identity-avatar";
-import { AiLogoIcon } from "./ai-logo-icon";
 import { useSidebarRail, type RailItemId } from "../sidebar-rail-context";
 
 export function SidebarRail() {
@@ -110,14 +109,10 @@ export function SidebarRail() {
                         : "text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground",
                     )}
                   >
-                    {item.name === "ai" ? (
-                      <AiLogoIcon isActive={isActive} size={18} />
-                    ) : (
-                      (() => {
-                        const Icon = item.icon;
-                        return <Icon className="h-[18px] w-[18px] shrink-0" />;
-                      })()
-                    )}
+                    {(() => {
+                      const Icon = item.icon;
+                      return <Icon className="h-[18px] w-[18px] shrink-0" />;
+                    })()}
                   </WorkspaceLink>
                 </NavTooltip>
               );

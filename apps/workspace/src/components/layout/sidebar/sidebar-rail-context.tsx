@@ -2,15 +2,18 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import { usePathname } from "@/i18n/routing";
-import { getActiveRailItem, type RailItemId } from "@/domains/navigation/route-catalog";
+import { getActiveRailItem, getRouteId, type RailItemId, type RouteId } from "@/domains/navigation/route-catalog";
+import type { SecondaryPanelMode } from "./components/sidebar-panel-mode";
 
 export type { RailItemId } from "@/domains/navigation/route-catalog";
+export type { SecondaryPanelMode } from "./components/sidebar-panel-mode";
 
 interface SidebarRailContextType {
-  isMainVisible: boolean;
   activeRailItem: RailItemId;
+  secondaryPanelMode: SecondaryPanelMode;
   toggleMain: () => void;
   openRailItem: (item: RailItemId) => void;
+  setSecondaryPanelMode: (mode: SecondaryPanelMode) => void;
   closeAll: () => void;
   closeSecondaryOnly: () => void;
 }
@@ -20,18 +23,25 @@ const SidebarRailContext = createContext<SidebarRailContextType | undefined>(und
 export function SidebarRailProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [activeRailItem, setActiveRailItem] = useState<RailItemId>(null);
+  const [secondaryPanelMode, setSecondaryPanelMode] = useState<SecondaryPanelMode>("workspace");
   const [manualItem, setManualItem] = useState<RailItemId | null>(null);
   const prevDomainRef = useRef<RailItemId>(null);
-  const lastActivePanelRef = useRef<RailItemId>("ai"); // Remember last active panel
+  const prevRouteIdRef = useRef<RouteId | null>(null);
+  const lastActivePanelRef = useRef<RailItemId>("home"); // Remember last active panel
 
   // Sync from pathname, respecting manual overrides on same domain
   useEffect(() => {
     const matched = getActiveRailItem(pathname);
+    const routeId = getRouteId(pathname);
     const prevDomain = prevDomainRef.current;
+    const prevRouteId = prevRouteIdRef.current;
     prevDomainRef.current = matched;
+    prevRouteIdRef.current = routeId;
+
+    setSecondaryPanelMode(routeId === "ai" ? "ai" : "workspace");
 
     // If user manually opened something and domain didn't change, respect it
-    if (manualItem !== null && matched === prevDomain) return;
+    if (manualItem !== null && matched === prevDomain && routeId === prevRouteId) return;
 
     // Remember the last active panel from pathname
     if (matched !== null) {
@@ -45,7 +55,7 @@ export function SidebarRailProvider({ children }: { children: ReactNode }) {
   const toggleMain = useCallback(() => {
     setActiveRailItem((prev) => {
       if (prev === null) {
-        // Restore the last active panel instead of defaulting to AI
+        // Restore the last active panel when reopening the secondary panel.
         const lastPanel = lastActivePanelRef.current;
         setManualItem(lastPanel);
         return lastPanel;
@@ -60,6 +70,7 @@ export function SidebarRailProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const openRailItem = useCallback((item: RailItemId) => {
+    setSecondaryPanelMode("workspace");
     setActiveRailItem((prev) => {
       if (prev === item) {
         setManualItem(null);
@@ -89,10 +100,11 @@ export function SidebarRailProvider({ children }: { children: ReactNode }) {
   return (
     <SidebarRailContext.Provider
       value={{
-        isMainVisible: true,
         activeRailItem,
+        secondaryPanelMode,
         toggleMain,
         openRailItem,
+        setSecondaryPanelMode,
         closeAll,
         closeSecondaryOnly,
       }}

@@ -1,7 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BadgeDollarSign,
-  Bot,
   Building2,
   Clock,
   LayoutGrid,
@@ -50,7 +49,6 @@ export const sidebarStaticNav: SidebarNavItem[] = [
 
 /** Primary workspace-level navigation entries. */
 const sidebarPrimaryNavManifest: SidebarNavItem[] = [
-  { name: "ai", href: "/ai", icon: Bot, label: "AI", group: "workspace" },
   { name: "spaces", icon: LayoutGrid, label: "Spaces", group: "workspace", opensPanel: true },
   { name: "clients", href: "/clients", icon: UserRound, group: "crm" },
   { name: "opportunities", href: "/opportunities", icon: KanbanIcon, group: "crm" },

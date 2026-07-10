@@ -35,7 +35,7 @@ export function sidebarWidthStorageKey(organizationId: string, userId: string): 
 }
 
 export function SidebarSecondaryPanel() {
-  const { activeRailItem } = useSidebarRail();
+  const { activeRailItem, secondaryPanelMode } = useSidebarRail();
   const { level } = useNavigation();
   const session = useAuthSession();
   const organizationId = session.workspace.organizationId;
@@ -95,17 +95,22 @@ export function SidebarSecondaryPanel() {
       style={{ width: isOpen ? width : 0 }}
     >
       <div className="flex h-full min-w-0 flex-col overflow-hidden" style={{ width }}>
-        {activeRailItem === "home" && <WorkspaceSidebarPanel />}
-        {activeRailItem === "ai" && <SidebarChatPanel />}
-        {activeRailItem === "spaces" && !showProject && <SidebarSpacePanel />}
-        {showProject && <SidebarProjectPanel />}
-        {activeRailItem === "tasks" && <SidebarTasksPanel />}
-        {activeRailItem === "calendar" && <SidebarCalendarPanel />}
-        {activeRailItem === "clients" && <SidebarClientsPanel />}
-        {activeRailItem === "opportunities" && <SidebarOpportunitiesPanel />}
-        {activeRailItem === "deals" && <SidebarDealsPanel />}
-        {activeRailItem === "docs" && <SidebarDocsPanel />}
-        {activeRailItem === "inbox" && <SidebarInboxPanel />}
+        {secondaryPanelMode === "ai" ? (
+          <SidebarChatPanel />
+        ) : (
+          <>
+            {activeRailItem === "home" && <WorkspaceSidebarPanel />}
+            {activeRailItem === "spaces" && !showProject && <SidebarSpacePanel />}
+            {showProject && <SidebarProjectPanel />}
+            {activeRailItem === "tasks" && <SidebarTasksPanel />}
+            {activeRailItem === "calendar" && <SidebarCalendarPanel />}
+            {activeRailItem === "clients" && <SidebarClientsPanel />}
+            {activeRailItem === "opportunities" && <SidebarOpportunitiesPanel />}
+            {activeRailItem === "deals" && <SidebarDealsPanel />}
+            {activeRailItem === "docs" && <SidebarDocsPanel />}
+            {activeRailItem === "inbox" && <SidebarInboxPanel />}
+          </>
+        )}
       </div>
       {isOpen ? (
         <button
