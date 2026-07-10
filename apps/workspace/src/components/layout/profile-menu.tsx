@@ -2,7 +2,7 @@
 
 import { useTransition, useState } from "react";
 import { Link, useRouter, usePathname } from "@/i18n/routing";
-import { LogOut, User, Building, Settings, Moon, Sun, Globe, LayoutDashboard, Briefcase } from "lucide-react";
+import { LogOut, User, Settings, Moon, Sun, Globe } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useTheme } from "@/components/providers/theme-provider";
 import {
@@ -97,27 +97,7 @@ export function ProfileMenu() {
             <span>Profile</span>
           </DropdownMenuItem>
 
-          {/* Views — localized */}
-          <DropdownMenuItem render={<Link href="/ws" />} className="py-2 rounded-lg">
-            <LayoutDashboard className="h-4 w-4 me-2" />
-            <span>{locale === "ar" ? "العروض" : "Views"}</span>
-          </DropdownMenuItem>
-
-          {/* Workspaces — localized */}
-          <DropdownMenuItem render={<Link href="/organization" />} className="py-2 rounded-lg">
-            <Briefcase className="h-4 w-4 me-2" />
-            <span>{locale === "ar" ? "مساحات العمل" : "Workspaces"}</span>
-          </DropdownMenuItem>
-          
-          <DropdownMenuSeparator />
-
-          {/* Organization */}
-          <DropdownMenuItem render={<Link href="/organization" />} className="py-2 rounded-lg">
-            <Building className="h-4 w-4 me-2" />
-            <span>Organization</span>
-          </DropdownMenuItem>
-
-          {/* Settings */}
+          {/* Personal settings */}
           <DropdownMenuItem render={<Link href="/settings/general" />} className="py-2 rounded-lg">
             <Settings className="h-4 w-4 me-2" />
             <span>Settings</span>

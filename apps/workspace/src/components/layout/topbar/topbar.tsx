@@ -27,15 +27,15 @@ export function Topbar() {
         isRtlLocale(locale) && "font-cairo",
       )}
     >
-      <div className="flex min-w-0 items-center gap-2">
+      <div className="flex min-w-0 items-center gap-3">
         <img src="/brand-logo.svg" alt="" className="h-6 w-6 object-contain" />
         <span className="truncate text-sm font-semibold tracking-tight text-foreground">Qentrah</span>
+        <TopbarEssential />
       </div>
       <div className="flex min-w-0 justify-center">
         <TopbarSearch />
       </div>
       <div className="flex min-w-0 items-center justify-end gap-2">
-        <TopbarEssential />
         <TopbarActions />
       </div>
     </header>
