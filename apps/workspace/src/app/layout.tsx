@@ -3,6 +3,7 @@ import { Cairo } from "next/font/google";
 import { Suspense } from "react";
 import { NavigationProgress } from "@/components/layout/navigation-progress";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { rootMetadata } from "@/metadata/workspace";
 
 import "@svar-ui/react-kanban/all.css";
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Suspense>
         {children}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
