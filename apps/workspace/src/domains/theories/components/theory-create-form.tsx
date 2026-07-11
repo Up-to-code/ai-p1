@@ -96,7 +96,9 @@ export function TheoryCreateForm({
               <Label>Category</Label>
               <Select
                 value={values.category}
-                onValueChange={(v: string) => setValues((prev) => ({ ...prev, category: v }))}
+                onValueChange={(category: string | null) =>
+                  setValues((prev) => ({ ...prev, category: category ?? "" }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
