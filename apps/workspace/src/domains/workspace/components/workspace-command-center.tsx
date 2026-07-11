@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { AlertTriangle, ArrowRight, CalendarClock, CalendarDays, CheckCircle2, Circle, Clock3, Inbox, Plus, Send, UserRound } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -8,16 +7,12 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { EmptyWorkspace, WorkspaceQueryState } from "@/components/shared/crud-ui";
-import { CreateResourceDialog, type QuickDocumentInput, type QuickTaskInput } from "@/components/shared/create-resource-dialog";
-import { useAuthSession } from "@/domains/auth";
-import { useTasksQuery } from "@/domains/tasks/api/tasks";
-import { useTaskMutations } from "@/domains/tasks/hooks/use-task-mutations";
-import { createDocRequest } from "@/domains/docs/api/docs";
+import { CreateResourceDialog } from "@/components/shared/create-resource-dialog";
 import { TASK_STATUS_LABEL, normalizeTaskStatus } from "@/domains/tasks/tasks.constants";
 import type { TaskRecord } from "@/domains/tasks/tasks.types";
 import { cn } from "@/lib/utils";
-import { useRouter } from "@/i18n/routing";
-import { buildWorkspaceTaskGroups, localDateKey, taskDueDateKey } from "../lib/workspace-command-center";
+import { taskDueDateKey } from "../lib/workspace-command-center";
+import { useWorkspaceCommandCenter } from "../hooks/use-workspace-command-center";
 
 const priorityTone: Record<TaskRecord["priority"], string> = {
   urgent: "border-destructive/20 bg-destructive/10 text-destructive",
@@ -107,39 +102,19 @@ function CommandCenterSkeleton() {
 }
 
 export function WorkspaceCommandCenter() {
-  const session = useAuthSession();
-  const router = useRouter();
-  const organizationId = session.workspace.organizationId ?? "";
-  const tasksResult = useTasksQuery(session.workspace.isReady ? organizationId : undefined);
-  const { createTask, createTaskMutation } = useTaskMutations(organizationId);
-  const [createOpen, setCreateOpen] = useState(false);
-  const [documentPending, setDocumentPending] = useState(false);
-  const now = useMemo(() => new Date(), []);
-  const todayKey = useMemo(() => localDateKey(now), [now]);
-  const groups = useMemo(() => buildWorkspaceTaskGroups(tasksResult.data ?? [], session.user.id, todayKey), [session.user.id, tasksResult.data, todayKey]);
-
-  async function handleCreateTask(input: QuickTaskInput) {
-    if (!organizationId) return;
-    await createTask({ ...input, status: "todo" });
-  }
-
-  async function handleCreateDocument(input: QuickDocumentInput) {
-    if (!organizationId) return;
-    setDocumentPending(true);
-    try {
-      const result = await createDocRequest(organizationId, {
-        title: input.title,
-        content: input.content,
-        folderId: "",
-        projectId: "",
-        visibility: "team",
-        tags: "",
-      });
-      router.push(`/docs/${result.doc.id}`);
-    } finally {
-      setDocumentPending(false);
-    }
-  }
+  const {
+    session,
+    tasksResult,
+    createOpen,
+    setCreateOpen,
+    documentPending,
+    now,
+    todayKey,
+    groups,
+    createTaskMutation,
+    createTaskFromQuickCreate,
+    createDocumentFromQuickCreate,
+  } = useWorkspaceCommandCenter();
 
   if (!session.workspace.isReady) {
     return <div className="p-4 sm:p-6 lg:p-8"><WorkspaceQueryState status={session.workspace.status as Exclude<typeof session.workspace.status, "ready">} variant="dashboard" /></div>;
@@ -164,7 +139,7 @@ export function WorkspaceCommandCenter() {
         <Button type="button" size="sm" onClick={() => setCreateOpen(true)}><Plus className="size-4" />Create</Button>
       </header>
 
-      <CreateResourceDialog open={createOpen} onOpenChange={setCreateOpen} onCreateTask={handleCreateTask} onCreateDocument={handleCreateDocument} taskPending={createTaskMutation.isPending} documentPending={documentPending} />
+      <CreateResourceDialog open={createOpen} onOpenChange={setCreateOpen} onCreateTask={createTaskFromQuickCreate} onCreateDocument={createDocumentFromQuickCreate} taskPending={createTaskMutation.isPending} documentPending={documentPending} />
 
       {groups.active.length === 0 ? (
         <EmptyWorkspace icon={Inbox} title="Your workspace is clear" description="Create your next task or document, or open Tasks to plan new work.">
