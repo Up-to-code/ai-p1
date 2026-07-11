@@ -1,6 +1,6 @@
 "use client";
 
-import { workspaceFetch, organizationApiPath } from "@/domains/resources/workspace-resource-request";
+import { organizationApiPath } from "@/domains/resources/workspace-resource-request";
 
 export type OrganizationApiMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
@@ -32,12 +32,10 @@ export async function requestOrganizationAction<T>(
   fallback: string,
   _fetcher: typeof fetch = fetch,
 ) {
-  // Extract organizationId and path segments from the full URL
-  // URL format: /api/v1/organizations/:id/:segments...
-  const match = url.match(/^\/api\/v1\/organizations\/([^/]+)(?:\/(.+))?$/);
-  if (!match) {
-    throw new Error(`Invalid organization API URL: ${url}`);
-  }
-  const [, organizationId, rest = ""] = match;
-  return workspaceFetch<T>(organizationId, rest, { method, body, fallbackMessage: fallback });
+  const response = await _fetcher(url, {
+    method,
+    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  return readOrganizationJsonResponse<T>(response, fallback);
 }

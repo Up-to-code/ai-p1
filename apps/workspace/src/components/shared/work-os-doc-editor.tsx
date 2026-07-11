@@ -11,6 +11,8 @@ export interface DocEditorMetaField {
   icon: ReactNode;
   label: string;
   value: ReactNode;
+  className?: string;
+  fullWidth?: boolean;
 }
 
 export interface DocEditorMentionOption {
@@ -132,16 +134,22 @@ export function WorkOsDocEditor({
           {fields.length > 0 && (
             <div className="mb-5 grid gap-2 md:grid-cols-2">
               {fields.map((field) => (
-                <div
-                  key={field.key}
-                  className="group grid min-h-9 grid-cols-[112px_minmax(0,1fr)] items-center gap-3 rounded-xl border border-transparent px-2 py-1 transition-colors hover:border-border hover:bg-muted/35"
-                >
-                  <div className="flex min-w-0 items-center gap-2 text-xs font-medium text-text-muted">
-                    <span className="shrink-0 opacity-60">{field.icon}</span>
-                    <span className="truncate">{field.label}</span>
+                field.fullWidth ? (
+                  <div key={field.key} className={cn("md:col-span-2", field.className)}>
+                    {field.value}
                   </div>
-                  <div className="min-w-0 text-sm text-foreground">{field.value}</div>
-                </div>
+                ) : (
+                  <div
+                    key={field.key}
+                    className={cn("group grid min-h-9 grid-cols-[112px_minmax(0,1fr)] items-center gap-3 rounded-xl border border-transparent px-2 py-1 transition-colors hover:border-border hover:bg-muted/35", field.className)}
+                  >
+                    <div className="flex min-w-0 items-center gap-2 text-xs font-medium text-text-muted">
+                      <span className="shrink-0 opacity-60">{field.icon}</span>
+                      <span className="truncate">{field.label}</span>
+                    </div>
+                    <div className="min-w-0 text-sm text-foreground">{field.value}</div>
+                  </div>
+                )
               ))}
             </div>
           )}

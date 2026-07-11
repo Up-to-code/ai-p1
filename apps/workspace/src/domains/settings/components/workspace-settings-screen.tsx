@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Bell,
@@ -12,24 +11,19 @@ import {
   Laptop,
   Loader2,
   Mail,
-  Minus,
-  Plus,
   RefreshCw,
-  ShieldCheck,
   Smartphone,
   Trash2,
-  Zap,
 } from "lucide-react";
 import { useLocale } from "next-intl";
-import { StatusPill } from "@/components/shared/crud-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { useBillingOverview, useBillingUsage } from "@/domains/billing/api/billing";
-import { billingDateLabel, billingPricePerSeatLabel, seatTotalLabel, subscriptionTone, type BillingLocale } from "@/domains/billing/billing-view-model";
+import { useBillingUsage } from "@/domains/billing/api/billing";
 import { useBillingCheckout } from "@/domains/billing/hooks/use-billing-checkout";
 import { listOrganizationMembers } from "@/domains/organization/api";
+import { OrganizationBillingPanel } from "@/domains/organization/components/panels/organization-billing-panel";
 import { organizationSettingsKeys } from "@/domains/organization/settings-cache";
 import { CreditProgress } from "@/domains/usage/components/credit-progress";
 import { PaymentsLedger } from "@/domains/usage/components/payments-ledger";
@@ -115,7 +109,7 @@ function SettingsSectionContent({
     case "teams":
       return <TeamsSettingsSection />;
     case "billing":
-      return <BillingSettingsSection organizationId={organizationId} workspaceName={workspaceName} />;
+      return <BillingSettingsSection organizationId={organizationId} />;
     case "ai-usage":
       return <AiUsageSettingsSection organizationId={organizationId} />;
     case "security":
@@ -133,7 +127,7 @@ function SettingsSectionContent({
     case "templates":
       return <SimpleRowsSection title="Template Center" rows={[["Workspace templates", "Reusable project, task, document, and onboarding templates.", "Coming soon"]]} />;
     case "automations":
-      return <SimpleRowsSection title="Automations Manager" rows={[["Workspace automations", "Run rules across spaces and projects when this module is enabled.", "Coming soon"]]} />;
+      return <SimpleRowsSection title="Automations Manager" rows={[["Workspace automations", "Build visual trigger-and-action workflows from the Automations page.", "Available"]]} />;
     case "ai-notetaker":
       return <SimpleRowsSection title="AI Notetaker" rows={[["Meeting notes", "Capture summaries, decisions, and tasks from connected meeting sources.", "Coming soon"]]} />;
     case "spaces":
@@ -360,51 +354,36 @@ function TeamsSettingsSection() {
   );
 }
 
-function BillingSettingsSection({ organizationId, workspaceName }: { organizationId?: string | null; workspaceName: string }) {
-  const locale = useLocale() as BillingLocale & UsageLocale;
-  const overview = useBillingOverview(organizationId);
-  const usage = useBillingUsage(organizationId);
-  const [seats, setSeats] = useState(1);
-  const pricePerSeat = useMemo(() => billingPricePerSeatLabel(locale), [locale]);
-  const totalPerMonth = useMemo(() => seatTotalLabel(seats, locale), [seats, locale]);
-  const status = overview?.subscription?.status ?? "inactive";
-  const { isStartingCheckout, startCheckout } = useBillingCheckout({ organizationId: organizationId ?? null, effectiveSeats: seats, locale });
-  const renewalLabel = billingDateLabel(overview?.subscription?.currentPeriodEndAt, locale, "Not active yet");
+function BillingSettingsSection({ organizationId }: { organizationId?: string | null }) {
+  const locale = useLocale() as UsageLocale;
+  const membersQuery = useQuery({
+    queryKey: organizationId ? organizationSettingsKeys.members(organizationId) : ["organization-members", "missing"],
+    queryFn: () => listOrganizationMembers(organizationId ?? ""),
+    enabled: Boolean(organizationId),
+  });
+  const memberCount = Math.max(1, membersQuery.data?.length ?? 1);
+  const { isStartingCheckout, startCheckout } = useBillingCheckout({
+    organizationId: organizationId ?? null,
+    effectiveSeats: memberCount,
+    locale,
+  });
+
+  if (!organizationId) {
+    return <SettingsSection title="Billing"><div className="p-4 text-sm text-muted-foreground">Choose an organization to view billing.</div></SettingsSection>;
+  }
 
   return (
-    <SettingsSection title="Billing">
-      <div className="grid gap-3 p-3 md:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-lg border border-border bg-background p-4 dark:border-[#222326] dark:bg-[#141416]">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2"><CreditCard className="h-4 w-4 text-primary dark:text-[#F4F5F8]" /><p className="text-xs font-semibold text-foreground dark:text-[#F4F5F8]">Subscription</p></div>
-              <h3 className="mt-3 truncate text-2xl font-semibold tracking-tight text-foreground dark:text-[#F4F5F8]">{overview?.plan.name ?? "Qentrah Workspace"}</h3>
-              <p className="mt-1 text-xs text-muted-foreground dark:text-[#94949b]">{workspaceName} pays {pricePerSeat} per user each month.</p>
-            </div>
-            <StatusPill label={status} tone={subscriptionTone(status)} />
-          </div>
-          <div className="mt-5 grid gap-2 sm:grid-cols-3">
-            <InfoCard title="Renewal" value={renewalLabel} />
-            <InfoCard title="Seats selected" value={String(seats)} />
-            <InfoCard title="Monthly total" value={`${totalPerMonth} / month`} />
-          </div>
-        </div>
-
-        <div className="rounded-lg border border-border bg-background p-4 dark:border-[#222326] dark:bg-[#141416]">
-          <div className="flex items-center gap-2"><Zap className="h-4 w-4 text-primary dark:text-[#F4F5F8]" /><p className="text-xs font-semibold text-foreground dark:text-[#F4F5F8]">Manage plan</p></div>
-          <div className="mt-4 flex items-center justify-between rounded-md border border-border bg-card px-2 py-2 dark:border-[#222326] dark:bg-[#1f1f23]">
-            <Button type="button" variant="ghost" size="icon" className="h-8 w-8" disabled={seats <= 1} onClick={() => setSeats((value) => Math.max(1, value - 1))} aria-label="Remove seat"><Minus className="h-3.5 w-3.5" /></Button>
-            <div className="text-center"><div className="text-2xl font-bold tabular-nums text-foreground">{seats}</div><div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{seats === 1 ? "user" : "users"}</div></div>
-            <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSeats((value) => Math.min(9999, value + 1))} aria-label="Add seat"><Plus className="h-3.5 w-3.5" /></Button>
-          </div>
-          <Button className="mt-3 w-full gap-2 dark:bg-[#F4F5F8] dark:text-[#222326] dark:hover:bg-white" disabled={!organizationId || isStartingCheckout} onClick={startCheckout}>
-            {isStartingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-            Upgrade or pay
-          </Button>
-        </div>
-      </div>
-      {usage.status === "ready" && usage.data.payments.length > 0 && <div className="border-t border-border p-3 dark:border-[#222326]"><PaymentsLedger locale={locale} payments={usage.data.payments} /></div>}
-    </SettingsSection>
+    <OrganizationBillingPanel
+      organizationId={organizationId}
+      locale={locale}
+      memberCount={memberCount}
+      planAction={
+        <Button disabled={isStartingCheckout} onClick={startCheckout} className="h-9 gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest">
+          {isStartingCheckout ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
+          Manage plan
+        </Button>
+      }
+    />
   );
 }
 

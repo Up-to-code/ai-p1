@@ -4,7 +4,7 @@ import {
   BriefcaseBusiness,
   Building2,
   CalendarDays,
-  KanbanSquare,
+  BadgeDollarSign,
   ListTodo,
   Plug,
   Settings,
@@ -33,7 +33,7 @@ export type GlobalSearchResult = {
 type SidebarLabels = {
   dashboard: string;
   clients: string;
-  opportunities: string;
+  deals: string;
   projects: string;
   tasks: string;
   calendar: string;
@@ -48,7 +48,7 @@ export function buildGlobalSearchNavigationActions(labels: SidebarLabels): Globa
     { id: "workspace", label: "Workspace", href: "/ws", icon: Building2 },
     { id: "ai", label: "AI", href: "/ai", icon: Bot },
     { id: "clients", label: labels.clients, href: "/clients", icon: UserRound },
-    { id: "opportunities", label: labels.opportunities, href: "/opportunities", icon: KanbanSquare },
+    { id: "deals", label: labels.deals, href: "/deals", icon: BadgeDollarSign },
     { id: "projects", label: labels.projects, href: "/projects", icon: BriefcaseBusiness },
     { id: "tasks", label: labels.tasks, href: "/tasks", icon: ListTodo },
     { id: "calendar", label: labels.calendar, href: "/calendar", icon: CalendarDays },

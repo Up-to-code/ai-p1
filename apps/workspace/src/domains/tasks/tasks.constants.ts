@@ -75,6 +75,7 @@ export const DEFAULT_FORM_VALUES = {
   assigneeUserId: "",
   clientId: "",
   projectId: "",
+  startDate: "",
   dueDate: "",
   description: "",
   tags: "",

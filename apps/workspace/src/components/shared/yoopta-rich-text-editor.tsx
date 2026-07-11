@@ -7,9 +7,11 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import YooptaEditor, {
   Blocks,
   Marks,
@@ -39,7 +41,12 @@ import Tabs from "@yoopta/tabs";
 import Steps from "@yoopta/steps";
 import TableOfContents from "@yoopta/table-of-contents";
 import Emoji, { withEmoji } from "@yoopta/emoji";
-import Mention, { useMentionDropdown, withMentions, type MentionItem } from "@yoopta/mention";
+import Mention, {
+  useMentionDropdown,
+  withMentions,
+  type MentionItem,
+  type MentionEditor,
+} from "@yoopta/mention";
 import Math from "@yoopta/math";
 import {
   ActionMenuList,
@@ -113,7 +120,7 @@ export interface YooptaRichTextEditorProps {
   saveOnBlur?: boolean;
   onBlurHtml?: (value: string) => void;
   minHeightClassName?: string;
-  variant?: "card" | "document";
+  variant?: "card" | "document" | "composer";
   mentionOptions?: Array<{
     id: string;
     label: string;
@@ -121,6 +128,7 @@ export interface YooptaRichTextEditorProps {
     type?: string;
     href?: string;
   }>;
+  onSubmit?: () => void;
 }
 
 export function isTemporaryObjectUrl(url: string | undefined) {
@@ -562,7 +570,7 @@ function EditorMentionDropdown() {
 
   if (!mention.isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       ref={mention.refs.setFloating}
       style={mention.floatingStyles}
@@ -598,7 +606,8 @@ function EditorMentionDropdown() {
           </button>
         ))
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -670,18 +679,26 @@ export function YooptaRichTextEditor({
   minHeightClassName = "min-h-[150px]",
   variant = "card",
   mentionOptions = [],
+  onSubmit,
 }: YooptaRichTextEditorProps) {
   const lastHtmlRef = useRef(value);
   const hydratedEditorRef = useRef<ReturnType<typeof createYooptaEditor> | null>(null);
   const isApplyingExternalValueRef = useRef(false);
   const [isFocused, setIsFocused] = useState(false);
   const isDocument = variant === "document";
+  const isComposer = variant === "composer";
   const canUploadMedia = canInsertDurableMedia(onUploadImage, disableImageUpload);
   const mentionOptionsRef = useRef(mentionOptions);
+  const onChangeRef = useRef(onChange);
+  const editorInstanceRef = useRef<ReturnType<typeof createYooptaEditor> | null>(null);
 
   useEffect(() => {
     mentionOptionsRef.current = mentionOptions;
   }, [mentionOptions]);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   const searchMentions = useCallback(async (query: string): Promise<MentionItem[]> => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -766,6 +783,15 @@ export function YooptaRichTextEditor({
         minQueryLength: 0,
         debounceMs: 120,
         onSearch: searchMentions,
+        onSelect: () => {
+          queueMicrotask(() => {
+            const activeEditor = editorInstanceRef.current;
+            if (!activeEditor) return;
+            const html = activeEditor.getHTML(activeEditor.getEditorValue());
+            lastHtmlRef.current = html;
+            onChangeRef.current(html);
+          });
+        },
       },
     });
 
@@ -811,6 +837,7 @@ export function YooptaRichTextEditor({
     },
     [marks, plugins],
   );
+  editorInstanceRef.current = editor;
 
   useEffect(() => {
     const isNewEditor = hydratedEditorRef.current !== editor;
@@ -851,12 +878,28 @@ export function YooptaRichTextEditor({
     <div
       className={cn(
         "yoopta-editor-shell overflow-visible",
-        isDocument ? "bg-transparent" : "rounded-xl border border-border bg-card shadow-sm",
-        isFocused && !isDocument && "ring-2 ring-ring/20",
+        isDocument || isComposer
+          ? "bg-transparent"
+          : "rounded-xl border border-border bg-card shadow-sm",
+        isFocused && !isDocument && !isComposer && "ring-2 ring-ring/20",
         className,
       )}
       data-compact-formatting={compactFormatting || undefined}
       style={style}
+      onKeyDownCapture={(event: ReactKeyboardEvent<HTMLDivElement>) => {
+        if (
+          !isComposer ||
+          event.key !== "Enter" ||
+          event.shiftKey ||
+          event.nativeEvent.isComposing ||
+          (editor as typeof editor & MentionEditor).mentions.state.isOpen
+        ) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        onSubmit?.();
+      }}
       onMouseDown={(event) => {
         if (event.defaultPrevented || event.button !== 0) return;
 
@@ -899,12 +942,16 @@ export function YooptaRichTextEditor({
           autoFocus={false}
           className={cn(
             "yoopta-doc-editor text-sm text-foreground",
-            isDocument ? "yoopta-document-editor px-0 py-4" : "px-4 py-3",
+            isDocument
+              ? "yoopta-document-editor px-0 py-4"
+              : isComposer
+                ? "px-0 py-0"
+                : "px-4 py-3",
             minHeightClassName,
             editorClassName,
           )}
           style={
-            isDocument
+            isDocument || isComposer
               ? {
                   border: 0,
                   outline: 0,
@@ -927,7 +974,7 @@ export function YooptaRichTextEditor({
             if (!saveOnBlur) onChange(html);
           }}
         >
-          <EditorBlockControls editor={editor} />
+          {!isComposer && <EditorBlockControls editor={editor} />}
           <EditorFloatingToolbar editor={editor} compactFormatting={compactFormatting} />
           <EditorSlashCommandMenu />
           <EditorMentionDropdown />

@@ -4,6 +4,7 @@ import { recordStateValidator } from "../schema/validators";
 export const calendarEventTypeValidator = v.union(
   v.literal("meeting"),
   v.literal("deadline"),
+  v.literal("document"),
   v.literal("reminder"),
   v.literal("milestone"),
   v.literal("focusBlock"),
@@ -21,6 +22,7 @@ export const calendarEventInputValidator = v.object({
   clientId: v.optional(v.string()),
   projectId: v.optional(v.string()),
   taskId: v.optional(v.string()),
+  documentId: v.optional(v.string()),
   startAt: v.number(),
   endAt: v.number(),
   type: calendarEventTypeValidator,
@@ -43,6 +45,7 @@ export const calendarEventValidator = v.object({
   clientId: v.optional(v.string()),
   projectId: v.optional(v.string()),
   taskId: v.optional(v.string()),
+  documentId: v.optional(v.string()),
   startAt: v.number(),
   endAt: v.number(),
   date: v.string(),

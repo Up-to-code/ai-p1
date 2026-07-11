@@ -8,6 +8,7 @@ import {
   organizationApiKeyAccessError,
   requireOrganizationApiKeyAccess,
   type OrganizationApiKeyAccessContext,
+  type OrganizationApiKeyResource,
 } from "./organization-api-key-access";
 import {
   readOrganizationApiKeyResource,
@@ -15,6 +16,7 @@ import {
 } from "./resources";
 
 export type PartnerResourceAccessContext = OrganizationApiKeyAccessContext;
+export type PartnerApiResource = OrganizationApiKeyResource;
 
 function routeOrganizationId(c: Context) {
   const organizationId = c.req.param("organizationId");
@@ -51,7 +53,7 @@ function rejectUnsupportedPartnerBearer(): never {
 
 export async function requirePartnerResourceAccess(
   c: Context,
-  resource: PartnerPermissionResource,
+  resource: PartnerApiResource,
   action: PartnerPermissionAction,
 ): Promise<PartnerResourceAccessContext> {
   assertNoQueryBearerToken(c);
@@ -73,7 +75,7 @@ export function partnerResourceAccessIdentity(access: PartnerResourceAccessConte
 
 export function readAuthorizedPartnerResource(
   access: PartnerResourceAccessContext,
-  resource: PartnerPermissionResource,
+  resource: PartnerApiResource,
   input?: unknown,
 ) {
   return readOrganizationApiKeyResource(access.organizationId, resource, input);
@@ -81,7 +83,7 @@ export function readAuthorizedPartnerResource(
 
 export function writeAuthorizedPartnerResource(
   access: PartnerResourceAccessContext,
-  resource: PartnerPermissionResource,
+  resource: PartnerApiResource,
   action: Exclude<PartnerPermissionAction, "read">,
   input?: unknown,
 ) {

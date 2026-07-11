@@ -2,12 +2,15 @@ import { v } from "convex/values";
 import { internalMutation } from "../_generated/server";
 
 type StoredResource = "organization" | "client" | "project" | "deal" | "calendar" | "task" | "media" | "space";
-type StoredApiKeyResource = Exclude<StoredResource, "deal">;
+type StoredApiKeyResource = Exclude<StoredResource, "deal"> | "document";
 type StoredPermission = {
   resource: StoredResource;
   actions: Array<"read" | "create" | "update" | "delete">;
 };
-type StoredApiKeyPermission = StoredPermission & { resource: StoredApiKeyResource };
+type StoredApiKeyPermission = {
+  resource: StoredApiKeyResource;
+  actions: Array<"read" | "create" | "update" | "delete">;
+};
 
 function normalizeStoredPermissions(permissions: StoredPermission[]) {
   const normalized: StoredPermission[] = [];
@@ -32,7 +35,7 @@ function normalizeStoredPermissions(permissions: StoredPermission[]) {
   return normalized;
 }
 
-function permissionsChanged(before: StoredPermission[], after: StoredPermission[]) {
+function permissionsChanged(before: Array<{ resource: string; actions: string[] }>, after: Array<{ resource: string; actions: string[] }>) {
   if (before.length !== after.length) {
     return true;
   }
@@ -44,9 +47,18 @@ function permissionsChanged(before: StoredPermission[], after: StoredPermission[
 }
 
 function normalizeStoredApiKeyPermissions(permissions: StoredApiKeyPermission[]) {
-  return normalizeStoredPermissions(permissions).filter(
-    (permission): permission is StoredApiKeyPermission => permission.resource !== "deal",
-  );
+  const normalized: StoredApiKeyPermission[] = [];
+  const seen = new Set<string>();
+  for (const permission of permissions) {
+    const rawResource = permission.resource as string;
+    if (rawResource === "asset" || rawResource === "deal") continue;
+    const resource = (rawResource === "property" ? "project" : rawResource) as StoredApiKeyResource;
+    const key = `${resource}:${permission.actions.slice().sort().join(",")}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    normalized.push({ ...permission, resource });
+  }
+  return normalized;
 }
 
 export const purgeAllLegacyAssetMedia = internalMutation({

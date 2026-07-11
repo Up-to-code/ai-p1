@@ -70,9 +70,9 @@ export function DomainHeader({
   onSettingsClick,
 }: DomainHeaderProps) {
   return (
-    <div className={cn("border-b border-border bg-background", className)}>
+    <div className={cn("border-b border-border/70 bg-background/95 backdrop-blur", className)}>
       {/* Top bar with breadcrumbs and actions */}
-      <div className="px-6 py-4">
+      <div className="px-4 py-4 sm:px-6 sm:py-5">
         <div className="flex items-center justify-between">
           {/* Left side: breadcrumbs and title */}
           <div className="flex items-center gap-4">
@@ -106,8 +106,8 @@ export function DomainHeader({
 
             {/* Domain title */}
             <div>
-              <h1 className="text-2xl font-bold text-foreground">{domain}</h1>
-              <p className="text-sm text-muted-foreground">{currentSection}</p>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">{domain}</h1>
+              <p className="mt-0.5 text-sm text-muted-foreground">{currentSection}</p>
             </div>
           </div>
 
@@ -119,7 +119,7 @@ export function DomainHeader({
                 onClick={action.onClick}
                 disabled={action.disabled}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                  "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium shadow-sm transition-all",
                   "disabled:opacity-50 disabled:cursor-not-allowed",
                   action.variant === 'primary'
                     ? "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -148,7 +148,7 @@ export function DomainHeader({
 
       {/* View switcher tabs */}
       {showViewSwitcher && availableViews.length > 0 && activeView && onViewChange && (
-        <div className="px-6">
+        <div className="px-4 sm:px-6">
           <ViewSwitcherTabs
             availableViews={availableViews}
             activeView={activeView}

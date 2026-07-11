@@ -3,8 +3,8 @@
 import * as React from "react"
 import {
   X,
+  Check,
   Search,
-  Settings,
   CircleDot,
   Type,
   Calendar,
@@ -13,17 +13,12 @@ import {
   Tags,
   Sparkles,
   CheckSquare,
-  Mail,
-  Paperclip,
-  Calculator,
-  MapPin,
   DollarSign,
   Users,
   Link2,
   Eye,
   EyeOff,
   Trash2,
-  Plus,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -116,7 +111,10 @@ export function TaskTableFieldsPanel({
   }, [definitions, query])
 
   const popular = React.useMemo(() => POPULAR_FIELD_TYPES, [])
-  const all = React.useMemo(() => ALL_FIELD_TYPES, [])
+  const additionalTypes = React.useMemo(
+    () => ALL_FIELD_TYPES.filter((type) => !POPULAR_FIELD_TYPES.includes(type)),
+    [],
+  )
 
   const handleCreate = async (type: WorkOsCustomFieldType) => {
     setPendingType(type)
@@ -133,6 +131,8 @@ export function TaskTableFieldsPanel({
       await createCustomFieldRequest(organizationId, { label, type: pendingType })
       setPendingType(null)
       setPendingLabel("")
+      setQuery("")
+      setTab("existing")
       onFieldCreated?.()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create field")
@@ -176,38 +176,39 @@ export function TaskTableFieldsPanel({
   if (!open) return null
 
   return (
-    <>
-      <div
-        className="fixed inset-0 bg-black/40 z-40"
-        onClick={onClose}
-        aria-hidden
-      />
-      <aside className="fixed inset-y-0 right-0 w-[340px] z-50 bg-[#141418] border-l border-white/10 flex flex-col shadow-2xl">
-        <header className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+      <aside
+        role="dialog"
+        aria-label="Task fields"
+        className="fixed right-4 top-20 z-50 flex h-[min(640px,calc(100dvh-6rem))] w-[336px] flex-col overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground"
+      >
+        <header className="flex items-center justify-between border-b border-border px-3 py-2.5">
           <div className="flex items-center gap-2">
-            <Settings className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-[13px] font-semibold">Fields</h2>
+            <CircleDot className="h-3.5 w-3.5 text-muted-foreground" />
+            <div>
+              <h2 className="text-[13px] font-semibold">Fields</h2>
+              <p className="text-[10px] text-muted-foreground">Add or manage task properties</p>
+            </div>
           </div>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7 text-muted-foreground">
+            <Button variant="ghost" size="icon-sm" onClick={onClose} className="text-muted-foreground" aria-label="Close fields">
               <X className="h-3.5 w-3.5" />
             </Button>
           </div>
         </header>
 
-        <div className="p-2 border-b border-white/5">
+        <div className="p-2 border-b border-border">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search Task Fields"
-              className="h-8 pl-8 text-[12px] bg-[#0f0f14] border-white/10"
+              placeholder="Search fields"
+              className="h-8 pl-8 text-[12px] bg-muted/30 border-border"
             />
           </div>
         </div>
 
-        <div className="flex border-b border-white/5 px-2">
+        <div className="flex border-b border-border px-2">
           {(["create", "existing"] as const).map((t) => (
             <button
               key={t}
@@ -223,7 +224,7 @@ export function TaskTableFieldsPanel({
                   : "border-transparent text-muted-foreground hover:text-foreground"
               )}
             >
-              {t === "create" ? "Create new" : "Add existing"}
+              {t === "create" ? "Add field" : "Manage"}
             </button>
           ))}
         </div>
@@ -237,22 +238,23 @@ export function TaskTableFieldsPanel({
         {pendingType && (
           <form
             onSubmit={submitCreate}
-            className="p-3 border-b border-white/10 bg-white/[0.04] space-y-2"
+            className="space-y-2 border-b border-border bg-muted/30 p-3"
           >
             <div className="flex items-center gap-2">
-              {React.createElement(ICON_FOR_TYPE[pendingType], {
-                className: cn("h-3.5 w-3.5", COLOR_FOR_TYPE[pendingType]),
-              })}
-              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                {LABEL_FOR_TYPE[pendingType]}
+              <span className={cn("flex size-7 items-center justify-center rounded-md border border-border bg-background", COLOR_FOR_TYPE[pendingType])}>
+                {React.createElement(ICON_FOR_TYPE[pendingType], { className: "h-3.5 w-3.5" })}
               </span>
+              <div>
+                <p className="text-xs font-semibold">New {LABEL_FOR_TYPE[pendingType]}</p>
+                <p className="text-[10px] text-muted-foreground">Name this task field</p>
+              </div>
             </div>
             <Input
               autoFocus
               value={pendingLabel}
               onChange={(e) => setPendingLabel(e.target.value)}
               placeholder="Field name"
-              className="h-8 text-[12px] bg-[#0f0f14] border-white/10"
+              className="h-8 text-[12px] bg-background border-border"
             />
             <div className="flex justify-end gap-2 pt-1">
               <Button
@@ -276,28 +278,30 @@ export function TaskTableFieldsPanel({
           </form>
         )}
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {tab === "create" && (
             <>
-              <SectionHeader label="Popular" />
-              <div className="px-1">
+              <SectionHeader label="Quick add" />
+              <div className="grid grid-cols-2 gap-1 px-2">
                 {popular.map((type) => (
                   <FieldTypeRow
                     key={type}
                     type={type}
                     isAI={AI_TYPES.includes(type)}
+                    selected={pendingType === type}
                     onClick={() => handleCreate(type)}
                     disabled={busy}
                   />
                 ))}
               </div>
-              <SectionHeader label="All" />
-              <div className="px-1">
-                {all.map((type) => (
+              <SectionHeader label="More types" />
+              <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                {additionalTypes.map((type) => (
                   <FieldTypeRow
                     key={type}
                     type={type}
                     isAI={AI_TYPES.includes(type)}
+                    selected={pendingType === type}
                     onClick={() => handleCreate(type)}
                     disabled={busy}
                   />
@@ -316,7 +320,7 @@ export function TaskTableFieldsPanel({
                 filtered.map((def) => (
                   <div
                     key={def.id}
-                    className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-white/5"
+                    className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/50"
                   >
                     {React.createElement(ICON_FOR_TYPE[def.type] ?? Type, {
                       className: cn("h-3.5 w-3.5", COLOR_FOR_TYPE[def.type] ?? "text-zinc-300"),
@@ -325,7 +329,7 @@ export function TaskTableFieldsPanel({
                     <button
                       type="button"
                       onClick={() => toggleVisible(def)}
-                      className="h-6 w-6 inline-flex items-center justify-center rounded hover:bg-white/10 text-muted-foreground"
+                      className="h-6 w-6 inline-flex items-center justify-center rounded hover:bg-muted text-muted-foreground"
                       title={def.tableVisible ? "Hide from table" : "Show in table"}
                     >
                       {def.tableVisible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
@@ -345,7 +349,6 @@ export function TaskTableFieldsPanel({
           )}
         </div>
       </aside>
-    </>
   )
 }
 
@@ -360,11 +363,13 @@ function SectionHeader({ label }: { label: string }) {
 function FieldTypeRow({
   type,
   isAI,
+  selected = false,
   onClick,
   disabled,
 }: {
   type: WorkOsCustomFieldType
   isAI?: boolean
+  selected?: boolean
   onClick: () => void
   disabled?: boolean
 }) {
@@ -374,11 +379,16 @@ function FieldTypeRow({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-[12px] hover:bg-white/5 disabled:opacity-50"
+      className={cn(
+        "flex min-h-10 items-center gap-2 rounded-md border px-2 text-left text-[12px] transition-colors disabled:opacity-50",
+        selected
+          ? "border-primary/40 bg-primary/10 text-foreground"
+          : "border-transparent hover:border-border hover:bg-muted/50",
+      )}
     >
       <Icon className={cn("h-3.5 w-3.5", COLOR_FOR_TYPE[type])} />
       <span className="flex-1">{LABEL_FOR_TYPE[type]}</span>
-      {isAI && <Sparkles className="h-3 w-3 text-violet-300" />}
+      {selected ? <Check className="h-3.5 w-3.5 text-primary" /> : isAI ? <Sparkles className="h-3 w-3 text-violet-300" /> : null}
     </button>
   )
 }

@@ -132,6 +132,7 @@ describe("task-pipeline-order", () => {
         assigneeUserId: "user_1",
         clientId: "client_1",
         projectId: "proj_1",
+        startDate: "2025-11-01",
         dueDate: "2025-12-01",
         description: "<p>Description</p>",
         tags: ["urgent", "backend"],
@@ -147,6 +148,7 @@ describe("task-pipeline-order", () => {
       expect(values.assigneeUserId).toBe("user_1");
       expect(values.clientId).toBe("client_1");
       expect(values.projectId).toBe("proj_1");
+      expect(values.startDate).toBe("2025-11-01");
       expect(values.dueDate).toBe("2025-12-01");
       expect(values.description).toBe("<p>Description</p>");
       expect(values.tags).toBe("urgent, backend");
@@ -159,6 +161,7 @@ describe("task-pipeline-order", () => {
       expect(values.assigneeUserId).toBe("");
       expect(values.clientId).toBe("");
       expect(values.projectId).toBe("");
+      expect(values.startDate).toBe("");
       expect(values.dueDate).toBe("");
       expect(values.description).toBe("");
       expect(values.tags).toBe("");

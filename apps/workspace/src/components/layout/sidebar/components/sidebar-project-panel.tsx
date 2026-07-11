@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import {
-  LayoutDashboard,
   ListTodo,
   CalendarDays,
   FileText,
@@ -19,7 +18,6 @@ import { SidebarPanelLayout } from "./sidebar-panel-layout";
 import { ProjectsPanelSkeleton } from "@/components/loading-ui";
 
 const projectTabs = [
-  { name: "overview", href: "", icon: LayoutDashboard },
   { name: "tasks", href: "/tasks", icon: ListTodo },
   { name: "calendar", href: "/calendar", icon: CalendarDays },
   { name: "files", href: "/files", icon: FileText },

@@ -91,6 +91,10 @@ export function TasksScreen({
     () => projectOptions.data ?? [],
     [projectOptions.data],
   );
+  const activeProjectId = useMemo(
+    () => projectId && projectList.some((project) => project.id === projectId) ? projectId : null,
+    [projectId, projectList],
+  );
 
   const setSelectedId = useCallback(
     (id: string | null) => {
@@ -180,10 +184,10 @@ export function TasksScreen({
 
   async function createNewTask() {
     if (!organizationId) return;
-    taskLog.info("create:start", { projectId: projectId ?? "" });
+    taskLog.info("create:start", { projectId: activeProjectId ?? "" });
     const result = await createTaskRequest(organizationId, {
       ...emptyTask,
-      projectId: projectId ?? "",
+      projectId: activeProjectId ?? "",
     });
     taskLog.info("create:success", { taskId: result.task.id });
     setSelectedId(result.task.id);

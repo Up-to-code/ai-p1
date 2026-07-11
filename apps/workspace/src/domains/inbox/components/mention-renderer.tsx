@@ -40,6 +40,7 @@ function getMentionRoute(
     case "ai":
       return { href: "/ai" };
     case "user":
+      return { href: "/team", extraParams: { memberId: id } };
     default:
       return { href: "#" };
   }
@@ -176,6 +177,21 @@ function renderHtmlNode(
 
   const element = node as HTMLElement;
   const tagName = element.tagName.toLowerCase();
+  const serializedMentionId = element.getAttribute("data-mention-id");
+  const serializedMentionName = element.getAttribute("data-mention-name");
+  const serializedMentionType = element.getAttribute("data-mention-type");
+  if (serializedMentionId && serializedMentionName && serializedMentionType) {
+    const mention = mentions.find(
+      (candidate) =>
+        candidate.id === serializedMentionId &&
+        candidate.type === serializedMentionType,
+    ) ?? {
+      id: serializedMentionId,
+      name: serializedMentionName,
+      type: serializedMentionType as MessageMention["type"],
+    };
+    return <MentionChip key={key} mention={mention} />;
+  }
   const childInsideAnchor = insideAnchor || tagName === "a";
   const children = Array.from(element.childNodes).map((child, index) =>
     renderHtmlNode(child, mentions, `${key}-${index}`, childInsideAnchor),

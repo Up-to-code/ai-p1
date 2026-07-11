@@ -229,13 +229,14 @@ function CreateMenu({ orgId, canCreate }: { orgId?: string; canCreate: boolean }
           render={
             <button
               type="button"
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-accent/50 hover:text-text-primary"
+              className="flex h-8 w-full items-center gap-2 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
               <Plus className="h-3.5 w-3.5" />
+              New project or space
             </button>
           }
         />
-        <PopoverContent side="bottom" align="end" sideOffset={4} className="w-48 p-1.5">
+        <PopoverContent side="bottom" align="start" sideOffset={4} className="w-48 p-1.5">
           <div className="flex flex-col gap-0.5">
             <WorkspaceLink
               href="/projects/new"
@@ -297,7 +298,7 @@ export function SidebarSpacePanel() {
     <>
       <SidebarPanelLayout
         title={showActiveView && activeSpace ? activeSpace.name : t("spaces")}
-        navbarActions={<CreateMenu orgId={orgId ?? undefined} canCreate={canCreate} />}
+        primaryAction={<CreateMenu orgId={orgId ?? undefined} canCreate={canCreate} />}
       >
         {showActiveView && activeSpace ? (
           <ActiveSpaceView

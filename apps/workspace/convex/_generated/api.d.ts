@@ -8,8 +8,20 @@
  * @module
  */
 
+import type * as access_actor from "../access/actor.js";
+import type * as access_channel from "../access/channel.js";
+import type * as access_document from "../access/document.js";
+import type * as access_project from "../access/project.js";
+import type * as access_space from "../access/space.js";
+import type * as access_task from "../access/task.js";
 import type * as apiKeys from "../apiKeys.js";
 import type * as auth from "../auth.js";
+import type * as automations_execute from "../automations/execute.js";
+import type * as automations_graph from "../automations/graph.js";
+import type * as automations_layout from "../automations/layout.js";
+import type * as automations_read from "../automations/read.js";
+import type * as automations_validators from "../automations/validators.js";
+import type * as automations_write from "../automations/write.js";
 import type * as betterAuth from "../betterAuth.js";
 import type * as billing_creditSurface from "../billing/creditSurface.js";
 import type * as billing_customers from "../billing/customers.js";
@@ -32,6 +44,9 @@ import type * as clientDocs_write from "../clientDocs/write.js";
 import type * as clientFollowUps_read from "../clientFollowUps/read.js";
 import type * as clientFollowUps_validators from "../clientFollowUps/validators.js";
 import type * as clientFollowUps_write from "../clientFollowUps/write.js";
+import type * as clientInvoices_read from "../clientInvoices/read.js";
+import type * as clientInvoices_validators from "../clientInvoices/validators.js";
+import type * as clientInvoices_write from "../clientInvoices/write.js";
 import type * as clientTasks_read from "../clientTasks/read.js";
 import type * as clientTasks_validators from "../clientTasks/validators.js";
 import type * as clientTasks_write from "../clientTasks/write.js";
@@ -52,6 +67,7 @@ import type * as http from "../http.js";
 import type * as inbox_read from "../inbox/read.js";
 import type * as inbox_validators from "../inbox/validators.js";
 import type * as inbox_write from "../inbox/write.js";
+import type * as mcp_connectionKeys from "../mcp/connectionKeys.js";
 import type * as mcp_connectionLifecycle from "../mcp/connectionLifecycle.js";
 import type * as mcp_connectionPermissions from "../mcp/connectionPermissions.js";
 import type * as mcp_connections from "../mcp/connections.js";
@@ -69,6 +85,7 @@ import type * as mcp_handlers_spaces from "../mcp/handlers/spaces.js";
 import type * as mcp_handlers_tasks from "../mcp/handlers/tasks.js";
 import type * as mcp_markdownToHtml from "../mcp/markdownToHtml.js";
 import type * as mcp_readSurface from "../mcp/readSurface.js";
+import type * as mcp_scopePolicy from "../mcp/scopePolicy.js";
 import type * as mcp_toolCall from "../mcp/toolCall.js";
 import type * as mcp_toolInputs from "../mcp/toolInputs.js";
 import type * as mcp_toolRegistry from "../mcp/toolRegistry.js";
@@ -92,6 +109,8 @@ import type * as modelization_validators from "../modelization/validators.js";
 import type * as modelization_write from "../modelization/write.js";
 import type * as notifications_dispatch from "../notifications/dispatch.js";
 import type * as notifications_helpers from "../notifications/helpers.js";
+import type * as notifications_inbox from "../notifications/inbox.js";
+import type * as notifications_inbox_events from "../notifications/inbox_events.js";
 import type * as notifications_push from "../notifications/push.js";
 import type * as notifications_read from "../notifications/read.js";
 import type * as notifications_validators from "../notifications/validators.js";
@@ -144,6 +163,7 @@ import type * as savedViews_data from "../savedViews/data.js";
 import type * as savedViews_read from "../savedViews/read.js";
 import type * as savedViews_validators from "../savedViews/validators.js";
 import type * as savedViews_write from "../savedViews/write.js";
+import type * as schema_automations from "../schema/automations.js";
 import type * as schema_billing from "../schema/billing.js";
 import type * as schema_custom_fields from "../schema/custom_fields.js";
 import type * as schema_docs from "../schema/docs.js";
@@ -192,8 +212,20 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "access/actor": typeof access_actor;
+  "access/channel": typeof access_channel;
+  "access/document": typeof access_document;
+  "access/project": typeof access_project;
+  "access/space": typeof access_space;
+  "access/task": typeof access_task;
   apiKeys: typeof apiKeys;
   auth: typeof auth;
+  "automations/execute": typeof automations_execute;
+  "automations/graph": typeof automations_graph;
+  "automations/layout": typeof automations_layout;
+  "automations/read": typeof automations_read;
+  "automations/validators": typeof automations_validators;
+  "automations/write": typeof automations_write;
   betterAuth: typeof betterAuth;
   "billing/creditSurface": typeof billing_creditSurface;
   "billing/customers": typeof billing_customers;
@@ -216,6 +248,9 @@ declare const fullApi: ApiFromModules<{
   "clientFollowUps/read": typeof clientFollowUps_read;
   "clientFollowUps/validators": typeof clientFollowUps_validators;
   "clientFollowUps/write": typeof clientFollowUps_write;
+  "clientInvoices/read": typeof clientInvoices_read;
+  "clientInvoices/validators": typeof clientInvoices_validators;
+  "clientInvoices/write": typeof clientInvoices_write;
   "clientTasks/read": typeof clientTasks_read;
   "clientTasks/validators": typeof clientTasks_validators;
   "clientTasks/write": typeof clientTasks_write;
@@ -236,6 +271,7 @@ declare const fullApi: ApiFromModules<{
   "inbox/read": typeof inbox_read;
   "inbox/validators": typeof inbox_validators;
   "inbox/write": typeof inbox_write;
+  "mcp/connectionKeys": typeof mcp_connectionKeys;
   "mcp/connectionLifecycle": typeof mcp_connectionLifecycle;
   "mcp/connectionPermissions": typeof mcp_connectionPermissions;
   "mcp/connections": typeof mcp_connections;
@@ -253,6 +289,7 @@ declare const fullApi: ApiFromModules<{
   "mcp/handlers/tasks": typeof mcp_handlers_tasks;
   "mcp/markdownToHtml": typeof mcp_markdownToHtml;
   "mcp/readSurface": typeof mcp_readSurface;
+  "mcp/scopePolicy": typeof mcp_scopePolicy;
   "mcp/toolCall": typeof mcp_toolCall;
   "mcp/toolInputs": typeof mcp_toolInputs;
   "mcp/toolRegistry": typeof mcp_toolRegistry;
@@ -276,6 +313,8 @@ declare const fullApi: ApiFromModules<{
   "modelization/write": typeof modelization_write;
   "notifications/dispatch": typeof notifications_dispatch;
   "notifications/helpers": typeof notifications_helpers;
+  "notifications/inbox": typeof notifications_inbox;
+  "notifications/inbox_events": typeof notifications_inbox_events;
   "notifications/push": typeof notifications_push;
   "notifications/read": typeof notifications_read;
   "notifications/validators": typeof notifications_validators;
@@ -328,6 +367,7 @@ declare const fullApi: ApiFromModules<{
   "savedViews/read": typeof savedViews_read;
   "savedViews/validators": typeof savedViews_validators;
   "savedViews/write": typeof savedViews_write;
+  "schema/automations": typeof schema_automations;
   "schema/billing": typeof schema_billing;
   "schema/custom_fields": typeof schema_custom_fields;
   "schema/docs": typeof schema_docs;

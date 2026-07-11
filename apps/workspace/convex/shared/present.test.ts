@@ -1,30 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { presentWorkspaceRecord, stripDeletedFields } from "./present";
+import { isoDate, isoTime, timestampMilliseconds } from "./present";
 
-describe("presentWorkspaceRecord", () => {
-  it("adds id field mirroring _id", () => {
-    const result = presentWorkspaceRecord({ _id: "abc123", name: "test" });
-    expect(result).toEqual({ _id: "abc123", id: "abc123", name: "test" });
+describe("calendar timestamp presentation", () => {
+  it("normalizes legacy Unix-second timestamps", () => {
+    expect(timestampMilliseconds(1_788_884_400)).toBe(1_788_884_400_000);
+    expect(isoDate(1_788_884_400)).toBe("2026-09-08");
+    expect(isoTime(1_788_884_400)).toBe("16:20");
   });
 
-  it("overrides existing id field with _id", () => {
-    const result = presentWorkspaceRecord({ _id: "abc123", id: "custom-id", name: "test" });
-    expect(result.id).toBe("abc123");
-  });
-});
-
-describe("stripDeletedFields", () => {
-  it("removes deletedAt and isDeleted from records", () => {
-    const result = stripDeletedFields({ _id: "abc", deletedAt: Date.now(), isDeleted: true, name: "test" });
-    expect(result).not.toHaveProperty("deletedAt");
-    expect(result).not.toHaveProperty("isDeleted");
-    expect(result).toHaveProperty("name", "test");
-  });
-
-  it("returns a new object without mutating the original", () => {
-    const original = { _id: "abc", deletedAt: 100, name: "test" };
-    const result = stripDeletedFields(original);
-    expect(result).not.toBe(original);
-    expect(original).toHaveProperty("deletedAt");
+  it("preserves current millisecond timestamps", () => {
+    expect(timestampMilliseconds(1_788_884_400_000)).toBe(1_788_884_400_000);
+    expect(isoDate(1_788_884_400_000)).toBe("2026-09-08");
   });
 });

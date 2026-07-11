@@ -13,6 +13,33 @@ betterAuthClient.registerRoutesLazy(http, createAuth, {
 });
 
 http.route({
+  pathPrefix: "/automation-webhook/",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const token = new URL(request.url).pathname.split("/").filter(Boolean).at(-1);
+    if (!token) return new Response("Missing webhook token.", { status: 400 });
+    let payload: Record<string, string> = {};
+    try {
+      const body = (await request.json()) as Record<string, unknown>;
+      payload = Object.fromEntries(
+        Object.entries(body)
+          .filter((entry): entry is [string, string | number | boolean] =>
+            ["string", "number", "boolean"].includes(typeof entry[1]),
+          )
+          .map(([key, value]) => [key, String(value)]),
+      );
+    } catch {
+      // An empty JSON body is valid for workflows whose task is configured in the action.
+    }
+    const result = await ctx.runMutation(internal.automations.execute.runWebhook, {
+      token,
+      payload,
+    });
+    return Response.json(result, { status: result.status === "success" ? 200 : 422 });
+  }),
+});
+
+http.route({
   path: "/resend-webhook",
   method: "POST",
   handler: httpAction(async (ctx, request) => {

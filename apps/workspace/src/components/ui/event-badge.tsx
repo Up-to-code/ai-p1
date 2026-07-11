@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import {
   Calendar,
   AlertTriangle,
+  FileText,
   Bell,
   Flag,
   Focus,
@@ -26,6 +27,11 @@ const typeConfig: Record<
     icon: AlertTriangle,
     color: "bg-red-50 border-red-200 text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-300",
     label: "Deadline",
+  },
+  document: {
+    icon: FileText,
+    color: "bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-300",
+    label: "Document",
   },
   reminder: {
     icon: Bell,
@@ -113,6 +119,6 @@ export function EventStatusBadge({
 
 export function EventTypeDot({ type }: { type: CalendarEvent["type"] }) {
   const config = typeConfig[type] || typeConfig.meeting;
-  const dotColor = type === "meeting" ? "bg-amber-500" : type === "deadline" ? "bg-red-500" : type === "reminder" ? "bg-sky-500" : type === "milestone" ? "bg-emerald-500" : "bg-violet-500";
+  const dotColor = type === "meeting" ? "bg-amber-500" : type === "deadline" ? "bg-red-500" : type === "document" ? "bg-blue-500" : type === "reminder" ? "bg-sky-500" : type === "milestone" ? "bg-emerald-500" : "bg-violet-500";
   return <span className={cn("h-2 w-2 shrink-0 rounded-full", dotColor)} />;
 }

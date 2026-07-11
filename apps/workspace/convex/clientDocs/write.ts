@@ -3,6 +3,7 @@ import { mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
 import { resolveDocumentAccess } from "../access/document";
+import { emitRichTextMentionEvents } from "../notifications/inbox_events";
 import {
   docFolderInputValidator,
   docFolderValidator,
@@ -125,6 +126,16 @@ export const createFromHono = mutation({
       updatedAt: now,
     });
     const document = await requireDocument(ctx, args.organizationId, id);
+    await emitRichTextMentionEvents(ctx, {
+      organizationId: args.organizationId,
+      actorUserId: access.actor.userId,
+      nextHtml: document.content,
+      resourceType: "document",
+      resourceId: document._id,
+      resourceTitle: document.title,
+      href: `/docs/${document._id}`,
+      sourceVersion: document.updatedAt,
+    });
     await audit(
       ctx,
       args.organizationId,
@@ -171,6 +182,17 @@ export const updateFromHono = mutation({
       args.organizationId,
       args.docId,
     );
+    await emitRichTextMentionEvents(ctx, {
+      organizationId: args.organizationId,
+      actorUserId: access.actor.userId,
+      previousHtml: existing.content,
+      nextHtml: document.content,
+      resourceType: "document",
+      resourceId: document._id,
+      resourceTitle: document.title,
+      href: `/docs/${document._id}`,
+      sourceVersion: document.updatedAt,
+    });
     await audit(
       ctx,
       args.organizationId,

@@ -1,143 +1,62 @@
 "use client";
 
-import React, { useState } from "react";
-import { type Project } from "../../../store/projects.types";
-import { useCalendarIndexRangeQueryResult, createCalendarEventRequest } from "@/domains/calendar/api/calendar";
-import { useAuthSession } from "@/domains/auth";
+import { useMemo, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import type { Project } from "../../../store/projects.types";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Calendar } from "@svar-ui/react-calendar";
-import type { CalendarEvent as CalendarEventType } from "@/domains/calendar/store/calendar.types";
+import { useToast } from "@/components/ui/toast";
+import { CalendarEventFormDialog } from "@/domains/calendar/components/calendar-event-form-dialog";
+import { CalendarGrid } from "@/domains/calendar/components/calendar-grid";
+import { createCalendarEventRequest, deleteCalendarEventRequest, updateCalendarEventRequest, useCalendarIndexRangeQueryResult } from "@/domains/calendar/api/calendar";
+import { calendarHeaderLabel, nextCalendarDate, visibleCalendarRange } from "@/domains/calendar/calendar-view-model";
+import type { CalendarEvent } from "@/domains/calendar/store/calendar.types";
+import type { CalendarEventFormValues } from "@/domains/calendar/validation/calendar.schema";
 
-interface CalendarTabProps {
-  project: Project;
-  organizationId: string;
-  spaceId?: string;
-}
+interface CalendarTabProps { project: Project; organizationId: string; spaceId?: string }
+type SelectedSlot = { start: Date; end: Date };
 
-const eventTypeColors: Record<string, string> = {
-  meeting: "#6F00C2",
-  deadline: "#A71E0F",
-  reminder: "#ED8E00",
-  milestone: "#00753E",
-  focusBlock: "#31574B",
-};
+export function CalendarTab({ project, organizationId }: CalendarTabProps) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
+  const range = useMemo(() => visibleCalendarRange(currentDate, "month"), [currentDate]);
+  const result = useCalendarIndexRangeQueryResult(organizationId, range.startAt, range.endAt, project.id);
+  const events = useMemo(() => (result.data?.events ?? []).filter((event) => event.projectId === project.id), [project.id, result.data?.events]);
 
-export function CalendarTab({ project, organizationId, spaceId }: CalendarTabProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [isAdding, setIsAdding] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
-  const [newType, setNewType] = useState("meeting");
-  const [newTime, setNewTime] = useState("09:00");
-  const [newDate, setNewDate] = useState("");
-
-  const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getTime();
-  const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0, 23, 59, 59).getTime();
-
-  const calendarResult = useCalendarIndexRangeQueryResult(organizationId, startOfMonth, endOfMonth, project.id, spaceId);
-  const events = calendarResult.data?.events ?? [];
-
-  const displayEvents = events.map((ev: CalendarEventType) => {
-    const start = ev.startAt ? new Date(ev.startAt) : new Date(`${ev.date}T${ev.time || "00:00"}`);
-    const end = ev.endAt ? new Date(ev.endAt) : new Date(start.getTime() + 60 * 60 * 1000);
-    return {
-      id: ev.id,
-      title: ev.title,
-      start,
-      end,
-      color: eventTypeColors[ev.type] || "#6F00C2",
-      type: ev.type,
-      status: ev.status,
-      location: ev.location,
-      description: ev.notes,
-    };
+  const create = useMutation({
+    mutationFn: (values: CalendarEventFormValues) => createCalendarEventRequest(organizationId, { ...values, projectId: project.id }),
+    onSuccess: () => { closeEditor(); invalidate(queryClient); toast({ title: "Event created", type: "success" }); },
+    onError: (error) => toast({ title: "Could not create event", description: error.message, type: "error" }),
+  });
+  const update = useMutation({
+    mutationFn: ({ eventId, values }: { eventId: string; values: CalendarEventFormValues }) => updateCalendarEventRequest(organizationId, eventId, { ...values, projectId: project.id }),
+    onSuccess: () => { closeEditor(); invalidate(queryClient); toast({ title: "Event updated", type: "success" }); },
+    onError: (error) => toast({ title: "Could not update event", description: error.message, type: "error" }),
+  });
+  const remove = useMutation({
+    mutationFn: (eventId: string) => deleteCalendarEventRequest(organizationId, eventId),
+    onSuccess: () => { closeEditor(); invalidate(queryClient); toast({ title: "Event deleted", type: "success" }); },
+    onError: (error) => toast({ title: "Could not delete event", description: error.message, type: "error" }),
   });
 
-  return (
-    <div className="space-y-4">
-      <div className="rounded-xl border border-border overflow-hidden bg-card" style={{ height: "calc(100vh - 340px)" }}>
-        <Calendar
-          events={displayEvents}
-          view="month"
-          date={currentMonth}
-        />
-      </div>
+  function closeEditor() { setSelectedEvent(null); setSelectedSlot(null); }
+  function openCreate(start: Date, end: Date) { setSelectedEvent(null); setSelectedSlot({ start, end }); }
+  function submit(values: CalendarEventFormValues) { if (selectedEvent) update.mutate({ eventId: selectedEvent.id, values }); else create.mutate(values); }
 
-      <Dialog open={isAdding} onOpenChange={setIsAdding}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Add Event</DialogTitle>
-            <DialogDescription>Schedule an event for this project.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <Input
-              placeholder="Event title..."
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              className="text-sm"
-              autoFocus
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Type</label>
-                <select
-                  value={newType}
-                  onChange={(e) => setNewType(e.target.value)}
-                  className="h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
-                >
-                  <option value="meeting">Meeting</option>
-                  <option value="deadline">Deadline</option>
-                  <option value="reminder">Reminder</option>
-                  <option value="milestone">Milestone</option>
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Time</label>
-                <Input
-                  type="time"
-                  value={newTime}
-                  onChange={(e) => setNewTime(e.target.value)}
-                  className="text-sm dark:[color-scheme:dark]"
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setIsAdding(false)} className="h-8 text-xs">
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              onClick={async () => {
-                if (!newTitle.trim()) return;
-                await createCalendarEventRequest(organizationId, {
-                  title: newTitle,
-                  type: newType as any,
-                  date: newDate || new Date().toISOString().split("T")[0],
-                  time: newTime,
-                  durationMinutes: 60,
-                  status: "confirmed",
-                  projectId: project.id,
-                });
-                setNewTitle("");
-                setIsAdding(false);
-              }}
-              disabled={!newTitle.trim()}
-              className="h-8 text-xs"
-            >
-              Add Event
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+  return (
+    <div className="flex h-[calc(100vh-260px)] min-h-[520px] flex-col overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex items-center justify-between border-b border-border px-3 py-2">
+        <div className="flex items-center gap-1"><Button variant="ghost" size="icon" className="size-8" onClick={() => setCurrentDate(nextCalendarDate(currentDate, "month", -1))}><ChevronLeft className="size-4" /></Button><Button variant="ghost" size="icon" className="size-8" onClick={() => setCurrentDate(nextCalendarDate(currentDate, "month", 1))}><ChevronRight className="size-4" /></Button></div>
+        <p className="text-sm font-semibold">{calendarHeaderLabel(currentDate, "month", "en")}</p>
+        <Button size="sm" onClick={() => openCreate(new Date(), new Date(Date.now() + 60 * 60_000))}><Plus className="me-1 size-4" />New event</Button>
+      </div>
+      <CalendarGrid currentDate={currentDate} events={events} locale="en" view="month" onCreate={openCreate} onEventClick={setSelectedEvent} />
+      <CalendarEventFormDialog organizationId={organizationId} contextProjectId={project.id} event={selectedEvent} initialSlot={selectedSlot} isPending={create.isPending || update.isPending || remove.isPending} onClose={closeEditor} onDelete={(eventId) => remove.mutate(eventId)} onSubmit={submit} />
     </div>
   );
 }
+
+function invalidate(queryClient: ReturnType<typeof useQueryClient>) { void queryClient.invalidateQueries({ queryKey: ["calendar"] }); }

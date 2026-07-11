@@ -18,30 +18,24 @@ import {
   hasAiMention,
   useInboxMessageSound,
 } from "@/domains/inbox";
-import { MessageList } from "@/domains/inbox/components/message-list";
+import {
+  MessageList,
+  MessageListControls,
+} from "@/domains/inbox/components/message-list";
 import { MessageComposer } from "@/domains/inbox/components/message-composer";
-import { MentionRenderer } from "@/domains/inbox/components/mention-renderer";
+import { ChannelSelectionBrowser } from "@/domains/inbox/components/channel-selection-browser";
 import { CreateChannelWizard } from "@/domains/inbox/components/create-channel-wizard";
 import {
   ChannelInfoModal,
   type ChannelSettingsInput,
 } from "@/domains/inbox/components/channel-info-modal";
 import {
-  ChevronLeft,
-  ChevronRight,
-  Copy,
   CornerDownLeft,
   Info,
-  MessageSquare,
   Hash,
   Lock,
   Users,
-  Plus,
   Pin,
-  Repeat2,
-  Share2,
-  ThumbsDown,
-  ThumbsUp,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,6 +45,7 @@ import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
 import { useClientsIndexQuery } from "@/domains/clients/api/clients";
 import { useWorkspaceSpacesQuery } from "@/domains/spaces/api/spaces";
 import { listOrganizationMembers } from "@/domains/organization/api";
+import { formatAiResponseText } from "@/domains/inbox/lib/ai-response-format";
 import type { OrganizationMember } from "@/domains/organization/api/types";
 import type {
   ChannelType,
@@ -71,13 +66,7 @@ function escapeHtml(value: string) {
 function formatAiResponseHtml(content: string) {
   const html: string[] = [];
   let listItems: string[] = [];
-  const normalizedContent = content
-    .replace(/<\/?follow-up>/gi, "")
-    .replace(
-      /<action\b[^>]*>([\s\S]*?)<\/action>/gi,
-      (_match, label: string) => `- ${label.trim()}`,
-    )
-    .replace(/<\/?action\b[^>]*>/gi, "");
+  const normalizedContent = formatAiResponseText(content);
 
   const inline = (value: string) =>
     escapeHtml(value)
@@ -178,6 +167,9 @@ export function InboxChannelScreen() {
     content: string;
   } | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [messageTab, setMessageTab] = useState<"all" | "my">("all");
+  const [messageSearchOpen, setMessageSearchOpen] = useState(false);
+  const [messageSearchQuery, setMessageSearchQuery] = useState("");
   const [aiAnchorMessageId, setAiAnchorMessageId] = useState<string | null>(
     null,
   );
@@ -185,6 +177,11 @@ export function InboxChannelScreen() {
     messageId: string;
     prompt: string;
     answer: string;
+    hasRequested: boolean;
+  } | null>(null);
+  const [composerInsert, setComposerInsert] = useState<{
+    id: string;
+    html: string;
   } | null>(null);
   const [optimisticMessages, setOptimisticMessages] = useState<
     OptimisticMessage[]
@@ -468,10 +465,12 @@ export function InboxChannelScreen() {
   const handleAskAi = (messageId: string) => {
     const message = visibleMessages.find((m) => m.id === messageId);
     if (!message) return;
+    channelAssistant.cancelReply();
     setChannelAiPanel({
       messageId,
       prompt: "",
       answer: "",
+      hasRequested: false,
     });
   };
 
@@ -483,13 +482,37 @@ export function InboxChannelScreen() {
     if (!message) return;
     const prompt = channelAiPanel.prompt.trim() || "Summarize this message.";
     setChannelAiPanel((current) =>
-      current ? { ...current, prompt, answer: "" } : current,
+      current ? { ...current, prompt, answer: "", hasRequested: true } : current,
     );
     channelAssistant.triggerAiReply(
       `Selected message: ${messageText(message.content)}\n\nUser request: ${prompt}`,
       buildAiContext(),
     );
   };
+
+  const insertAiDraft = () => {
+    const answer = channelAiPanel?.hasRequested
+      ? channelAssistant.streamingContent || channelAiPanel.answer
+      : "";
+    const html = formatAiResponseHtml(answer);
+    if (!html) return;
+    setComposerInsert({ id: crypto.randomUUID(), html });
+    setChannelAiPanel(null);
+  };
+
+  const continueInAi = () => {
+    const answer = formatAiResponseText(
+      channelAiPanel?.hasRequested
+        ? channelAssistant.streamingContent || channelAiPanel.answer
+        : "",
+    );
+    if (!answer) return;
+    router.push(`/ai?q=${encodeURIComponent(`Continue from this draft:\n\n${answer}`)}`);
+  };
+  const channelAiAnswer = channelAiPanel?.hasRequested
+    ? channelAssistant.streamingContent || channelAiPanel.answer
+    : "";
+  const hasChannelAiAnswer = Boolean(formatAiResponseText(channelAiAnswer));
 
   useEffect(() => {
     if (!readableActiveChannelId || isMessagesLoading) return;
@@ -629,7 +652,6 @@ export function InboxChannelScreen() {
         (message) => message.id === activeChannel.pinnedMessageId,
       )
     : undefined;
-
   return (
     <div className="flex h-full bg-background">
       <div className="flex flex-1 flex-col min-w-0">
@@ -656,6 +678,22 @@ export function InboxChannelScreen() {
               </div>
 
               <div className="flex items-center gap-1">
+                <MessageListControls
+                  activeTab={messageTab}
+                  onTabChange={setMessageTab}
+                  searchOpen={messageSearchOpen}
+                  searchQuery={messageSearchQuery}
+                  onSearchOpenChange={(open) => {
+                    setMessageSearchOpen(open);
+                    if (!open) setMessageSearchQuery("");
+                  }}
+                  onSearchQueryChange={setMessageSearchQuery}
+                  trailingText={
+                    isMessagesLoading
+                      ? "Loading..."
+                      : `${visibleMessages.length} ${visibleMessages.length === 1 ? "message" : "messages"}`
+                  }
+                />
                 {activeChannel.projectId && (
                   <WorkspaceLink
                     href={`/projects/${activeChannel.projectId}`}
@@ -753,13 +791,15 @@ export function InboxChannelScreen() {
                   content: aiReply.streamingContent,
                 }}
                 isLoading={isMessagesLoading}
+                activeTab={messageTab}
+                searchQuery={messageSearchQuery}
               />
             </div>
 
             {channelAiPanel ? (
-              <div className="absolute bottom-24 right-8 z-30 w-[340px] overflow-hidden rounded-lg border border-border bg-card shadow-2xl">
-                <div className="bg-[radial-gradient(circle_at_70%_20%,rgba(147,51,234,0.28),transparent_45%),linear-gradient(135deg,rgba(14,116,144,0.22),rgba(88,28,135,0.16),transparent)] p-3">
-                  <div className="mb-6 flex items-start justify-between gap-2">
+              <div className="absolute bottom-24 right-8 z-30 w-[400px] overflow-hidden rounded-lg border border-border bg-card shadow-2xl">
+                <div className="border-b border-border bg-muted/20 px-4 py-3">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <Hash className="h-3.5 w-3.5 text-foreground" />
                       <p className="text-[13px] font-semibold text-foreground">
@@ -777,8 +817,7 @@ export function InboxChannelScreen() {
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
-                  <div className="mb-4 space-y-2">
-                    <div className="flex items-center gap-2">
+                  <div className="mt-4 flex items-center gap-2">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src="/ai/logo.png"
@@ -788,58 +827,20 @@ export function InboxChannelScreen() {
                         className="object-contain"
                       />
                       <span className="text-[13px] font-semibold text-foreground">
-                        Brain
+                        Qentrah AI
                       </span>
-                    </div>
-                    {channelAssistant.isThinking &&
-                    !channelAssistant.streamingContent &&
-                    !channelAiPanel.answer ? (
-                      <p className="text-[13px] text-muted-foreground">
-                        Thinking...
-                      </p>
-                    ) : channelAssistant.streamingContent ||
-                      channelAiPanel.answer ? (
-                      <MentionRenderer
-                        content={
-                          channelAssistant.streamingContent ||
-                          channelAiPanel.answer
-                        }
-                        className="text-[13px] leading-6"
-                      />
-                    ) : (
-                      <p className="text-[13px] leading-6 text-foreground">
-                        There is nothing noteworthy to catch you up on.
-                      </p>
-                    )}
                   </div>
-
-                  <div className="mb-12 flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      {[Repeat2, ThumbsUp, ThumbsDown].map((Icon, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-background/40 hover:text-foreground"
-                        >
-                          <Icon className="h-3.5 w-3.5" />
-                        </button>
-                      ))}
+                </div>
+                <div className="space-y-3 p-4">
+                  {channelAiPanel.hasRequested ? (
+                    <div className="max-h-48 overflow-y-auto whitespace-pre-wrap text-[13px] leading-6 text-foreground">
+                      {channelAssistant.isThinking && !hasChannelAiAnswer
+                        ? "Thinking..."
+                        : formatAiResponseText(channelAiAnswer)}
                     </div>
-                    <div className="flex items-center gap-1">
-                      {[ChevronLeft, ChevronRight].map((Icon, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-background/40 hover:text-foreground"
-                        >
-                          <Icon className="h-3.5 w-3.5" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
+                  ) : null}
                   <form
-                    className="flex items-center gap-2 rounded-md border border-border bg-background/80 px-2"
+                    className="flex items-center gap-2 rounded-md border border-border bg-background px-2"
                     onSubmit={(event) => {
                       event.preventDefault();
                       handleAskChannelAssistant();
@@ -854,7 +855,7 @@ export function InboxChannelScreen() {
                             : current,
                         )
                       }
-                      placeholder="Ask anything about this message"
+                      placeholder="Ask Qentrah AI to write or refine"
                       className="h-8 min-w-0 flex-1 bg-transparent text-[13px] text-foreground outline-none placeholder:text-muted-foreground"
                     />
                     <span className="text-muted-foreground">@</span>
@@ -872,45 +873,17 @@ export function InboxChannelScreen() {
                     </Button>
                   </form>
                 </div>
-
-                <div className="max-h-56 overflow-y-auto p-3">
-                  <div className="grid gap-1">
-                    {[
-                      { label: "Insert", icon: CornerDownLeft },
-                      { label: "Add as Brain Note", icon: null },
-                      { label: "Share", icon: Share2 },
-                      { label: "Create a Doc", icon: MessageSquare },
-                      { label: "Copy", icon: Copy },
-                    ].map((action) => (
-                      <button
-                        key={action.label}
-                        type="button"
-                        onClick={() =>
-                          setChannelAiPanel((current) =>
-                            current
-                              ? { ...current, prompt: action.label }
-                              : current,
-                          )
-                        }
-                        className="flex h-8 items-center gap-2 rounded-md px-2 text-left text-[12px] text-foreground hover:bg-muted"
-                      >
-                        {action.icon ? (
-                          <action.icon className="h-3.5 w-3.5 text-muted-foreground" />
-                        ) : (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src="/ai/logo.png"
-                            alt=""
-                            width={14}
-                            height={14}
-                            className="object-contain"
-                          />
-                        )}
-                        <span>{action.label}</span>
-                      </button>
-                    ))}
+                {hasChannelAiAnswer ? (
+                  <div className="flex items-center justify-between gap-2 border-t border-border bg-muted/30 px-4 py-3">
+                    <Button type="button" size="sm" onClick={insertAiDraft} className="h-8 gap-1.5">
+                      <CornerDownLeft className="h-3.5 w-3.5" />
+                      Insert
+                    </Button>
+                    <Button type="button" size="sm" variant="ghost" onClick={continueInAi} className="h-8 text-xs">
+                      Continue in AI
+                    </Button>
                   </div>
-                </div>
+                ) : null}
               </div>
             ) : null}
             {/* Composer */}
@@ -929,39 +902,19 @@ export function InboxChannelScreen() {
               organizationId={orgId ?? undefined}
               projectId={activeChannel.projectId}
               channelId={activeChannel.id}
+              insertContent={composerInsert}
             />
           </>
         ) : (
-          /* Empty state */
-          <div className="flex min-h-0 flex-1 flex-col">
-            <div className="flex flex-1 items-center justify-center px-6">
-              <div className="w-full max-w-[420px]">
-                <div className="mb-6 text-center">
-                  <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground">
-                    <MessageSquare className="h-5 w-5" />
-                  </div>
-                  <h2 className="mb-2 text-[15px] font-semibold text-foreground">
-                    Chat in Inbox
-                  </h2>
-                  <p className="mx-auto max-w-[320px] text-[12px] leading-5 text-muted-foreground">
-                    Select a channel from the sidebar, or create a focused place
-                    for tasks, docs, and project updates.
-                  </p>
-                </div>
-
-                <div className="grid gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateModal(true)}
-                    className="flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-card text-[12px] font-semibold text-foreground transition-colors hover:bg-muted"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Create channel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ChannelSelectionBrowser
+            channels={channels}
+            isLoading={isLoadingChannels}
+            unavailableChannelId={activeChannelId}
+            onSelect={(channelId) =>
+              updateInboxParams({ channel: channelId, settings: null, new: null })
+            }
+            onCreate={() => setShowCreateModal(true)}
+          />
         )}
       </div>
 

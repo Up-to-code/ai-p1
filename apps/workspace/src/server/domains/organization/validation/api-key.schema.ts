@@ -7,6 +7,7 @@ const organizationApiKeyResourceSchema = z.enum([
   "project",
   "calendar",
   "task",
+  "document",
   "media",
 ]);
 
@@ -47,8 +48,11 @@ export function normalizeOrganizationApiKeyPermissions(
   for (const permission of permissions) {
     const actions = byResource.get(permission.resource) ?? new Set<OrganizationApiKeyAction>();
     for (const action of permission.actions) {
-      if (permission.resource !== "client" && action !== "read") {
-        throw new Error("Only client API keys can create, update, or delete records in v1.");
+      if (!(["client", "task", "document"] as const).includes(permission.resource as "client" | "task" | "document") && action !== "read") {
+        throw new Error("Only client, task, and document API keys can create or update records in v1.");
+      }
+      if (["task", "document"].includes(permission.resource) && action === "delete") {
+        throw new Error("Task and document API keys do not support delete in v1.");
       }
       actions.add(action);
     }

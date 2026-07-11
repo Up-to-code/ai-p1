@@ -11,6 +11,7 @@ function toConvexInput(input: CalendarEventPayload) {
     clientId: input.clientId,
     projectId: input.projectId,
     taskId: input.taskId,
+    documentId: input.documentId,
     startAt,
     endAt: startAt + input.durationMinutes * 60_000,
     type: input.type,

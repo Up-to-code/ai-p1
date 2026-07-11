@@ -8,11 +8,12 @@ export interface CalendarEvent {
   endAt?: number;
   date: string;
   time: string;
-  type: "meeting" | "deadline" | "reminder" | "milestone" | "focusBlock";
+  type: "meeting" | "deadline" | "document" | "reminder" | "milestone" | "focusBlock";
   status: "confirmed" | "pending" | "draft";
   clientId?: string;
   projectId?: string;
   taskId?: string;
+  documentId?: string;
   clientName?: string;
   location?: string;
   meetingUrl?: string;

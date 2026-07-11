@@ -17,6 +17,7 @@ import { useOperationState } from "@/lib/utils/operation-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 interface DealsTabProps {
   client: Client;
@@ -134,7 +135,7 @@ export function DealsTab({ client, organizationId }: DealsTabProps) {
           <Skeleton className="h-20 w-full rounded-xl" />
           <Skeleton className="h-20 w-full rounded-xl" />
         </div>
-        <div className="border border-border rounded-xl bg-card overflow-hidden">
+        <div className="overflow-hidden border-y border-border">
           <div className="bg-muted/40 px-4 py-3 border-b border-border">
             <Skeleton className="h-4 w-1/3" />
           </div>
@@ -214,7 +215,7 @@ export function DealsTab({ client, organizationId }: DealsTabProps) {
   return (
     <div className="space-y-6 text-start">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+        <div className="flex items-center gap-3 border-l-2 border-primary/40 py-2 pl-4">
           <div className="p-2 bg-primary/10 rounded-lg text-primary">
             <DollarSign className="h-5 w-5" />
           </div>
@@ -223,7 +224,7 @@ export function DealsTab({ client, organizationId }: DealsTabProps) {
             <p className="text-xl font-black text-foreground">${totalPipelineValue.toLocaleString()}</p>
           </div>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+        <div className="flex items-center gap-3 border-l-2 border-emerald-500/40 py-2 pl-4">
           <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-500">
             <Briefcase className="h-5 w-5" />
           </div>
@@ -234,7 +235,7 @@ export function DealsTab({ client, organizationId }: DealsTabProps) {
             </p>
           </div>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+        <div className="flex items-center gap-3 border-l-2 border-blue-500/40 py-2 pl-4">
           <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500">
             <BarChart2 className="h-5 w-5" />
           </div>
@@ -251,7 +252,7 @@ export function DealsTab({ client, organizationId }: DealsTabProps) {
         </div>
       </div>
 
-      <div className="border border-border rounded-xl bg-card overflow-hidden">
+      <div className="overflow-hidden border-y border-border">
         <div className="grid grid-cols-[1fr_100px_130px_120px_130px_40px] items-center gap-4 bg-muted/40 px-4 py-2 border-b border-border text-xs font-bold uppercase tracking-wider text-muted-foreground">
           <div>Deal Name</div>
           <div>Value</div>
@@ -336,22 +337,21 @@ export function DealsTab({ client, organizationId }: DealsTabProps) {
           {isAdding && (
             <div className="grid grid-cols-[1fr_100px_130px_120px_130px_80px] items-center gap-4 px-4 py-3 bg-muted/20 border-t border-border animate-in slide-in-from-top-1 duration-150">
               <div>
-                <input
-                  type="text"
+                <Input
                   placeholder="Deal name..."
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-transparent text-sm border-none outline-none focus:ring-0 placeholder:text-muted-foreground text-foreground"
+                  className="h-8 rounded-md border-transparent bg-transparent px-2 text-sm shadow-none hover:border-border focus-visible:border-border focus-visible:ring-0"
                   autoFocus
                 />
               </div>
               <div>
-                <input
+                <Input
                   type="number"
                   placeholder="Value..."
                   value={newValue}
                   onChange={(e) => setNewValue(e.target.value)}
-                  className="w-full bg-transparent text-sm border-none outline-none focus:ring-0 placeholder:text-muted-foreground text-foreground"
+                  className="h-8 rounded-md border-transparent bg-transparent px-2 text-sm shadow-none hover:border-border focus-visible:border-border focus-visible:ring-0"
                 />
               </div>
               <div>

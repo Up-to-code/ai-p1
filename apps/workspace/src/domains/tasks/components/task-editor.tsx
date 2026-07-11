@@ -7,6 +7,7 @@ import {
   UserRound,
   CalendarDays,
   Flag,
+  Trash2,
   Maximize2,
   Minimize2,
   X,
@@ -34,6 +35,7 @@ import { StatusPicker, PriorityPicker, DueDatePicker, AssigneePicker, ProjectPic
 import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
 import { taskHref } from "./task-hooks";
 import { taskLog } from "../task-log";
+import { CustomFieldsSection } from "@/components/shared/custom-fields/custom-fields-section";
 
 // ─── Form helpers ──────────────────────────────────────────────────────────────
 
@@ -45,8 +47,10 @@ function formFromTask(task: TaskRecord): TaskFormValues {
     priority: task.priority,
     visibility: task.visibility ?? "team",
     assigneeUserId: task.assigneeUserId ?? "",
+    assigneeUserIds: task.assigneeUserIds ?? (task.assigneeUserId ? [task.assigneeUserId] : []),
     clientId: task.clientId ?? "",
     projectId: task.projectId ?? "",
+    startDate: task.startDate ?? new Date(task.createdAt).toISOString().slice(0, 10),
     dueDate: task.dueDate ?? "",
     description: task.description ?? "",
     tags: (task.tags ?? []).join(", "),
@@ -185,21 +189,35 @@ export function TaskEditor({
       label: t("form.assignee"),
       value: (
         <AssigneePicker
-          value={draft.assigneeUserId}
-          onChange={(v) => updateDraft({ assigneeUserId: v })}
+          values={draft.assigneeUserIds ?? []}
+          onChange={(values) => updateDraft({ assigneeUserIds: values, assigneeUserId: values[0] ?? "" })}
           options={memberOptions}
           t={t}
         />
       ),
     },
     {
+      key: "startDate",
+      icon: <CalendarDays className="h-3.5 w-3.5" />,
+      label: "Start date",
+      value: (
+        <DueDatePicker
+          value={draft.startDate ?? ""}
+          onChange={(v) => updateDraft({ startDate: v })}
+          label="Start date"
+          required
+        />
+      ),
+    },
+    {
       key: "dueDate",
       icon: <CalendarDays className="h-3.5 w-3.5" />,
-      label: t("form.dueDate"),
+      label: "End date",
       value: (
         <DueDatePicker
           value={draft.dueDate}
           onChange={(v) => updateDraft({ dueDate: v })}
+          label="End date"
         />
       ),
     },
@@ -264,6 +282,16 @@ export function TaskEditor({
             type="button"
             variant="ghost"
             size="icon-sm"
+            onClick={() => setDeleting(true)}
+            title="Delete task"
+            className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
             onClick={onToggleFullscreen}
             title={isFullscreen ? "Exit full screen" : "Full screen"}
             className="transition-all duration-200 h-8 w-8"
@@ -310,6 +338,9 @@ export function TaskEditor({
           documentContext={context}
           compactFormatting
         />
+        <div className="mx-auto mt-6 max-w-4xl border-t border-border pt-5">
+          <CustomFieldsSection recordType="task" recordId={task.id} />
+        </div>
       </div>
 
       <DeleteRecordDialog

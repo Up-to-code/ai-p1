@@ -5,7 +5,6 @@ export type RailItemId =
   | "tasks"
   | "calendar"
   | "clients"
-  | "opportunities"
   | "deals"
   | "docs"
   | "inbox"
@@ -18,7 +17,6 @@ export const ROUTE_IDS = [
   "calendar",
   "docs",
   "clients",
-  "opportunities",
   "deals",
   "channels",
   "inbox",
@@ -39,6 +37,7 @@ export interface RouteCatalogEntry {
 
 const contextParams = ["project", "space"] as const;
 const aiParams = ["mode", "threadId", "state"] as const;
+const dealParams = ["filter", "sort"] as const;
 
 export const ROUTE_CATALOG: readonly RouteCatalogEntry[] = [
   { id: "ws", path: "/ws", persistentParams: [], railItem: "home" },
@@ -47,8 +46,7 @@ export const ROUTE_CATALOG: readonly RouteCatalogEntry[] = [
   { id: "calendar", path: "/calendar", persistentParams: contextParams, railItem: "calendar" },
   { id: "docs", path: "/docs", persistentParams: contextParams, railItem: "docs" },
   { id: "clients", path: "/clients", persistentParams: [], railItem: "clients" },
-  { id: "opportunities", path: "/opportunities", persistentParams: [], railItem: "opportunities" },
-  { id: "deals", path: "/deals", persistentParams: [], railItem: "deals" },
+  { id: "deals", path: "/deals", persistentParams: dealParams, railItem: "deals", aliases: ["/opportunities"] },
   { id: "channels", path: "/channels", persistentParams: contextParams, railItem: "inbox", aliases: ["/ws/channels", "/inbox/channels", "/organization/channels"] },
   { id: "inbox", path: "/inbox", persistentParams: [], railItem: "inbox", aliases: ["/ws/inbox"] },
   { id: "spaces", path: "/spaces", persistentParams: [], railItem: "spaces", aliases: ["/ws/spaces", "/inbox/spaces", "/organization/spaces"] },

@@ -1,18 +1,158 @@
 "use client";
 
-import { useMemo } from "react";
-import { Calendar, Circle, CheckCircle2, Flag, UserRound } from "lucide-react";
+import { useMemo, useState, type DragEvent } from "react";
+import { useTranslations } from "next-intl";
+import {
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Circle,
+  GripVertical,
+  Plus,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { WorkOsPickerOption } from "@/domains/work-os/components/work-os-record-picker";
+import { AssigneePicker, DueDatePicker, PriorityPicker, StatusPicker } from "../task-pickers";
 import type { TaskRecord, TaskStatus } from "../../tasks.types";
-import { PRIORITY_COLOR, STATUSES, STATUS_DOT, TASK_STATUS_LABEL, getDueDateColor, normalizeTaskStatus } from "../../tasks.constants";
+import {
+  STATUSES,
+  STATUS_DOT,
+  TASK_STATUS_LABEL,
+  normalizeTaskStatus,
+} from "../../tasks.constants";
 import { sortPipelineTasks } from "../../task-pipeline-order";
+
+function plainText(value: string | undefined) {
+  return value
+    ?.replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+type TaskCreateDefaults = Pick<
+  Partial<TaskRecord>,
+  "status" | "priority" | "assigneeUserId" | "dueDate" | "tags"
+>;
 
 type TaskListViewProps = {
   tasks: TaskRecord[];
   statusFilter?: TaskStatus | "all";
+  memberOptions?: WorkOsPickerOption[];
+  onTaskOpen?: (taskId: string) => void;
+  onTaskUpdate?: (task: TaskRecord, changes: Partial<TaskRecord>) => void | Promise<void>;
+  onTaskCreate?: (title: string, defaults?: TaskCreateDefaults) => void | Promise<void>;
+  onTaskMove?: (itemId: string, fromStage: string, toStage: string, targetIndex: number) => void;
 };
 
-export function TaskListView({ tasks, statusFilter = "all" }: TaskListViewProps) {
+type DragState = { id: string; fromStatus: TaskStatus } | null;
+type DropTarget = { status: TaskStatus; index: number } | null;
+
+function attachTaskDragPreview(event: DragEvent<HTMLButtonElement>) {
+  const row = event.currentTarget.closest<HTMLElement>("[data-task-list-row]");
+  if (!row) return;
+
+  const preview = row.cloneNode(true) as HTMLElement;
+  preview.style.position = "fixed";
+  preview.style.inset = "-1000px auto auto -1000px";
+  preview.style.width = `${row.getBoundingClientRect().width}px`;
+  preview.style.opacity = "0.82";
+  preview.style.pointerEvents = "none";
+  preview.style.background = "var(--background)";
+  preview.style.border = "1px solid var(--border)";
+  preview.style.borderRadius = "8px";
+  preview.style.overflow = "hidden";
+  preview.style.zIndex = "9999";
+  document.body.appendChild(preview);
+  event.dataTransfer.setDragImage(preview, 28, Math.min(24, row.offsetHeight / 2));
+  requestAnimationFrame(() => preview.remove());
+}
+
+function AddTaskRow({
+  status,
+  onTaskCreate,
+}: {
+  status: TaskStatus;
+  onTaskCreate?: TaskListViewProps["onTaskCreate"];
+}) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    const nextTitle = title.trim();
+    if (!nextTitle || saving) return;
+    setSaving(true);
+    try {
+      await onTaskCreate?.(nextTitle, { status });
+      setTitle("");
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        className="flex h-9 w-full items-center gap-2 border-t border-border/60 px-10 text-left text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/30 hover:text-foreground"
+      >
+        <Plus className="size-3.5" />
+        Add task
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex h-10 items-center gap-2 border-t border-border/60 px-3">
+      <Circle className="size-3.5 shrink-0 text-muted-foreground" />
+      <input
+        autoFocus
+        value={title}
+        onChange={(event) => setTitle(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") void save();
+          if (event.key === "Escape") {
+            setTitle("");
+            setEditing(false);
+          }
+        }}
+        onBlur={() => {
+          if (!title.trim()) setEditing(false);
+        }}
+        placeholder={`Add to ${TASK_STATUS_LABEL[status]}…`}
+        className="h-full min-w-0 flex-1 bg-transparent text-xs font-medium text-foreground outline-none placeholder:text-muted-foreground"
+      />
+      <button
+        type="button"
+        disabled={!title.trim() || saving}
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={() => void save()}
+        className="inline-flex size-6 items-center justify-center rounded bg-foreground text-background disabled:opacity-40"
+        aria-label="Save task"
+      >
+        <Check className="size-3.5" />
+      </button>
+    </div>
+  );
+}
+
+export function TaskListView({
+  tasks,
+  statusFilter = "all",
+  memberOptions = [],
+  onTaskOpen,
+  onTaskUpdate,
+  onTaskCreate,
+  onTaskMove,
+}: TaskListViewProps) {
+  const t = useTranslations("Tasks");
+  const [collapsed, setCollapsed] = useState<Set<TaskStatus>>(() => new Set());
+  const [dragging, setDragging] = useState<DragState>(null);
+  const [dropTarget, setDropTarget] = useState<DropTarget>(null);
+
   const groupedTasks = useMemo(() => {
     const groups: Record<TaskStatus, TaskRecord[]> = {
       todo: [],
@@ -31,97 +171,223 @@ export function TaskListView({ tasks, statusFilter = "all" }: TaskListViewProps)
     ) as Record<TaskStatus, TaskRecord[]>;
   }, [tasks]);
 
-  const visibleStatuses =
-    statusFilter === "all"
-      ? STATUSES
-      : STATUSES.filter((status) => status === normalizeTaskStatus(statusFilter));
+  const visibleStatuses = statusFilter === "all"
+    ? STATUSES
+    : STATUSES.filter((status) => status === normalizeTaskStatus(statusFilter));
+
+  function toggleGroup(status: TaskStatus) {
+    setCollapsed((current) => {
+      const next = new Set(current);
+      if (next.has(status)) next.delete(status);
+      else next.add(status);
+      return next;
+    });
+  }
+
+  function moveTask(status: TaskStatus, targetIndex: number) {
+    if (!dragging) return;
+    onTaskMove?.(dragging.id, dragging.fromStatus, status, targetIndex);
+    setDragging(null);
+    setDropTarget(null);
+  }
+
+  function showDropTarget(status: TaskStatus, index: number) {
+    setDropTarget((current) => (
+      current?.status === status && current.index === index ? current : { status, index }
+    ));
+  }
 
   return (
-    <div className="h-full overflow-auto px-4 py-4">
-      <div className="min-w-[920px] space-y-6">
+    <div className="h-full min-h-0 overflow-auto bg-background p-3">
+      <div className="min-w-[1080px] overflow-hidden rounded-lg border border-border/70">
+        <div className="sticky top-0 z-10 grid h-8 grid-cols-[minmax(270px,1.4fr)_150px_170px_150px_130px_minmax(220px,1fr)] items-center border-b border-border bg-muted/40 px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+          <span>Name</span>
+          <span>Status</span>
+          <span>Assignee</span>
+          <span>Due date</span>
+          <span>Priority</span>
+          <span>Description</span>
+        </div>
+
         {visibleStatuses.map((status) => {
           const statusTasks = groupedTasks[status];
+          const isCollapsed = collapsed.has(status);
+
           return (
-            <section key={status} className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className={cn("h-2.5 w-2.5 rounded-full", STATUS_DOT[status])} />
-                <span
-                  className={cn(
-                    "rounded px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-white",
-                    status === "done" && "bg-emerald-600",
-                    status === "inProgress" && "bg-blue-600",
-                    status === "waiting" && "bg-violet-600",
-                    status === "todo" && "bg-zinc-600",
-                    status === "canceled" && "bg-zinc-600",
-                  )}
-                >
+            <section
+              key={status}
+              onDragOver={(event) => {
+                event.preventDefault();
+                if (!(event.target as HTMLElement).closest("[data-task-list-row], [data-task-group-header]")) {
+                  showDropTarget(status, statusTasks.length);
+                }
+              }}
+              onDrop={() => moveTask(status, dropTarget?.status === status ? dropTarget.index : statusTasks.length)}
+              className={cn(
+                "border-b border-border/70 transition-colors last:border-b-0",
+                dragging && dropTarget?.status === status && "bg-primary/[0.045]",
+              )}
+            >
+              <button
+                type="button"
+                data-task-group-header
+                onClick={() => toggleGroup(status)}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  showDropTarget(status, 0);
+                }}
+                onDrop={(event) => {
+                  event.stopPropagation();
+                  moveTask(status, 0);
+                }}
+                className={cn(
+                  "flex h-9 w-full items-center gap-2 bg-muted/20 px-3 text-left transition-colors hover:bg-muted/40",
+                  dragging && dropTarget?.status === status && dropTarget.index === 0 && "bg-primary/10",
+                )}
+              >
+                {isCollapsed ? (
+                  <ChevronRight className="size-3.5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="size-3.5 text-muted-foreground" />
+                )}
+                <span className={cn("size-2 rounded-full", STATUS_DOT[status])} />
+                <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-foreground">
                   {TASK_STATUS_LABEL[status]}
                 </span>
-                <span className="text-[11px] font-semibold text-muted-foreground">{statusTasks.length}</span>
-              </div>
+                <span className="text-[11px] font-medium text-muted-foreground">{statusTasks.length}</span>
+              </button>
 
-              <div className="overflow-hidden border-y border-border/70">
-                <div className="grid h-8 grid-cols-[minmax(260px,1.5fr)_140px_140px_120px_minmax(180px,1fr)] items-center border-b border-border/70 text-[10px] font-semibold text-muted-foreground">
-                  <div className="px-3">Name</div>
-                  <div className="px-3">Assignee</div>
-                  <div className="px-3">Due date</div>
-                  <div className="px-3">Priority</div>
-                  <div className="px-3">Action items</div>
-                </div>
+              {!isCollapsed ? (
+                <>
+                  {statusTasks.map((task, index) => {
+                    const normalizedStatus = normalizeTaskStatus(task.status);
+                    const assigneeIds = task.assigneeUserIds ?? (task.assigneeUserId ? [task.assigneeUserId] : []);
 
-                {statusTasks.map((task) => (
+                    return (
+                      <div
+                        key={task.id}
+                        data-task-list-row
+                        onDragOver={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          const bounds = event.currentTarget.getBoundingClientRect();
+                          const targetIndex = event.clientY < bounds.top + bounds.height / 2 ? index : index + 1;
+                          showDropTarget(status, targetIndex);
+                          event.dataTransfer.dropEffect = "move";
+                        }}
+                        onDrop={(event) => {
+                          event.stopPropagation();
+                          moveTask(status, dropTarget?.status === status ? dropTarget.index : index);
+                        }}
+                        className={cn(
+                          "group relative grid min-h-11 grid-cols-[minmax(270px,1.4fr)_150px_170px_150px_130px_minmax(220px,1fr)] items-center border-t border-border/55 px-3 text-xs transition-[background-color,opacity] hover:bg-muted/20",
+                          dragging?.id === task.id && "bg-muted/20 opacity-35",
+                          dragging && dropTarget?.status === status && dropTarget.index === index && "before:absolute before:inset-x-0 before:-top-px before:z-20 before:h-0.5 before:bg-primary",
+                          dragging && index === statusTasks.length - 1 && dropTarget?.status === status && dropTarget.index === statusTasks.length && "after:absolute after:inset-x-0 after:-bottom-px after:z-20 after:h-0.5 after:bg-primary",
+                        )}
+                      >
+                        <div className="flex min-w-0 items-center gap-2 pe-4">
+                          <button
+                            type="button"
+                            draggable
+                            onDragStart={(event) => {
+                              event.dataTransfer.effectAllowed = "move";
+                              event.dataTransfer.setData("text/plain", task.id);
+                              attachTaskDragPreview(event);
+                              setDragging({ id: task.id, fromStatus: normalizedStatus });
+                              setDropTarget({ status: normalizedStatus, index });
+                            }}
+                            onDragEnd={() => {
+                              setDragging(null);
+                              setDropTarget(null);
+                            }}
+                            aria-label={`Move ${task.title}`}
+                            title="Drag to another group"
+                            className="shrink-0 cursor-grab text-muted-foreground/40 opacity-0 transition-opacity active:cursor-grabbing group-hover:opacity-100 focus:opacity-100"
+                          >
+                            <GripVertical className="size-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void onTaskUpdate?.(task, { status: normalizedStatus === "done" ? "todo" : "done" })}
+                            aria-label={normalizedStatus === "done" ? `Reopen ${task.title}` : `Complete ${task.title}`}
+                            className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+                          >
+                            {normalizedStatus === "done" ? (
+                              <CheckCircle2 className="size-4 text-emerald-500" />
+                            ) : (
+                              <Circle className="size-4" />
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onTaskOpen?.(task.id)}
+                            className={cn(
+                              "min-w-0 truncate text-left font-semibold text-foreground hover:underline",
+                              normalizedStatus === "done" && "text-muted-foreground line-through",
+                            )}
+                          >
+                            {task.title}
+                          </button>
+                        </div>
+
+                        <div className="min-w-0 pe-3">
+                          <StatusPicker
+                            value={normalizedStatus}
+                            onChange={(nextStatus) => void onTaskUpdate?.(task, { status: nextStatus })}
+                            t={t}
+                          />
+                        </div>
+
+                        <div className="min-w-0 pe-3">
+                          <AssigneePicker
+                            values={assigneeIds}
+                            options={memberOptions}
+                            onChange={(nextAssigneeIds) => void onTaskUpdate?.(task, {
+                              assigneeUserIds: nextAssigneeIds,
+                              assigneeUserId: nextAssigneeIds[0] ?? "",
+                            })}
+                            t={t}
+                          />
+                        </div>
+
+                        <div className="min-w-0 pe-3">
+                          <DueDatePicker
+                            value={task.dueDate ?? ""}
+                            onChange={(dueDate) => void onTaskUpdate?.(task, { dueDate })}
+                            label="Due date"
+                          />
+                        </div>
+
+                        <div className="min-w-0 pe-3">
+                          <PriorityPicker
+                            value={task.priority}
+                            onChange={(priority) => void onTaskUpdate?.(task, { priority })}
+                            t={t}
+                          />
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => onTaskOpen?.(task.id)}
+                          className="truncate text-left text-muted-foreground hover:text-foreground"
+                        >
+                          {plainText(task.description) || "Add description…"}
+                        </button>
+                      </div>
+                    );
+                  })}
+
                   <div
-                    key={task.id}
-                    className="grid min-h-9 grid-cols-[minmax(260px,1.5fr)_140px_140px_120px_minmax(180px,1fr)] items-center border-b border-border/50 text-xs last:border-b-0 hover:bg-muted/25"
+                    className={cn(
+                      dragging && dropTarget?.status === status && dropTarget.index === statusTasks.length && statusTasks.length === 0 && "border-t-2 border-primary",
+                    )}
                   >
-                    <div className="flex min-w-0 items-center gap-2 px-3 py-2">
-                      {task.status === "done" ? (
-                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-                      ) : (
-                        <Circle className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                      )}
-                      <span className="truncate font-semibold text-foreground">{task.title}</span>
-                    </div>
-
-                    <div className="px-3 text-muted-foreground">
-                      {task.assigneeUserId ? (
-                        <span className="inline-flex items-center gap-1.5">
-                          <UserRound className="h-3.5 w-3.5" />
-                          <span className="truncate">{task.assigneeUserId}</span>
-                        </span>
-                      ) : (
-                        "-"
-                      )}
-                    </div>
-
-                    <div className={cn("px-3 font-medium", getDueDateColor(task.dueDate))}>
-                      {task.dueDate ? (
-                        <span className="inline-flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5" />
-                          {new Date(task.dueDate).toLocaleDateString()}
-                        </span>
-                      ) : (
-                        "-"
-                      )}
-                    </div>
-
-                    <div className={cn("px-3 font-semibold", PRIORITY_COLOR[task.priority])}>
-                      <span className="inline-flex items-center gap-1.5">
-                        <Flag className="h-3.5 w-3.5" />
-                        {task.priority}
-                      </span>
-                    </div>
-
-                    <div className="px-3 text-muted-foreground">-</div>
+                    <AddTaskRow status={status} onTaskCreate={onTaskCreate} />
                   </div>
-                ))}
-
-                {statusTasks.length === 0 && (
-                  <div className="flex h-9 items-center px-10 text-xs font-medium text-muted-foreground">
-                    + Add Task
-                  </div>
-                )}
-              </div>
+                </>
+              ) : null}
             </section>
           );
         })}

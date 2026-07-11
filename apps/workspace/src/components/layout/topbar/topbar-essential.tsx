@@ -277,18 +277,21 @@ export function TopbarEssential() {
           {[
             { label: "Apps", icon: AppWindow },
             { label: "Custom Fields", icon: Tags },
-            { label: "Automations", icon: Workflow },
+            { label: "Automations", icon: Workflow, href: `/${locale}/automations` },
           ].map((item) => (
             <DropdownMenuItem
               key={item.label}
-              disabled
+              disabled={!item.href}
+              render={item.href ? <Link href={item.href} /> : undefined}
               className="mx-1.5 gap-2 rounded-lg px-2 py-1.5 text-sm opacity-100"
             >
               <item.icon className="h-4 w-4 text-muted-foreground" />
               <span className="flex-1">{item.label}</span>
-              <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                Coming soon
-              </span>
+              {!item.href && (
+                <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                  Coming soon
+                </span>
+              )}
             </DropdownMenuItem>
           ))}
 

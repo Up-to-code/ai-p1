@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { ArrowUpRight, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,10 +17,14 @@ export function OrganizationBillingPanel({
   organizationId,
   locale,
   memberCount,
+  planAction,
+  usageAction,
 }: {
   organizationId: string;
   locale: "en" | "ar";
   memberCount: number;
+  planAction?: ReactNode;
+  usageAction?: ReactNode;
 }) {
   const overview = useBillingOverview(organizationId);
   const usage = useBillingUsage(organizationId);
@@ -92,16 +97,18 @@ export function OrganizationBillingPanel({
 
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             <StatusPill label={status} tone={subscriptionTone(status)} />
-            <LocaleLink href="/settings/billing">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest"
-              >
-                <CreditCard className="h-3.5 w-3.5" />
-                {isRtl ? "إدارة الفوترة" : "Manage billing"}
-              </Button>
-            </LocaleLink>
+            {planAction ?? (
+              <LocaleLink href="/settings/billing">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest"
+                >
+                  <CreditCard className="h-3.5 w-3.5" />
+                  {isRtl ? "إدارة الفوترة" : "Manage billing"}
+                </Button>
+              </LocaleLink>
+            )}
           </div>
         </div>
       </div>
@@ -143,16 +150,18 @@ export function OrganizationBillingPanel({
       </div>
 
       {/* ── Payment history ────────────────────────────── */}
-      <LocaleLink href="/settings/ai-usage">
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest"
-        >
-          <ArrowUpRight className="h-3.5 w-3.5" />
-          {isRtl ? "إدارة الاستخدام والمدفوعات" : "Manage usage & payments"}
-        </Button>
-      </LocaleLink>
+      {usageAction ?? (
+        <LocaleLink href="/settings/ai-usage">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest"
+          >
+            <ArrowUpRight className="h-3.5 w-3.5" />
+            {isRtl ? "إدارة الاستخدام والمدفوعات" : "Manage usage & payments"}
+          </Button>
+        </LocaleLink>
+      )}
     </div>
   );
 }

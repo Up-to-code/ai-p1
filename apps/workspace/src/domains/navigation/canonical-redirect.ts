@@ -4,7 +4,7 @@ export type PageSearchParams = Record<string, string | string[] | undefined>;
 
 export function buildCanonicalRedirectPath(
   locale: string,
-  destination: "/inbox" | "/channels" | "/spaces",
+  destination: "/inbox" | "/channels" | "/spaces" | "/deals",
   searchParams: PageSearchParams = {},
 ): string {
   const query = new URLSearchParams();

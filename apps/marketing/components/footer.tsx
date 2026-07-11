@@ -35,7 +35,7 @@ export default function Footer() {
   const footer = marketingFooter[locale];
 
   return (
-    <footer className="border-t bg-[var(--q-bg)]" style={{ borderColor: "var(--q-border)" }}>
+    <footer className="border-t bg-[var(--marketing-section)]/95" style={{ borderColor: "var(--q-border)" }}>
       <div className="mx-auto max-w-(--breakpoint-xl)">
         <div className="flex flex-col items-start justify-between gap-x-10 gap-y-10 px-6 py-12 sm:flex-row xl:px-0">
           <div className="max-w-sm">
@@ -78,7 +78,7 @@ export default function Footer() {
           </div>
 
           <Link
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[var(--q-accent)] px-6 text-sm font-bold text-background transition hover:bg-[var(--q-accent-hover)] sm:w-auto"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--q-accent)] px-6 text-sm font-bold text-background transition hover:bg-[var(--q-accent-hover)] sm:w-auto"
             href="/contact"
           >
             {footer.contact}

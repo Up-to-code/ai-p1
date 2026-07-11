@@ -2,13 +2,7 @@ import { v } from "convex/values";
 import { clientPriorityValidator } from "../clients/validators";
 import { recordStateValidator } from "../schema/validators";
 
-export const clientTaskStatusValidator = v.union(
-  v.literal("todo"),
-  v.literal("inProgress"),
-  v.literal("waiting"),
-  v.literal("done"),
-  v.literal("canceled"),
-);
+export const clientTaskStatusValidator = v.string();
 
 export const visibilityValidator = v.union(v.literal("private"), v.literal("team"), v.literal("workspace"));
 
@@ -19,9 +13,11 @@ export const clientTaskInputValidator = v.object({
   visibility: v.optional(visibilityValidator),
   priority: clientPriorityValidator,
   assigneeUserId: v.optional(v.string()),
+  assigneeUserIds: v.optional(v.array(v.string())),
   clientId: v.optional(v.string()),
   projectId: v.optional(v.string()),
   spaceId: v.optional(v.string()),
+  startDate: v.optional(v.string()),
   dueDate: v.optional(v.string()),
   description: v.optional(v.string()),
   tags: v.optional(v.array(v.string())),
@@ -38,9 +34,11 @@ export const clientTaskValidator = v.object({
   visibility: visibilityValidator,
   priority: clientPriorityValidator,
   assigneeUserId: v.optional(v.string()),
+  assigneeUserIds: v.optional(v.array(v.string())),
   clientId: v.optional(v.string()),
   projectId: v.optional(v.string()),
   spaceId: v.optional(v.string()),
+  startDate: v.optional(v.string()),
   dueDate: v.optional(v.string()),
   description: v.optional(v.string()),
   checklist: v.optional(v.array(v.object({

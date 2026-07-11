@@ -9,6 +9,8 @@ import { PhoneCall, Mail, Calendar, Trash2 } from "lucide-react";
 interface ClientDetailHeaderProps {
   client: Client;
   onUpdate: (values: Partial<ClientFormValues>) => void;
+  onSchedule: () => void;
+  onDelete: () => void;
 }
 
 const statusOptions = [
@@ -27,7 +29,7 @@ const defaultStatusColors = {
   archived: "red" as const,
 };
 
-export function ClientDetailHeader({ client, onUpdate }: ClientDetailHeaderProps) {
+export function ClientDetailHeader({ client, onUpdate, onSchedule, onDelete }: ClientDetailHeaderProps) {
   const fields: EntityDetailHeaderField[] = [
     {
       type: "tags",
@@ -49,22 +51,24 @@ export function ClientDetailHeader({ client, onUpdate }: ClientDetailHeaderProps
     {
       label: "Call",
       icon: PhoneCall,
-      onClick: () => window.location.href = `tel:${client.phone}`,
+      onClick: () => { if (client.phone) window.location.href = `tel:${client.phone}`; },
+      disabled: !client.phone,
     },
     {
       label: "Email",
       icon: Mail,
-      onClick: () => window.location.href = `mailto:${client.contact}`,
+      onClick: () => { if (client.contact) window.location.href = `mailto:${client.contact}`; },
+      disabled: !client.contact,
     },
     {
       label: "Meeting",
       icon: Calendar,
-      onClick: () => {},
+      onClick: onSchedule,
     },
     {
       label: "Delete",
       icon: Trash2,
-      onClick: () => {},
+      onClick: onDelete,
       destructive: true,
     },
   ];

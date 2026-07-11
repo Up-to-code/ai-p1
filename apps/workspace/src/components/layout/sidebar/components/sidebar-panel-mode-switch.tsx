@@ -1,63 +1,112 @@
 "use client";
 
-import { Bot, LayoutGrid } from "lucide-react";
+import { useCallback, useEffect } from "react";
+import { LayoutGrid } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "@/i18n/routing";
+import { usePathname, useRouter } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
+import { useAuthSession } from "@/domains/auth";
+import { useIndexedDbConfig } from "@/domains/storage";
 import {
   useSidebarRail,
   type SecondaryPanelMode,
 } from "../sidebar-rail-context";
-import { getSecondaryPanelModeHref } from "./sidebar-panel-mode";
+import {
+  buildCurrentModeHref,
+  DEFAULT_SECONDARY_PANEL_ROUTES,
+  getSecondaryPanelModeForHref,
+  getSecondaryPanelModeHref,
+} from "./sidebar-panel-mode";
 
 export { getSecondaryPanelModeHref } from "./sidebar-panel-mode";
 
 export function SidebarPanelModeSwitch() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const session = useAuthSession();
   const { secondaryPanelMode, setSecondaryPanelMode } = useSidebarRail();
+  const storageKey = `organization:${session.workspace.organizationId}:user:${session.user.id}:sidebar.mode-routes`;
+  const logPersistenceError = useCallback(
+    (error: unknown, operation: string) => {
+      logger.error("sidebar.mode_route_persistence_failed", {
+        operation,
+        error,
+      });
+    },
+    [],
+  );
+  const {
+    value: routeMemory,
+    setValue: setRouteMemory,
+    isLoaded,
+  } = useIndexedDbConfig(
+    "layouts",
+    storageKey,
+    DEFAULT_SECONDARY_PANEL_ROUTES,
+    { onError: logPersistenceError },
+  );
+  const currentHref = buildCurrentModeHref(pathname, searchParams);
+  const currentMode = getSecondaryPanelModeForHref(currentHref);
+
+  useEffect(() => {
+    if (!isLoaded || routeMemory[currentMode] === currentHref) return;
+    void setRouteMemory({
+      ...routeMemory,
+      [currentMode]: currentHref,
+    });
+  }, [currentHref, currentMode, isLoaded, routeMemory, setRouteMemory]);
 
   const switchMode = (mode: SecondaryPanelMode) => {
     if (mode === secondaryPanelMode) return;
+    const nextRouteMemory = {
+      ...routeMemory,
+      [currentMode]: currentHref,
+    };
+    void setRouteMemory(nextRouteMemory);
     setSecondaryPanelMode(mode);
-    router.push(getSecondaryPanelModeHref(mode, searchParams));
+    router.push(
+      getSecondaryPanelModeHref(mode, searchParams, nextRouteMemory[mode]),
+    );
   };
 
   return (
     <div
       role="group"
       aria-label="Secondary panel mode"
-      className="flex h-7 items-center rounded-md border border-border bg-background p-0.5"
+      className="grid h-8 w-full grid-cols-2 rounded-md border border-border bg-background p-0.5"
     >
       <button
         type="button"
-        aria-label="Switch to Workspace"
+        aria-label="Switch to Workspace mode"
         aria-pressed={secondaryPanelMode === "workspace"}
-        title="Workspace"
         onClick={() => switchMode("workspace")}
         className={cn(
-          "flex h-5 w-5 items-center justify-center rounded-sm transition-colors",
+          "flex h-full items-center justify-center gap-1.5 rounded-sm px-2 text-xs font-medium transition-colors",
           secondaryPanelMode === "workspace"
             ? "bg-accent text-foreground"
             : "text-muted-foreground hover:text-foreground",
         )}
       >
         <LayoutGrid className="h-3.5 w-3.5" />
+        Workspace
       </button>
       <button
         type="button"
-        aria-label="Switch to AI"
+        aria-label="Switch to AI agent mode"
         aria-pressed={secondaryPanelMode === "ai"}
-        title="AI"
         onClick={() => switchMode("ai")}
         className={cn(
-          "flex h-5 w-5 items-center justify-center rounded-sm transition-colors",
+          "flex h-full items-center justify-center gap-1.5 rounded-sm px-2 text-xs font-medium transition-colors",
           secondaryPanelMode === "ai"
             ? "bg-accent text-foreground"
             : "text-muted-foreground hover:text-foreground",
         )}
       >
-        <Bot className="h-3.5 w-3.5" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/ai/logo.png" alt="" className="h-3.5 w-3.5 object-contain" />
+        AI agent
       </button>
     </div>
   );

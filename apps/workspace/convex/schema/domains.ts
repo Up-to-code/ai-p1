@@ -338,13 +338,7 @@ export const domainTables = {
   tasks: defineTable({
     organizationId: v.string(),
     title: v.string(),
-    status: v.union(
-      v.literal("todo"),
-      v.literal("inProgress"),
-      v.literal("waiting"),
-      v.literal("done"),
-      v.literal("canceled"),
-    ),
+    status: v.string(),
     pipelineOrder: v.optional(v.number()),
     priority: v.union(
       v.literal("low"),
@@ -353,8 +347,10 @@ export const domainTables = {
       v.literal("urgent"),
     ),
     assigneeUserId: v.optional(v.string()),
+    assigneeUserIds: v.optional(v.array(v.string())),
     clientId: v.optional(v.string()),
     projectId: v.optional(v.string()),
+    startDate: v.optional(v.string()),
     dueDate: v.optional(v.string()),
     description: v.optional(v.string()),
     checklist: v.optional(
@@ -428,11 +424,13 @@ export const domainTables = {
     clientId: v.optional(v.string()),
     projectId: v.optional(v.string()),
     taskId: v.optional(v.string()),
+    documentId: v.optional(v.string()),
     startAt: v.number(),
     endAt: v.number(),
     type: v.union(
       v.literal("meeting"),
       v.literal("deadline"),
+      v.literal("document"),
       v.literal("reminder"),
       v.literal("milestone"),
       v.literal("focusBlock"),
@@ -521,6 +519,27 @@ export const domainTables = {
     .index("by_organization_client", ["organizationId", "clientId"])
     .index("by_organization_status", ["organizationId", "status"])
     .index("by_organization_date", ["organizationId", "followUpDate"])
+    .index("by_updated", ["updatedAt"]),
+
+  clientInvoices: defineTable({
+    organizationId: v.string(),
+    clientId: v.string(),
+    invoiceNumber: v.string(),
+    title: v.string(),
+    amount: v.number(),
+    currency: v.string(),
+    status: v.union(v.literal("draft"), v.literal("sent"), v.literal("paid"), v.literal("overdue"), v.literal("void")),
+    issueDate: v.string(),
+    dueDate: v.string(),
+    notes: v.optional(v.string()),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_organization_id", ["organizationId"])
+    .index("by_organization_client", ["organizationId", "clientId"])
+    .index("by_organization_status", ["organizationId", "status"])
     .index("by_updated", ["updatedAt"]),
 
   workspaceWidgetLayouts: defineTable({

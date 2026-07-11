@@ -5,7 +5,6 @@ import { NavigationProgress } from "@/components/layout/navigation-progress";
 import { Analytics } from "@vercel/analytics/next";
 import { rootMetadata } from "@/metadata/workspace";
 
-import "@svar-ui/react-calendar/all.css";
 import "@svar-ui/react-kanban/all.css";
 import "./globals.css";
 

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useRouter, usePathname } from "@/i18n/routing";
 import { useOrgId } from "@/domains/auth";
 import { useWorkspaceSpacesQuery, type Space } from "@/domains/spaces/api/spaces";
+import { normalizeCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
 import type { NavState, NavLevel, NavActions } from "./types";
 
 interface NavigationContextValue extends NavState, NavActions {}
@@ -24,7 +25,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   const spaceSlug = searchParams.get("space");
-  const projectId = searchParams.get("project");
+  const projectId = normalizeCurrentProjectId(searchParams.get("project"));
 
   const level = useMemo(() => getLevel(projectId, spaceSlug), [projectId, spaceSlug]);
 

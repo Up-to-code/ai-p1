@@ -11,6 +11,18 @@ function presentTask<TTask extends { _id: string; visibility?: "private" | "team
   return { ...task, id: task._id, visibility: task.visibility ?? "private" };
 }
 
+function isActiveOrganizationRecord(
+  record: { organizationId: string; deletedAt?: number; recordState?: string } | null,
+  organizationId: string,
+) {
+  return Boolean(
+    record &&
+      record.organizationId === organizationId &&
+      !record.deletedAt &&
+      record.recordState !== "deleted",
+  );
+}
+
 const groupByValidator = v.union(
   v.literal("none"),
   v.literal("status"),
@@ -100,11 +112,14 @@ export const listByProject = query({
   returns: v.array(clientTaskValidator),
   handler: async (ctx, args) => {
     const access = await resolveTaskAccess(ctx, args.organizationId);
-    await access.assertValidLinks({ projectId: args.projectId });
+    const projectId = ctx.db.normalizeId("projects", args.projectId);
+    if (!projectId) return [];
+    const project = await ctx.db.get(projectId);
+    if (!isActiveOrganizationRecord(project, args.organizationId)) return [];
     const limit = boundedWorkspaceReadLimit(args.limit, 100, 300);
     const tasks = await ctx.db
       .query("tasks")
-      .withIndex("by_organization_project", (q) => q.eq("organizationId", args.organizationId).eq("projectId", args.projectId))
+      .withIndex("by_organization_project", (q) => q.eq("organizationId", args.organizationId).eq("projectId", projectId))
       .take(limit);
 
     return (await access.filterReadable(activeDueWorkspaceRows(tasks))).map(presentTask);
@@ -116,14 +131,31 @@ export const listBySpace = query({
   returns: v.array(clientTaskValidator),
   handler: async (ctx, args) => {
     const access = await resolveTaskAccess(ctx, args.organizationId);
-    await access.assertValidLinks({ projectId: args.projectId, spaceId: args.spaceId });
+    const projectId = ctx.db.normalizeId("projects", args.projectId);
+    const spaceId = ctx.db.normalizeId("spaces", args.spaceId);
+    if (!projectId || !spaceId) return [];
+    const [project, space, projectSpace] = await Promise.all([
+      ctx.db.get(projectId),
+      ctx.db.get(spaceId),
+      ctx.db
+        .query("projectSpaces")
+        .withIndex("by_project_space", (q) =>
+          q.eq("organizationId", args.organizationId).eq("projectId", projectId).eq("spaceId", spaceId),
+        )
+        .first(),
+    ]);
+    if (
+      !isActiveOrganizationRecord(project, args.organizationId) ||
+      !isActiveOrganizationRecord(space, args.organizationId) ||
+      !isActiveOrganizationRecord(projectSpace, args.organizationId)
+    ) return [];
     const limit = boundedWorkspaceReadLimit(args.limit, 100, 300);
     const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_organization_project_space", (q) =>
         q.eq("organizationId", args.organizationId)
-         .eq("projectId", args.projectId)
-         .eq("spaceId", args.spaceId),
+         .eq("projectId", projectId)
+         .eq("spaceId", spaceId),
       )
       .take(limit);
 
@@ -132,11 +164,16 @@ export const listBySpace = query({
 });
 
 export const get = query({
-  args: { organizationId: v.string(), taskId: v.id("tasks") },
+  // Route params are untrusted strings. Normalize before db.get so stale or
+  // malformed task URLs resolve to the normal not-found state instead of a
+  // Convex argument-validation error.
+  args: { organizationId: v.string(), taskId: v.string() },
   returns: v.union(clientTaskValidator, v.null()),
   handler: async (ctx, args) => {
     const access = await resolveTaskAccess(ctx, args.organizationId);
-    const task = await ctx.db.get(args.taskId);
+    const taskId = ctx.db.normalizeId("tasks", args.taskId);
+    if (!taskId) return null;
+    const task = await ctx.db.get(taskId);
     if (!task || task.organizationId !== args.organizationId || task.deletedAt) return null;
     if (!(await access.canRead(task))) return null;
     return presentTask(task);
@@ -188,14 +225,25 @@ export const listGrouped = query({
   }),
   handler: async (ctx, args) => {
     const access = await resolveTaskAccess(ctx, args.organizationId);
-    if (args.projectId) await access.assertValidLinks({ projectId: args.projectId });
+    const projectId = args.projectId
+      ? ctx.db.normalizeId("projects", args.projectId)
+      : null;
+    if (args.projectId && !projectId) {
+      return { groupBy: args.groupBy, groups: [], flat: [] };
+    }
+    if (projectId) {
+      const project = await ctx.db.get(projectId);
+      if (!isActiveOrganizationRecord(project, args.organizationId)) {
+        return { groupBy: args.groupBy, groups: [], flat: [] };
+      }
+    }
 
     const base = activeDueWorkspaceRows(
-      args.projectId
+      projectId
         ? await ctx.db
             .query("tasks")
             .withIndex("by_organization_project", (q) =>
-              q.eq("organizationId", args.organizationId).eq("projectId", args.projectId as string),
+              q.eq("organizationId", args.organizationId).eq("projectId", projectId),
             )
             .take(MAX_GROUPED_TASKS)
         : await ctx.db

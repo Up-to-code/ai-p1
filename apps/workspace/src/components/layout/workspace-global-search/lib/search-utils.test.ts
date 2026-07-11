@@ -8,7 +8,7 @@ describe("global search utils", () => {
     const actions = buildGlobalSearchNavigationActions({
       dashboard: "Workspace",
       clients: "Clients",
-      opportunities: "Opportunities",
+      deals: "Deals",
       projects: "Projects",
       tasks: "Tasks",
       calendar: "Calendar",
@@ -19,6 +19,8 @@ describe("global search utils", () => {
 
     expect(actions).toHaveLength(10);
     expect(actions[0]?.id).toBe("workspace");
+    expect(actions.filter((action) => action.id === "deals")).toHaveLength(1);
+    expect(actions.some((action) => action.id === "opportunities")).toBe(false);
   });
 
   it("matches navigation actions by label", () => {

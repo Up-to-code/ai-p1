@@ -11,6 +11,7 @@ export type WorkOsPickerOption = {
   id: string;
   label: string;
   helper?: string;
+  imageUrl?: string | null;
 };
 
 export function WorkOsRecordPicker({

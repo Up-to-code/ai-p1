@@ -10,7 +10,7 @@ export function BlogList({ posts, locale }: BlogListProps) {
   if (posts.length === 0) {
     return (
       <div className="py-12 text-center">
-        <p className="text-zinc-400">
+        <p className="text-[var(--q-text-muted)]">
           {locale === "ar" ? "لا توجد مقالات بعد" : "No blog posts yet"}
         </p>
       </div>

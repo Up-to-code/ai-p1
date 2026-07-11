@@ -30,10 +30,10 @@ export const Logo = () => {
 
   return (
     <Link href="/" className="group flex items-center gap-2.5">
-      <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-zinc-200 transition-transform group-hover:scale-110 dark:bg-zinc-950 dark:ring-white/10">
+      <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg border border-[var(--q-border)] bg-[var(--q-card)] shadow-sm transition-colors group-hover:bg-[var(--q-card-hover)]">
         <BrandMark className="h-5 w-5" priority />
       </div>
-      <span className="text-[17px] font-black tracking-tight text-zinc-950 dark:text-white">
+      <span className="text-[17px] font-bold tracking-[-0.025em] text-[var(--q-text-primary)]">
         {isAr ? "كانترا" : "qentrah"}
       </span>
     </Link>

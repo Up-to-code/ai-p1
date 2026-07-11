@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { ChevronsLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useSidebarRail } from "../sidebar-rail-context";
 import { SidebarPanelModeSwitch } from "./sidebar-panel-mode-switch";
 
@@ -9,21 +10,20 @@ type SidebarPanelLayoutProps = {
   title: string;
   navbarActions?: ReactNode;
   header?: ReactNode;
+  primaryAction?: ReactNode;
   footer?: ReactNode;
+  bodyClassName?: string;
   children: ReactNode;
 };
 
-export function SidebarPanelLayout({ title, navbarActions, header, footer, children }: SidebarPanelLayoutProps) {
+export function SidebarPanelLayout({ title, navbarActions, header, primaryAction, footer, bodyClassName, children }: SidebarPanelLayoutProps) {
   const { closeAll } = useSidebarRail();
 
   return (
     <div className="flex h-full flex-col bg-[var(--q-bg-secondary)] dark:bg-[#0b0b0c]">
-      {/* Navbar — mode, title, actions, and close */}
+      {/* Domain title and panel controls */}
       <div className="flex h-10 shrink-0 items-center justify-between border-b border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] px-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <SidebarPanelModeSwitch />
-          <span className="truncate text-[13px] font-semibold text-foreground">{title}</span>
-        </div>
+        <span className="min-w-0 truncate text-[13px] font-semibold text-foreground">{title}</span>
         <div className="flex items-center gap-0.5">
           {navbarActions}
           <button
@@ -38,6 +38,10 @@ export function SidebarPanelLayout({ title, navbarActions, header, footer, child
         </div>
       </div>
 
+      <div className="shrink-0 border-b border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] p-2">
+        <SidebarPanelModeSwitch />
+      </div>
+
       {/* Header section — static/non-dynamic items per domain */}
       {header && (
         <div className="shrink-0 border-b border-[color-mix(in_srgb,var(--q-border)_82%,transparent)]">
@@ -45,8 +49,14 @@ export function SidebarPanelLayout({ title, navbarActions, header, footer, child
         </div>
       )}
 
+      {primaryAction && (
+        <div className="shrink-0 border-b border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] p-2">
+          {primaryAction}
+        </div>
+      )}
+
       {/* Body — dynamic scrollable content */}
-      <div className="flex-1 overflow-y-auto p-2.5">{children}</div>
+      <div className={cn("flex-1 overflow-y-auto p-2.5", bodyClassName)}>{children}</div>
 
       {/* Footer — low-usage items (feedback, token usage, etc.) */}
       {footer && (

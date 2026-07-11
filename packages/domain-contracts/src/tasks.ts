@@ -2,9 +2,9 @@ import { z } from "zod";
 import { visibilitySchema } from "./clients";
 
 export const taskPrioritySchema = z.enum(["low", "normal", "high", "urgent"]);
-export const taskStatusSchema = z.enum([
-  "todo", "inProgress", "waiting", "done", "canceled",
-]);
+// Workflow stages are organization-configurable. The five built-ins remain the
+// defaults, but persisted tasks may use any non-empty stage key.
+export const taskStatusSchema = z.string().trim().min(1, "Status is required");
 
 export const checklistItemSchema = z.object({
   id: z.string(),
@@ -19,6 +19,7 @@ export const taskInputSchema = z.object({
   priority: taskPrioritySchema,
   visibility: visibilitySchema.optional(),
   assigneeUserId: z.string().optional(),
+  assigneeUserIds: z.array(z.string()).optional(),
   clientId: z.string().optional(),
   projectId: z.string().optional(),
   spaceId: z.string().optional(),
@@ -39,6 +40,7 @@ export const taskRecordSchema = z.object({
   priority: taskPrioritySchema,
   visibility: visibilitySchema.optional(),
   assigneeUserId: z.string().optional(),
+  assigneeUserIds: z.array(z.string()).optional(),
   clientId: z.string().optional(),
   projectId: z.string().optional(),
   spaceId: z.string().optional(),
@@ -66,6 +68,7 @@ export type TaskSummary = {
   status: TaskStatus;
   priority: string;
   assigneeUserId?: string;
+  assigneeUserIds?: string[];
   clientId?: string;
   projectId?: string;
   dueDate?: string;

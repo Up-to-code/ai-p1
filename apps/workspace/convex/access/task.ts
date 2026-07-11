@@ -69,7 +69,7 @@ function spaceMaxVisibility(space: Doc<"spaces">): TaskVisibility {
 }
 
 function isParticipant(task: Task, userId: string): boolean {
-  return task.createdByUserId === userId || task.assigneeUserId === userId;
+  return task.createdByUserId === userId || task.assigneeUserId === userId || task.assigneeUserIds?.includes(userId) === true;
 }
 
 export async function resolveTaskAccess(

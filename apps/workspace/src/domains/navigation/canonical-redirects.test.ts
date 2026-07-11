@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { buildCanonicalRedirectPath } from "./canonical-redirect";
 
 const aliasPages = [
+  ["opportunities/page.tsx", "/deals"],
   ["ws/inbox/page.tsx", "/inbox"],
   ["ws/channels/page.tsx", "/channels"],
   ["inbox/channels/page.tsx", "/channels"],
@@ -25,6 +26,14 @@ const staleState = {
 };
 
 describe("canonical workspace alias redirects", () => {
+  it("has a concrete canonical Channels page for every alias destination", () => {
+    const source = readAliasPage("channels/page.tsx");
+
+    expect(source).toContain("InboxWorkspaceShell");
+    expect(source).toContain("InboxChannelScreen");
+    expect(source).not.toContain("redirect(");
+  });
+
   it.each(aliasPages)("redirects %s to the intended canonical route", (pagePath, destination) => {
     const source = readAliasPage(pagePath);
 
@@ -42,5 +51,13 @@ describe("canonical workspace alias redirects", () => {
     expect(buildCanonicalRedirectPath("ar", "/channels", staleState)).toBe(
       "/ar/channels?project=project-1&space=space-1",
     );
+  });
+
+  it("preserves supported Deal filters for the legacy Opportunities redirect", () => {
+    expect(buildCanonicalRedirectPath("en", "/deals", {
+      filter: "won",
+      sort: "value",
+      project: "stale-project",
+    })).toBe("/en/deals?filter=won&sort=value");
   });
 });

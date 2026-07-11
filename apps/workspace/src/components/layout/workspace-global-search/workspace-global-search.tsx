@@ -6,7 +6,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { isRtlLocale } from "@/lib/i18n/locale";
 import { useRouter } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
-import { useQuickChat } from "@/components/layout/quick-chat-context";
 import { useAuthSession } from "@/domains/auth";
 import { useClientsPagedQuery } from "@/domains/clients/api/clients";
 import type { Project } from "@/domains/projects/store/projects.types";
@@ -22,7 +21,6 @@ import {
   toProjectSearchResult,
 } from "./lib/search-utils";
 import { useGlobalSearchFocus, useGlobalSearchShortcuts } from "./hooks/use-global-search-shortcuts";
-import { AiChatsPill } from "./components/ai-chats-pill";
 import { AskAiButton } from "./components/ask-ai-button";
 import { CmdRow } from "./components/cmd-row";
 import { SearchFilterTabs, type FilterTab } from "./components/search-filter-tabs";
@@ -50,8 +48,6 @@ export function WorkspaceGlobalSearch() {
 
   const debouncedQuery = useDebouncedValue(query.trim(), 300);
   const hasQuery = debouncedQuery.length > 0;
-  const { toggle: toggleQuickChat } = useQuickChat();
-
   // ── Data queries — only fire when relevant tab is active ─────────────────
   const searchOrgId = hasQuery ? organizationId : undefined;
 
@@ -75,7 +71,7 @@ export function WorkspaceGlobalSearch() {
       buildGlobalSearchNavigationActions({
         dashboard:     tSidebar("dashboard"),
         clients:       tSidebar("clients"),
-        opportunities: tSidebar("opportunities"),
+        deals:         tSidebar("deals"),
         projects:      tSidebar("projects"),
         tasks:         tSidebar("tasks"),
         calendar:      tSidebar("calendar"),
@@ -200,7 +196,6 @@ export function WorkspaceGlobalSearch() {
             {t("searchShortcut")}
           </span>
         </button>
-        <AiChatsPill onClick={toggleQuickChat} />
       </div>
 
       {/* ── Command palette ──────────────────────────────────────────────── */}

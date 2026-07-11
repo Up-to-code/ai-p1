@@ -7,7 +7,8 @@
 - **Project** — a container for tasks, docs, calendar events, and team collaboration.
 - **Task** — a unit of work with status, priority, assignee, pipeline order, tags, and custom fields.
 - **Client** — a CRM entity tracked through pipeline stages (new, contacted, qualified, proposal, negotiation, closedWon, closedLost).
-- **Deal** — a sales opportunity with amount, stage, and expected close date.
+- **SalesOpportunity** — the canonical sales aggregate for prospective revenue, linked to a Client and optionally a delivery Project. The product displays this aggregate as a **Deal**.
+- **Deal** — customer-facing copy for a SalesOpportunity. Deals and opportunities must never be exposed as separate writable product modules.
 - **Calendar** — events and task due dates in a month-grid layout.
 - **Workspace** — the unified UI layer combining sidebar rail, topbar, and content views.
 

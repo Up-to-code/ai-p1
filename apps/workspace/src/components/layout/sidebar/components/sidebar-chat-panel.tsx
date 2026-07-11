@@ -10,6 +10,9 @@ import {
   Link,
   Search,
   Plus,
+  ListTodo,
+  UserRound,
+  CalendarClock,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useWorkspaceRouter } from "@/hooks/use-workspace-router";
@@ -25,6 +28,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 
 function formatTime(ts: number): string {
   const diff = Date.now() - ts;
@@ -127,38 +131,63 @@ export function SidebarChatPanel() {
 
   return (
     <SidebarPanelLayout
-      title="AI"
-      navbarActions={
-        <button
-          type="button"
-          onClick={handleNewChat}
-          title="New conversation"
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-        >
-          <Plus className="h-4 w-4" />
-        </button>
-      }
+      title="AI agent"
+      bodyClassName="p-0"
       header={
-        <div className="px-4 py-3">
+        <div className="p-2">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search chats..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-md border border-border bg-background py-1.5 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20"
-            />
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input placeholder="Search chats" value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 rounded-md pl-8 text-xs shadow-none" />
           </div>
         </div>
       }
+      primaryAction={
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <button
+                type="button"
+                aria-label="Quick access"
+                title="Quick access"
+                className="flex h-8 w-full items-center gap-2 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-[var(--q-bg-tertiary)] hover:text-foreground"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                New chat or quick action
+              </button>
+            }
+          />
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={handleNewChat}>
+              <Plus className="mr-2 h-3.5 w-3.5" />
+              New chat
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => router.push("/tasks") }>
+              <ListTodo className="mr-2 h-3.5 w-3.5" />
+              All tasks
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/tasks?filter=my") }>
+              <UserRound className="mr-2 h-3.5 w-3.5" />
+              My tasks
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/tasks?filter=assigned") }>
+              <UserRound className="mr-2 h-3.5 w-3.5" />
+              Assigned by me
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/tasks?filter=today") }>
+              <CalendarClock className="mr-2 h-3.5 w-3.5" />
+              Due today
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      }
     >
       <div className="flex flex-1 flex-col overflow-hidden">
-        <p className="px-4 pb-2 text-[10px] font-medium text-muted-foreground">
-          Recent Chats
+        <p className="px-3 pb-1 pt-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          Recent
         </p>
 
-        <div className="flex-1 overflow-y-auto px-2 pb-2">
+        <div className="flex-1 overflow-y-auto px-1.5 pb-1.5">
           {loading && orgId ? (
             <div className="flex flex-col gap-1 px-2">
               {Array.from({ length: 6 }).map((_, i) => (

@@ -10,6 +10,7 @@ import {
   deleteTaskRequest,
 } from "../api/tasks";
 import { nextTaskPipelineOrder, taskFormValuesForPipeline } from "../task-pipeline-order";
+import { defaultTaskVisibility } from "../task-visibility";
 import type { TaskRecord, TaskFormValues, TaskStatus, TaskPriority, TaskVisibility } from "../tasks.types";
 
 export interface CreateTaskInput {
@@ -21,6 +22,7 @@ export interface CreateTaskInput {
   clientId?: string;
   projectId?: string;
   spaceId?: string;
+  startDate?: string;
   dueDate?: string;
   description?: string;
   tags?: string;
@@ -34,8 +36,10 @@ function taskFormValuesFromRecord(task: TaskRecord, changes: Partial<TaskRecord>
     priority: merged.priority,
     visibility: merged.visibility ?? "team",
     assigneeUserId: merged.assigneeUserId ?? "",
+    assigneeUserIds: merged.assigneeUserIds ?? (merged.assigneeUserId ? [merged.assigneeUserId] : []),
     clientId: merged.clientId ?? "",
     projectId: merged.projectId ?? "",
+    startDate: merged.startDate ?? "",
     dueDate: merged.dueDate ?? "",
     description: merged.description ?? "",
     tags: (merged.tags ?? []).join(", "),
@@ -96,15 +100,18 @@ export function useTaskMutations(organizationId: string) {
 
   const createTaskMutation = useMutation({
     mutationFn: async (input: CreateTaskInput) => {
+      const projectId = input.projectId ?? navProjectIdRef.current ?? "";
+      const spaceId = input.spaceId ?? navSpaceIdRef.current ?? "";
       return createTaskRequest(organizationId, {
         title: input.title,
         status: input.status ?? "todo",
         priority: input.priority ?? "normal",
-        visibility: input.visibility ?? "team",
+        visibility: defaultTaskVisibility(input.visibility, projectId, spaceId),
         assigneeUserId: input.assigneeUserId ?? "",
         clientId: input.clientId ?? "",
-        projectId: input.projectId ?? navProjectIdRef.current ?? "",
-        spaceId: input.spaceId ?? navSpaceIdRef.current ?? "",
+        projectId,
+        spaceId,
+        startDate: input.startDate ?? new Date().toISOString().slice(0, 10),
         dueDate: input.dueDate ?? "",
         description: input.description ?? "",
         tags: input.tags ?? "",

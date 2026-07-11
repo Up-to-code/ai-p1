@@ -31,9 +31,12 @@ import {
   Plus,
   Trash2,
   Settings,
+  Search,
 } from "lucide-react";
 import { CustomFieldsSection } from "@/components/shared/custom-fields";
 import { Link } from "@/i18n/routing";
+import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface ClientNote {
   id: string;
@@ -66,9 +69,35 @@ const parseClientNotes = (notesStr: string | undefined): ClientNote[] => {
 interface OverviewTabProps {
   client: Client;
   onUpdate: (values: Partial<ClientFormValues>) => void;
+  onShowActivity: () => void;
 }
 
-export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
+function CrmField({
+  label,
+  value,
+  placeholder,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="group min-w-0 border-b border-border/70 py-3">
+      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+      <EditableText
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="max-w-full text-sm font-medium text-foreground"
+        inputClassName="h-8 rounded-md border border-border bg-background px-2 shadow-none ring-0 focus:border-foreground"
+      />
+    </div>
+  );
+}
+
+export function OverviewTab({ client, onUpdate, onShowActivity }: OverviewTabProps) {
   const session = useAuthSession();
   const organizationId = session.workspace.status === "ready" ? session.workspace.organizationId ?? "" : "";
 
@@ -116,9 +145,15 @@ export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
   const [noteTitle, setNoteTitle] = useState("");
   const [noteContent, setNoteContent] = useState("");
   const [editingNote, setEditingNote] = useState<ClientNote | null>(null);
+  const [noteSearch, setNoteSearch] = useState("");
 
   // Memoize note array parsing
   const notes = useMemo(() => parseClientNotes(client.notes), [client.notes]);
+  const filteredNotes = useMemo(() => {
+    const query = noteSearch.trim().toLowerCase();
+    if (!query) return notes;
+    return notes.filter((note) => `${note.title} ${note.content}`.toLowerCase().includes(query));
+  }, [noteSearch, notes]);
 
   const handleOpenAddModal = () => {
     setEditingNote(null);
@@ -170,39 +205,26 @@ export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
         
         {/* Basic Info Section */}
         <section>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-4">Contact Info</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="group rounded-xl border border-transparent hover:border-border hover:bg-muted/30 p-3 transition-colors">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Email</p>
-              <EditableText
-                value={client.contact}
-                onChange={(contact) => onUpdate({ contact })}
-                placeholder="Add email address..."
-                className="text-sm font-medium"
-              />
-            </div>
-            <div className="group rounded-xl border border-transparent hover:border-border hover:bg-muted/30 p-3 transition-colors">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Phone</p>
-              <EditableText
-                value={client.phone || ""}
-                onChange={(phone) => onUpdate({ phone })}
-                placeholder="Add phone number..."
-                className="text-sm font-medium"
-              />
-            </div>
-            <div className="group rounded-xl border border-transparent hover:border-border hover:bg-muted/30 p-3 transition-colors">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Contact Name</p>
-              <div className="text-sm font-medium">
-                {client.contactName || "Not set"}
-              </div>
-            </div>
-            <div className="group rounded-xl border border-transparent hover:border-border hover:bg-muted/30 p-3 transition-colors">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Budget</p>
-              <EditableText
-                value={client.budget || ""}
-                onChange={(budget) => onUpdate({ budget })}
-                placeholder="Add budget..."
-                className="text-sm font-medium"
+          <div className="mb-2 flex items-center justify-between border-b border-border pb-2">
+            <h2 className="text-sm font-semibold text-foreground">Contact & CRM data</h2>
+            <p className="text-[10px] text-muted-foreground">Click any value to edit</p>
+          </div>
+          <div className="grid grid-cols-1 gap-x-6 md:grid-cols-2 lg:grid-cols-3">
+            <CrmField label="Email" value={client.contact} onChange={(contact) => onUpdate({ contact })} placeholder="Add email address" />
+            <CrmField label="Phone" value={client.phone || ""} onChange={(phone) => onUpdate({ phone })} placeholder="Add phone number" />
+            <CrmField label="Contact name" value={client.contactName || ""} onChange={(contactName) => onUpdate({ contactName })} placeholder="Add primary contact" />
+            <CrmField label="Company" value={client.company || ""} onChange={(company) => onUpdate({ company })} placeholder="Add company" />
+            <CrmField label="Website" value={client.website || ""} onChange={(website) => onUpdate({ website })} placeholder="https://example.com" />
+            <CrmField label="Lead source" value={client.source || ""} onChange={(source) => onUpdate({ source })} placeholder="Add source" />
+            <CrmField label="Budget" value={client.budget || ""} onChange={(budget) => onUpdate({ budget })} placeholder="Add budget" />
+            <CrmField label="Service interest" value={client.assetInterest && client.assetInterest !== client.source ? client.assetInterest : ""} onChange={(assetInterest) => onUpdate({ assetInterest })} placeholder="Add service or asset" />
+            <div className="min-w-0 border-b border-border/70 py-3">
+              <label htmlFor={`last-contact-${client.id}`} className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Last contact</label>
+              <DatePicker
+                date={client.lastContact ? new Date(`${client.lastContact}T12:00:00`) : undefined}
+                setDate={(date) => onUpdate({ lastContact: date ? date.toISOString().slice(0, 10) : "" })}
+                className="h-8 w-full max-w-56 rounded-md border-transparent bg-transparent px-0 shadow-none hover:border-border"
+                contentClassName="rounded-md shadow-none"
               />
             </div>
           </div>
@@ -222,12 +244,14 @@ export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
               Manage
             </Link>
           </div>
-          <CustomFieldsSection recordType="client" recordId={client.id} />
+          <div className="[&>div]:rounded-none [&>div]:border-x-0 [&>div]:border-t-0">
+            <CustomFieldsSection recordType="client" recordId={client.id} />
+          </div>
         </section>
 
         {/* Internal Notes Section */}
         <section className="space-y-4">
-          <div className="flex items-center justify-between border-b border-border/60 pb-2">
+          <div className="flex flex-col gap-2 border-b border-border/60 pb-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
               Internal Notes
               {notes.length > 0 && (
@@ -236,6 +260,11 @@ export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
                 </span>
               )}
             </h2>
+            <div className="flex items-center gap-2">
+              <div className="relative w-48">
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input value={noteSearch} onChange={(event) => setNoteSearch(event.target.value)} placeholder="Search notes" className="h-8 rounded-md pl-8 text-xs shadow-none" />
+              </div>
             <Button
               type="button"
               variant="outline"
@@ -246,18 +275,19 @@ export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
               <Plus className="h-3.5 w-3.5 mr-1" />
               Add Note
             </Button>
+            </div>
           </div>
 
-          {notes.length === 0 ? (
+          {filteredNotes.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border p-8 text-center text-xs text-muted-foreground">
-              No internal notes added yet. Click "Add Note" to create one.
+              {notes.length === 0 ? "No internal notes added yet. Click Add Note to create one." : "No notes match your search."}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {notes.map((note) => (
+              {filteredNotes.map((note) => (
                 <div
                   key={note.id}
-                  className="group relative rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition-all cursor-pointer flex flex-col justify-between min-h-[140px]"
+                  className="group relative flex min-h-[120px] cursor-pointer flex-col justify-between border-b border-border p-3 transition-colors hover:bg-muted/20"
                   onClick={() => handleOpenEditModal(note)}
                 >
                   <div>
@@ -308,7 +338,7 @@ export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
           <h2 className="text-sm font-semibold text-muted-foreground mb-4">Quick Stats</h2>
           <div className="grid grid-cols-2 gap-3">
             {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-xl border border-border bg-card p-4 hover:border-primary/20 transition-colors cursor-default">
+              <div key={metric.label} className="cursor-default border-l-2 border-border py-2 pl-3 transition-colors hover:border-foreground/40">
                 <metric.icon className="h-4 w-4 text-muted-foreground mb-2" />
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">{metric.label}</p>
                 <p className="text-lg font-black text-foreground">{metric.value}</p>
@@ -321,7 +351,7 @@ export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-muted-foreground">Recent Activity</h2>
-            <button className="text-xs font-medium text-primary hover:underline">View All</button>
+            <button type="button" onClick={onShowActivity} className="text-xs font-medium text-primary hover:underline">View All</button>
           </div>
           <div className="space-y-4">
             {recentActivity.map((activity) => (
@@ -335,11 +365,11 @@ export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
             ))}
             <button
               type="button"
-              onClick={handleOpenAddModal}
+              onClick={onShowActivity}
               className="w-full rounded-xl border border-dashed border-border py-2 text-xs font-semibold text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <MessageSquare className="h-3.5 w-3.5" />
-              Add Note
+              Add activity or comment
             </button>
           </div>
         </section>
@@ -362,13 +392,12 @@ export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
               <label htmlFor="note-title" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Title
               </label>
-              <input
+              <Input
                 id="note-title"
-                type="text"
                 placeholder="Note title..."
                 value={noteTitle}
                 onChange={(e) => setNoteTitle(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary transition-all font-medium text-foreground"
+                className="h-9 rounded-md text-sm font-medium shadow-none"
                 autoFocus
               />
             </div>

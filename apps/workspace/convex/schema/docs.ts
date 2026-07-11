@@ -1,6 +1,26 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
+const customFieldValidator = v.object({
+  id: v.string(),
+  name: v.string(),
+  type: v.union(
+    v.literal("text"),
+    v.literal("number"),
+    v.literal("date"),
+    v.literal("select"),
+    v.literal("status"),
+    v.literal("boolean"),
+  ),
+  value: v.union(v.string(), v.number(), v.boolean(), v.null()),
+  options: v.optional(v.array(v.string())),
+  color: v.optional(v.union(
+    v.literal("gray"), v.literal("blue"), v.literal("green"), v.literal("yellow"),
+    v.literal("orange"), v.literal("red"), v.literal("purple"), v.literal("pink"),
+  )),
+  layout: v.optional(v.union(v.literal("half"), v.literal("full"))),
+});
+
 export const docsTables = {
   docFolders: defineTable({
     organizationId: v.string(),
@@ -26,6 +46,7 @@ export const docsTables = {
     projectId: v.optional(v.string()),
     visibility: v.union(v.literal("private"), v.literal("team"), v.literal("workspace")),
     tags: v.optional(v.array(v.string())),
+    customFields: v.optional(v.array(customFieldValidator)),
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),

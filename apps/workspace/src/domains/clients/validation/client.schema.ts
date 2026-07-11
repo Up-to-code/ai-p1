@@ -20,6 +20,11 @@ export const clientSchema = z
       .transform((value) => value ?? "")
       .refine((value) => !value || z.string().email().safeParse(value).success, "Enter a valid email address."),
     phone: optionalText.default(""),
+    company: optionalText.default(""),
+    contactName: optionalText.default(""),
+    website: z.string().trim().optional().transform((value) => value ?? "").refine((value) => !value || z.string().url().safeParse(value).success, "Enter a valid website URL."),
+    source: optionalText.default("manual"),
+    lastContact: optionalText.default(""),
     age: optionalNumericText("Age")
       .refine((value) => !value || Number(value) >= 18, "Age must be 18 or higher.")
       .refine((value) => !value || Number(value) <= 120, "Age must be realistic."),
@@ -46,6 +51,11 @@ export interface ClientFormValues {
   type: "person" | "organization";
   contact: string;
   phone: string;
+  company?: string;
+  contactName?: string;
+  website?: string;
+  source?: string;
+  lastContact?: string;
   age: string;
   nationality: string;
   generation: string;

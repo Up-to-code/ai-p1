@@ -5,10 +5,7 @@ import { useTaskQuery, useTasksQuery } from "../api/tasks";
 import { taskDocumentContext } from "../tasks.constants";
 import { useTaskMentionOptions, useMemberOptions } from "./task-hooks";
 import { TaskEditor } from "./task-editor";
-import {
-  Sheet,
-  SheetContent,
-} from "@/components/ui/sheet";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface TaskEditModalProps {
   taskId: string | null;
@@ -17,7 +14,7 @@ interface TaskEditModalProps {
 }
 
 /**
- * Side-sheet that opens when a board card is clicked.
+ * Centered document modal shared by task table and board interactions.
  * Self-contained: fetches the task and wires up the full TaskEditor.
  */
 export function TaskEditModal({ taskId, open, onClose }: TaskEditModalProps) {
@@ -52,11 +49,10 @@ export function TaskEditModal({ taskId, open, onClose }: TaskEditModalProps) {
   });
 
   return (
-    <Sheet open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) onClose(); }}>
-      <SheetContent
-        side="right"
+    <Dialog open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) onClose(); }}>
+      <DialogContent
         showCloseButton={false}
-        className="w-full sm:max-w-2xl p-0 gap-0 overflow-hidden"
+        className="h-[90vh] w-full max-w-[90vw] gap-0 overflow-hidden p-0"
       >
         {/* Loading / not ready states */}
         {(!task || !organizationId) && (
@@ -93,7 +89,7 @@ export function TaskEditModal({ taskId, open, onClose }: TaskEditModalProps) {
             onClose={onClose}
           />
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

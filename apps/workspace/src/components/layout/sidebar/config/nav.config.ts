@@ -8,14 +8,13 @@ import {
   Shield,
   UserRound,
   Users,
+  Workflow,
 } from "lucide-react";
 import {
-  BarChartFilledIcon,
   CalendarIcon,
   DocumentLinesIcon,
   FolderIcon,
   HomeIcon,
-  KanbanIcon,
   ListLinesIcon,
   SettingsIcon,
 } from "../components/clickup-icons";
@@ -51,11 +50,11 @@ export const sidebarStaticNav: SidebarNavItem[] = [
 const sidebarPrimaryNavManifest: SidebarNavItem[] = [
   { name: "spaces", icon: LayoutGrid, label: "Spaces", group: "workspace", opensPanel: true },
   { name: "clients", href: "/clients", icon: UserRound, group: "crm" },
-  { name: "opportunities", href: "/opportunities", icon: KanbanIcon, group: "crm" },
   { name: "deals", href: "/deals", icon: BadgeDollarSign, group: "crm" },
   { name: "tasks", href: "/tasks", icon: ListLinesIcon, group: "productivity" },
   { name: "calendar", href: "/calendar", icon: CalendarIcon, group: "productivity" },
   { name: "docs", href: "/docs", icon: DocumentLinesIcon, group: "productivity" },
+  { name: "automations", href: "/automations", icon: Workflow, group: "productivity" },
   { name: "team", href: "/team", icon: Users, group: "team" },
   {
     name: "time-tracking",
@@ -103,7 +102,6 @@ export const sidebarSpaceNav: SidebarNavItem[] = [
 
 /** Project-level navigation (when a project is selected). */
 export const sidebarProjectNav: SidebarNavItem[] = [
-  { name: "overview", icon: BarChartFilledIcon },
   { name: "tasks", icon: ListLinesIcon },
   { name: "calendar", icon: CalendarIcon },
   { name: "files", icon: DocumentLinesIcon },

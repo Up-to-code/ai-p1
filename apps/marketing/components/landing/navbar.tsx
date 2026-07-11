@@ -37,7 +37,7 @@ export function Navbar() {
         className={cn(
           "mx-auto w-full flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
           isScrolled
-            ? "mt-3 max-w-4xl rounded-2xl border px-4 py-2.5 shadow-[0_8px_40px_rgba(0,0,0,0.09)]"
+            ? "mt-3 max-w-4xl rounded-xl border px-4 py-2.5 shadow-[var(--marketing-shadow)]"
             : "max-w-none px-6 py-5 sm:px-10",
         )}
         style={
@@ -126,7 +126,7 @@ export function Navbar() {
       {/* ── Mobile drawer ───────────────────────────────────────── */}
       {isMenuOpen && (
         <div
-          className="mx-3 mt-1 rounded-2xl border p-3 shadow-[0_16px_48px_rgba(0,0,0,0.12)] md:hidden"
+          className="mx-3 mt-1 rounded-xl border p-3 shadow-[var(--marketing-shadow)] md:hidden"
           style={{
             background: "color-mix(in srgb, var(--q-card) 96%, transparent)",
             borderColor: "var(--q-border)",

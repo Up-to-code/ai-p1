@@ -11,9 +11,11 @@ export type TaskRecord = {
   priority: TaskPriority;
   visibility?: TaskVisibility;
   assigneeUserId?: string;
+  assigneeUserIds?: string[];
   clientId?: string;
   projectId?: string;
   spaceId?: string;
+  startDate?: string;
   dueDate?: string;
   description?: string;
   tags?: string[];
@@ -30,9 +32,11 @@ export type TaskFormValues = {
   priority: TaskPriority;
   visibility: TaskVisibility;
   assigneeUserId: string;
+  assigneeUserIds?: string[];
   clientId: string;
   projectId: string;
   spaceId?: string;
+  startDate?: string;
   dueDate: string;
   description: string;
   tags: string;

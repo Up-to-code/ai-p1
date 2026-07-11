@@ -20,10 +20,10 @@ export function ThemeToggle({ className }: { className?: string }) {
     >
       <div className="relative h-5 w-5">
         <Sun className={cn(
-          "absolute inset-0 rotate-0 scale-100 transition-all duration-500 [data-theme=\"dark\"]:-rotate-90 [data-theme=\"dark\"]:scale-0 text-amber-500",
+          "absolute inset-0 rotate-0 scale-100 text-[var(--q-warning)] transition-all duration-500 [data-theme=\"dark\"]:-rotate-90 [data-theme=\"dark\"]:scale-0",
         )} />
         <Moon className={cn(
-          "absolute inset-0 rotate-90 scale-0 transition-all duration-500 [data-theme=\"dark\"]:rotate-0 [data-theme=\"dark\"]:scale-100 text-zinc-400 [data-theme=\"dark\"]:text-blue-200",
+          "absolute inset-0 rotate-90 scale-0 text-[var(--q-text-muted)] transition-all duration-500 [data-theme=\"dark\"]:rotate-0 [data-theme=\"dark\"]:scale-100 [data-theme=\"dark\"]:text-[var(--q-info)]",
         )} />
       </div>
     </button>

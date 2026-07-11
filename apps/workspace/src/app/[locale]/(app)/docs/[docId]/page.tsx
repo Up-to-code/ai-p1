@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "@/i18n/routing";
 import { WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { DocEditorSkeleton } from "@/domains/docs/components/doc-editor-skeleton";
-import { useEffect } from "react";
 
 export default function DocEditorPage({
   params,
@@ -91,20 +90,6 @@ export default function DocEditorPage({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b border-border px-6 py-4 shrink-0">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => router.push("/docs")}
-          className="h-8 w-8"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-lg font-semibold text-foreground truncate flex-1">
-          {doc.title || "Untitled"}
-        </h1>
-      </div>
       <div className="flex-1 overflow-hidden">
         <DocEditor
           doc={doc}

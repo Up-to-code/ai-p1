@@ -5,6 +5,7 @@ import type {
   PartnerPermissionResource,
 } from "@qentrah/partner-auth-core";
 import type { OrganizationApiKeyAccessContext } from "./organization-api-key-access";
+import type { OrganizationApiKeyResource } from "./organization-api-key-access";
 import { oauthDebug } from "./oauth-debug";
 
 function convexBridgeSecret() {
@@ -17,7 +18,7 @@ function convexBridgeSecret() {
 
 export function readOrganizationApiKeyResource(
   organizationId: string,
-  resource: PartnerPermissionResource,
+  resource: OrganizationApiKeyResource,
   input?: unknown,
 ) {
   oauthDebug("workspace.organization_api_key_resource.read.start", {
@@ -36,7 +37,7 @@ export function readOrganizationApiKeyResource(
 
 export function writeOrganizationApiKeyResource(
   access: OrganizationApiKeyAccessContext,
-  resource: PartnerPermissionResource,
+  resource: OrganizationApiKeyResource,
   action: Exclude<PartnerPermissionAction, "read">,
   input?: unknown,
 ) {

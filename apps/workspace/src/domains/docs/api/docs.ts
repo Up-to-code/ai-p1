@@ -6,6 +6,9 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import type { DocFormValues, DocFolderFormValues, DocRecord, DocFolder } from "../docs.types";
+import { docPayloadFromForm } from "../lib/doc-payload";
+
+export { docPayloadFromForm } from "../lib/doc-payload";
 
 export function useDocsQuery(
   organizationId?: string,
@@ -62,20 +65,6 @@ export function useDocFoldersQuery(organizationId?: string, projectId?: string) 
     organizationId ? { organizationId, projectId } : "skip",
   );
   return { data: folders, isLoading: folders === undefined, isError: false, error: undefined as string | undefined };
-}
-
-export function docPayloadFromForm(values: DocFormValues) {
-  return {
-    title: values.title,
-    content: values.content || undefined,
-    folderId: values.folderId || undefined,
-    projectId: values.projectId || undefined,
-    visibility: values.visibility,
-    tags: values.tags
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean),
-  };
 }
 
 export function docFolderPayloadFromForm(values: DocFolderFormValues) {

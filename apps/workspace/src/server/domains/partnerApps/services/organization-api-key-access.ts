@@ -7,6 +7,8 @@ import type {
   PartnerPermissionResource,
 } from "@qentrah/partner-auth-core";
 
+export type OrganizationApiKeyResource = PartnerPermissionResource | "document";
+
 export type OrganizationApiKeyAccessContext = {
   type: "apiKey";
   token: string;
@@ -29,14 +31,14 @@ function bearerToken(c: Context) {
   return match?.[1]?.trim();
 }
 
-function toApiKeyResource(resource: PartnerPermissionResource) {
+function toApiKeyResource(resource: OrganizationApiKeyResource) {
   return resource;
 }
 
 export async function requireOrganizationApiKeyAccess(
   c: Context,
   organizationId: string,
-  resource: PartnerPermissionResource,
+  resource: OrganizationApiKeyResource,
   action: PartnerPermissionAction,
 ): Promise<OrganizationApiKeyAccessContext> {
   const token = bearerToken(c);
@@ -50,7 +52,7 @@ export async function requireOrganizationApiKeyAccess(
   const validation = await convexCalls.mutation<{
     organizationId: string;
     secret: string;
-    resource: PartnerPermissionResource;
+    resource: OrganizationApiKeyResource;
     action: PartnerPermissionAction;
   }, {
     ok: boolean;
@@ -58,7 +60,7 @@ export async function requireOrganizationApiKeyAccess(
     apiKeyId?: Id<"organizationApiKeys">;
     keyId?: string;
     name?: string;
-    permissions?: Array<{ resource: PartnerPermissionResource; actions: PartnerPermissionAction[] }>;
+    permissions?: Array<{ resource: OrganizationApiKeyResource; actions: PartnerPermissionAction[] }>;
   }>(api.organizationApiKeys.validateAndReserve, {
     organizationId,
     secret: token,

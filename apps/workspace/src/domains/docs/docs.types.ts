@@ -1,11 +1,23 @@
 export type DocVisibility = "private" | "team" | "workspace";
 
+export type CustomFieldColor =
+  | "gray"
+  | "blue"
+  | "green"
+  | "yellow"
+  | "orange"
+  | "red"
+  | "purple"
+  | "pink";
+
 export type CustomField = {
   id: string;
   name: string;
-  type: "text" | "number" | "date" | "select" | "boolean";
+  type: "text" | "number" | "date" | "select" | "status" | "boolean";
   value: string | number | boolean | null;
   options?: string[]; // For select type
+  color?: CustomFieldColor;
+  layout?: "half" | "full";
 };
 
 export type DocRecord = {

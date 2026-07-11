@@ -96,7 +96,7 @@ export function useTaskMentionOptions({
 /** Loads organization members for task assignee pickers. */
 export function useMemberOptions(
   organizationId?: string,
-  currentUser?: { id: string; name: string; email: string },
+  currentUser?: { id: string; name: string; email: string; image?: string | null },
 ) {
   const currentUserOption = useMemo<WorkOsPickerOption | null>(() => {
     if (!currentUser?.id) return null;
@@ -104,6 +104,7 @@ export function useMemberOptions(
       id: currentUser.id,
       label: "Me",
       helper: [currentUser.name, currentUser.email, "You"].filter(Boolean).join(" · "),
+      imageUrl: currentUser.image ?? null,
     };
   }, [currentUser?.email, currentUser?.id, currentUser?.name]);
 
@@ -135,6 +136,7 @@ export function useMemberOptions(
         id,
         label: isCurrentUser ? "Me" : member.user?.name || member.user?.email || id,
         helper: [member.user?.email, member.role, isCurrentUser ? "You" : null].filter(Boolean).join(" · "),
+        imageUrl: member.user?.image ?? null,
       });
     }
 

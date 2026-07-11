@@ -20,7 +20,7 @@ describe("calendar validation", () => {
   });
 
   it("accepts business event types", () => {
-    for (const type of ["meeting", "deadline", "reminder", "milestone", "focusBlock"] as const) {
+    for (const type of ["meeting", "deadline", "document", "reminder", "milestone", "focusBlock"] as const) {
       const parsed = calendarEventPayloadSchema.parse({
         title: "Client work",
         ownerUserId: "user_123",

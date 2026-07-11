@@ -69,6 +69,7 @@ export type OrganizationApiKeyResource =
   | "project"
   | "calendar"
   | "task"
+  | "document"
   | "media";
 
 export type OrganizationApiKeyAction = "read" | "create" | "update" | "delete";

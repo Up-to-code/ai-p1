@@ -3,7 +3,7 @@
 /**
  * ComposerActionPopover
  *
- * Replaces the old QuickActionsModal (tabs: Upload / Document / Image / Link).
+ * Provides the working upload, image, link, and mention actions.
  * Renders as a small floating panel that appears just above the composer's + button.
  * Each action is a discrete icon tile — not a tabbed modal — so the UI stays minimal.
  *
@@ -15,7 +15,6 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload,
-  FileText,
   ImageIcon,
   Link2,
   AtSign,
@@ -24,7 +23,6 @@ import { cn } from "@/lib/utils";
 
 export type ComposerAction =
   | "upload-file"
-  | "attach-document"
   | "attach-image"
   | "insert-link"
   | "mention";
@@ -44,13 +42,6 @@ const ACTION_TILES: ActionTile[] = [
     label: "Upload file",
     description: "PDF, DOC, ZIP…",
     accent: "bg-blue-500/10 text-blue-500",
-  },
-  {
-    id: "attach-document",
-    icon: FileText,
-    label: "Document",
-    description: "Workspace doc",
-    accent: "bg-violet-500/10 text-violet-500",
   },
   {
     id: "attach-image",

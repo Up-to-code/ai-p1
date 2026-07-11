@@ -2,21 +2,25 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { useTranslations } from "next-intl";
-import { ListTodo, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { DomainHeader, type HeaderAction } from "@/components/shared/domain/DomainHeader";
 import { type ViewMode } from "@/components/shared/view-system/ViewSwitcher";
 import type { ViewItem } from "@/components/shared/view-system/types";
-import { EmptyWorkspace, WorkspaceQueryState } from "@/components/shared/crud-ui";
+import { WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useAuthSession } from "@/domains/auth";
 import { useTaskMutations } from "../hooks/use-task-mutations";
 import { useCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
 import { useNavigation } from "@/domains/navigation";
+import { useSearchParams } from "next/navigation";
 import { useTasksQuery } from "../api/tasks";
-import type { TaskRecord, TaskStatus } from "../tasks.types";
-import { TASK_STAGES, emptyTask, normalizeTaskStatus } from "../tasks.constants";
+import type { TaskRecord } from "../tasks.types";
+import { TASK_STAGES } from "../tasks.constants";
 import { TaskViewFrame } from "./views/task-view-frame";
-import { taskLog } from "../task-log";
-import { createTaskRequest } from "../api/tasks";
+import { filterTasksForSidebar } from "../lib/task-sidebar-filter";
+import { useMemberOptions } from "../hooks/use-task-mention-options";
+import { TaskEditModal } from "./task-edit-modal";
+import { TaskCreateModal } from "./task-create-modal";
+import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
 
 const DEFAULT_TABS: ViewItem[] = [
   { id: "default-table", type: "table", label: "Table" },
@@ -31,8 +35,12 @@ export function TasksPageRedesigned({
 }: { projectId?: string | null } = {}) {
   const t = useTranslations("Tasks");
   const session = useAuthSession();
-  const [activeView, setActiveView] = useState<ViewMode>("table");
+  const [activeView, setActiveView] = useState<ViewMode>("board");
   const [page, setPage] = useState(1);
+  const [openTaskId, setOpenTaskId] = useState<string | null>(null);
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const sidebarFilter = searchParams.get("filter") ?? "all";
 
   const workspaceStatus = session.workspace.status;
   const organizationId =
@@ -44,6 +52,11 @@ export function TasksPageRedesigned({
   const projectId =
     projectIdProp !== undefined ? projectIdProp : projectIdFromUrl;
   const { spaceId } = useNavigation();
+  const projectOptions = useProjectOptionsQueryResult(organizationId, { limit: 200 });
+  const activeProjectId = useMemo(
+    () => projectId && projectOptions.data?.some((project) => project.id === projectId) ? projectId : null,
+    [projectId, projectOptions.data],
+  );
 
   const tasksResult = useTasksQuery(organizationId, {
     status: "all",
@@ -53,12 +66,13 @@ export function TasksPageRedesigned({
   const emptyTasks = [] as TaskRecord[];
   const rawTasks = tasksResult.data ?? emptyTasks;
 
-  const { applyOptimistic, moveTask: moveTaskFromHook, updateTask, createTask } = useTaskMutations(organizationId ?? "");
+  const { applyOptimistic, moveTask: moveTaskFromHook, updateTask, deleteTask, createTask } = useTaskMutations(organizationId ?? "");
   const tasks = applyOptimistic(rawTasks);
+  const { data: memberOptions } = useMemberOptions(organizationId, session.user);
 
   const filteredTasks = useMemo(
-    () => tasks.filter((task) => !task._deleted),
-    [tasks],
+    () => filterTasksForSidebar(tasks, sidebarFilter, session.user.id),
+    [session.user.id, sidebarFilter, tasks],
   );
 
   const totalPages = Math.max(1, Math.ceil(filteredTasks.length / TASK_PAGE_SIZE));
@@ -75,8 +89,8 @@ export function TasksPageRedesigned({
       if (!organizationId) return;
       const task = tasks.find((t) => t.id === itemId);
       if (!task) return;
-      const newStatus = normalizeTaskStatus(toStage);
-      const statusTasks = tasks.filter((candidate) => normalizeTaskStatus(candidate.status) === newStatus);
+      const newStatus = toStage;
+      const statusTasks = tasks.filter((candidate) => candidate.status === newStatus);
       moveTaskFromHook(task, newStatus, statusTasks, targetIndex);
     },
     [organizationId, tasks, moveTaskFromHook],
@@ -100,25 +114,18 @@ export function TasksPageRedesigned({
         assigneeUserId: defaults?.assigneeUserId,
         dueDate: defaults?.dueDate,
         tags: defaults?.tags?.join(", "),
-        projectId: projectId ?? "",
+        projectId: activeProjectId ?? "",
         spaceId: spaceId ?? "",
       });
     },
-    [createTask, organizationId, projectId, spaceId],
+    [activeProjectId, createTask, organizationId, spaceId],
   );
 
   const actions: HeaderAction[] = [
     {
       label: t("actions.new"),
       icon: <Plus className="w-4 h-4" />,
-      onClick: async () => {
-        if (!organizationId) return;
-        taskLog.info("create:start", { projectId: projectId ?? "" });
-        await createTaskRequest(organizationId, {
-          ...emptyTask,
-          projectId: projectId ?? "",
-        });
-      },
+      onClick: () => setCreateTaskOpen(true),
       variant: "primary",
     },
   ];
@@ -133,7 +140,7 @@ export function TasksPageRedesigned({
   );
 
   const workspaceContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full min-h-0 min-w-0 max-w-full flex-col overflow-hidden">
       <DomainHeader
         domain="Tasks"
         currentSection={sectionLabel}
@@ -142,16 +149,20 @@ export function TasksPageRedesigned({
         activeView={activeView}
         onViewChange={setActiveView}
       />
-      <div className="flex-1 overflow-hidden">
+      <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
         <TaskViewFrame
           tab={activeTab}
           tasks={pagedTasks}
           stages={TASK_STAGES}
           organizationId={organizationId}
-          projectId={projectId}
+          projectId={activeProjectId}
           spaceId={spaceId}
           onCardMove={handleCardMove}
           onTaskUpdate={handleTaskUpdate}
+          onTaskDelete={(task) => deleteTask(task)}
+          currentUserId={session.user.id}
+          memberOptions={memberOptions}
+          onTaskOpen={setOpenTaskId}
           onTaskCreate={handleTableTaskCreate}
         />
       </div>
@@ -204,23 +215,18 @@ export function TasksPageRedesigned({
     );
   }
 
-  if (filteredTasks.length === 0) {
-    return (
-      <div className="flex flex-col h-full">
-        <DomainHeader
-          domain="Tasks"
-          currentSection={sectionLabel}
-          actions={actions}
-          availableViews={availableViews}
-          activeView={activeView}
-          onViewChange={setActiveView}
-        />
-        <div className="flex-1 flex items-center justify-center">
-          <EmptyWorkspace icon={ListTodo} title={t("empty.title")} description={t("empty.description")} />
-        </div>
-      </div>
-    );
-  }
-
-  return workspaceContent;
+  return (
+    <>
+      {workspaceContent}
+      <TaskCreateModal
+        organizationId={organizationId}
+        projectId={activeProjectId}
+        spaceId={spaceId}
+        open={createTaskOpen}
+        onOpenChange={setCreateTaskOpen}
+        onCreated={setOpenTaskId}
+      />
+      <TaskEditModal taskId={openTaskId} open={Boolean(openTaskId)} onClose={() => setOpenTaskId(null)} />
+    </>
+  );
 }

@@ -43,6 +43,11 @@
 - Updated API payload to include custom fields
 - Updated constants to include custom fields
 
+### Phase 6: Table Loading State ✅
+- Replaced the old compact docs-table skeleton, which included a duplicate toolbar and simplified text rows.
+- Matched the loading state to `DocsListTable`: the same bordered card, table header, four columns, icon-sized leading tile, type badge, item count, and updated date shapes.
+- Kept loading ownership in `DocsPageRedesigned`; the skeleton now represents only the table content because the page header and breadcrumb render independently.
+
 ## Status
 - All phases complete
 - No new TypeScript errors introduced

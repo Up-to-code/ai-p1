@@ -9,18 +9,33 @@ vi.mock("@/components/ui/button", () => ({ Button: () => null }));
 vi.mock("@/components/shared/domain/DomainHeader", () => ({
   DomainHeader: () => null,
 }));
+vi.mock("@/components/shared", () => ({
+  AppDataTable: () => null,
+  AppPageHeader: () => null,
+  AppPageShell: ({ children }: { children: unknown }) => children,
+  AppSection: ({ children }: { children: unknown }) => children,
+  AppToolbar: () => null,
+}));
 vi.mock("@/components/shared/crud-ui", () => ({
   EmptyWorkspace: () => null,
   ErrorState: () => null,
   LoadingState: () => null,
   WorkspaceQueryState: () => null,
 }));
+vi.mock("@/domains/organization/components/screens/custom-permissions-screen", () => ({
+  CustomPermissionsDrawer: () => null,
+}));
 vi.mock("@/domains/auth", () => ({ useAuthSession: vi.fn() }));
 vi.mock("@/domains/organization/api", () => ({
   getOrganizationCapabilities: vi.fn(),
+  createOrganizationInvitation: vi.fn(),
+  createOrganizationInviteLink: vi.fn(),
+  cancelOrganizationInvitation: vi.fn(),
   listOrganizationInvitations: vi.fn(),
   listOrganizationMembers: vi.fn(),
   listOrganizationRoles: vi.fn(),
+  removeOrganizationMember: vi.fn(),
+  updateOrganizationMemberRole: vi.fn(),
 }));
 vi.mock("@/lib/utils", () => ({
   cn: (...values: unknown[]) => values.filter(Boolean).join(" "),
@@ -168,6 +183,12 @@ describe("TeamPageRedesigned", () => {
     expect(componentSource).not.toContain("onClick: () => {}");
     expect(componentSource).not.toContain('t("actions.inviteMember")');
     expect(componentSource).not.toContain("rowSelection=");
-    expect(componentSource).toContain('className="h-full w-full p-6"');
+    expect(componentSource).toContain("AppPageShell");
+    expect(componentSource).not.toContain("AppStatsGrid");
+    expect(componentSource).toContain("TeamDirectorySkeleton");
+    expect(componentSource).not.toContain("People directory");
+    expect(componentSource).not.toContain("Workspace directory");
+    expect(componentSource).toContain("Invite member");
+    expect(componentSource).toContain("Manage roles");
   });
 });

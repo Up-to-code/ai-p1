@@ -7,6 +7,7 @@ export const clientTaskPayloadSchema = z.object({
   visibility: z.enum(["private", "team", "workspace"]).optional(),
   priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
   assigneeUserId: z.string().trim().optional().transform((value) => value || undefined),
+  assigneeUserIds: z.array(z.string().trim().min(1)).optional(),
   clientId: z.string().trim().optional().transform((value) => value || undefined),
   projectId: z.string().trim().optional().transform((value) => value || undefined),
   spaceId: z.string().trim().optional().transform((value) => value || undefined),

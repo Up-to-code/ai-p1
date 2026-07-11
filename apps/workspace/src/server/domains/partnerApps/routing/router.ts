@@ -12,6 +12,7 @@ import {
   handlePartnerMediaList,
   handlePartnerReadById,
   handlePartnerReadCollection,
+  handlePartnerResourceWrite,
 } from "../handlers/resources";
 
 export const partnerAppsRouter = new Hono();
@@ -46,6 +47,12 @@ partnerResourceRouter.get("/organizations/:organizationId/projects", (c) => hand
 partnerResourceRouter.get("/organizations/:organizationId/projects/:projectId", (c) => handlePartnerReadById(c, "project", "projectId"));
 partnerResourceRouter.get("/organizations/:organizationId/tasks", (c) => handlePartnerReadCollection(c, "task"));
 partnerResourceRouter.get("/organizations/:organizationId/tasks/:taskId", (c) => handlePartnerReadById(c, "task", "taskId"));
+partnerResourceRouter.post("/organizations/:organizationId/tasks", (c) => handlePartnerResourceWrite(c, "task", "create"));
+partnerResourceRouter.patch("/organizations/:organizationId/tasks/:taskId", (c) => handlePartnerResourceWrite(c, "task", "update", "taskId"));
+partnerResourceRouter.get("/organizations/:organizationId/documents", (c) => handlePartnerReadCollection(c, "document"));
+partnerResourceRouter.get("/organizations/:organizationId/documents/:docId", (c) => handlePartnerReadById(c, "document", "docId"));
+partnerResourceRouter.post("/organizations/:organizationId/documents", (c) => handlePartnerResourceWrite(c, "document", "create"));
+partnerResourceRouter.patch("/organizations/:organizationId/documents/:docId", (c) => handlePartnerResourceWrite(c, "document", "update", "docId"));
 partnerResourceRouter.get("/organizations/:organizationId/calendar", (c) => handlePartnerReadCollection(c, "calendar"));
 partnerResourceRouter.get("/organizations/:organizationId/calendar/:eventId", (c) => handlePartnerReadById(c, "calendar", "eventId"));
 partnerResourceRouter.get("/organizations/:organizationId/media", handlePartnerMediaList);

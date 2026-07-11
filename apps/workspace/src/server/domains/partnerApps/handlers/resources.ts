@@ -11,6 +11,7 @@ import {
   readAuthorizedPartnerResource,
   requirePartnerResourceAccess,
   writeAuthorizedPartnerResource,
+  type PartnerApiResource,
 } from "../services/partner-resource-access";
 
 function queryInput(c: Context) {
@@ -41,7 +42,7 @@ export async function handlePartnerMe(c: Context) {
 
 export async function handlePartnerReadCollection(
   c: Context,
-  resource: Exclude<PartnerPermissionResource, "organization" | "media">,
+  resource: Exclude<PartnerApiResource, "organization" | "media">,
 ) {
   try {
     const access = await requirePartnerResourceAccess(c, resource, "read");
@@ -54,7 +55,7 @@ export async function handlePartnerReadCollection(
 
 export async function handlePartnerReadById(
   c: Context,
-  resource: Exclude<PartnerPermissionResource, "organization" | "media">,
+  resource: Exclude<PartnerApiResource, "organization" | "media">,
   idParamName: string,
 ) {
   try {
@@ -79,6 +80,23 @@ export async function handlePartnerClientWrite(
       ? await optionalJson(c)
       : { ...(await optionalJson(c) as Record<string, unknown>), clientId: c.req.param("clientId") };
     const data = await writeAuthorizedPartnerResource(access, "client", action, input);
+    return c.json({ data });
+  } catch (error) {
+    return partnerResourceAccessError(error);
+  }
+}
+
+export async function handlePartnerResourceWrite(
+  c: Context,
+  resource: Extract<PartnerApiResource, "task" | "document">,
+  action: Extract<PartnerPermissionAction, "create" | "update">,
+  idParamName?: string,
+) {
+  try {
+    const access = await requirePartnerResourceAccess(c, resource, action);
+    const body = await optionalJson(c) as Record<string, unknown>;
+    const input = idParamName ? { ...body, [idParamName]: c.req.param(idParamName) } : body;
+    const data = await writeAuthorizedPartnerResource(access, resource, action, input);
     return c.json({ data });
   } catch (error) {
     return partnerResourceAccessError(error);

@@ -12,12 +12,14 @@ import {
 } from "@/domains/clients/api/client-follow-ups";
 import { type ClientFollowUp, type FollowUpType, type FollowUpStatus } from "@/domains/clients/store/client-follow-ups.types";
 import { EditableText } from "@/components/ui/editable-text";
-import { EditableSelect } from "@/components/ui/editable-select";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, PhoneCall, Video, Mail, CheckCircle2, Clock, CheckSquare, MessageSquare } from "lucide-react";
 import { useOperationState } from "@/lib/utils/operation-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ActivityTabProps {
   client: Client;
@@ -53,8 +55,8 @@ export function ActivityTab({ client, organizationId }: ActivityTabProps) {
   const createOperation = useOperationState({ errorMessage: "Failed to create activity." });
 
   const filteredFollowUps = useMemo(() => {
-    if (filter === "all") return followUps;
-    return followUps.filter((f) => f.status === filter);
+    const matching = filter === "all" ? followUps : followUps.filter((f) => f.status === filter);
+    return [...matching].sort((left, right) => right.followUpDate - left.followUpDate);
   }, [followUps, filter]);
 
   if (followUpsQuery === undefined) {
@@ -133,19 +135,21 @@ export function ActivityTab({ client, organizationId }: ActivityTabProps) {
     <div className="space-y-6 text-start">
       {/* Header and Filter */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2 rounded-xl border border-border bg-card p-1">
+        <div className="flex items-center gap-1 border-b border-border pb-2">
           {(["all", "upcoming", "past", "completed", "canceled"] as const).map((opt) => (
-            <button
+            <Button
               key={opt}
               type="button"
+              size="sm"
+              variant="ghost"
               onClick={() => setFilter(opt)}
               className={cn(
-                "h-7 rounded-lg px-3 text-[11px] font-semibold transition-all capitalize",
-                filter === opt ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:text-foreground"
+                "h-7 rounded-md px-3 text-[11px] font-semibold capitalize shadow-none",
+                filter === opt ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
               {opt}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -153,45 +157,30 @@ export function ActivityTab({ client, organizationId }: ActivityTabProps) {
       {/* Activities list container */}
       <div className="space-y-4">
         {isAdding && (
-          <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+          <div className="space-y-3 border-y border-border py-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <input
-                type="text"
+              <Input
                 placeholder="Activity title..."
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                className="w-full bg-transparent text-sm border border-border rounded-xl px-3 h-10 outline-none focus:border-ring text-foreground font-semibold"
+                className="h-9 rounded-md text-sm font-medium shadow-none"
                 autoFocus
               />
-              <select
-                value={newType}
-                onChange={(e) => setNewType(e.target.value as FollowUpType)}
-                className="h-10 rounded-xl border border-border bg-transparent px-3 text-xs font-bold text-foreground outline-none"
-              >
-                {TYPE_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={newStatus}
-                onChange={(e) => setNewStatus(e.target.value as FollowUpStatus)}
-                className="h-10 rounded-xl border border-border bg-transparent px-3 text-xs font-bold text-foreground outline-none"
-              >
-                {STATUS_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
+              <Select value={newType} onValueChange={(value: string | null) => value && setNewType(value as FollowUpType)}>
+                <SelectTrigger size="sm" className="h-9 rounded-md bg-background px-3 text-xs shadow-none"><SelectValue /></SelectTrigger>
+                <SelectContent>{TYPE_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+              </Select>
+              <Select value={newStatus} onValueChange={(value: string | null) => value && setNewStatus(value as FollowUpStatus)}>
+                <SelectTrigger size="sm" className="h-9 rounded-md bg-background px-3 text-xs shadow-none"><SelectValue /></SelectTrigger>
+                <SelectContent>{STATUS_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
-            <textarea
+            <Textarea
               placeholder="Add activity notes or description..."
               value={newNotes}
               onChange={(e) => setNewNotes(e.target.value)}
               rows={2}
-              className="w-full bg-transparent text-sm border border-border rounded-xl px-3 py-2 outline-none focus:border-ring text-foreground resize-none"
+              className="min-h-20 resize-none rounded-md text-sm shadow-none"
             />
             <div className="flex justify-end gap-2">
               <Button size="sm" variant="outline" onClick={() => setIsAdding(false)} className="h-8 text-xs font-bold">
@@ -206,22 +195,30 @@ export function ActivityTab({ client, organizationId }: ActivityTabProps) {
 
         {filteredFollowUps.length === 0 && !isAdding && (
           <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-            No activity records found.
+            No activity or comments yet.
           </div>
         )}
 
-        {filteredFollowUps.map((fu) => {
+        {filteredFollowUps.map((fu, index) => {
           const typeOption = TYPE_OPTIONS.find((t) => t.value === fu.type);
           const TypeIcon = typeOption?.icon || MessageSquare;
           const isCompleted = fu.status === "completed";
           const date = new Date(fu.followUpDate);
           const formattedDate = date.toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+          const monthLabel = date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+          const previous = filteredFollowUps[index - 1];
+          const previousMonthLabel = previous
+            ? new Date(previous.followUpDate).toLocaleDateString(undefined, { month: "long", year: "numeric" })
+            : null;
 
           return (
-            <div
-              key={fu.id}
-              className="group flex gap-4 rounded-xl border border-border bg-card p-4 hover:border-primary/20 transition-colors"
-            >
+            <React.Fragment key={fu.id}>
+            {monthLabel !== previousMonthLabel ? (
+              <div className="sticky top-0 z-10 border-b border-border bg-background py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {monthLabel}
+              </div>
+            ) : null}
+            <div className="group flex gap-4 border-b border-border/70 py-4 transition-colors hover:bg-muted/20">
               {/* Toggle Check Icon */}
               <button
                 type="button"
@@ -239,12 +236,10 @@ export function ActivityTab({ client, organizationId }: ActivityTabProps) {
               <div className="flex-1 min-w-0 space-y-1.5">
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="flex items-center gap-1.5">
-                    <EditableSelect
-                      value={fu.type}
-                      options={TYPE_OPTIONS}
-                      onChange={(type) => handleUpdateField(fu, { type })}
-                      triggerClassName="text-[10px] font-extrabold uppercase tracking-wider py-0.5 px-2 bg-muted rounded-full"
-                    />
+                    <Select value={fu.type} onValueChange={(type: string | null) => type && handleUpdateField(fu, { type: type as FollowUpType })}>
+                      <SelectTrigger size="sm" className="h-7 w-28 rounded-md border-0 bg-muted px-2 text-[10px] font-semibold uppercase tracking-wider shadow-none"><SelectValue /></SelectTrigger>
+                      <SelectContent>{TYPE_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                    </Select>
                   </div>
                   <span className="text-[10px] text-muted-foreground">{formattedDate}</span>
                   <div className="ml-auto flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -278,19 +273,23 @@ export function ActivityTab({ client, organizationId }: ActivityTabProps) {
                 </div>
               </div>
             </div>
+            </React.Fragment>
           );
         })}
       </div>
 
       {/* Add trigger */}
       {!isAdding && (
-        <button
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
           onClick={() => setIsAdding(true)}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground font-semibold px-2 py-1 transition-colors"
+          className="h-8 gap-1.5 rounded-md px-2 text-xs font-semibold text-muted-foreground shadow-none hover:text-foreground"
         >
           <Plus className="h-3.5 w-3.5" />
-          Add Activity
-        </button>
+          Add activity or comment
+        </Button>
       )}
 
       {operation.error && <p className="text-xs text-red-500 font-bold">{operation.error}</p>}

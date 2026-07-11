@@ -30,11 +30,9 @@ function AiLogoSmall({ className }: { className?: string }) {
 }
 import {
   listOrganizationMembers,
-  getOrganizationCapabilities,
 } from "@/domains/organization/api";
 import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import { useDocsQuery } from "@/domains/docs/api/docs";
-import { useAuthSession } from "@/domains/auth";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
 import { useClientsIndexQuery } from "@/domains/clients/api/clients";
 import { useOpportunitiesQuery } from "@/domains/opportunities/api/opportunities";
@@ -86,7 +84,6 @@ const CATEGORY_ORDER = [
 
 export function MentionPicker({
   organizationId,
-  projectId,
   onSelect,
   onClose,
 }: MentionPickerProps) {
@@ -94,8 +91,6 @@ export function MentionPicker({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const containerRef = useRef<HTMLDivElement>(null);
-  const session = useAuthSession();
-  const [capabilities, setCapabilities] = useState<any>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -109,12 +104,6 @@ export function MentionPicker({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
-
-  useEffect(() => {
-    if (organizationId) {
-      getOrganizationCapabilities(organizationId).then(setCapabilities);
-    }
-  }, [organizationId]);
 
   const [users, setUsers] = useState<
     Array<{ id: string; name: string; email?: string }>
@@ -138,16 +127,13 @@ export function MentionPicker({
     }
   }, [organizationId]);
 
-  const tasksResult = useTasksQuery(organizationId, {
-    status: "all",
-    projectId: projectId || null,
-  });
-  const tasks = Array.isArray(tasksResult) ? tasksResult : [];
+  // Mentions are workspace-wide. A channel may belong to a project, but that
+  // must not hide records from the rest of the organization.
+  const tasksResult = useTasksQuery(organizationId, { status: "all" });
+  const tasks = tasksResult.data ?? [];
 
-  const docsResult = useDocsQuery(organizationId, {
-    projectId: projectId || null,
-  });
-  const documents = Array.isArray(docsResult) ? docsResult : [];
+  const docsResult = useDocsQuery(organizationId);
+  const documents = docsResult.data ?? [];
 
   const projectsResult = useProjectsIndexQuery(organizationId);
   const projects = projectsResult?.results ?? [];
@@ -157,6 +143,8 @@ export function MentionPicker({
 
   const dealsResult = useOpportunitiesQuery(organizationId);
   const deals = Array.isArray(dealsResult) ? dealsResult : [];
+  const isLoading =
+    isLoadingUsers || tasksResult.isLoading || docsResult.isLoading;
 
   // Combine ALL items across all categories into one global list
   const allItems = useMemo(() => {
@@ -303,10 +291,9 @@ export function MentionPicker({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 10, scale: 0.95 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="fixed left-0 right-0 z-50 mx-auto max-w-xl rounded-lg border border-border bg-popover shadow-2xl"
-      style={{ bottom: "100px" }}
+      className="fixed bottom-24 left-1/2 z-50 w-[min(440px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-xl"
     >
-      <div className="flex gap-1 overflow-x-auto border-b border-border px-3 pt-3">
+      <div className="flex gap-1 overflow-x-auto border-b border-border px-3 pt-2">
         {[
           { key: "all", label: "All" },
           ...CATEGORY_ORDER.map((key) => ({
@@ -322,7 +309,7 @@ export function MentionPicker({
               setSelectedIndex(0);
             }}
             className={cn(
-              "shrink-0 border-b-2 px-2 py-1.5 text-[11px] font-medium transition-colors",
+              "shrink-0 border-b-2 px-2.5 py-2 text-xs font-medium transition-colors",
               activeCategory === tab.key
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground",
@@ -334,7 +321,7 @@ export function MentionPicker({
       </div>
 
       {/* Global search */}
-      <div className="border-b border-border p-3">
+      <div className="border-b border-border p-2.5">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -345,14 +332,14 @@ export function MentionPicker({
               setSelectedIndex(0);
             }}
             placeholder="Search people, tasks, docs, projects, clients..."
-            className="pl-9 h-10 text-sm border-transparent bg-muted/50 focus:bg-background"
+            className="h-9 rounded-lg border-border bg-background pl-9 text-sm text-foreground shadow-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
           />
         </div>
       </div>
 
       {/* Results */}
-      <div className="max-h-80 overflow-y-auto">
-        {isLoadingUsers ? (
+      <div className="max-h-72 overflow-y-auto bg-popover">
+        {isLoading ? (
           <div className="flex items-center justify-center p-12">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
@@ -360,7 +347,7 @@ export function MentionPicker({
           <div className="flex flex-col items-center justify-center p-10 text-center">
             <Search className="mb-2 h-10 w-10 text-muted-foreground/30" />
             <p className="text-sm text-muted-foreground">
-              {searchQuery ? "No results found" : "No items available"}
+              {searchQuery ? "No matching workspace items" : "Your workspace is empty"}
             </p>
           </div>
         ) : (
@@ -397,7 +384,7 @@ export function MentionPicker({
                           "mx-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors",
                           isSelected
                             ? "bg-accent text-accent-foreground"
-                            : "hover:bg-accent/50 text-foreground",
+                            : "text-popover-foreground hover:bg-accent hover:text-accent-foreground",
                         )}
                       >
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
@@ -423,7 +410,7 @@ export function MentionPicker({
         )}
       </div>
 
-      <div className="border-t border-border px-4 py-2.5 text-[11px] text-muted-foreground bg-muted/30 flex items-center justify-between">
+      <div className="flex items-center justify-between border-t border-border bg-muted/40 px-4 py-2 text-[11px] text-muted-foreground">
         <span>↑↓ Navigate</span>
         <span>↵ Select</span>
         <span>Esc Close</span>

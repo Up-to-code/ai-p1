@@ -16,7 +16,6 @@ import {
   SidebarTasksPanel,
   SidebarCalendarPanel,
   SidebarClientsPanel,
-  SidebarOpportunitiesPanel,
   SidebarDealsPanel,
   SidebarDocsPanel,
 } from "./sidebar-domain-panels";
@@ -105,7 +104,6 @@ export function SidebarSecondaryPanel() {
             {activeRailItem === "tasks" && <SidebarTasksPanel />}
             {activeRailItem === "calendar" && <SidebarCalendarPanel />}
             {activeRailItem === "clients" && <SidebarClientsPanel />}
-            {activeRailItem === "opportunities" && <SidebarOpportunitiesPanel />}
             {activeRailItem === "deals" && <SidebarDealsPanel />}
             {activeRailItem === "docs" && <SidebarDocsPanel />}
             {activeRailItem === "inbox" && <SidebarInboxPanel />}

@@ -14,9 +14,10 @@ type CalendarEventInput = {
   clientId?: string;
   projectId?: string;
   taskId?: string;
+  documentId?: string;
   startAt: number;
   endAt: number;
-  type: "meeting" | "deadline" | "reminder" | "milestone" | "focusBlock";
+  type: "meeting" | "deadline" | "document" | "reminder" | "milestone" | "focusBlock";
   status: "confirmed" | "pending" | "draft";
   attendeeUserIds?: string[];
   externalAttendees?: string[];
@@ -25,6 +26,22 @@ type CalendarEventInput = {
   notes?: string;
   tags?: string[];
 };
+
+async function assertEventLinks(ctx: MutationCtx, organizationId: string, input: CalendarEventInput) {
+  const links = [
+    input.clientId ? ["clients", input.clientId, "Client"] as const : null,
+    input.projectId ? ["projects", input.projectId, "Project"] as const : null,
+    input.taskId ? ["tasks", input.taskId, "Task"] as const : null,
+    input.documentId ? ["docs", input.documentId, "Document"] as const : null,
+  ].filter((link): link is NonNullable<typeof link> => Boolean(link));
+
+  for (const [table, id, label] of links) {
+    const record = await ctx.db.get(id as Id<typeof table>);
+    if (!record || record.organizationId !== organizationId || record.deletedAt) {
+      throw new Error(`${label} was not found in this organization.`);
+    }
+  }
+}
 
 function presentEvent(event: Doc<"calendarEvents">) {
   return {
@@ -35,6 +52,7 @@ function presentEvent(event: Doc<"calendarEvents">) {
 }
 
 async function createEventCore(ctx: MutationCtx, args: { organizationId: string; input: CalendarEventInput; actorUserId: string }) {
+  await assertEventLinks(ctx, args.organizationId, args.input);
   const now = Date.now();
   const id = await ctx.db.insert("calendarEvents", {
     organizationId: args.organizationId,
@@ -54,6 +72,7 @@ async function createEventCore(ctx: MutationCtx, args: { organizationId: string;
 async function updateEventCore(ctx: MutationCtx, args: { organizationId: string; eventId: Id<"calendarEvents">; input: CalendarEventInput; actorUserId: string }) {
   const existing = await ctx.db.get(args.eventId);
   if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Calendar event was not found.");
+  await assertEventLinks(ctx, args.organizationId, args.input);
   const now = Date.now();
   await ctx.db.patch(args.eventId, { ...args.input, updatedAt: now });
 

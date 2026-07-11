@@ -9,10 +9,10 @@ import { cn } from "@/lib/utils";
 type Tone = "blue" | "green" | "amber" | "zinc";
 
 const toneClasses: Record<Tone, string> = {
-  blue: "bg-blue-500 text-white shadow-blue-500/20",
-  green: "bg-emerald-500 text-white shadow-emerald-500/20",
-  amber: "bg-amber-400 text-zinc-950 shadow-amber-400/20",
-  zinc: "bg-[var(--q-text-primary)] text-background shadow-zinc-950/10",
+  blue: "bg-[var(--q-status-inProgress-bg)] text-[var(--q-status-inProgress-text)]",
+  green: "bg-[var(--q-status-done-bg)] text-[var(--q-status-done-text)]",
+  amber: "bg-[var(--q-priority-normal-bg)] text-[var(--q-priority-normal-text)]",
+  zinc: "bg-[var(--q-accent-muted)] text-[var(--q-text-primary)]",
 };
 
 export function PublicSection({
@@ -25,7 +25,7 @@ export function PublicSection({
   className?: string;
 }) {
   return (
-    <section className={cn("px-6 py-16 md:py-24", muted ? "bg-zinc-50/80" : "bg-[var(--q-card)]", className)}>
+    <section className={cn("px-6 py-16 md:py-24", muted ? "bg-[var(--marketing-section)]/92" : "bg-[var(--marketing-canvas)]/92", className)}>
       <div className="mx-auto max-w-7xl">{children}</div>
     </section>
   );
@@ -60,9 +60,9 @@ export function SectionHeader({
 export function SectionKicker({ children, center = false }: { children: ReactNode; center?: boolean }) {
   return (
     <div className={cn("flex items-center gap-3", center && "justify-center")}>
-      <span className="h-px w-9 bg-blue-500/35" />
-      <span className="text-[10px] font-bold uppercase tracking-[0.32em] text-blue-600">{children}</span>
-      <span className={cn("h-px w-9 bg-blue-500/35", !center && "hidden")} />
+      <span className="h-px w-9 bg-[var(--q-info)]/45" />
+      <span className="text-[10px] font-bold uppercase tracking-[0.32em] text-[var(--q-info)]">{children}</span>
+      <span className={cn("h-px w-9 bg-[var(--q-info)]/45", !center && "hidden")} />
     </div>
   );
 }
@@ -81,7 +81,7 @@ export function MetricCard({
   tone?: Tone;
 }) {
   return (
-    <div className="rounded-3xl border border-[var(--q-border)] bg-[var(--q-card)] p-5 shadow-sm">
+    <div className="rounded-2xl border border-[var(--q-border)] bg-[var(--marketing-panel)] p-5 shadow-[var(--marketing-shadow)]">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--q-text-muted)]">{label}</p>
@@ -100,8 +100,8 @@ export function FeatureGrid({ items }: { items: { title: string; description: st
   return (
     <div className="grid gap-4 md:grid-cols-3">
       {items.map(({ title, description, icon: Icon }) => (
-        <div key={title} className="rounded-3xl border border-[var(--q-border)] bg-[var(--q-card)] p-6 shadow-sm">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--q-card)] text-[var(--q-text-primary)]">
+        <div key={title} className="rounded-2xl border border-[var(--q-border)] bg-[var(--marketing-panel)] p-6 shadow-[var(--marketing-shadow)] transition-colors hover:bg-[var(--marketing-panel-hover)]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--q-border)] bg-[var(--q-bg-secondary)] text-[var(--q-text-primary)]">
             <Icon className="h-5 w-5" />
           </div>
           <h3 className="mt-6 text-xl font-bold tracking-tight text-[var(--q-text-primary)]">{title}</h3>
@@ -129,7 +129,7 @@ export function LegalArticle({
         <SectionKicker>{eyebrow}</SectionKicker>
         <h1 className="mt-5 text-5xl font-black tracking-tight text-[var(--q-text-primary)] md:text-7xl">{title}</h1>
         <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em] text-[var(--q-text-muted)]">{updated}</p>
-        <article className="mt-12 rounded-[2rem] border border-[var(--q-border)] bg-[var(--q-card)] p-6 shadow-[0_24px_90px_rgba(15,23,42,0.06)] md:p-10">
+        <article className="mt-12 rounded-2xl border border-[var(--q-border)] bg-[var(--marketing-panel)] p-6 shadow-[var(--marketing-shadow)] md:p-10">
           <div className="space-y-8 text-base font-medium leading-8 text-[var(--q-text-secondary)]">
             {children}
           </div>
@@ -143,7 +143,7 @@ export function LegalBlock({ title, children }: { title: string; children: React
   return (
     <section>
       <h2 className="mb-3 flex items-center gap-3 text-2xl font-black tracking-tight text-[var(--q-text-primary)]">
-        <CheckCircle2 className="h-5 w-5 text-blue-500" />
+        <CheckCircle2 className="h-5 w-5 text-[var(--q-info)]" />
         {title}
       </h2>
       <div className="space-y-3">{children}</div>

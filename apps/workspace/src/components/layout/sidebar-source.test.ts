@@ -24,18 +24,15 @@ describe("sidebar source", () => {
     const source = readSource("src/components/layout/sidebar/config/nav.config.ts");
     const expectedItems = [
       '{ name: "home", href: "/ws", icon: Home',
-      '{ name: "inbox", href: "/inbox", icon: Inbox',
-      '{ name: "ai", icon: Bot',
+      '{ name: "inbox", href: "/ws/inbox", icon: Inbox',
       '{ name: "spaces", icon: LayoutGrid',
       '{ name: "clients", href: "/clients", icon: UserRound',
-      '{ name: "opportunities", href: "/opportunities", icon: KanbanSquare',
       '{ name: "deals", href: "/deals", icon: BadgeDollarSign',
-      '{ name: "tasks", href: "/tasks", icon: ListTodo',
-      '{ name: "calendar", href: "/calendar", icon: CalendarDays',
-      '{ name: "docs", href: "/docs", icon: FileText',
-      '{ name: "projects", href: "/spaces", icon: FolderGit2',
+      '{ name: "tasks", href: "/tasks", icon: ListLinesIcon',
+      '{ name: "calendar", href: "/calendar", icon: CalendarIcon',
+      '{ name: "docs", href: "/docs", icon: DocumentLinesIcon',
       '{ name: "integrations", icon: Plug',
-      '{ name: "organization", href: "/settings/organization", icon: Building2',
+      '{ name: "organization", href: "/organization", icon: Building2',
     ];
 
     let previousIndex = -1;
@@ -47,13 +44,14 @@ describe("sidebar source", () => {
 
     expect(source).not.toContain('{ name: "usage"');
     expect(source).not.toContain('{ name: "activity"');
+    expect(source).not.toContain('{ name: "opportunities"');
   });
 
   it("keeps sidebar message keys unique in English and Arabic", () => {
     const enSidebar = sidebarMessages(readSource("messages/en.json"));
     const arSidebar = sidebarMessages(readSource("messages/ar.json"));
 
-    for (const key of ["dashboard", "clients", "opportunities", "deals", "projects", "tasks", "docs", "calendar", "integrations", "organization", "settings"]) {
+    for (const key of ["dashboard", "clients", "deals", "projects", "tasks", "docs", "calendar", "integrations", "organization", "settings"]) {
       expect(countKey(enSidebar, key), `en:${key}`).toBe(1);
       expect(countKey(arSidebar, key), `ar:${key}`).toBe(1);
     }

@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   calendarDateOptions,
   calendarDayMonthLabel,
+  calendarEventEnd,
+  calendarEventStart,
+  calendarEventsForDate,
   calendarEventsForTimeSlot,
   calendarIsoOptionLabel,
   calendarLongDayLabel,
@@ -86,5 +89,25 @@ describe("calendar view-model", () => {
       "slot-early",
       "slot-late",
     ]);
+  });
+
+  it("keeps calendar events on their persisted date and normalizes invalid end times", () => {
+    const event = {
+      id: "event-1",
+      date: "2026-07-10",
+      time: "09:00",
+      startAt: Date.UTC(2026, 6, 10, 9),
+      endAt: Date.UTC(2026, 6, 10, 8),
+    };
+    const start = calendarEventStart(event);
+    const end = calendarEventEnd(event);
+    const events = [
+      { ...event, title: "In range" },
+      { ...event, id: "event-2", date: "2026-07-11", title: "Out of range" },
+    ] as any;
+
+    expect(start.getTime()).toBe(Date.UTC(2026, 6, 10, 9));
+    expect(end.getTime()).toBe(Date.UTC(2026, 6, 10, 9, 30));
+    expect(calendarEventsForDate(events, new Date(2026, 6, 10)).map((item) => item.id)).toEqual(["event-1"]);
   });
 });

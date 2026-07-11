@@ -2,6 +2,14 @@
 
 import { useSearchParams } from "next/navigation";
 
+const INVALID_ROUTE_PARAM_VALUES = new Set(["undefined", "null"]);
+
+export function normalizeCurrentProjectId(value: string | null): string | null {
+  const projectId = value?.trim();
+  if (!projectId || INVALID_ROUTE_PARAM_VALUES.has(projectId.toLowerCase())) return null;
+  return projectId;
+}
+
 /**
  * Returns the active projectId from the `?project=<id>` URL search param,
  * or null when in global mode (no param present).
@@ -12,7 +20,5 @@ import { useSearchParams } from "next/navigation";
  */
 export function useCurrentProjectId(): string | null {
   const searchParams = useSearchParams();
-  const id = searchParams.get("project");
-  if (typeof id === "string" && id.length > 0) return id;
-  return null;
+  return normalizeCurrentProjectId(searchParams.get("project"));
 }

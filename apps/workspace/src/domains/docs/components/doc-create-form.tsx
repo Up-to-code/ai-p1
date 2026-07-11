@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,16 +13,18 @@ import {
   ModulePanelCloseButton,
 } from "@/components/shared/module-panel";
 import { DOC_TEMPLATE_TYPES } from "../docs.constants";
+import { DocTemplateCover } from "./doc-template-cover";
 
 interface DocCreateFormProps {
   onClose: () => void;
   onSubmit: (title: string, templateId?: string) => void;
   folderId?: string | null;
+  initialTemplateId?: string;
 }
 
-export function DocCreateForm({ onClose, onSubmit }: DocCreateFormProps) {
+export function DocCreateForm({ onClose, onSubmit, initialTemplateId = "blank" }: DocCreateFormProps) {
   const [title, setTitle] = useState("");
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("blank");
+  const [selectedTemplate, setSelectedTemplate] = useState<string>(initialTemplateId);
   const [open, setOpen] = useState(true);
 
   function handleSubmit() {
@@ -37,7 +38,7 @@ export function DocCreateForm({ onClose, onSubmit }: DocCreateFormProps) {
   }
 
   return (
-    <ModulePanel open={open} onOpenChange={(next) => { if (!next) handleClose(); }} defaultWidth={480} defaultHeight={420}>
+    <ModulePanel open={open} onOpenChange={(next) => { if (!next) handleClose(); }} defaultWidth={520} defaultHeight={580}>
       <ModulePanelContent>
         <ModulePanelHeader
           center={<span className="text-sm font-semibold text-foreground">New Document</span>}
@@ -66,22 +67,23 @@ export function DocCreateForm({ onClose, onSubmit }: DocCreateFormProps) {
             </label>
             <div className="grid grid-cols-2 gap-2">
               {DOC_TEMPLATE_TYPES.map((template) => (
-                <button
+                <Button
                   key={template.id}
                   type="button"
+                  variant="outline"
                   onClick={() => setSelectedTemplate(template.id)}
                   className={cn(
-                    "flex items-center gap-2 rounded-xl border p-2.5 text-left transition-all",
+                    "h-auto min-w-0 flex-col items-stretch justify-start gap-0 overflow-hidden rounded-lg p-0 text-left text-xs transition-colors",
                     selectedTemplate === template.id
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/30",
+                      ? "border-foreground bg-muted"
+                      : "border-border bg-background hover:bg-muted/60",
                   )}
                 >
-                  <FileText className="h-4 w-4 text-text-muted shrink-0" />
-                  <span className="text-xs font-medium text-foreground">
+                  <DocTemplateCover templateId={template.id} className="aspect-[3/2] w-full border-b border-border/60" />
+                  <span className="block truncate px-3 py-2 text-xs font-medium text-foreground">
                     {template.label}
                   </span>
-                </button>
+                </Button>
               ))}
             </div>
           </div>

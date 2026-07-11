@@ -14,6 +14,7 @@ export interface EntityDetailHeaderAction {
   variant?: "ghost" | "outline" | "default" | "destructive";
   onClick: () => void;
   destructive?: boolean;
+  disabled?: boolean;
 }
 
 export interface EntityDetailHeaderField {
@@ -54,9 +55,9 @@ export function EntityDetailHeader({
   className,
 }: EntityDetailHeaderProps) {
   return (
-    <section className={cn("flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between mb-8", className)}>
+    <section className={cn("flex min-w-0 flex-col gap-5 border-b border-border bg-background px-4 py-5 sm:px-6 lg:flex-row lg:items-start lg:justify-between", className)}>
       <div className="flex min-w-0 items-start gap-5">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-foreground text-2xl font-black uppercase text-background shadow-sm">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-foreground text-lg font-semibold uppercase text-background">
           {avatarContent || name.charAt(0)}
         </div>
         <div className="min-w-0 space-y-1.5 mt-1">
@@ -64,7 +65,7 @@ export function EntityDetailHeader({
             value={title}
             onChange={onTitleChange}
             as="h1"
-            className="max-w-3xl text-3xl font-black leading-tight text-foreground tracking-tight"
+            className="max-w-3xl text-3xl font-semibold leading-tight tracking-tight text-foreground"
           />
           
           {fields.length > 0 && (
@@ -127,6 +128,7 @@ export function EntityDetailHeader({
                   )}
                   onClick={action.onClick}
                   title={action.label}
+                  disabled={action.disabled}
                 >
                   {Icon && <Icon className={action.icon ? "h-4 w-4" : "mr-2 h-3.5 w-3.5"} />}
                   {!action.icon && action.label}

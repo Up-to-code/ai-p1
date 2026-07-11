@@ -103,8 +103,8 @@ export function DashboardAuthenticatedShell({
                     minSize="45%"
                     className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-[var(--q-bg)]"
                   >
-                    <div className="flex min-h-0 flex-1 overflow-hidden">
-                      <div className="flex min-h-0 flex-1 flex-col outline-none">
+                    <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+                      <div className="flex min-h-0 min-w-0 flex-1 flex-col outline-none">
                         {children}
                       </div>
                     </div>

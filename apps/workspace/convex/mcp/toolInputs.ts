@@ -157,9 +157,10 @@ export function calendarInput(input: Input) {
     clientId: optionalRelationId(input, "clientId") as Id<"clients"> | undefined,
     projectId: optionalRelationId(input, "projectId") as Id<"projects"> | undefined,
     taskId: optionalString(input, "taskId") as Id<"tasks"> | undefined,
+    documentId: optionalString(input, "documentId") as Id<"docs"> | undefined,
     startAt: requiredNumber(input, "startAt"),
     endAt: optionalNumber(input, "endAt") ?? requiredNumber(input, "startAt"),
-    type: oneOf(input.type, ["meeting", "deadline", "reminder", "milestone", "focusBlock"] as const, "meeting"),
+    type: oneOf(input.type, ["meeting", "deadline", "document", "reminder", "milestone", "focusBlock"] as const, "meeting"),
     status: oneOf(input.status, ["confirmed", "pending", "draft"] as const, "confirmed"),
     location: optionalString(input, "location"),
     meetingUrl: optionalString(input, "meetingUrl"),
@@ -199,6 +200,7 @@ export function taskUpdateInput(input: Input, existing: Record<string, unknown>)
     status: (input.status !== undefined ? taskStatus(input) : existing.status) as "todo" | "inProgress" | "waiting" | "done" | "canceled",
     priority: (input.priority !== undefined ? priority(input) : existing.priority) as "low" | "normal" | "high" | "urgent",
     assigneeUserId: optionalString(input, "assigneeUserId") ?? (existing.assigneeUserId as string | undefined),
+    assigneeUserIds: existing.assigneeUserIds as string[] | undefined,
     clientId: (newClientId !== undefined ? newClientId : (existing.clientId as Id<"clients"> | undefined)) as Id<"clients"> | undefined,
     projectId: (newProjectId !== undefined ? newProjectId : (existing.projectId as Id<"projects"> | undefined)) as Id<"projects"> | undefined,
     spaceId: optionalString(input, "spaceId") ?? (existing.spaceId as string | undefined),
@@ -242,6 +244,10 @@ export async function assertCalendarLinks(
   if (input.taskId) {
     const task = await ctx.db.get(input.taskId as Id<"tasks">);
     assertActiveWorkspaceRecord(task, organizationId, "Task");
+  }
+  if (input.documentId) {
+    const document = await ctx.db.get(input.documentId as Id<"docs">);
+    assertActiveWorkspaceRecord(document, organizationId, "Document");
   }
 }
 

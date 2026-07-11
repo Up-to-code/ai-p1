@@ -80,6 +80,7 @@ export const calendarUpdate: WriteHandler = async (ctx: MutationCtx, args: Write
     projectId: Object.prototype.hasOwnProperty.call(args.input, "projectId") ? parsed.projectId : existing.projectId as Id<"projects"> | undefined,
     clientId: Object.prototype.hasOwnProperty.call(args.input, "clientId") ? parsed.clientId : existing.clientId as Id<"clients"> | undefined,
     taskId: Object.prototype.hasOwnProperty.call(args.input, "taskId") ? parsed.taskId : existing.taskId as Id<"tasks"> | undefined,
+    documentId: Object.prototype.hasOwnProperty.call(args.input, "documentId") ? parsed.documentId : existing.documentId as Id<"docs"> | undefined,
   };
   await assertCalendarLinks(ctx, args.organizationId, patch);
   const result = await ctx.runMutation(internal.calendar.write.updateInternal, {

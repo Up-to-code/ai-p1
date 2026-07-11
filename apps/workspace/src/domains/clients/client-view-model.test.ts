@@ -11,6 +11,7 @@ import {
   clientTaskDueDateLabel,
   clientTaskStatusTone,
   clientTaskUpdatePayload,
+  clientToFormValues,
   displayedClientsForView,
   isActivePipelineStage,
   matchesClientSearch,
@@ -24,6 +25,37 @@ const clients = [
 ];
 
 describe("client view-model", () => {
+  it("preserves editable CRM fields when preparing an update", () => {
+    const values = clientToFormValues({
+      name: "Meridian Group",
+      type: "organization",
+      contact: "hello@meridian.test",
+      phone: "+20 100 000 0000",
+      company: "Meridian",
+      contactName: "Nadia",
+      website: "https://meridian.test",
+      source: "referral",
+      lastContact: "2026-07-10",
+      budget: "25000",
+      assetInterest: "Operations retainer",
+      status: "active",
+      pipelineStage: "qualified",
+      priority: "high",
+      visibility: "team",
+      notes: "Important account",
+      tags: ["VIP"],
+    } as any);
+
+    expect(values).toMatchObject({
+      company: "Meridian",
+      contactName: "Nadia",
+      website: "https://meridian.test",
+      source: "referral",
+      lastContact: "2026-07-10",
+      notes: "Important account",
+    });
+  });
+
   it("matches client search fields", () => {
     expect(matchesClientSearch(clients[0], "")).toBe(true);
     expect(matchesClientSearch(clients[0], "workspace")).toBe(true);

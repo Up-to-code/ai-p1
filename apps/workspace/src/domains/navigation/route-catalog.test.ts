@@ -17,11 +17,12 @@ describe("route catalog", () => {
     expect(getRouteId("/organization-extra")).toBeNull();
   });
 
-  it("restores the legacy domain panels for direct and nested routes", () => {
+  it("maps legacy opportunity routes to the canonical Deals rail item", () => {
     expect(getActiveRailItem("/clients")).toBe("clients");
     expect(getActiveRailItem("/clients/123")).toBe("clients");
-    expect(getActiveRailItem("/opportunities")).toBe("opportunities");
-    expect(getActiveRailItem("/opportunities/123")).toBe("opportunities");
+    expect(getRouteId("/opportunities")).toBe("deals");
+    expect(getActiveRailItem("/opportunities")).toBe("deals");
+    expect(getActiveRailItem("/opportunities/123")).toBe("deals");
     expect(getActiveRailItem("/deals")).toBe("deals");
     expect(getActiveRailItem("/deals/123")).toBe("deals");
   });

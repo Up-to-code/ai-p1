@@ -276,14 +276,23 @@ export function clientPayloadFromForm(values: ClientFormValues) {
     type,
     email: values.contact,
     phone: values.phone,
-    source: values.assetInterest || "manual",
+    contact: values.contact,
+    company: values.company || undefined,
+    contactName: values.contactName || undefined,
+    website: values.website || undefined,
+    source: values.source || "manual",
+    priority: values.priority,
+    budget: values.budget || undefined,
+    assetInterest: values.assetInterest || undefined,
+    lastContact: values.lastContact || undefined,
     status: values.status,
     visibility: visibility ?? "private",
     pipelineStage: values.pipelineStage,
     pipelineOrder: typeof values.pipelineOrder === "number" && Number.isFinite(values.pipelineOrder)
       ? values.pipelineOrder
       : undefined,
-    notes: [values.nextAction, values.issue].filter(Boolean).join("\n") || values.assetInterest || undefined,
+    notes: values.notes || [values.nextAction, values.issue].filter(Boolean).join("\n") || undefined,
+    tags: values.tags,
   };
 }
 

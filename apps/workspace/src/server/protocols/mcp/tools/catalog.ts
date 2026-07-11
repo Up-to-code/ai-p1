@@ -52,7 +52,7 @@ const projectStatus = z.enum(["planned", "active", "paused", "completed", "archi
 const projectHealth = z.enum(["onTrack", "atRisk", "blocked"]).optional();
 const dealStage = z.enum(["lead", "qualified", "proposal_sent", "contract_sent", "won", "lost"]).optional();
 const dealStatus = z.enum(["open", "won", "lost", "paused"]).optional();
-const calendarType = z.enum(["meeting", "deadline", "reminder", "milestone", "focusBlock"]).optional();
+const calendarType = z.enum(["meeting", "deadline", "document", "reminder", "milestone", "focusBlock"]).optional();
 const calendarStatus = z.enum(["confirmed", "pending", "draft"]).optional();
 const taskStatus = z.enum(["todo", "inProgress", "waiting", "done", "canceled", "pending", "progress", "submitted", "failed", "success", "inReview", "expire"]).optional();
 const priority = z.enum(["low", "normal", "high", "urgent"]).optional();
@@ -463,6 +463,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
       status: calendarStatus,
       location: maybeText,
       meetingUrl: maybeText,
+      documentId: maybeText,
       notes: maybeText,
     },
   },
@@ -482,6 +483,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
       status: calendarStatus,
       location: maybeText,
       meetingUrl: maybeText,
+      documentId: maybeText,
       notes: maybeText,
     },
   },

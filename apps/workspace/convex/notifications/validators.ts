@@ -1,5 +1,37 @@
 import { v } from "convex/values";
 
+export const notificationEventKindValidator = v.union(
+  v.literal("task_assigned"),
+  v.literal("mentioned"),
+);
+
+export const notificationEventResourceTypeValidator = v.union(
+  v.literal("task"),
+  v.literal("message"),
+  v.literal("document"),
+  v.literal("project"),
+  v.literal("client"),
+  v.literal("deal"),
+  v.literal("file"),
+);
+
+export const notificationEventValidator = v.object({
+  _id: v.id("notificationEvents"),
+  _creationTime: v.number(),
+  organizationId: v.string(),
+  recipientUserId: v.string(),
+  actorUserId: v.string(),
+  kind: notificationEventKindValidator,
+  resourceType: notificationEventResourceTypeValidator,
+  resourceId: v.string(),
+  title: v.string(),
+  body: v.optional(v.string()),
+  href: v.string(),
+  dedupeKey: v.string(),
+  readAt: v.optional(v.number()),
+  createdAt: v.number(),
+});
+
 export const notificationCategoryValidator = v.union(
   v.literal("calendar"),
   v.literal("task"),

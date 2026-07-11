@@ -17,6 +17,7 @@ import { handleCreateClient, handleDeleteClient, handleUpdateClient } from "@/se
 import { handleCreateClientTask, handleDeleteClientTask, handleUpdateClientTask } from "@/server/domains/clientTasks/handlers/client-tasks";
 import { handleAssignTasksToProject } from "@/server/domains/clientTasks/handlers/assign-to-project";
 import { handleCreateFollowUp, handleDeleteFollowUp, handleMarkFollowUpComplete, handleUpdateFollowUp } from "@/server/domains/clientFollowUps/handlers/follow-ups";
+import { handleCreateInvoice, handleDeleteInvoice, handleUpdateInvoice } from "@/server/domains/clientInvoices/handlers/invoices";
 import { handleCreateCalendarEvent, handleDeleteCalendarEvent, handleUpdateCalendarEvent } from "@/server/domains/calendar/handlers/calendar";
 import { handleCreateTheory, handleUpdateTheory, handleDeleteTheory } from "@/server/domains/theories/handlers/theories";
 import { handleCreateDoc, handleUpdateDoc, handleDeleteDoc, handleMoveDoc } from "@/server/domains/docs/handlers/docs";
@@ -114,6 +115,10 @@ crudSubRouter.post("/:organizationId/client-follow-ups", handleCreateFollowUp);
 crudSubRouter.patch("/:organizationId/client-follow-ups/:followUpId", handleUpdateFollowUp);
 crudSubRouter.delete("/:organizationId/client-follow-ups/:followUpId", handleDeleteFollowUp);
 crudSubRouter.patch("/:organizationId/client-follow-ups/:followUpId/complete", handleMarkFollowUpComplete);
+
+crudSubRouter.post("/:organizationId/client-invoices", handleCreateInvoice);
+crudSubRouter.patch("/:organizationId/client-invoices/:invoiceId", handleUpdateInvoice);
+crudSubRouter.delete("/:organizationId/client-invoices/:invoiceId", handleDeleteInvoice);
 
 crudSubRouter.post("/:organizationId/calendar-events", handleCreateCalendarEvent);
 crudSubRouter.patch("/:organizationId/calendar-events/:eventId", handleUpdateCalendarEvent);

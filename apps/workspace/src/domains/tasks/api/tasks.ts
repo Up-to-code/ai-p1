@@ -65,7 +65,7 @@ export function useTasksQuery(organizationId?: string, options?: { status?: Task
     return tasks.filter((task) => {
       if (status && status !== "all" && normalizeTaskStatus(task.status) !== normalizeTaskStatus(status)) return false;
       if (search) {
-        const haystack = [task.title, task.description, task.assigneeUserId, ...(task.tags ?? [])];
+        const haystack = [task.title, task.description, task.assigneeUserId, ...(task.assigneeUserIds ?? []), ...(task.tags ?? [])];
         if (!haystack.some((v) => v?.toLowerCase().includes(search))) return false;
       }
       return true;
@@ -132,7 +132,7 @@ export function useTaskStatsQuery(organizationId?: string) {
 export function useTaskQuery(organizationId: string | undefined, taskId: string) {
   const task = useQuery(
     api.clientTasks.read.get,
-    organizationId && taskId ? { organizationId, taskId: taskId as any } : "skip",
+    organizationId && taskId ? { organizationId, taskId } : "skip",
   );
   return { data: task ?? null, isLoading: task === undefined, isError: false, error: undefined as string | undefined, refetch: () => {} };
 }
@@ -145,9 +145,11 @@ export function taskPayloadFromForm(values: TaskFormValues) {
     priority: values.priority,
     visibility: values.visibility,
     assigneeUserId: values.assigneeUserId || undefined,
+    assigneeUserIds: values.assigneeUserIds?.length ? values.assigneeUserIds : undefined,
     clientId: values.clientId || undefined,
     projectId: values.projectId || undefined,
     spaceId: values.spaceId || undefined,
+    startDate: values.startDate || undefined,
     dueDate: values.dueDate || undefined,
     description: values.description || undefined,
     tags: values.tags.split(",").map((tag) => tag.trim()).filter(Boolean),

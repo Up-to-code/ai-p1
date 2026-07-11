@@ -4,19 +4,25 @@ import type { DatabaseReader, MutationCtx } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import { resolveTaskAccess, type TaskScopeInput } from "../access/task";
 import { cancelQueuedJobsForSource, scheduleTaskReminders } from "../notifications/helpers";
+import {
+  emitRichTextMentionEvents,
+  emitTaskAssignmentEvents,
+} from "../notifications/inbox_events";
 import { clientTaskInputValidator, clientTaskValidator } from "./validators";
 import { updateProjectRollup, validateStrictTaskDates } from "../projects/rollup";
 
 type ClientTaskInput = {
   title: string;
-  status: "todo" | "inProgress" | "waiting" | "done" | "canceled";
+  status: string;
   pipelineOrder?: number;
   visibility?: "private" | "team" | "workspace";
   priority: "normal" | "high" | "urgent" | "low";
   assigneeUserId?: string;
+  assigneeUserIds?: string[];
   clientId?: string;
   projectId?: string;
   spaceId?: string;
+  startDate?: string;
   dueDate?: string;
   description?: string;
   tags?: string[];
@@ -34,9 +40,11 @@ function taskInputFromExisting(task: ClientTaskInput & { visibility?: ClientTask
     visibility: task.visibility,
     priority: task.priority,
     assigneeUserId: task.assigneeUserId,
+    assigneeUserIds: task.assigneeUserIds,
     clientId: task.clientId,
     projectId: task.projectId,
     spaceId: task.spaceId,
+    startDate: task.startDate,
     dueDate: task.dueDate,
     description: task.description,
     tags: task.tags,
@@ -109,6 +117,22 @@ async function createTaskCore(ctx: MutationCtx, args: { organizationId: string; 
   const task = await ctx.db.get(id);
   if (!task) throw new Error("Task could not be created.");
   await scheduleTaskReminders(ctx, task);
+  await emitTaskAssignmentEvents(ctx, {
+    organizationId: args.organizationId,
+    actorUserId: args.actorUserId,
+    previous: null,
+    task,
+  });
+  await emitRichTextMentionEvents(ctx, {
+    organizationId: args.organizationId,
+    actorUserId: args.actorUserId,
+    nextHtml: task.description,
+    resourceType: "task",
+    resourceId: task._id,
+    resourceTitle: task.title,
+    href: `/tasks/${task._id}`,
+    sourceVersion: task.updatedAt,
+  });
   return { presented: presentTask(task), now };
 }
 
@@ -146,6 +170,23 @@ async function updateTaskCore(ctx: MutationCtx, args: { organizationId: string; 
   const task = await ctx.db.get(args.taskId);
   if (!task) throw new Error("Task was not found.");
   await scheduleTaskReminders(ctx, task);
+  await emitTaskAssignmentEvents(ctx, {
+    organizationId: args.organizationId,
+    actorUserId: args.actorUserId,
+    previous: existing,
+    task,
+  });
+  await emitRichTextMentionEvents(ctx, {
+    organizationId: args.organizationId,
+    actorUserId: args.actorUserId,
+    previousHtml: existing.description,
+    nextHtml: task.description,
+    resourceType: "task",
+    resourceId: task._id,
+    resourceTitle: task.title,
+    href: `/tasks/${task._id}`,
+    sourceVersion: task.updatedAt,
+  });
   return { presented: presentTask(task), now };
 }
 

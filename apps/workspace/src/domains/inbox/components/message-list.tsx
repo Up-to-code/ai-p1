@@ -53,6 +53,8 @@ interface MessageListProps {
     content: string;
   };
   isLoading?: boolean;
+  activeTab: "all" | "my";
+  searchQuery: string;
 }
 
 function stripHtml(content: string) {
@@ -146,7 +148,7 @@ function getMessagePreview(content: string) {
   return stripHtml(content).replace(/\s+/g, " ").trim();
 }
 
-function TabBar({
+export function MessageListControls({
   activeTab,
   onTabChange,
   searchOpen,
@@ -164,12 +166,12 @@ function TabBar({
   trailingText?: string;
 }) {
   return (
-    <div className="shrink-0 border-b border-border/50 px-4 py-2 flex items-center gap-2 bg-background">
+    <div className="flex min-w-0 items-center gap-1">
       <button
         type="button"
         onClick={() => onTabChange("all")}
         className={cn(
-          "h-8 px-3 text-[13px] rounded-md transition-colors",
+          "h-8 px-2.5 text-[12px] rounded-md transition-colors",
           activeTab === "all"
             ? "bg-muted text-foreground font-medium"
             : "text-muted-foreground hover:text-foreground",
@@ -189,14 +191,13 @@ function TabBar({
       >
         My Messages
       </button>
-      <div className="flex-1" />
       {searchOpen && (
         <input
           autoFocus
           value={searchQuery}
           onChange={(event) => onSearchQueryChange(event.target.value)}
           placeholder="Search this channel"
-          className="h-8 w-56 rounded-md border border-border bg-background px-2 text-[12px] text-foreground outline-none ring-0 transition-all placeholder:text-muted-foreground focus:border-primary/50"
+          className="h-8 w-44 rounded-md border border-border bg-background px-2 text-[12px] text-foreground outline-none ring-0 transition-all placeholder:text-muted-foreground focus:border-primary/50"
         />
       )}
       <Button
@@ -262,6 +263,8 @@ export function MessageList({
   isLoadingMore = false,
   aiDraft,
   isLoading = false,
+  activeTab,
+  searchQuery,
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -270,9 +273,6 @@ export function MessageList({
   const previousChannelLastMessageRef = useRef<string | null>(null);
   const wasNearBottomRef = useRef(true);
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"all" | "my">("all");
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const session = useAuthSession();
 
   const { data: orgMembers } = useQuery({
@@ -413,19 +413,6 @@ export function MessageList({
   if (isLoading) {
     return (
       <div className="flex flex-col h-full">
-        <TabBar
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          searchOpen={searchOpen}
-          searchQuery={searchQuery}
-          onSearchOpenChange={(open) => {
-            setSearchOpen(open);
-            if (!open) setSearchQuery("");
-          }}
-          onSearchQueryChange={setSearchQuery}
-          trailingText="Loading..."
-        />
-
         {/* Loading skeleton */}
         <div className="flex-1 overflow-auto p-4 space-y-4">
           {[1, 2, 3, 4, 5].map((i) => (
@@ -449,19 +436,6 @@ export function MessageList({
         : "No messages yet. Start the conversation!";
     return (
       <div className="flex flex-col h-full">
-        <TabBar
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          searchOpen={searchOpen}
-          searchQuery={searchQuery}
-          onSearchOpenChange={(open) => {
-            setSearchOpen(open);
-            if (!open) setSearchQuery("");
-          }}
-          onSearchQueryChange={setSearchQuery}
-          trailingText="0 messages"
-        />
-
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="text-center">
             <div className="text-4xl mb-4">💬</div>
@@ -474,19 +448,6 @@ export function MessageList({
 
   return (
     <div className="flex flex-col h-full">
-      <TabBar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        searchOpen={searchOpen}
-        searchQuery={searchQuery}
-        onSearchOpenChange={(open) => {
-          setSearchOpen(open);
-          if (!open) setSearchQuery("");
-        }}
-        onSearchQueryChange={setSearchQuery}
-        trailingText={`${displayedMessages.length} ${displayedMessages.length === 1 ? "message" : "messages"}`}
-      />
-
       {/* Scrollable message list */}
       <div
         ref={messagesContainerRef}
@@ -542,11 +503,7 @@ export function MessageList({
           return (
             <div
               key={message.clientMessageId ?? message.id}
-              className={cn(replyToMessage && "relative")}
             >
-              {replyToMessage && (
-                <div className="absolute left-[18px] top-10 bottom-1 w-px bg-border" />
-              )}
               <div
                 className="group relative hover:bg-muted/30 rounded-lg px-2 py-1 -mx-2"
                 onMouseEnter={() => setHoveredMessageId(message.id)}
@@ -555,36 +512,26 @@ export function MessageList({
                 <div className="flex gap-3">
                   {isAiMessage ? (
                     <div
-                      className={cn(
-                        "mt-0.5 flex shrink-0 items-center justify-center",
-                        replyToMessage ? "ml-1.5 h-7 w-7" : "h-10 w-10",
-                      )}
+                      className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src="/ai/logo.png"
                         alt=""
-                        width={replyToMessage ? 22 : 28}
-                        height={replyToMessage ? 22 : 28}
+                        width={26}
+                        height={26}
                         className="object-contain"
                       />
                     </div>
                   ) : (
                     <Avatar
-                      className={cn(
-                        "shrink-0 mt-0.5",
-                        replyToMessage ? "h-7 w-7 ml-1.5" : "h-10 w-10",
-                      )}
+                      className="mt-0.5 h-9 w-9 shrink-0"
                     >
                       {userAvatar ? (
                         <AvatarImage src={userAvatar} alt={userName} />
                       ) : null}
                       <AvatarFallback
-                        className={cn(
-                          "font-semibold",
-                          replyToMessage ? "text-[10px]" : "text-xs",
-                          "bg-primary text-primary-foreground",
-                        )}
+                        className="bg-primary text-xs font-semibold text-primary-foreground"
                       >
                         {userName.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
@@ -618,12 +565,13 @@ export function MessageList({
                       <button
                         type="button"
                         onClick={() => onReply?.(replyToMessage.id)}
-                        className="relative mb-2 block max-w-2xl border-l border-border pl-3 text-left"
+                        className="mb-1.5 flex max-w-2xl items-center gap-1.5 text-left text-[11px] text-muted-foreground hover:text-foreground"
                       >
-                        <span className="block text-[11px] font-semibold text-muted-foreground">
-                          Reply to {getUserName(replyToMessage.authorId)}
+                        <Reply className="h-3 w-3 shrink-0" />
+                        <span className="shrink-0 font-medium">
+                          {getUserName(replyToMessage.authorId)}:
                         </span>
-                        <span className="line-clamp-1 text-[12px] text-muted-foreground/80">
+                        <span className="line-clamp-1 min-w-0 text-muted-foreground/80">
                           {getMessagePreview(replyToMessage.content)}
                         </span>
                       </button>

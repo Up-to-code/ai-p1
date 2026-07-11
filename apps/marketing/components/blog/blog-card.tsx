@@ -18,7 +18,7 @@ export function BlogCard({ post, locale }: BlogCardProps) {
   return (
     <Link
       href={`/${locale}/blog/${post.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-[var(--q-border)] bg-[var(--q-card)] transition-all hover:shadow-lg"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-[var(--q-border)] bg-[var(--marketing-panel)] shadow-[var(--marketing-shadow)] transition-all hover:border-[var(--q-border-strong)] hover:bg-[var(--marketing-panel-hover)]"
     >
       {cardImage && (
         <div className="relative aspect-[16/9] overflow-hidden">
@@ -32,7 +32,7 @@ export function BlogCard({ post, locale }: BlogCardProps) {
       )}
       <div className="flex flex-1 flex-col p-6">
         {post.category && (
-          <span className="mb-2 inline-block w-fit rounded-full bg-[var(--q-accent)]/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--q-accent)]">
+          <span className="mb-2 inline-block w-fit rounded-md border border-[var(--q-border)] bg-[var(--q-bg-secondary)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--q-text-secondary)]">
             {post.category}
           </span>
         )}

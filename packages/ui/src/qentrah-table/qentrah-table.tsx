@@ -54,6 +54,7 @@ export interface QentrahTableProps<TRow> {
   getRowId?: (row: TRow) => string
   onCellValueChanged?: GridOptions<TRow>["onCellValueChanged"]
   onRowClicked?: GridOptions<TRow>["onRowClicked"]
+  onSelectionChanged?: GridOptions<TRow>["onSelectionChanged"]
   onGridReady?: (event: GridReadyEvent<TRow>) => void
   emptyMessage?: string
   rowClass?: (params: RowClassParams<TRow>) => string | string[] | undefined
@@ -66,6 +67,12 @@ export interface QentrahTableProps<TRow> {
    * Default true. Set to false when doing in-place cell edits to avoid jump.
    */
   animateRows?: boolean
+  /** Enables AG Grid's built-in client-side pagination. */
+  pagination?: boolean
+  /** Number of rows per page when pagination is enabled. */
+  paginationPageSize?: number
+  /** Page-size choices shown in the pagination footer. */
+  paginationPageSizeSelector?: number[] | false
 }
 
 export type QentrahColumnDef<TRow> = ColDef<TRow> & {
@@ -94,6 +101,7 @@ const QentrahTableInner = <TRow extends { id: string }>(
     getRowId = defaultGetRowId,
     onCellValueChanged,
     onRowClicked,
+    onSelectionChanged,
     onGridReady,
     emptyMessage = "No rows to show",
     rowClass,
@@ -102,6 +110,9 @@ const QentrahTableInner = <TRow extends { id: string }>(
     className,
     getRowHeight,
     animateRows = true,
+    pagination = false,
+    paginationPageSize = 20,
+    paginationPageSizeSelector = [10, 20, 50],
   } = props
 
   const apiRef = useRef<GridApi<TRow> | null>(null)
@@ -244,6 +255,7 @@ const QentrahTableInner = <TRow extends { id: string }>(
         stopEditingWhenCellsLoseFocus
         onCellValueChanged={onCellValueChanged}
         onRowClicked={onRowClicked}
+        onSelectionChanged={onSelectionChanged}
         onGridReady={(event) => {
           apiRef.current = event.api
           setIsReady(true)
@@ -253,6 +265,9 @@ const QentrahTableInner = <TRow extends { id: string }>(
         getRowClass={rowClass}
         suppressMovableColumns={false}
         suppressMenuHide={false}
+        pagination={pagination}
+        paginationPageSize={paginationPageSize}
+        paginationPageSizeSelector={paginationPageSizeSelector}
       />
       <QentrahTableStyles />
       {!isReady && <div className="qentrah-table-skeleton" aria-hidden />}

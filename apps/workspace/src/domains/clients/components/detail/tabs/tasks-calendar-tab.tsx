@@ -5,8 +5,6 @@ import { type Client } from "../../../store/clients.types";
 import { useClientTasksQuery, createClientTaskRequest, updateClientTaskRequest, deleteClientTaskRequest, type ClientTaskPayload } from "@/domains/clients/api/client-tasks";
 import { useCalendarEventsQuery } from "@/domains/calendar/api/calendar";
 import { EditableText } from "@/components/ui/editable-text";
-import { EditableSelect } from "@/components/ui/editable-select";
-import { type NotionColorKey } from "@/lib/color-utils";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Calendar, CheckSquare, Square, AlertCircle, Clock, CheckCircle2, Loader2, Edit3, AlignLeft } from "lucide-react";
 import { useOperationState } from "@/lib/utils/operation-state";
@@ -22,6 +20,9 @@ import {
 } from "@/components/ui/dialog";
 import { YooptaRichTextEditor } from "@/components/shared/yoopta-rich-text-editor";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface TasksCalendarTabProps {
   client: Client;
@@ -35,13 +36,6 @@ const PRIORITY_OPTIONS = [
   { label: "Urgent", value: "urgent" as const },
 ];
 
-const defaultPriorityColors: Record<"low" | "normal" | "high" | "urgent", NotionColorKey> = {
-  low: "gray",
-  normal: "blue",
-  high: "orange",
-  urgent: "red",
-};
-
 const VISIBILITY_OPTIONS = [
   { label: "Private", value: "private" as const },
   { label: "Only Me (Owner)", value: "owner" as const },
@@ -50,13 +44,17 @@ const VISIBILITY_OPTIONS = [
   { label: "Public Link", value: "public" as const },
 ];
 
-const defaultVisibilityColors: Record<string, NotionColorKey> = {
-  private: "gray",
-  owner: "purple",
-  team: "blue",
-  member: "orange",
-  public: "green",
-};
+function eventDateTime(event: { date: string; time: string; startAt?: number }) {
+  if (!event.startAt || !event.date.startsWith("1970-")) {
+    return { date: event.date, time: event.time };
+  }
+  const timestamp = event.startAt < 100_000_000_000 ? event.startAt * 1_000 : event.startAt;
+  const date = new Date(timestamp);
+  return {
+    date: date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }),
+    time: date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }),
+  };
+}
 
 export function TasksCalendarTab({ client, organizationId }: TasksCalendarTabProps) {
   const t = useTranslations("Clients");
@@ -95,7 +93,7 @@ export function TasksCalendarTab({ client, organizationId }: TasksCalendarTabPro
             <Skeleton className="h-5 w-32" />
             <Skeleton className="h-5 w-16 rounded-full" />
           </div>
-          <div className="border border-border rounded-xl bg-card overflow-hidden divide-y divide-border">
+          <div className="overflow-hidden border-y border-border divide-y divide-border">
             {[1, 2, 3].map((i) => (
               <div key={i} className="p-3.5">
                 <Skeleton className="h-6 w-full" />
@@ -196,7 +194,7 @@ export function TasksCalendarTab({ client, organizationId }: TasksCalendarTabPro
         </div>
 
         {/* Task List container */}
-        <div className="border border-border rounded-xl bg-card overflow-hidden divide-y divide-border">
+        <div className="overflow-hidden border-y border-border divide-y divide-border">
           {clientTasks.length === 0 && (
             <div className="p-8 text-center text-sm text-muted-foreground">
               No tasks created for this client yet.
@@ -268,13 +266,19 @@ export function TasksCalendarTab({ client, organizationId }: TasksCalendarTabPro
                     {/* Priority select */}
                     <div className="flex items-center gap-1">
                       <AlertCircle className="h-3.5 w-3.5 text-muted-foreground/60" />
-                      <EditableSelect
-                        value={task.priority}
-                        options={PRIORITY_OPTIONS}
-                        onChange={(priority) => handleUpdateTaskField(task, { priority })}
-                        colorMapType="task_priority"
-                        defaultColors={defaultPriorityColors}
-                      />
+                      <Select
+                        value={task.priority || "normal"}
+                        onValueChange={(priority: string | null) => priority && handleUpdateTaskField(task, { priority: priority as ClientTaskPayload["priority"] })}
+                      >
+                        <SelectTrigger size="sm" className="h-7 w-24 rounded-md border-0 bg-transparent px-2 text-xs shadow-none hover:bg-muted">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PRIORITY_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
@@ -323,23 +327,24 @@ export function TasksCalendarTab({ client, organizationId }: TasksCalendarTabPro
               No calendar events linked to this client.
             </div>
           ) : (
-            visibleEvents.map((event) => (
-              <div key={event.id} className="rounded-xl border border-border bg-card p-4 hover:border-primary/20 transition-colors">
+            visibleEvents.map((event) => {
+              const displayDateTime = eventDateTime(event);
+              return <div key={event.id} className="border-b border-border/70 px-1 py-4 transition-colors hover:bg-muted/20">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary capitalize">
                     {event.type}
                   </span>
                   <span className="text-[10px] text-muted-foreground ml-auto flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    {event.date} · {event.time}
+                    {displayDateTime.date} · {displayDateTime.time}
                   </span>
                 </div>
                 <h4 className="text-sm font-semibold text-foreground mb-1">{event.title}</h4>
                 {event.location && (
                   <p className="text-xs text-muted-foreground">Location: {event.location}</p>
                 )}
-              </div>
-            ))
+              </div>;
+            })
           )}
 
           {events.length > visibleEventsCount && (
@@ -357,7 +362,7 @@ export function TasksCalendarTab({ client, organizationId }: TasksCalendarTabPro
 
       {/* Task Modal */}
       <Dialog open={isTaskModalOpen} onOpenChange={setIsTaskModalOpen}>
-        <DialogContent className="sm:max-w-[625px] p-6 gap-4 animate-in fade-in-0 zoom-in-95 duration-150">
+        <DialogContent className="gap-4 p-6 shadow-none sm:max-w-[625px]">
           <DialogHeader>
             <DialogTitle className="text-lg font-black tracking-tight">
               {editingTaskId ? "Edit Task" : "Quick Task"}
@@ -371,12 +376,11 @@ export function TasksCalendarTab({ client, organizationId }: TasksCalendarTabPro
             {/* Title */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Task Title</label>
-              <input
-                type="text"
+              <Input
                 placeholder="E.g., Follow up on latest proposal..."
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary transition-all font-medium text-foreground dark:bg-black/20"
+                className="h-9 rounded-md shadow-none"
                 autoFocus
               />
             </div>
@@ -385,38 +389,32 @@ export function TasksCalendarTab({ client, organizationId }: TasksCalendarTabPro
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5 flex flex-col">
                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Priority</label>
-                <div className="h-9 flex items-center px-3 rounded-lg border border-border bg-background dark:bg-black/20 min-w-0 overflow-hidden shrink-0">
-                  <EditableSelect
-                    value={newPriority}
-                    options={PRIORITY_OPTIONS}
-                    onChange={setNewPriority}
-                    colorMapType="task_priority"
-                    defaultColors={defaultPriorityColors}
-                  />
-                </div>
+                <Select value={newPriority} onValueChange={(value: string | null) => value && setNewPriority(value as typeof newPriority)}>
+                  <SelectTrigger size="sm" className="h-9 rounded-md bg-background px-3 shadow-none"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PRIORITY_OPTIONS.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5 flex flex-col">
                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Visibility</label>
-                <div className="h-9 flex items-center px-3 rounded-lg border border-border bg-background dark:bg-black/20 min-w-0 overflow-hidden shrink-0">
-                  <EditableSelect
-                    value={newVisibility}
-                    options={VISIBILITY_OPTIONS}
-                    onChange={setNewVisibility}
-                    colorMapType="visibility"
-                    defaultColors={defaultVisibilityColors}
-                  />
-                </div>
+                <Select value={newVisibility} onValueChange={(value: string | null) => value && setNewVisibility(value)}>
+                  <SelectTrigger size="sm" className="h-9 rounded-md bg-background px-3 shadow-none"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {VISIBILITY_OPTIONS.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Due Date</label>
-                <input
-                  type="date"
-                  value={newDueDate}
-                  onChange={(e) => setNewDueDate(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-primary transition-all text-foreground dark:bg-black/20 dark:[color-scheme:dark]"
+                <DatePicker
+                  date={newDueDate ? new Date(`${newDueDate}T12:00:00`) : undefined}
+                  setDate={(date) => setNewDueDate(date ? date.toISOString().slice(0, 10) : "")}
+                  className="h-9 w-full rounded-md shadow-none"
+                  contentClassName="rounded-md shadow-none"
                 />
               </div>
             </div>

@@ -1,15 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, ChevronRight, Circle, GripVertical, ListFilter, Plus, Save, X } from "lucide-react";
+import { Check, CheckCircle2, ChevronDown, ChevronRight, Circle, Expand, GripVertical, ListFilter, MoreHorizontal, Plus, Search, Save, Trash2, UserRound, X } from "lucide-react";
 import {
-  AssigneeEditor,
   DateEditor,
   NameCell,
   PriorityEditor,
   QentrahTable,
   StatusEditor,
-  type AssigneeOption,
   type QentrahColumnDef,
   type QentrahTableRef,
 } from "@qentrah/ui/qentrah-table";
@@ -23,6 +21,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { WorkOsPickerOption } from "@/domains/work-os/components/work-os-record-picker";
+import { TaskTableFieldsPanel } from "../task-table-fields-panel";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const TASK_TABLE_COLUMN_DEFAULTS = {
   filter: false,
@@ -34,6 +35,13 @@ const TASK_TABLE_COLUMN_DEFAULTS = {
 const TASK_TABLE_ROW_HEIGHT = 36;
 const TASK_TABLE_COLUMNS = "48px minmax(240px,1.4fr) 180px 150px 160px 150px minmax(160px,0.9fr) 48px";
 
+function plainText(value: string | undefined) {
+  return value
+    ?.replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 type TaskCreateDefaults = Pick<Partial<TaskRecord>, "status" | "priority">;
 type TaskGroupBy = "none" | "status" | "priority";
 type SortDirection = "ascending" | "descending";
@@ -44,9 +52,108 @@ interface TaskTableViewProps {
   organizationId?: string;
   projectId?: string | null;
   spaceId?: string | null;
+  memberOptions?: WorkOsPickerOption[];
+  onTaskOpen?: (taskId: string) => void;
   onTaskUpdate?: (task: TaskRecord, changes: Partial<TaskRecord>) => void | Promise<void>;
+  onTaskDelete?: (task: TaskRecord) => void | Promise<void>;
   onTaskCreate?: (title: string, defaults?: TaskCreateDefaults) => void | Promise<void>;
   onTaskMove?: (itemId: string, fromStage: string, toStage: string, targetIndex: number) => void;
+}
+
+function DescriptionCell({ task, onCommit }: { task: TaskRecord; onCommit: (value: string) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(() => plainText(task.description) ?? "");
+
+  function commit() {
+    setEditing(false);
+    if (draft !== (plainText(task.description) ?? "")) onCommit(draft);
+  }
+
+  if (editing) {
+    return (
+      <textarea
+        autoFocus
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if ((event.metaKey || event.ctrlKey) && event.key === "Enter") commit();
+          if (event.key === "Escape") {
+            setDraft(plainText(task.description) ?? "");
+            setEditing(false);
+          }
+        }}
+        aria-label={`Notes for ${task.title}`}
+        className="h-8 w-full resize-none rounded border border-ring/40 bg-background px-2 py-1 text-xs text-foreground outline-none"
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onDoubleClick={() => setEditing(true)}
+      title="Double-click to add notes"
+      className="block w-full truncate text-left text-[12px] text-muted-foreground/70"
+    >
+      {plainText(task.description) || "Add notes…"}
+    </button>
+  );
+}
+
+function MultiAssigneeCell({
+  task,
+  options,
+  onChange,
+}: {
+  task: TaskRecord;
+  options: WorkOsPickerOption[];
+  onChange: (ids: string[]) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const ids = task.assigneeUserIds ?? (task.assigneeUserId ? [task.assigneeUserId] : []);
+  const selected = options.filter((option) => ids.includes(option.id));
+  const visible = options.filter((option) => option.label.toLowerCase().includes(query.toLowerCase()));
+
+  return (
+    <Popover onOpenChange={(open) => { if (!open) setQuery(""); }}>
+      <PopoverTrigger
+        render={
+          <button type="button" className="flex h-7 min-w-0 items-center rounded px-1 hover:bg-muted">
+            {selected.length ? (
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="flex -space-x-1.5">
+                  {selected.slice(0, 3).map((person) => (
+                    <span key={person.id} title={person.label} className="flex size-5 items-center justify-center overflow-hidden rounded-full border-2 border-background bg-primary/10 text-[8px] font-black text-primary">
+                      {person.imageUrl ? <img src={person.imageUrl} alt="" className="size-full object-cover" /> : person.label.slice(0, 2).toUpperCase()}
+                    </span>
+                  ))}
+                </span>
+                <span className="truncate text-xs text-foreground">{selected.length === 1 ? selected[0]?.label : `${selected.length} people`}</span>
+              </span>
+            ) : <span className="text-xs text-muted-foreground">—</span>}
+          </button>
+        }
+      />
+      <PopoverContent align="start" className="w-64 rounded-xl p-1.5">
+        <div className="mb-1 flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-2 py-1.5">
+          <Search className="size-3.5 text-muted-foreground" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search members…" className="min-w-0 flex-1 bg-transparent text-xs outline-none" />
+        </div>
+        {visible.map((person) => {
+          const active = ids.includes(person.id);
+          return (
+            <button key={person.id} type="button" onClick={() => onChange(active ? ids.filter((id) => id !== person.id) : [...ids, person.id])} className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-muted">
+              <span className="flex size-6 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-[9px] font-black text-primary">{person.imageUrl ? <img src={person.imageUrl} alt="" className="size-full object-cover" /> : person.label.slice(0, 2).toUpperCase()}</span>
+              <span className="min-w-0 flex-1 truncate">{person.label}</span>
+              {active ? <Check className="size-3.5 text-primary" /> : null}
+            </button>
+          );
+        })}
+        {!visible.length ? <p className="px-2 py-3 text-xs text-muted-foreground">No members found</p> : null}
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 const STATUS_GROUPS: Array<{ key: TaskRecord["status"]; label: string; color: string }> = TASK_STAGES.map((stage) => ({
@@ -90,6 +197,8 @@ function AddTaskRow({
       await onTaskCreate?.(title.trim(), defaults);
       setTitle("");
       setIsEditing(false);
+    } catch {
+      // The mutation displays the error toast. Preserve the title for retry.
     } finally {
       setIsSaving(false);
     }
@@ -178,6 +287,9 @@ function TaskTableControls({
   onGroupChange,
   onSortChange,
   onSaveView,
+  selectedCount,
+  onCompleteSelected,
+  onDeleteSelected,
 }: {
   groupBy: TaskGroupBy;
   sortDirection: SortDirection;
@@ -185,6 +297,9 @@ function TaskTableControls({
   onGroupChange: (value: TaskGroupBy) => void;
   onSortChange: (value: SortDirection) => void;
   onSaveView: () => void;
+  selectedCount: number;
+  onCompleteSelected: () => void;
+  onDeleteSelected: () => void;
 }) {
   const groupLabel = groupBy === "none" ? "None" : groupBy === "status" ? "Status" : "Priority";
 
@@ -227,6 +342,26 @@ function TaskTableControls({
       </DropdownMenu>
 
       <div className="flex items-center gap-2">
+        {selectedCount > 0 ? (
+          <>
+            <span className="text-[11px] font-medium text-muted-foreground">{selectedCount} selected</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={<button type="button" aria-label="Actions for selected tasks" className="inline-flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground" />}
+              >
+                <MoreHorizontal className="size-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 rounded-lg p-1.5">
+                <DropdownMenuItem onClick={onCompleteSelected} className="gap-2 rounded px-2 py-2 text-xs">
+                  <CheckCircle2 className="size-3.5" /> Mark complete
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onDeleteSelected} className="gap-2 rounded px-2 py-2 text-xs text-destructive focus:text-destructive">
+                  <Trash2 className="size-3.5" /> Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        ) : null}
         {groupBy !== "none" ? (
           <>
             <button
@@ -277,7 +412,10 @@ export function TaskTableView({
   organizationId,
   projectId,
   spaceId,
+  memberOptions = [],
+  onTaskOpen,
   onTaskUpdate,
+  onTaskDelete,
   onTaskCreate,
   onTaskMove,
 }: TaskTableViewProps) {
@@ -286,6 +424,8 @@ export function TaskTableView({
   const [sortDirection, setSortDirection] = useState<SortDirection>("descending");
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => new Set());
   const [dragging, setDragging] = useState<DragState>(null);
+  const [selectedTasks, setSelectedTasks] = useState<TaskRecord[]>([]);
+  const [fieldsOpen, setFieldsOpen] = useState(false);
   const createSavedView = useCreateSavedViewMutation();
   const defaultView = useDefaultSavedViewQuery({
     resourceType: "task",
@@ -308,15 +448,6 @@ export function TaskTableView({
     () => tasks.filter((task) => !task._deleted),
     [tasks],
   );
-
-  const assigneeOptions: AssigneeOption[] = useMemo(() => {
-    const ids = Array.from(new Set(rows.map((task) => task.assigneeUserId).filter(Boolean) as string[]));
-    return ids.map((id) => ({
-      id,
-      name: id,
-      imageUrl: null,
-    }));
-  }, [rows]);
 
   async function updateTask(task: TaskRecord, changes: Partial<TaskRecord>) {
     const optimistic = { ...task, ...changes };
@@ -369,12 +500,22 @@ export function TaskTableView({
         minWidth: 240,
         cellRenderer: (params: { data?: TaskRecord; value?: string }) => {
           if (!params.data) return null;
+          const task = params.data as TaskRecord;
           return (
-            <NameCell
-              value={params.value ?? ""}
-              status={normalizeTaskStatus(params.data.status)}
-              onCommit={(next) => void updateTask(params.data as TaskRecord, { title: next })}
-            />
+            <div className="group/name flex min-w-0 items-center gap-1">
+              <div className="min-w-0 flex-1">
+                <NameCell value={params.value ?? ""} status={normalizeTaskStatus(task.status)} onCommit={(next) => void updateTask(task, { title: next })} />
+              </div>
+              <button
+                type="button"
+                onClick={(event) => { event.stopPropagation(); onTaskOpen?.(task.id); }}
+                aria-label={`Open ${task.title}`}
+                title="Open task"
+                className="flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover/name:opacity-100 focus:opacity-100"
+              >
+                <Expand className="size-3.5" />
+              </button>
+            </div>
           );
         },
       },
@@ -387,11 +528,10 @@ export function TaskTableView({
         cellRenderer: (params: { data?: TaskRecord; value?: string }) => {
           if (!params.data) return null;
           return (
-            <AssigneeEditor
-              value={params.value ?? null}
-              options={assigneeOptions}
-              emptyTrigger="dash"
-              onChange={(next) => void updateTask(params.data as TaskRecord, { assigneeUserId: next ?? "" })}
+            <MultiAssigneeCell
+              task={params.data as TaskRecord}
+              options={memberOptions}
+              onChange={(ids) => void updateTask(params.data as TaskRecord, { assigneeUserIds: ids, assigneeUserId: ids[0] ?? "" })}
             />
           );
         },
@@ -428,7 +568,7 @@ export function TaskTableView({
       },
       {
         ...TASK_TABLE_COLUMN_DEFAULTS,
-        headerName: "Priority AI",
+        headerName: "Priority",
         field: "priority",
         minWidth: 150,
         cellRenderer: (params: { data?: TaskRecord; value?: TaskRecord["priority"] }) => {
@@ -445,27 +585,32 @@ export function TaskTableView({
       },
       {
         ...TASK_TABLE_COLUMN_DEFAULTS,
-        headerName: "Action items",
+        headerName: "Description",
         field: "description",
         minWidth: 160,
         flex: 0.9,
-        cellRenderer: (params: { value?: string }) => (
-          <span className="truncate text-[12px] text-muted-foreground/70">{params.value?.trim() || "-"}</span>
-        ),
+        cellRenderer: (params: { data?: TaskRecord }) => params.data ? (
+          <DescriptionCell task={params.data} onCommit={(description) => void updateTask(params.data as TaskRecord, { description })} />
+        ) : null,
       },
       {
         ...TASK_TABLE_COLUMN_DEFAULTS,
-        headerName: "+",
+        headerName: "",
         field: "updatedAt",
         width: 48,
         minWidth: 48,
         maxWidth: 48,
         resizable: false,
+        headerComponent: () => (
+          <button type="button" onClick={() => setFieldsOpen(true)} aria-label="Add task field" title="Add task field" className="flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground">
+            <Plus className="size-3.5" />
+          </button>
+        ),
         cellRenderer: () => null,
         cellClass: "justify-center",
       },
     ],
-    [assigneeOptions],
+    [memberOptions, onTaskOpen],
   );
 
   const groupedSections = useMemo(() => {
@@ -502,6 +647,18 @@ export function TaskTableView({
     setDragging(null);
   }
 
+  async function completeSelected() {
+    await Promise.all(selectedTasks.map((task) => updateTask(task, { status: "done" })));
+    tableRef.current?.api?.deselectAll();
+    setSelectedTasks([]);
+  }
+
+  async function deleteSelected() {
+    await Promise.all(selectedTasks.map((task) => onTaskDelete?.(task)));
+    tableRef.current?.api?.deselectAll();
+    setSelectedTasks([]);
+  }
+
   const flatTable = (
     <div className="min-w-[980px] overflow-hidden rounded-lg">
       <QentrahTable
@@ -517,9 +674,10 @@ export function TaskTableView({
           headerCheckbox: true,
           checkboxes: true,
           hideDisabledCheckboxes: false,
-          enableClickSelection: true,
+          enableClickSelection: false,
         }}
-        suppressRowClickSelection={false}
+        suppressRowClickSelection
+        onSelectionChanged={(event) => setSelectedTasks(event.api.getSelectedRows())}
         animateRows={false}
         emptyMessage="No tasks"
         className="qentrah-task-table"
@@ -540,8 +698,8 @@ export function TaskTableView({
         <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Assignee</div>
         <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Status</div>
         <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Due date</div>
-        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Priority AI</div>
-        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Action items</div>
+        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Priority</div>
+        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Description</div>
         <div className="px-3">+</div>
       </div>
 
@@ -590,7 +748,7 @@ export function TaskTableView({
                         <NameCell value={task.title} status={normalizeTaskStatus(task.status)} onCommit={(next) => void updateTask(task, { title: next })} />
                       </div>
                       <div className="border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] px-2">
-                        <AssigneeEditor value={task.assigneeUserId ?? null} options={assigneeOptions} emptyTrigger="dash" onChange={(next) => void updateTask(task, { assigneeUserId: next ?? "" })} />
+                        <MultiAssigneeCell task={task} options={memberOptions} onChange={(ids) => void updateTask(task, { assigneeUserIds: ids, assigneeUserId: ids[0] ?? "" })} />
                       </div>
                       <div className="border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] px-2">
                         <StatusEditor value={normalizeTaskStatus(task.status)} onChange={(next) => void updateTask(task, { status: next as TaskRecord["status"] })} />
@@ -626,8 +784,14 @@ export function TaskTableView({
         onGroupChange={setGroupBy}
         onSortChange={setSortDirection}
         onSaveView={saveView}
+        selectedCount={selectedTasks.length}
+        onCompleteSelected={() => void completeSelected()}
+        onDeleteSelected={() => void deleteSelected()}
       />
       <div className="pt-2">{groupBy === "none" ? flatTable : groupedTable}</div>
+      {organizationId ? (
+        <TaskTableFieldsPanel organizationId={organizationId} open={fieldsOpen} onClose={() => setFieldsOpen(false)} />
+      ) : null}
     </div>
   );
 }

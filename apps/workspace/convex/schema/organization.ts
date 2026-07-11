@@ -109,6 +109,7 @@ export const organizationTables = {
     organizationId: v.string(),
     publicId: v.string(),
     keyId: v.string(),
+    tokenHash: v.optional(v.string()),
     keyLast4: v.string(),
     name: v.string(),
     instructions: v.optional(v.string()),
@@ -151,6 +152,7 @@ export const organizationTables = {
     .index("by_organization_id", ["organizationId"])
     .index("by_public_id", ["publicId"])
     .index("by_key_id", ["keyId"])
+    .index("by_token_hash", ["tokenHash"])
     .index("by_status_updated", ["status", "updatedAt"]),
 
   organizationApiKeys: defineTable({
@@ -165,6 +167,7 @@ export const organizationTables = {
         v.literal("project"),
         v.literal("calendar"),
         v.literal("task"),
+        v.literal("document"),
         v.literal("media"),
         v.literal("space"),
       ),

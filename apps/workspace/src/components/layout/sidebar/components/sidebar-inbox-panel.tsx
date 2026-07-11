@@ -48,21 +48,22 @@ export function SidebarInboxPanel() {
   return (
     <SidebarPanelLayout
       title="Inbox"
-      navbarActions={
+      header={
+        <div className="p-2 pb-0">
+          <InboxScopeFilter selectedOrgFilter={selectedOrgFilter} onSelect={setSelectedOrgFilter} />
+        </div>
+      }
+      primaryAction={
         <WorkspaceLink
           href="/inbox"
           extraParams={{ new: "true", channel: "", settings: "" }}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="flex h-8 w-full items-center gap-2 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <Plus className="h-3.5 w-3.5" />
+          New channel
         </WorkspaceLink>
       }
     >
-      <InboxScopeFilter
-        selectedOrgFilter={selectedOrgFilter}
-        onSelect={setSelectedOrgFilter}
-      />
-
       {isLoadingChannels ? <InboxChannelSkeleton /> : null}
 
       {!isLoadingChannels && channels.length === 0 ? (

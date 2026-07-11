@@ -22,6 +22,7 @@ const apiKeyResourceValidator = v.union(
   v.literal("project"),
   v.literal("calendar"),
   v.literal("task"),
+  v.literal("document"),
   v.literal("media"),
   v.literal("space"),
 );
@@ -33,6 +34,7 @@ const partnerResourceValidator = v.union(
   v.literal("project"),
   v.literal("calendar"),
   v.literal("task"),
+  v.literal("document"),
   v.literal("media"),
   v.literal("asset"),
 );

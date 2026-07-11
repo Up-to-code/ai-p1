@@ -1,17 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
-  FolderOpen,
-  Globe,
-  Lock,
-  Users,
+  ArrowLeft,
   Maximize2,
   Minimize2,
-  X,
-  Plus,
   Trash2,
-  Tags,
+  SlidersHorizontal,
+  MoreHorizontal,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
@@ -25,9 +22,14 @@ import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import type { DocFormValues, DocRecord, CustomField } from "../docs.types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/toast";
 import { logger } from "@/lib/logger";
 import { CustomFieldsModal } from "./custom-fields-modal";
+import { DocumentCustomFields } from "./document-custom-fields";
+import { listOrganizationMembers } from "@/domains/organization/api/members";
+
+const DOCUMENT_AUTOSAVE_DELAY = 60_000;
 
 function formFromDoc(doc: DocRecord): DocFormValues {
   return {
@@ -49,14 +51,9 @@ function persistedDocFormKey(values: DocFormValues) {
     projectId: values.projectId,
     visibility: values.visibility,
     tags: values.tags,
+    customFields: values.customFields ?? [],
   });
 }
-
-const VISIBILITY_OPTIONS = [
-  { value: "private", label: "Private", icon: Lock },
-  { value: "team", label: "Team", icon: Users },
-  { value: "workspace", label: "Workspace", icon: Globe },
-] as const;
 
 export function DocEditor({
   doc,
@@ -80,6 +77,11 @@ export function DocEditor({
   const relatedTasksResult = useTasksQuery(organizationId, {
     projectId: doc.projectId ?? null,
   });
+  const membersResult = useQuery({
+    queryKey: ["organization-members", organizationId],
+    queryFn: () => listOrganizationMembers(organizationId),
+    enabled: Boolean(organizationId),
+  });
 
   const [draft, setDraft] = useState<DocFormValues>(() => formFromDoc(doc));
   const [lastPersistedKey, setLastPersistedKey] = useState(() => persistedDocFormKey(formFromDoc(doc)));
@@ -87,13 +89,17 @@ export function DocEditor({
   const [deleting, setDeleting] = useState(false);
   const [showCustomFieldsModal, setShowCustomFieldsModal] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const [saveMode, setSaveMode] = useState<"saved" | "local" | "autosaving">("saved");
 
   const latestDraftRef = useRef(draft);
   const lastPersistedKeyRef = useRef(lastPersistedKey);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const localDraftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveVersionRef = useRef(0);
 
   const hasUnsavedChanges = persistedDocFormKey(draft) !== lastPersistedKey;
+  const storageKey = `doc-draft:${organizationId}:${doc.id}`;
 
   const markPersisted = useCallback((key: string) => {
     lastPersistedKeyRef.current = key;
@@ -123,19 +129,55 @@ export function DocEditor({
     doc.projectId,
     doc.visibility,
     doc.tags,
+    doc.customFields,
     doc.updatedAt,
     markPersisted,
   ]);
 
-  const persistDraft = useCallback(async (nextDraft: DocFormValues, options?: { showToast?: boolean }) => {
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const { getItem } = await import("@/domains/storage");
+      const stored = await getItem("drafts", storageKey);
+      if (cancelled) return;
+      if (stored?.value && typeof stored.value === "object") {
+        const restored = { ...formFromDoc(doc), ...(stored.value as Partial<DocFormValues>) };
+        latestDraftRef.current = restored;
+        setDraft(restored);
+        setSaveMode("local");
+      }
+      setDraftLoaded(true);
+    })();
+    return () => { cancelled = true; };
+  }, [doc.id, organizationId, storageKey]);
+
+  useEffect(() => {
+    if (!draftLoaded || !hasUnsavedChanges) return;
+    if (localDraftTimerRef.current) clearTimeout(localDraftTimerRef.current);
+    localDraftTimerRef.current = setTimeout(() => {
+      void (async () => {
+        const { setItem } = await import("@/domains/storage");
+        await setItem("drafts", storageKey, latestDraftRef.current as Record<string, unknown>);
+      })();
+    }, 300);
+    return () => {
+      if (localDraftTimerRef.current) clearTimeout(localDraftTimerRef.current);
+    };
+  }, [draft, draftLoaded, hasUnsavedChanges, storageKey]);
+
+  const persistDraft = useCallback(async (nextDraft: DocFormValues, options?: { showToast?: boolean; automatic?: boolean }) => {
     const nextKey = persistedDocFormKey(nextDraft);
     if (nextKey === lastPersistedKeyRef.current) return;
 
     const saveVersion = ++saveVersionRef.current;
+    if (options?.automatic) setSaveMode("autosaving");
     setBusyId("patch");
     try {
       await updateDoc(organizationId, doc.id, nextDraft);
       markPersisted(nextKey);
+      setSaveMode("saved");
+      const { removeItem } = await import("@/domains/storage");
+      await removeItem("drafts", storageKey);
       if (options?.showToast) {
         toast.toast({ title: t("form.savedToast"), type: "success" });
       }
@@ -145,18 +187,19 @@ export function DocEditor({
       if (options?.showToast) {
         toast.toast({ title: "Document could not be saved.", type: "error" });
       }
+      setSaveMode("local");
     } finally {
       if (saveVersion === saveVersionRef.current) setBusyId(null);
     }
-  }, [doc.id, markPersisted, onSaved, organizationId, t, toast, updateDoc]);
+  }, [doc.id, markPersisted, onSaved, organizationId, storageKey, t, toast, updateDoc]);
 
-  const scheduleAutosave = useCallback(
+  const scheduleServerAutosave = useCallback(
     (nextDraft: DocFormValues) => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => {
         saveTimerRef.current = null;
-        void persistDraft(nextDraft);
-      }, 700);
+        void persistDraft(nextDraft, { automatic: true });
+      }, DOCUMENT_AUTOSAVE_DELAY);
     },
     [persistDraft],
   );
@@ -166,11 +209,12 @@ export function DocEditor({
       setDraft((current) => {
         const next = { ...current, ...partial };
         latestDraftRef.current = next;
-        if (options?.autosave) scheduleAutosave(next);
+        setSaveMode("local");
+        scheduleServerAutosave(next);
         return next;
       });
     },
-    [scheduleAutosave],
+    [scheduleServerAutosave],
   );
 
   const flushAutosave = useCallback(
@@ -192,10 +236,23 @@ export function DocEditor({
     const next = { ...latestDraftRef.current, content: html };
     latestDraftRef.current = next;
     setDraft(next);
-    void flushAutosave();
-  }, [flushAutosave]);
+    setSaveMode("local");
+    scheduleServerAutosave(next);
+  }, [scheduleServerAutosave]);
 
   const mentionOptions = useMemo<DocEditorMentionOption[]>(() => {
+    const memberOptions =
+      membersResult.data?.map((member) => {
+        const userId = member.userId || member.user?.id || member.id;
+        return {
+          id: userId,
+          label: member.user?.name || member.user?.email || userId,
+          helper: ["Member", member.user?.email, member.role].filter(Boolean).join(" · "),
+          type: "member" as const,
+          href: `/team?memberId=${encodeURIComponent(userId)}`,
+        };
+      }) ?? [];
+
     const docOptions =
       relatedDocsResult.data
         ?.filter((relatedDoc) => relatedDoc.id !== doc.id)
@@ -219,8 +276,8 @@ export function DocEditor({
           href: `/tasks/${task.id}`,
         })) ?? [];
 
-    return [...docOptions, ...taskOptions];
-  }, [doc.id, relatedDocsResult.data, relatedTasksResult.data]);
+    return [...memberOptions, ...docOptions, ...taskOptions];
+  }, [doc.id, membersResult.data, relatedDocsResult.data, relatedTasksResult.data]);
 
   useEffect(() => {
     return () => {
@@ -230,59 +287,23 @@ export function DocEditor({
 
   const fields: DocEditorMetaField[] = [
     {
-      key: "visibility",
-      icon: <Globe className="h-3.5 w-3.5" />,
-      label: t("form.visibility"),
+      key: "custom-fields",
+      icon: <SlidersHorizontal className="h-3.5 w-3.5" />,
+      label: "Custom fields",
       value: (
-        <select
-          value={draft.visibility}
-          onChange={(e) => updateDraft({ visibility: e.target.value as DocFormValues["visibility"] }, { autosave: true })}
-          className="h-6 rounded-lg border border-border bg-card px-2 text-[11px] font-medium text-foreground outline-none"
-        >
-          {VISIBILITY_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      ),
-    },
-    {
-      key: "tags",
-      icon: <Tags className="h-3.5 w-3.5" />,
-      label: "Tags",
-      value: (
-        <input
-          value={draft.tags}
-          onChange={(event) => updateDraft({ tags: event.target.value }, { autosave: true })}
-          placeholder="Add labels, comma separated"
-          className="h-7 w-full rounded-lg border border-transparent bg-transparent px-2 text-xs text-foreground outline-none transition-colors placeholder:text-muted-foreground hover:border-border hover:bg-card focus:border-border focus:bg-card"
+        <DocumentCustomFields
+          fields={draft.customFields ?? []}
+          onChange={(customFields) => updateDraft({ customFields })}
+          onManage={() => setShowCustomFieldsModal(true)}
         />
       ),
+      fullWidth: true,
     },
   ];
 
-  const handleAddCustomField = () => {
-    const newField: CustomField = {
-      id: `field-${Date.now()}`,
-      name: "New Field",
-      type: "text",
-      value: "",
-    };
-    updateDraft({ customFields: [...(draft.customFields || []), newField] });
-  };
-
-  const handleUpdateCustomField = (fieldId: string, updates: Partial<CustomField>) => {
-    const updatedFields = (draft.customFields || []).map((field) =>
-      field.id === fieldId ? { ...field, ...updates } : field
-    );
-    updateDraft({ customFields: updatedFields });
-  };
-
-  const handleDeleteCustomField = (fieldId: string) => {
-    const updatedFields = (draft.customFields || []).filter((field) => field.id !== fieldId);
-    updateDraft({ customFields: updatedFields });
-  };
+  const saveCustomFields = useCallback((customFields: CustomField[]) => {
+    updateDraft({ customFields });
+  }, [updateDraft]);
 
   async function confirmDelete() {
     setBusyId("delete");
@@ -300,53 +321,40 @@ export function DocEditor({
   return (
     <div className={cn("flex h-full flex-col", isFullscreen && "fixed inset-0 z-50 bg-background")}>
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-2.5 shrink-0">
-        <div className="flex items-center gap-3">
-          <Button
-            type="button"
-            size="sm"
-            onClick={saveDraft}
-            disabled={Boolean(busyId) || !hasUnsavedChanges}
-            className="h-8 rounded-xl text-xs transition-all duration-200"
-          >
-            {busyId === "patch" ? "Saving..." : t("form.saveBtn")}
+      <div className="flex items-center justify-between border-b border-border bg-card px-4 py-2.5 shrink-0">
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="ghost" size="icon-sm" onClick={onClose} className="h-8 w-8 shrink-0" aria-label="Back to documents">
+            <ArrowLeft className="h-3.5 w-3.5" />
           </Button>
-          {hasUnsavedChanges && !busyId && (
-            <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 transition-opacity duration-300">
-              Unsaved changes
-            </span>
-          )}
+          <span className="min-w-0 max-w-[min(50vw,36rem)] truncate text-sm font-semibold text-foreground" title={draft.title || "Untitled document"}>
+            {draft.title || "Untitled document"}
+          </span>
         </div>
-        <div className="flex items-center gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            title={isFullscreen ? "Minimize" : "Maximize"}
-            className="transition-all duration-200 h-8 w-8"
-          >
-            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowCustomFieldsModal(true)}
-            className="h-8 text-xs"
-          >
-            Custom Fields
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            onClick={onClose}
-            title="Close"
-            className="transition-all duration-200 hover:bg-destructive/10 hover:text-destructive h-8 w-8"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={saveDraft}
+              disabled={Boolean(busyId) || !hasUnsavedChanges}
+              className="h-8 rounded-lg px-3 text-xs transition-all duration-200"
+            >
+              {busyId === "patch" ? "Saving..." : "Save"}
+            </Button>
+            <span className="text-[11px] font-medium text-amber-700 dark:text-amber-300">
+              {saveMode === "autosaving" ? "Autosaving…" : saveMode === "local" ? "Autosave in 1 min" : "Autosave on"}
+            </span>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger render={<Button type="button" variant="ghost" size="icon-sm" className="h-8 w-8" aria-label="More document actions" />}>
+              <MoreHorizontal className="h-4 w-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem onClick={() => setShowCustomFieldsModal(true)}><SlidersHorizontal />Manage fields</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsFullscreen(!isFullscreen)}>{isFullscreen ? <Minimize2 /> : <Maximize2 />}{isFullscreen ? "Exit full screen" : "Full screen"}</DropdownMenuItem>
+              <DropdownMenuItem variant="destructive" onClick={() => setDeleting(true)}><Trash2 />Delete document</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -364,10 +372,7 @@ export function DocEditor({
           isSaving={busyId === "patch"}
           onTitleBlur={(v) => {
             if (v !== draft.title) {
-              const next = { ...latestDraftRef.current, title: v };
-              latestDraftRef.current = next;
-              setDraft(next);
-              void persistDraft(next);
+              updateDraft({ title: v });
             }
           }}
           onBodyChange={(html) => {
@@ -394,7 +399,7 @@ export function DocEditor({
         open={showCustomFieldsModal}
         onOpenChange={setShowCustomFieldsModal}
         customFields={draft.customFields || []}
-        onSave={(fields) => updateDraft({ customFields: fields })}
+        onSave={saveCustomFields}
       />
     </div>
   );

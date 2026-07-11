@@ -40,6 +40,32 @@ export const userTables = {
     .index("by_recipient_key", ["recipientKey"])
     .index("by_installation", ["userId", "installationId"]),
 
+  notificationEvents: defineTable({
+    organizationId: v.string(),
+    recipientUserId: v.string(),
+    actorUserId: v.string(),
+    kind: v.union(v.literal("task_assigned"), v.literal("mentioned")),
+    resourceType: v.union(
+      v.literal("task"),
+      v.literal("message"),
+      v.literal("document"),
+      v.literal("project"),
+      v.literal("client"),
+      v.literal("deal"),
+      v.literal("file"),
+    ),
+    resourceId: v.string(),
+    title: v.string(),
+    body: v.optional(v.string()),
+    href: v.string(),
+    dedupeKey: v.string(),
+    readAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_recipient_created", ["organizationId", "recipientUserId", "createdAt"])
+    .index("by_recipient_read", ["organizationId", "recipientUserId", "readAt"])
+    .index("by_dedupe", ["organizationId", "recipientUserId", "dedupeKey"]),
+
   notificationPreferences: defineTable({
     organizationId: v.string(),
     principalType: v.union(v.literal("user"), v.literal("organization")),

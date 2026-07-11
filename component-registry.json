@@ -1,6 +1,94 @@
 {
   "components": [
     {
+      "name": "AutomationCanvas",
+      "path": "apps/workspace/src/domains/automations/components/automations-screen.tsx",
+      "kind": "domain-shared",
+      "summary": "React Flow automation canvas with draggable trigger/action nodes, connecting lines, zoom controls, minimap, and a step inspector.",
+      "usedIn": [
+        "app/[locale]/(app)/automations"
+      ],
+      "props": [],
+      "createdAt": "2026-07-10",
+      "notes": "Uses the same React Flow foundation as the referenced shadcn AI Canvas; workflow state is persisted in organization-scoped Convex tables."
+    },
+    {
+      "name": "AutomationLibraryDialog",
+      "path": "apps/workspace/src/domains/automations/components/automation-library-dialog.tsx",
+      "kind": "domain-shared",
+      "summary": "Searchable grouped chooser for automation templates and task, document, client, or integration components.",
+      "usedIn": [
+        "domains/automations/components/automations-screen"
+      ],
+      "props": [
+        "open",
+        "mode",
+        "onOpenChange",
+        "onSelectTemplate",
+        "onSelectComponent"
+      ],
+      "createdAt": "2026-07-10",
+      "notes": "One catalog powers both new-workflow templates and insertion of actions between existing nodes."
+    },
+    {
+      "name": "AutomationComponentPalette",
+      "path": "apps/workspace/src/domains/automations/components/automation-component-palette.tsx",
+      "kind": "domain-shared",
+      "summary": "Persistent grouped palette of automation actions with domain-specific icons.",
+      "usedIn": [
+        "domains/automations/components/automations-screen"
+      ],
+      "props": [
+        "onAdd"
+      ],
+      "createdAt": "2026-07-10",
+      "notes": "Reads from the typed automation component catalog so palette, chooser, nodes, inspector, and executor stay aligned."
+    },
+    {
+      "name": "AutomationSaveStatus",
+      "path": "apps/workspace/src/domains/automations/components/automation-save-status.tsx",
+      "kind": "domain-shared",
+      "summary": "Compact accessible persistence indicator for saved, unsaved, saving, and failed automation editor states.",
+      "usedIn": [
+        "domains/automations/components/automations-screen"
+      ],
+      "props": [
+        "status"
+      ],
+      "createdAt": "2026-07-10",
+      "notes": "Reflects both full content autosaves and coalesced canvas-layout writes."
+    },
+    {
+      "name": "DocTemplateCover",
+      "path": "apps/workspace/src/domains/docs/components/doc-template-cover.tsx",
+      "kind": "domain-shared",
+      "summary": "Displays one cropped cover from the shared six-image Docs template atlas.",
+      "usedIn": [
+        "domains/docs/components/doc-create-form",
+        "domains/docs/components/DocsPageRedesigned"
+      ],
+      "props": [
+        "templateId",
+        "className"
+      ],
+      "createdAt": "2026-07-10",
+      "notes": "Uses one atlas asset with CSS background positioning; decorative artwork is hidden from accessibility APIs."
+    },
+    {
+      "name": "WorkspaceShellSkeleton",
+      "path": "apps/workspace/src/components/loading/workspace-shell-skeleton.tsx",
+      "kind": "shared-ui",
+      "summary": "Reusable workspace loading shell with sidebar and topbar skeletons; composes route-specific loading content through children.",
+      "usedIn": [
+        "components/loading/workspace-route-loading/session-check-loading"
+      ],
+      "props": [
+        "children"
+      ],
+      "createdAt": "2026-07-10",
+      "notes": "Extracted from SessionCheckLoading while preserving the screenshot-matched loading layout."
+    },
+    {
       "name": "PipelineBoard",
       "path": "packages/our-platform-components/src/pipeline/pipeline-board.tsx",
       "kind": "shared-ui",
@@ -278,7 +366,7 @@
       "name": "YooptaRichTextEditor",
       "path": "apps/workspace/src/components/shared/yoopta-rich-text-editor.tsx",
       "kind": "shared-ui",
-      "summary": "Yoopta full-setup rich text editor with HTML in/out, floating toolbar, slash/action menu, block controls, marks, block plugins, and media upload integration.",
+      "summary": "Yoopta rich text editor with HTML in/out, document/card tooling, and a chrome-free composer variant for compact chat input.",
       "usedIn": [
         "components/ui/rich-text-editor",
         "components/shared/work-os-doc-editor",
@@ -304,7 +392,7 @@
         "mentionOptions"
       ],
       "createdAt": "2026-07-09",
-      "notes": "Replaces Tiptap editor surfaces while preserving existing HTML persistence contracts."
+      "notes": "Replaces Tiptap editor surfaces while preserving existing HTML persistence contracts. The composer variant removes document borders, focus rings, and block controls without changing document and card variants."
     },
     {
       "name": "AddTokenModal",
@@ -663,7 +751,7 @@
       "name": "SidebarPanelLayout",
       "path": "apps/workspace/src/components/layout/sidebar/components/sidebar-panel-layout.tsx",
       "kind": "shared-ui",
-      "summary": "Shared panel shell with header (title + actions + close), bg-secondary, scrollable body.",
+      "summary": "Shared secondary-panel shell with title actions, mode switch, optional header/footer, and configurable scrollable body spacing.",
       "usedIn": [
         "components/layout/sidebar/components/sidebar-chat-panel",
         "components/layout/sidebar/components/sidebar-space-panel",
@@ -671,12 +759,14 @@
       ],
       "props": [
         "title",
-        "actions",
-        "onClose",
+        "navbarActions",
+        "header",
+        "footer",
+        "bodyClassName",
         "children"
       ],
       "createdAt": "2026-04-01",
-      "notes": "Consistent shell for all secondary sidebar panels."
+      "notes": "Consistent shell for all secondary sidebar panels. bodyClassName lets dense panels avoid nested padding without duplicating the shell."
     },
     {
       "name": "SidebarWorkspaceSwitcher",
@@ -1086,6 +1176,21 @@
       "notes": "Native ClickUp-style task board with compact status columns, controlled drag/drop, inline add-task forms, and optional group-aware create callback. Replaced the SVAR render because exact board UX required local layout control."
     },
     {
+      "name": "Table",
+      "path": "apps/workspace/src/components/ui/table.tsx",
+      "kind": "shared-ui",
+      "summary": "Native Shadcn table primitives for semantic, accessible data tables.",
+      "usedIn": [
+        "domains/team/components/TeamPageRedesigned"
+      ],
+      "props": [
+        "className",
+        "children"
+      ],
+      "createdAt": "2026-07-10",
+      "notes": "Use for compact domain tables where AG Grid features such as inline editing, virtualisation, or drag/drop are not required."
+    },
+    {
       "name": "TaskListView",
       "path": "apps/workspace/src/domains/tasks/components/views/task-list-view.tsx",
       "kind": "domain-shared",
@@ -1099,6 +1204,122 @@
       ],
       "createdAt": "2026-07-07",
       "notes": "Replaces the previous List tab placeholder."
+    },
+    {
+      "name": "CalendarRelationPicker",
+      "path": "apps/workspace/src/domains/calendar/components/calendar-relation-picker.tsx",
+      "kind": "domain-shared",
+      "summary": "Searchable calendar relationship picker that displays human-readable record names while persisting stable IDs.",
+      "usedIn": [
+        "domains/calendar/components/calendar-event-form-dialog"
+      ],
+      "props": [
+        "value",
+        "options",
+        "placeholder",
+        "searchPlaceholder",
+        "emptyLabel",
+        "onChange",
+        "clearable"
+      ],
+      "createdAt": "2026-07-10",
+      "notes": "Uses shared Popover, Input, and Button primitives. Supports people, tasks, documents, and projects without exposing IDs in the UI."
+    },
+    {
+      "name": "CalendarEventFormDialog",
+      "path": "apps/workspace/src/domains/calendar/components/calendar-event-form-dialog.tsx",
+      "kind": "domain-shared",
+      "summary": "Notion-style calendar composer whose meeting, task, document, reminder, milestone, and focus modes render only the real fields supported by that item type.",
+      "usedIn": [
+        "domains/calendar/components/CalendarPageRedesigned",
+        "domains/projects/components/detail/tabs/calendar-tab"
+      ],
+      "props": [
+        "organizationId",
+        "contextProjectId",
+        "event",
+        "initialSlot",
+        "isPending",
+        "onClose",
+        "onDelete",
+        "onSubmit"
+      ],
+      "createdAt": "2026-07-10",
+      "notes": "Uses the shared Shadcn/Base UI primitives and live task, document, and project options. Switching type clears incompatible hidden fields before persistence."
+    },
+    {
+      "name": "CalendarGrid",
+      "path": "apps/workspace/src/domains/calendar/components/calendar-grid.tsx",
+      "kind": "domain-shared",
+      "summary": "Native Qentrah calendar grid with month, week, and day modes; supports press-drag-release time-range selection and real event callbacks.",
+      "usedIn": [
+        "domains/calendar/components/CalendarPageRedesigned",
+        "domains/projects/components/detail/tabs/calendar-tab"
+      ],
+      "props": [
+        "currentDate",
+        "events",
+        "locale",
+        "view",
+        "onCreate",
+        "onEventClick"
+      ],
+      "createdAt": "2026-07-10",
+      "notes": "Replaces the SVAR Calendar surface. Week/day time slots open the event form only when a press-drag selection is released."
+    },
+    {
+      "name": "CreateResourceDialog",
+      "path": "apps/workspace/src/components/shared/create-resource-dialog/create-resource-dialog.tsx",
+      "kind": "domain-shared",
+      "summary": "Unified Shadcn creation dialog with Task and Document tabs, shared validation, and caller-owned domain mutation callbacks.",
+      "usedIn": [
+        "domains/workspace/components/workspace-command-center"
+      ],
+      "props": [
+        "open",
+        "onOpenChange",
+        "onCreateTask",
+        "onCreateDocument",
+        "taskPending",
+        "documentPending"
+      ],
+      "createdAt": "2026-07-10",
+      "notes": "Keeps creation UI reusable while canonical Task and Document writes remain owned by their domain callers. Additional resource tabs can be added without introducing a second data layer."
+    },
+    {
+      "name": "Calendar",
+      "path": "apps/workspace/src/components/ui/calendar.tsx",
+      "kind": "primitive",
+      "summary": "ReUI/Shadcn React DayPicker calendar primitive with Qentrah button variants, single-date and range states, keyboard focus, and locale support.",
+      "usedIn": [
+        "components/ui/date-picker"
+      ],
+      "props": [
+        "className",
+        "classNames",
+        "showOutsideDays",
+        "captionLayout",
+        "buttonVariant",
+        "locale",
+        "components"
+      ],
+      "createdAt": "2026-07-11",
+      "notes": "Installed from @reui/c-calendar-27 with pnpm dlx shadcn@latest. Existing Qentrah Button, Card, and Popover primitives were intentionally preserved."
+    },
+    {
+      "name": "ScrollArea",
+      "path": "apps/workspace/src/components/ui/scroll-area.tsx",
+      "kind": "primitive",
+      "summary": "Base UI scroll-area primitive installed with the ReUI calendar package, with vertical and horizontal scrollbar support.",
+      "usedIn": [
+        "components/examples/c-calendar-27"
+      ],
+      "props": [
+        "className",
+        "children"
+      ],
+      "createdAt": "2026-07-11",
+      "notes": "Installed as a dependency of @reui/c-calendar-27."
     }
   ]
 }

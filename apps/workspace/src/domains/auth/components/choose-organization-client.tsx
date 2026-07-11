@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { type MouseEvent, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   ArrowRight,
   Building2,
-  CheckCircle2,
   Loader2,
   MailCheck,
   Plus,
@@ -14,6 +13,7 @@ import { useMutation } from "convex/react";
 import { useTranslations } from "next-intl";
 import { api } from "@convex/_generated/api";
 import { BrandMark } from "@/components/logo";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,6 +24,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Link, useRouter } from "@/i18n/routing";
 import { writeAuthHandoff } from "@/domains/auth";
 import { acceptOrganizationInvitation } from "@/domains/organization/api";
@@ -152,8 +160,7 @@ async function listPendingUserInvitations() {
   }
 
   const payload = (await response.json()) as
-    | { invitations?: UserInvitation[] }
-    | UserInvitation[];
+    { invitations?: UserInvitation[] } | UserInvitation[];
   const invitations = Array.isArray(payload)
     ? payload
     : (payload.invitations ?? []);
@@ -342,12 +349,14 @@ export function ChooseOrganizationClient({
   }
 
   return (
-    <main className="min-h-svh bg-muted/30 text-foreground">
-      <div className="mx-auto flex min-h-svh w-full max-w-4xl flex-col px-5 py-5 sm:px-8">
-        <header className="flex items-center justify-between gap-4">
+    <main className="relative flex min-h-svh flex-col bg-[var(--q-bg)] text-foreground">
+      <div className="flex flex-1 animate-in items-center justify-center fade-in zoom-in-95 duration-300">
+        <header className="absolute inset-x-0 top-0 z-10 flex h-14 items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2">
-            <BrandMark className="h-6 w-6" priority />
-            <span className="text-base font-black tracking-tight">qentrah</span>
+            <BrandMark className="h-5 w-5" priority />
+            <span className="text-xs font-semibold tracking-tight">
+              qentrah
+            </span>
           </Link>
           <AuthAccountButton
             disabled={busyAction === "sign-out"}
@@ -359,192 +368,363 @@ export function ChooseOrganizationClient({
           />
         </header>
 
-        <section className="flex flex-1 items-center py-10">
-          <div className="w-full rounded-lg border border-border bg-card p-5 shadow-sm sm:p-7">
-            <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-start sm:justify-between">
-              <div className="max-w-xl">
-                <p className="text-xs font-black uppercase text-muted-foreground">
-                  {t("eyebrow")}
-                </p>
-                <h1 className="mt-3 text-2xl font-black tracking-0 text-foreground sm:text-3xl">
-                  {t("title")}
-                </h1>
-                <p className="mt-2 text-sm font-medium leading-6 text-muted-foreground">
-                  {t("subtitle")}
-                </p>
-              </div>
-              {session?.session?.activeOrganizationId ? (
-                <Button
-                  className="h-10 rounded-lg"
-                  onClick={() => router.replace("/ws")}
+        {error ? (
+          <div className="absolute inset-x-6 top-16 mx-auto flex max-w-md items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <p>{error}</p>
+          </div>
+        ) : null}
+
+        {isInitialLoading ? (
+          <div className="w-full max-w-md px-6">
+            <WorkspaceListSkeleton label={t("loading")} />
+          </div>
+        ) : (
+          <div className="flex w-full max-w-md flex-col gap-3 px-6">
+            {visibleInvitations.map((invitation) => {
+              const invitationBusy = busyId === `invitation:${invitation.id}`;
+              return (
+                <button
+                  className="group flex min-h-24 items-center gap-4 rounded-2xl border border-border bg-card p-4 text-start transition duration-200 hover:-translate-y-0.5 hover:border-foreground/25 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60"
+                  disabled={Boolean(busyId || busyAction)}
+                  key={invitation.id}
+                  onClick={() => void acceptInvitation(invitation)}
                   type="button"
-                  variant="outline"
                 >
-                  {t("continueWorkspace")}
-                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-                </Button>
-              ) : null}
-            </div>
+                  <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                    {invitationBusy ? (
+                      <Loader2 className="size-5 animate-spin" />
+                    ) : (
+                      <MailCheck className="size-5" />
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-foreground">
+                      {invitation.organizationName || invitation.organizationId}
+                    </span>
+                    <span className="mt-1 block text-xs text-muted-foreground">
+                      {invitationBusy
+                        ? t("acceptingInvite")
+                        : t("acceptInvite")}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+            {orgs?.map((org) => {
+              const isBusy = busyId === org.id;
+              return (
+                <button
+                  className="group flex min-h-24 items-center gap-4 rounded-2xl border border-border bg-card p-4 text-start transition duration-200 hover:-translate-y-0.5 hover:border-foreground/25 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60"
+                  disabled={Boolean(busyId || busyAction)}
+                  key={org.id}
+                  onClick={() => void selectOrganization(org.id)}
+                  type="button"
+                >
+                  <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-muted text-muted-foreground">
+                    {isBusy ? (
+                      <Loader2 className="size-5 animate-spin" />
+                    ) : org.logo ? (
+                      <img
+                        alt=""
+                        className="size-full object-cover"
+                        src={org.logo}
+                      />
+                    ) : (
+                      <BrandMark className="size-7" />
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-foreground">
+                      {org.name ?? t("untitledWorkspace")}
+                    </span>
+                    <span className="mt-1 block text-xs text-muted-foreground">
+                      {isBusy ? t("loading") : (org.slug ?? "")}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+            <button
+              className="group flex min-h-24 items-center gap-4 rounded-2xl border border-dashed border-border bg-card/40 p-4 text-start transition duration-200 hover:-translate-y-0.5 hover:border-foreground/30 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60"
+              disabled={Boolean(busyId || busyAction)}
+              onClick={() => setCreateOpen(true)}
+              type="button"
+            >
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-border bg-background text-muted-foreground transition duration-200 group-hover:scale-110 group-hover:text-foreground">
+                <Plus className="size-5" />
+              </span>
+              <span className="text-sm font-medium text-foreground">
+                {t("createNew")}
+              </span>
+            </button>
+          </div>
+        )}
+      </div>
 
-            {error ? (
-              <div className="mt-5 flex items-start gap-3 rounded-lg bg-destructive/10 px-4 py-3 text-sm font-semibold leading-6 text-destructive">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                <p>{error}</p>
-              </div>
+      <div className="hidden">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-6">
+          <Link href="/" className="flex items-center gap-2">
+            <BrandMark className="h-5 w-5" priority />
+            <span className="text-xs font-semibold tracking-tight">
+              qentrah
+            </span>
+          </Link>
+          <AuthAccountButton
+            disabled={busyAction === "sign-out"}
+            label={t("useAnotherAccount")}
+            loading={busyAction === "sign-out"}
+            loadingLabel={t("signingOut")}
+            onClick={() => void handleUseAnotherAccount()}
+            user={session?.user}
+          />
+        </header>
+
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border px-6 py-4">
+          <div>
+            <h1 className="text-lg font-semibold text-foreground">
+              {t("title")}
+            </h1>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {t("subtitle")}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            {session?.session?.activeOrganizationId ? (
+              <Button
+                className="h-9 rounded-lg px-4 text-sm font-medium"
+                onClick={() => router.replace("/ws")}
+                type="button"
+                variant="outline"
+              >
+                {t("continueWorkspace")}
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+              </Button>
             ) : null}
+            <Button
+              className="h-9 rounded-lg px-4 text-sm font-medium"
+              disabled={Boolean(busyId || busyAction)}
+              onClick={() => setCreateOpen(true)}
+              type="button"
+            >
+              <Plus className="h-4 w-4" />
+              {t("createNew")}
+            </Button>
+          </div>
+        </div>
 
-            <div className="mt-6 space-y-8">
-              {isInitialLoading ? (
-                <WorkspaceListSkeleton label={t("loading")} />
-              ) : (
-                <>
-                  {hasInvitations || invitationsPending ? (
-                    <section className="space-y-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <h2 className="text-sm font-black">
-                            {t("invitedTitle")}
-                          </h2>
-                          <p className="mt-1 text-xs font-medium text-muted-foreground">
-                            {t("invitedDesc")}
-                          </p>
-                        </div>
-                        {invitationsPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                        ) : null}
-                      </div>
+        <div className="flex-1 overflow-auto bg-[var(--q-bg)]">
+          {error ? (
+            <div className="mx-6 mt-4 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <p>{error}</p>
+            </div>
+          ) : null}
 
-                      {hasInvitations ? (
-                        <div className="space-y-2">
+          {isInitialLoading ? (
+            <div className="mx-6 mt-4 max-w-5xl">
+              <WorkspaceListSkeleton label={t("loading")} />
+            </div>
+          ) : (
+            <div className="space-y-6 pb-8">
+              {hasInvitations || invitationsPending ? (
+                <section className="mx-6 mt-6 max-w-5xl">
+                  <div className="mb-3 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-sm font-semibold text-foreground">
+                        {t("invitedTitle")}
+                      </h2>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {t("invitedDesc")}
+                      </p>
+                    </div>
+                    {invitationsPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    ) : null}
+                  </div>
+                  {hasInvitations ? (
+                    <div className="overflow-hidden rounded-xl border border-border bg-card">
+                      <Table>
+                        <TableHeader className="bg-muted/40">
+                          <TableRow className="hover:bg-transparent">
+                            <TableHead>Organization</TableHead>
+                            <TableHead className="w-40">Access</TableHead>
+                            <TableHead className="w-36 text-right">
+                              Action
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
                           {visibleInvitations.map((invitation) => {
                             const invitationBusy =
                               busyId === `invitation:${invitation.id}`;
                             return (
-                              <div
-                                className="flex flex-col gap-3 rounded-lg border border-border bg-background p-4 sm:flex-row sm:items-center sm:justify-between"
-                                key={invitation.id}
-                              >
-                                <div className="flex min-w-0 items-start gap-3">
-                                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                              <TableRow key={invitation.id}>
+                                <TableCell>
+                                  <div className="flex items-center gap-3">
+                                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                      {invitationBusy ? (
+                                        <Loader2 className="size-4 animate-spin" />
+                                      ) : (
+                                        <MailCheck className="size-4" />
+                                      )}
+                                    </span>
+                                    <span className="min-w-0">
+                                      <span className="block truncate font-medium text-foreground">
+                                        {invitation.organizationName ||
+                                          invitation.organizationId}
+                                      </span>
+                                      <span className="block truncate text-xs text-muted-foreground">
+                                        {invitation.email}
+                                      </span>
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge
+                                    variant="secondary"
+                                    className="h-5 normal-case tracking-normal"
+                                  >
+                                    {invitation.role}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <Button
+                                    className="h-8 rounded-lg px-3 text-xs"
+                                    disabled={Boolean(busyId || busyAction)}
+                                    onClick={() =>
+                                      void acceptInvitation(invitation)
+                                    }
+                                    type="button"
+                                  >
                                     {invitationBusy ? (
-                                      <Loader2 className="h-5 w-5 animate-spin" />
-                                    ) : (
-                                      <MailCheck className="h-5 w-5" />
-                                    )}
-                                  </span>
-                                  <span className="min-w-0">
-                                    <span className="block truncate text-sm font-black">
-                                      {invitation.organizationName ||
-                                        invitation.organizationId}
-                                    </span>
-                                    <span className="mt-1 block text-xs font-semibold text-muted-foreground">
-                                      {t("roleLabel")} {invitation.role}
-                                    </span>
-                                  </span>
-                                </div>
-                                <Button
-                                  className="h-10 rounded-lg sm:w-auto"
-                                  disabled={Boolean(busyId || busyAction)}
-                                  onClick={() =>
-                                    void acceptInvitation(invitation)
-                                  }
-                                  type="button"
-                                >
-                                  {invitationBusy ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <CheckCircle2 className="h-4 w-4" />
-                                  )}
-                                  {invitationBusy
-                                    ? t("acceptingInvite")
-                                    : t("acceptInvite")}
-                                </Button>
-                              </div>
+                                      <Loader2 className="size-3.5 animate-spin" />
+                                    ) : null}
+                                    {invitationBusy
+                                      ? t("acceptingInvite")
+                                      : t("acceptInvite")}
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
                             );
                           })}
-                        </div>
-                      ) : null}
-                    </section>
+                        </TableBody>
+                      </Table>
+                    </div>
                   ) : null}
+                </section>
+              ) : null}
 
-                  {hasOrganizations ? (
-                    <section className="space-y-3">
-                      <h2 className="text-sm font-black">
-                        {t("existingTitle")}
-                      </h2>
-                      <div className="space-y-2">
+              <section className="mx-6 max-w-5xl">
+                <div className="mb-3 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">
+                      {t("existingTitle")}
+                    </h2>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {hasOrganizations
+                        ? t("subtitle")
+                        : t("noOrganizationsDesc")}
+                    </p>
+                  </div>
+                </div>
+                {hasOrganizations ? (
+                  <div className="overflow-hidden rounded-xl border border-border bg-card">
+                    <Table>
+                      <TableHeader className="bg-muted/40">
+                        <TableRow className="hover:bg-transparent">
+                          <TableHead>Organization</TableHead>
+                          <TableHead className="w-40">Status</TableHead>
+                          <TableHead className="w-32 text-right">
+                            Action
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
                         {orgs?.map((org) => {
                           const isCurrent =
                             session?.session?.activeOrganizationId === org.id;
+                          const isBusy = busyId === org.id;
                           return (
-                            <button
-                              className="group flex w-full items-center gap-3 rounded-lg border border-border bg-background p-4 text-start transition hover:border-primary/50 hover:bg-accent/40 disabled:pointer-events-none disabled:opacity-60"
-                              disabled={Boolean(busyId || busyAction)}
+                            <TableRow
                               key={org.id}
+                              className="cursor-pointer"
                               onClick={() => void selectOrganization(org.id)}
-                              type="button"
                             >
-                              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-card">
-                                {busyId === org.id ? (
-                                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                                ) : isCurrent ? (
-                                  <CheckCircle2 className="h-5 w-5 text-primary" />
+                              <TableCell>
+                                <div className="flex min-w-0 items-center gap-3">
+                                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                    {isBusy ? (
+                                      <Loader2 className="size-4 animate-spin" />
+                                    ) : (
+                                      <Building2 className="size-4" />
+                                    )}
+                                  </span>
+                                  <span className="min-w-0">
+                                    <span className="block truncate font-medium text-foreground">
+                                      {org.name ?? t("untitledWorkspace")}
+                                    </span>
+                                    <span className="block truncate text-xs text-muted-foreground">
+                                      {org.slug ?? org.id}
+                                    </span>
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {isCurrent ? (
+                                  <Badge
+                                    variant="secondary"
+                                    className="h-5 normal-case tracking-normal"
+                                  >
+                                    {t("currentWorkspace")}
+                                  </Badge>
                                 ) : (
-                                  <Building2 className="h-5 w-5 text-muted-foreground" />
+                                  <span className="text-sm text-muted-foreground">
+                                    —
+                                  </span>
                                 )}
-                              </span>
-                              <span className="min-w-0 flex-1">
-                                <span className="block truncate text-sm font-black">
-                                  {org.name ?? t("untitledWorkspace")}
-                                </span>
-                                <span className="mt-1 block truncate text-xs font-semibold text-muted-foreground">
-                                  {isCurrent
-                                    ? t("currentWorkspace")
-                                    : (org.slug ?? org.id)}
-                                </span>
-                              </span>
-                              <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition group-hover:opacity-100 rtl:rotate-180" />
-                            </button>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button
+                                  className="h-8 rounded-lg px-3 text-xs"
+                                  disabled={Boolean(busyId || busyAction)}
+                                  onClick={(
+                                    event: MouseEvent<HTMLButtonElement>,
+                                  ) => {
+                                    event.stopPropagation();
+                                    void selectOrganization(org.id);
+                                  }}
+                                  type="button"
+                                  variant={isCurrent ? "outline" : "ghost"}
+                                >
+                                  {isBusy ? (
+                                    <Loader2 className="size-3.5 animate-spin" />
+                                  ) : null}
+                                  <span className="sr-only">{org.name}</span>
+                                  <ArrowRight className="size-3.5 rtl:rotate-180" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
                           );
                         })}
-                      </div>
-                    </section>
-                  ) : null}
-
-                  <section className="space-y-3 border-t border-border pt-6">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <h2 className="text-sm font-black">
-                          {t("createTitle")}
-                        </h2>
-                        <p className="mt-1 text-xs font-medium text-muted-foreground">
-                          {hasOrganizations || hasInvitations
-                            ? t("createHelp")
-                            : t("noOrganizationsDesc")}
-                        </p>
-                      </div>
-                      <Button
-                        className="h-10 rounded-lg sm:w-auto"
-                        disabled={Boolean(busyId || busyAction)}
-                        onClick={() => setCreateOpen(true)}
-                        type="button"
-                      >
-                        <Plus className="h-4 w-4" />
-                        {t("createNew")}
-                      </Button>
-                    </div>
-                  </section>
-                </>
-              )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-border bg-card px-4 py-8 text-sm text-muted-foreground">
+                    {t("noOrganizationsDesc")}
+                  </div>
+                )}
+              </section>
             </div>
-          </div>
-        </section>
+          )}
+        </div>
       </div>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-md rounded-lg p-5 sm:p-6">
+        <DialogContent className="max-w-md rounded-md p-5 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="text-lg font-black">
+            <DialogTitle className="text-lg font-semibold">
               {t("createModalTitle")}
             </DialogTitle>
             <DialogDescription>{t("createModalDesc")}</DialogDescription>
@@ -554,7 +734,7 @@ export function ChooseOrganizationClient({
               {t("createNameLabel")}
             </label>
             <Input
-              className="h-11 rounded-lg"
+              className="h-10 rounded-md"
               id="organization-name"
               onChange={(event) => {
                 setOrganizationName(event.target.value);
@@ -569,7 +749,7 @@ export function ChooseOrganizationClient({
           </div>
           <DialogFooter className="mt-2 rounded-b-lg">
             <Button
-              className="h-10 rounded-lg"
+              className="h-9 rounded-md"
               disabled={busyAction === "create"}
               onClick={() => setCreateOpen(false)}
               type="button"
@@ -578,7 +758,7 @@ export function ChooseOrganizationClient({
               {t("hideCreate")}
             </Button>
             <Button
-              className="h-10 rounded-lg"
+              className="h-9 rounded-md"
               disabled={busyAction === "create" || Boolean(busyId)}
               onClick={() => void createOrganization()}
               type="button"

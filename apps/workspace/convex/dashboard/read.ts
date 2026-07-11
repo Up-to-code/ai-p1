@@ -1,5 +1,7 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
+import { resolveProjectAccess } from "../access/project";
+import { resolveTaskAccess } from "../access/task";
 import { assertOrganizationPermission } from "../organizations/profile/access";
 import { dashboardOverview } from "../workspace/dashboardOverview";
 
@@ -41,6 +43,10 @@ export const overview = query({
   }),
   handler: async (ctx, args) => {
     await assertOrganizationPermission(ctx, args.organizationId, "read");
+    const [projectAccess, taskAccess] = await Promise.all([
+      resolveProjectAccess(ctx, args.organizationId),
+      resolveTaskAccess(ctx, args.organizationId),
+    ]);
     const [
       displayProjects,
       allProjects,
@@ -76,13 +82,22 @@ export const overview = query({
         .take(MAX_DASHBOARD_RANGE_ITEMS),
     ]);
 
+    const readableProjects = projectAccess.filterReadable;
+    const [filteredDisplayProjects, filteredAllProjects, filteredActiveProjects, filteredBlockedProjects, filteredTasks] = await Promise.all([
+      readableProjects(displayProjects),
+      readableProjects(allProjects),
+      readableProjects(activeProjects),
+      readableProjects(blockedProjects),
+      taskAccess.filterReadable(tasks),
+    ]);
+
     return dashboardOverview(
       {
-        displayProjects,
-        allProjects,
-        activeProjects,
-        blockedProjects,
-        tasks,
+        displayProjects: filteredDisplayProjects,
+        allProjects: filteredAllProjects,
+        activeProjects: filteredActiveProjects,
+        blockedProjects: filteredBlockedProjects,
+        tasks: filteredTasks,
         events,
       },
       (clientId) => ctx.db.get(clientId),

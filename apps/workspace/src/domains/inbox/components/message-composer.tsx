@@ -3,26 +3,24 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowUp,
-  ChevronDown,
   Loader2,
-  Mic,
   Plus,
   FileText,
   X,
   AtSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MentionPicker } from "./mention-picker";
 import {
   ComposerActionPopover,
   type ComposerAction,
 } from "./composer-action-popover";
 import { LinkInsertPopover } from "./link-insert-popover";
 import type { MessageMention, MessageAttachment } from "../types/inbox.types";
-import { AnimatePresence } from "framer-motion";
 import { setItem, getItem, removeItem } from "@/domains/storage";
 import { uploadFiles } from "@/lib/uploadthing";
 import { YooptaRichTextEditor } from "@/components/shared/yoopta-rich-text-editor";
+import { useComposerMentionOptions } from "@/domains/inbox/hooks/use-composer-mention-options";
+import { MentionPicker } from "./mention-picker";
 
 interface MessageComposerProps {
   onSend: (
@@ -39,6 +37,7 @@ interface MessageComposerProps {
   organizationId?: string;
   projectId?: string;
   channelId?: string;
+  insertContent?: { id: string; html: string } | null;
 }
 
 type ComposerAttachment = MessageAttachment & {
@@ -64,6 +63,174 @@ function getTextPreview(content: string) {
   return (element.textContent || element.innerText || "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+type YooptaMentionNode = {
+  type?: string;
+  props?: {
+    id?: string;
+    name?: string;
+    type?: MessageMention["type"];
+  };
+  children?: unknown[];
+};
+
+function collectYooptaMentionNodes(value: unknown, target: MessageMention[]) {
+  if (!value || typeof value !== "object") return;
+  const node = value as YooptaMentionNode;
+  if (
+    node.type === "mention" &&
+    node.props?.id &&
+    node.props.name &&
+    node.props.type
+  ) {
+    target.push({
+      id: node.props.id,
+      name: node.props.name,
+      type: node.props.type,
+    });
+  }
+  for (const child of node.children ?? []) {
+    collectYooptaMentionNodes(child, target);
+  }
+  for (const candidate of Object.values(value as Record<string, unknown>)) {
+    if (candidate !== node.children) collectYooptaMentionNodes(candidate, target);
+  }
+}
+
+export function getYooptaJsonMentions(serializedJson?: string | null) {
+  if (!serializedJson) return [];
+  try {
+    const mentions: MessageMention[] = [];
+    collectYooptaMentionNodes(JSON.parse(serializedJson), mentions);
+    return mentions;
+  } catch {
+    return [];
+  }
+}
+
+function uniqueMentions(mentions: MessageMention[]) {
+  const seen = new Set<string>();
+  return mentions.filter((mention) => {
+    const key = `${mention.type}:${mention.id}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+export function getInlineMentions(content: string): MessageMention[] {
+  if (typeof DOMParser === "undefined") return [];
+  const parsed = new DOMParser().parseFromString(content, "text/html");
+  const htmlMentions = Array.from(parsed.querySelectorAll<HTMLElement>("[data-mention-id]"))
+    .map((element) => {
+      const id = element.dataset.mentionId;
+      const name = element.dataset.mentionName;
+      const type = element.dataset.mentionType as MessageMention["type"] | undefined;
+      if (!id || !name || !type) return null;
+      return { id, name, type };
+    })
+    .filter((mention): mention is MessageMention => mention !== null);
+  const jsonMentions = getYooptaJsonMentions(
+    parsed.body.getAttribute("data-yoopta-json"),
+  );
+  return uniqueMentions([...htmlMentions, ...jsonMentions]);
+}
+
+function escapeMentionAttribute(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function serializedMentionHtml(mention: MessageMention) {
+  const id = escapeMentionAttribute(mention.id);
+  const name = escapeMentionAttribute(mention.name);
+  const type = escapeMentionAttribute(mention.type);
+  return `<span data-mention data-mention-id="${id}" data-mention-name="${name}" data-mention-avatar="" data-mention-type="${type}">@${name}</span>`;
+}
+
+export function appendComposerMention(
+  content: string,
+  mention: MessageMention,
+) {
+  const mentionHtml = `${serializedMentionHtml(mention)}&nbsp;`;
+  const closingParagraphIndex = content.lastIndexOf("</p>");
+
+  if (closingParagraphIndex >= 0) {
+    return `${content.slice(0, closingParagraphIndex)}${mentionHtml}${content.slice(closingParagraphIndex)}`;
+  }
+  if (content.trim()) return `${content}<p>${mentionHtml}</p>`;
+  return `<p>${mentionHtml}</p>`;
+}
+
+type YooptaTextNode = {
+  text?: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  strike?: boolean;
+  code?: boolean;
+};
+
+function serializeYooptaInlineNode(node: unknown): string {
+  if (!node || typeof node !== "object") return "";
+  const candidate = node as YooptaMentionNode & YooptaTextNode;
+  if (
+    candidate.type === "mention" &&
+    candidate.props?.id &&
+    candidate.props.name &&
+    candidate.props.type
+  ) {
+    return serializedMentionHtml({
+      id: candidate.props.id,
+      name: candidate.props.name,
+      type: candidate.props.type,
+    });
+  }
+
+  let value = escapeMentionAttribute(candidate.text ?? "");
+  if (candidate.code) value = `<code>${value}</code>`;
+  if (candidate.bold) value = `<strong>${value}</strong>`;
+  if (candidate.italic) value = `<em>${value}</em>`;
+  if (candidate.underline) value = `<u>${value}</u>`;
+  if (candidate.strike) value = `<s>${value}</s>`;
+  return value;
+}
+
+export function normalizeComposerMentions(content: string) {
+  if (typeof DOMParser === "undefined") return content;
+  const parsed = new DOMParser().parseFromString(content, "text/html");
+  const serializedJson = parsed.body.getAttribute("data-yoopta-json");
+  if (!serializedJson) return content;
+
+  try {
+    const payload = JSON.parse(serializedJson) as {
+      blocks?: Array<{
+        value?: Array<{ children?: unknown[] }>;
+      }>;
+    };
+    const paragraphs = Array.from(parsed.body.querySelectorAll(":scope > p"));
+    payload.blocks?.forEach((block, index) => {
+      const children = block.value?.[0]?.children ?? [];
+      if (!children.some((child) =>
+        Boolean(
+          child &&
+          typeof child === "object" &&
+          (child as YooptaMentionNode).type === "mention",
+        ),
+      )) return;
+      const paragraph = paragraphs[index];
+      if (paragraph) {
+        paragraph.innerHTML = children.map(serializeYooptaInlineNode).join("");
+      }
+    });
+    return parsed.body.innerHTML;
+  } catch {
+    return content;
+  }
 }
 
 // ─── Attachment token chip ────────────────────────────────────────────────────
@@ -114,8 +281,8 @@ export function MessageComposer({
   organizationId,
   projectId,
   channelId,
+  insertContent,
 }: MessageComposerProps) {
-  const [mentions, setMentions] = useState<MessageMention[]>([]);
   const [attachments, setAttachments] = useState<ComposerAttachment[]>([]);
   const attachmentsRef = useRef<ComposerAttachment[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -143,8 +310,15 @@ export function MessageComposer({
   }, [editingMessage]);
 
   useEffect(() => {
+    if (!insertContent?.html) return;
+    setComposerHtml((current) => `${current}${current ? "" : "<p></p>"}${insertContent.html}`);
+  }, [insertContent]);
+
+  useEffect(() => {
     setIsTyping(Boolean(getTextPreview(composerHtml).trim()));
   }, [composerHtml]);
+
+  const mentionOptions = useComposerMentionOptions(organizationId);
 
   // Auto-save draft to IndexedDB (debounced)
   const draftKey = channelId ? `inbox:draft:${channelId}` : null;
@@ -222,7 +396,8 @@ export function MessageComposer({
   };
 
   const handleSend = async () => {
-    const text = getTextPreview(composerHtml);
+    const normalizedComposerHtml = normalizeComposerMentions(composerHtml);
+    const text = getTextPreview(normalizedComposerHtml);
     if ((!text.trim() && attachments.length === 0) || disabled || isUploading) {
       return;
     }
@@ -237,11 +412,12 @@ export function MessageComposer({
     }
 
     const content = text.trim()
-      ? composerHtml
+      ? normalizedComposerHtml
       : `<p>${uploadedAttachments.map((attachment) => attachment.name).join(", ")}</p>`;
+    const inlineMentions = getInlineMentions(content);
     onSend(
       content,
-      mentions.length > 0 ? mentions : undefined,
+      inlineMentions.length > 0 ? inlineMentions : undefined,
       uploadedAttachments.length > 0
         ? uploadedAttachments.map(
             ({ action, file, ...attachment }) => attachment,
@@ -249,18 +425,11 @@ export function MessageComposer({
         : undefined,
     );
     setComposerHtml("");
-    setMentions([]);
     attachments.forEach(revokeLocalAttachmentUrl);
     setAttachments([]);
     setIsTyping(false);
     setIsUploading(false);
     if (draftKey) removeItem("layouts", draftKey).catch(() => {});
-  };
-
-  const handleMentionSelect = (mention: MessageMention) => {
-    setComposerHtml((current) => `${current || "<p></p>"}<p>@${mention.name}</p>`);
-    setMentions((prev) => [...prev, mention]);
-    setShowMentionPicker(false);
   };
 
   const handleAction = (action: ComposerAction) => {
@@ -280,19 +449,6 @@ export function MessageComposer({
         imgInput.click();
         break;
       }
-      case "attach-document":
-        setAttachments((prev) => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            name: "Browse documents...",
-            url: "#",
-            type: "document",
-            size: 0,
-            action,
-          },
-        ]);
-        break;
       case "insert-link": {
         setShowLinkPopover(true);
         break;
@@ -340,19 +496,23 @@ export function MessageComposer({
     setShowLinkPopover(false);
   };
 
+  const handleMentionSelect = (mention: MessageMention) => {
+    setComposerHtml((current) => appendComposerMention(current, mention));
+    setShowMentionPicker(false);
+  };
+
   const attachmentIconMap: Record<
     ComposerAction,
     { icon: React.ElementType; accent: string }
   > = {
     "upload-file": { icon: FileText, accent: "text-blue-500" },
-    "attach-document": { icon: FileText, accent: "text-violet-500" },
     "attach-image": { icon: FileText, accent: "text-emerald-500" },
     "insert-link": { icon: FileText, accent: "text-amber-500" },
     mention: { icon: AtSign, accent: "text-rose-500" },
   };
 
   return (
-    <div className="shrink-0 border-t border-border/50 bg-background">
+    <div className="shrink-0 bg-background">
       <input
         ref={fileInputRef}
         type="file"
@@ -363,6 +523,15 @@ export function MessageComposer({
             handleFileSelection(e.target.files, "upload-file");
         }}
       />
+
+      {showMentionPicker && organizationId ? (
+        <MentionPicker
+          organizationId={organizationId}
+          projectId={projectId}
+          onSelect={handleMentionSelect}
+          onClose={() => setShowMentionPicker(false)}
+        />
+      ) : null}
 
       {/* Reply banner */}
       {replyTo && (
@@ -404,23 +573,11 @@ export function MessageComposer({
         </div>
       )}
 
-      {/* Mention picker */}
-      <AnimatePresence>
-        {showMentionPicker && organizationId && (
-          <MentionPicker
-            organizationId={organizationId}
-            projectId={projectId}
-            onSelect={handleMentionSelect}
-            onClose={() => setShowMentionPicker(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      <div ref={composerRef} className="px-4 py-2">
+      <div ref={composerRef} className="px-4 pb-3 pt-2">
         <div
           className={cn(
-            "relative overflow-hidden rounded-lg border bg-background transition-all duration-200",
-            "border-border focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/10",
+            "relative overflow-hidden rounded-2xl border border-border/70 bg-background shadow-sm transition-[border-color,box-shadow,background-color] duration-200",
+            "focus-within:border-primary/35 focus-within:bg-background focus-within:shadow-[0_0_0_3px_hsl(var(--primary)/0.08)]",
           )}
         >
           <ComposerActionPopover
@@ -436,9 +593,9 @@ export function MessageComposer({
             onSubmit={handleInsertLink}
           />
 
-          <div className="min-h-[48px]">
+          <div className="min-h-[54px]">
             {hasTokens && (
-              <div className="flex flex-wrap gap-1.5 border-b border-border/40 px-3 py-2">
+              <div className="flex flex-wrap gap-1.5 px-3 pt-2">
                 {attachments.map((a) => {
                   const { icon, accent } = attachmentIconMap[a.action];
                   return (
@@ -457,19 +614,28 @@ export function MessageComposer({
               value={composerHtml}
               onChange={setComposerHtml}
               placeholder={placeholder}
-              className="rounded-none border-0 bg-transparent shadow-none"
-              editorClassName="max-h-[168px] min-h-[44px] overflow-y-auto px-3 py-2.5 text-[13px] leading-6"
+              variant="composer"
+              compactFormatting
+              disableImageUpload
+              mentionOptions={mentionOptions}
+              onSubmit={() => {
+                void handleSend();
+              }}
+              className="rounded-none border-0 bg-transparent shadow-none [&_[contenteditable]]:border-0 [&_[contenteditable]]:outline-none [&_[contenteditable]]:ring-0 [&_[contenteditable]:focus]:outline-none"
+              editorClassName="max-h-36 min-h-[52px] overflow-y-auto px-4 py-3 text-sm leading-6 outline-none"
               minHeightClassName=""
             />
           </div>
 
-          <div className="flex min-h-9 items-center justify-between gap-2 border-t border-border/40 px-2 py-1">
+          <div className="flex min-h-11 items-center justify-between gap-2 border-t border-border/40 px-2.5 py-1.5">
             <div className="flex min-w-0 items-center gap-1">
               <button
                 ref={plusButtonRef}
                 type="button"
                 disabled={disabled}
                 onClick={() => setShowActionPopover((v) => !v)}
+                aria-label="Add attachment or link"
+                title="Add attachment or link"
                 className={cn(
                   "flex h-7 w-7 items-center justify-center rounded-md transition-all active:scale-95 disabled:opacity-40",
                   showActionPopover
@@ -487,34 +653,22 @@ export function MessageComposer({
               <button
                 type="button"
                 disabled={disabled}
-                className="inline-flex h-7 items-center gap-1 rounded-md bg-muted px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
-              >
-                Message
-                <ChevronDown className="h-3 w-3" />
-              </button>
-              <button
-                type="button"
-                disabled={disabled}
-                onClick={() => setShowMentionPicker(true)}
+                onClick={() => handleAction("mention")}
+                aria-expanded={showMentionPicker}
+                aria-label="Mention someone or link a record"
+                title="Mention someone or link a record"
                 className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-all active:scale-95 disabled:opacity-40"
               >
                 <AtSign className="h-3.5 w-3.5" />
               </button>
-              <div className="mx-1 h-5 w-px bg-border/70" />
             </div>
             <div className="flex items-center gap-1">
               <button
                 type="button"
-                disabled={disabled}
-                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
-                title="Voice input"
-              >
-                <Mic className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
                 onClick={handleSend}
                 disabled={!canSend || disabled || isUploading}
+                aria-label={isUploading ? "Uploading attachments" : "Send message"}
+                title="Send message"
                 className={cn(
                   "flex h-7 w-7 items-center justify-center rounded-md transition-all active:scale-95 disabled:opacity-40",
                   canSend
@@ -527,14 +681,6 @@ export function MessageComposer({
                 ) : (
                   <ArrowUp className="h-3.5 w-3.5" />
                 )}
-              </button>
-              <button
-                type="button"
-                disabled={disabled}
-                className="flex h-7 w-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
-                title="Send options"
-              >
-                <ChevronDown className="h-3 w-3" />
               </button>
             </div>
           </div>

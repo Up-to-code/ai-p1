@@ -8,6 +8,7 @@ export type CalendarStatusTone = "neutral" | "success" | "warning";
 export const customEventTypeValues: CalendarEventFormValues["type"][] = [
   "meeting",
   "deadline",
+  "document",
   "reminder",
   "milestone",
   "focusBlock",
@@ -63,6 +64,8 @@ export function calendarEventTypeClassName(type: string) {
     return "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-400/10 dark:border-amber-400/20 dark:text-amber-300";
   if (type === "deadline")
     return "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-300";
+  if (type === "document")
+    return "bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300";
   if (type === "reminder")
     return "bg-sky-50 border-sky-200 text-sky-800 dark:bg-sky-900/20 dark:border-sky-800 dark:text-sky-300";
   if (type === "milestone")
@@ -78,6 +81,33 @@ export function calendarScheduleTitle(typeLabel: string, context?: string) {
 
 export function calendarIsoDate(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+export function calendarEventStart(event: Pick<CalendarEvent, "startAt" | "date" | "time">) {
+  return event.startAt
+    ? new Date(event.startAt)
+    : new Date(`${event.date}T${event.time || "00:00"}`);
+}
+
+export function calendarEventEnd(
+  event: Pick<CalendarEvent, "startAt" | "endAt" | "date" | "time">,
+) {
+  const start = calendarEventStart(event);
+  const end = event.endAt ? new Date(event.endAt) : new Date(start.getTime() + 30 * 60_000);
+  return end.getTime() > start.getTime() ? end : new Date(start.getTime() + 30 * 60_000);
+}
+
+export function calendarEventsForDate(events: CalendarEvent[], date: Date) {
+  const dateKey = calendarIsoDate(date);
+  return orderedCalendarEvents(events.filter((event) => event.date === dateKey));
+}
+
+export function calendarWeekdayLabels(locale: string) {
+  const sunday = new Date(2026, 0, 4);
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = addCalendarDays(sunday, index);
+    return date.toLocaleDateString(locale, { weekday: "short" });
+  });
 }
 
 export function getCalendarMonthDays(date: Date): Date[] {

@@ -1,15 +1,15 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Plus, FileText, Search, Folder, Info, X } from "lucide-react";
-import { QentrahTable, type QentrahColumnDef } from "@qentrah/ui";
+import { Plus, FileText, Search, Folder, Info } from "lucide-react";
 import { EmptyWorkspace, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useAuthSession } from "@/domains/auth";
 import { useDocsQuery, useDocFoldersQuery, createDocRequest, createDocFolderRequest, useDocQuery } from "../api/docs";
-import type { DocRecord, DocFolder } from "../docs.types";
+import type { DocRecord } from "../docs.types";
 import { cn } from "@/lib/utils";
-import { emptyDoc } from "../docs.constants";
+import { DOC_TEMPLATE_CONTENT, DOC_TEMPLATE_TYPES, emptyDoc } from "../docs.constants";
 import { DocCreateForm } from "./doc-create-form";
 import { buildBreadcrumbPath, getSubfolders } from "../lib/folder-utils";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,9 @@ import { useRouter, usePathname } from "@/i18n/routing";
 import { DocEditor } from "./doc-editor";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DocsTableSkeleton } from "./docs-table-skeleton";
+import { DocsListTable, type DocsListItem } from "./docs-list-table";
+import { Input } from "@/components/ui/input";
+import { DocTemplateCover } from "./doc-template-cover";
 
 export function DocsPageRedesigned({
   projectId: projectIdProp,
@@ -27,6 +30,7 @@ export function DocsPageRedesigned({
   const session = useAuthSession();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -34,6 +38,10 @@ export function DocsPageRedesigned({
   const [showFolderGuidance, setShowFolderGuidance] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+  const [initialTemplateId, setInitialTemplateId] = useState("blank");
+
+  const filter = searchParams.get("filter");
+  const isTemplatesView = searchParams.get("template") === "true";
 
   const workspaceStatus = session.workspace.status;
   const organizationId =
@@ -43,7 +51,7 @@ export function DocsPageRedesigned({
 
   const projectId = projectIdProp ?? undefined;
 
-  const { data: selectedDoc, isLoading: isLoadingDoc } = useDocQuery(organizationId, selectedDocId || undefined);
+  const { data: selectedDoc } = useDocQuery(organizationId, selectedDocId || undefined);
 
   // Sync modal with URL
   useEffect(() => {
@@ -55,6 +63,12 @@ export function DocsPageRedesigned({
     }
   }, [pathname]);
 
+  useEffect(() => {
+    if (searchParams.get("new") !== "true") return;
+    setInitialTemplateId("blank");
+    setShowCreateForm(true);
+  }, [searchParams]);
+
   const docsResult = useDocsQuery(organizationId, {
     projectId,
     folderId: selectedFolderId,
@@ -65,21 +79,26 @@ export function DocsPageRedesigned({
   const allFolders = foldersResult.data ?? [];
   const emptyDocs = [] as DocRecord[];
   const rawDocs = docsResult.data ?? emptyDocs;
-  const docs = rawDocs.filter((doc) => !doc.deletedAt);
+  const activeDocs = rawDocs.filter((doc) => !doc.deletedAt);
+  const docs = filter === "shared"
+    ? activeDocs.filter((doc) => doc.createdByUserId !== session.user.id && doc.visibility !== "private")
+    : filter === "recent"
+      ? [...activeDocs].sort((left, right) => right.updatedAt - left.updatedAt)
+      : activeDocs;
   const isLoading = docsResult.isLoading || foldersResult.isLoading;
 
   const currentSubfolders = getSubfolders(allFolders, selectedFolderId);
   const breadcrumbPath = buildBreadcrumbPath(allFolders, selectedFolderId);
 
   // Combine folders and docs into single table
-  const tableData = [
-    ...currentSubfolders.map((folder) => ({
+  const tableData: DocsListItem[] = [
+    ...(filter || isTemplatesView ? [] : currentSubfolders.map((folder) => ({
       id: folder.id,
       type: 'folder' as const,
       name: folder.name,
       updatedAt: folder.updatedAt || folder.createdAt,
       itemCount: allFolders.filter((f) => f.parentId === folder.id).length,
-    })),
+    }))),
     ...docs.map((doc) => ({
       id: doc.id,
       type: 'doc' as const,
@@ -89,64 +108,11 @@ export function DocsPageRedesigned({
     })),
   ];
 
-  const columns: QentrahColumnDef<any>[] = [
-    {
-      headerName: "Name",
-      field: "name",
-      flex: 1.5,
-      minWidth: 200,
-      cellRenderer: (p: any) => {
-        const isFolder = p.data?.type === 'folder';
-        return (
-          <div className="flex items-center gap-2.5 min-w-0 cursor-pointer hover:bg-muted/50 rounded px-1 py-1">
-            {isFolder ? (
-              <Folder className="h-4 w-4 text-muted-foreground shrink-0" />
-            ) : (
-              <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-            )}
-            <span className="text-sm font-medium text-foreground truncate">
-              {p.data?.name}
-            </span>
-          </div>
-        );
-      },
-    },
-    {
-      headerName: "Type",
-      field: "type",
-      width: 100,
-      valueGetter: (p: any) => p.data?.type === 'folder' ? 'Folder' : 'Document',
-    },
-    {
-      headerName: "Items",
-      field: "itemCount",
-      width: 80,
-      valueGetter: (p: any) => p.data?.itemCount ?? "—",
-    },
-    {
-      headerName: "Updated",
-      field: "updatedAt",
-      width: 140,
-      valueGetter: (p: any) => {
-        const value = p.data?.updatedAt;
-        if (!value) return "—";
-        return new Date(value).toLocaleDateString(undefined, {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        });
-      },
-    },
-  ];
-
-
-
-  const handleRowClick = (event: any) => {
-    const row = event.data;
-    if (row?.type === 'folder') {
-      setSelectedFolderId(row.id);
-    } else if (row?.id) {
-      router.push(`/docs/${row.id}`);
+  const handleItemOpen = (item: DocsListItem) => {
+    if (item.type === "folder") {
+      setSelectedFolderId(item.id);
+    } else {
+      router.push(`/docs/${item.id}`);
     }
   };
 
@@ -166,11 +132,17 @@ export function DocsPageRedesigned({
     setShowFolderGuidance(true);
   }
 
+  function openCreateDoc(templateId = "blank") {
+    setInitialTemplateId(templateId);
+    setShowCreateForm(true);
+  }
+
   function handleCreateDoc(title: string, templateId?: string) {
     setShowCreateForm(false);
     createDocRequest(organizationId!, {
       ...emptyDoc,
       title,
+      content: templateId ? (DOC_TEMPLATE_CONTENT[templateId] ?? "") : "",
       folderId: selectedFolderId ?? "",
       projectId: projectId ?? "",
     }).then((result) => {
@@ -212,12 +184,54 @@ export function DocsPageRedesigned({
 
 
 
-  if (tableData.length === 0 && !showNewFolder && !showFolderGuidance) {
+  if (!isLoading && !isTemplatesView && tableData.length === 0 && !showNewFolder && !showFolderGuidance) {
     return (
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0">
-          <h1 className="text-lg font-semibold text-foreground">{t("title")}</h1>
+          <h1 className="text-lg font-semibold text-foreground">
+            {filter === "shared" ? "Shared with me" : filter === "recent" ? "Recent" : t("title")}
+          </h1>
           <div className="flex items-center gap-2">
+            {!filter ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowNewFolder(true)}
+                className="h-9 rounded-lg px-4 text-sm font-medium"
+              >
+                <Folder className="w-4 h-4 mr-2" />
+                {t("folders.newFolder")}
+              </Button>
+            ) : null}
+            <Button
+              type="button"
+              onClick={() => openCreateDoc()}
+              className="h-9 rounded-lg px-4 text-sm font-medium"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t("actions.newDoc")}
+            </Button>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <EmptyWorkspace
+            icon={FileText}
+            title={filter === "shared" ? "No shared documents" : filter === "recent" ? "No recent documents" : t("empty.title")}
+            description={filter === "shared" ? "Documents shared by teammates will appear here." : filter === "recent" ? "Documents you recently worked in will appear here." : t("empty.description")}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0">
+          <h1 className="text-lg font-semibold text-foreground">
+            {isTemplatesView ? "Templates" : filter === "shared" ? "Shared with me" : filter === "recent" ? "Recent" : t("title")}
+          </h1>
+        <div className="flex items-center gap-2">
+          {!filter && !isTemplatesView ? (
             <Button
               type="button"
               variant="outline"
@@ -227,40 +241,10 @@ export function DocsPageRedesigned({
               <Folder className="w-4 h-4 mr-2" />
               {t("folders.newFolder")}
             </Button>
-            <Button
-              type="button"
-              onClick={() => setShowCreateForm(true)}
-              className="h-9 rounded-lg px-4 text-sm font-medium"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {t("actions.newDoc")}
-            </Button>
-          </div>
-        </div>
-        <div className="flex-1 flex items-center justify-center">
-          <EmptyWorkspace icon={FileText} title={t("empty.title")} description={t("empty.description")} />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0">
-        <h1 className="text-lg font-semibold text-foreground">{t("title")}</h1>
-        <div className="flex items-center gap-2">
+          ) : null}
           <Button
             type="button"
-            variant="outline"
-            onClick={() => setShowNewFolder(true)}
-            className="h-9 rounded-lg px-4 text-sm font-medium"
-          >
-            <Folder className="w-4 h-4 mr-2" />
-            {t("folders.newFolder")}
-          </Button>
-          <Button
-            type="button"
-            onClick={() => setShowCreateForm(true)}
+            onClick={() => openCreateDoc()}
             className="h-9 rounded-lg px-4 text-sm font-medium"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -308,25 +292,25 @@ export function DocsPageRedesigned({
         <div className="ml-auto flex items-center gap-2">
           <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[var(--q-bg-secondary)] px-3 focus-within:ring-2 focus-within:ring-ring/20">
             <Search className="h-3.5 w-3.5 text-muted-foreground" />
-            <input
+            <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={common("search")}
-              className="h-full w-48 bg-transparent text-xs font-medium text-foreground outline-none placeholder:text-muted-foreground"
+              className="h-7 w-48 border-0 bg-transparent px-0 text-xs font-medium shadow-none focus-visible:ring-0"
             />
           </div>
         </div>
       </div>
 
-      {/* Table */}
+      {/* Content */}
       <div className="flex-1 overflow-auto bg-[var(--q-bg)]">
         {showNewFolder ? (
           <div className="flex items-center gap-2 border-b border-border px-6 py-4">
-            <input
+            <Input
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               placeholder="Folder name"
-              className="h-9 flex-1 rounded-lg border border-border bg-background px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-ring/20"
+              className="h-9 flex-1 text-sm font-medium"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleCreateFolder();
@@ -400,27 +384,42 @@ export function DocsPageRedesigned({
           </div>
         )}
 
-        {isLoading ? (
+        {isTemplatesView ? (
+          <div className="grid gap-3 p-6 sm:grid-cols-2 xl:grid-cols-3">
+            {DOC_TEMPLATE_TYPES.map((template) => (
+              <Button
+                key={template.id}
+                type="button"
+                variant="outline"
+                onClick={() => openCreateDoc(template.id)}
+                className="h-auto min-w-0 flex-col items-stretch justify-start gap-0 overflow-hidden rounded-xl p-0 text-left"
+              >
+                <DocTemplateCover templateId={template.id} className="aspect-[3/2] w-full border-b border-border/60" />
+                <span className="block p-3">
+                  <span className="block text-sm font-medium text-foreground">{template.label}</span>
+                  <span className="mt-1 block text-xs font-normal text-muted-foreground">Start a new document with this structure.</span>
+                </span>
+              </Button>
+            ))}
+          </div>
+        ) : isLoading ? (
           <DocsTableSkeleton />
         ) : (
-          <QentrahTable
-            rows={tableData}
-            columns={columns}
-            onRowClicked={handleRowClick}
-            getRowId={(row) => row.id}
-            className="qentrah-flat-table h-full"
-            suppressRowClickSelection={false}
-            rowSelection="single"
-          />
+          <DocsListTable items={tableData} onOpen={handleItemOpen} />
         )}
       </div>
 
       {/* Create doc form modal */}
       {showCreateForm && (
         <DocCreateForm
-          onClose={() => setShowCreateForm(false)}
+          key={initialTemplateId}
+          onClose={() => {
+            setShowCreateForm(false);
+            if (searchParams.get("new") === "true") router.push("/docs");
+          }}
           onSubmit={handleCreateDoc}
           folderId={selectedFolderId}
+          initialTemplateId={initialTemplateId}
         />
       )}
 
@@ -429,20 +428,6 @@ export function DocsPageRedesigned({
         <DialogContent className="max-w-[90vw] max-h-[90vh] w-full h-[90vh] p-0" showCloseButton={false}>
           {selectedDoc && (
             <div className="flex flex-col h-full">
-              <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0">
-                <h1 className="text-lg font-semibold text-foreground truncate flex-1">
-                  {selectedDoc.title || "Untitled"}
-                </h1>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={handleCloseModal}
-                  className="h-8 w-8"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
               <div className="flex-1 overflow-hidden">
                 <DocEditor
                   doc={selectedDoc}

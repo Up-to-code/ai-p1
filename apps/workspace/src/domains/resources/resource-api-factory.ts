@@ -27,7 +27,7 @@ export function createResourceApi<TRecord, TCreate, TUpdate>(
   }
 
   function update(organizationId: string, resourceId: string, values: TUpdate) {
-    return workspaceMutation<Record<string, TRecord>>(organizationId, `${resourcePath}/${resourceId}`, {
+    return workspaceMutation<Record<string, TRecord>>(organizationId, [resourcePath, resourceId], {
       method: "PATCH",
       body: toPayload(values),
       fallbackMessage: `${cap} request failed.`,
@@ -35,7 +35,7 @@ export function createResourceApi<TRecord, TCreate, TUpdate>(
   }
 
   function remove(organizationId: string, resourceId: string): Promise<void> {
-    return workspaceMutation(organizationId, `${resourcePath}/${resourceId}`, {
+    return workspaceMutation(organizationId, [resourcePath, resourceId], {
       method: "DELETE",
       fallbackMessage: `${cap} request failed.`,
     }) as Promise<void>;

@@ -46,6 +46,11 @@ export function grantableApiKeyPermissions(capabilities?: OrganizationCapabiliti
     project: [capabilities.canReadProjects && "read"],
     calendar: [capabilities.canReadCalendarEvents && "read"],
     task: [capabilities.canReadTasks && "read"],
+    document: [
+      capabilities.canReadOrganization && "read",
+      capabilities.canUpdateOrganization && "create",
+      capabilities.canUpdateOrganization && "update",
+    ],
     media: [capabilities.canReadMedia && "read"],
   } satisfies Record<OrganizationApiKeyResource, Array<OrganizationApiKeyAction | false>>;
 

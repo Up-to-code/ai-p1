@@ -10,6 +10,7 @@ import {
   messageValidator,
   threadValidator,
 } from "./validators";
+import { emitMessageMentionEvents } from "../notifications/inbox_events";
 
 const MAX_CHANNEL_MESSAGES = 5_000;
 const MAX_CHANNEL_THREADS = 2_000;
@@ -221,6 +222,12 @@ async function createMessage(
   const message = await ctx.db.get(dbId);
   if (!message)
     throw inboxError("MESSAGE_CREATE_FAILED", "Message could not be created.");
+  await emitMessageMentionEvents(ctx, {
+    organizationId: channel.organizationId,
+    actorUserId: authorId,
+    channelId: channel.id,
+    message,
+  });
   return message;
 }
 

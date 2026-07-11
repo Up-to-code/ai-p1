@@ -8,21 +8,15 @@ import {
 
 vi.mock("./security/clientPii", () => ({
   protectClientPii: vi.fn(async (_organizationId: string, input: Record<string, string>) => ({
-    contact: `redacted:${input.contact}`,
+    email: `redacted:${input.email}`,
     phone: `redacted:${input.phone}`,
-    nationality: `redacted:${input.nationality}`,
-    budget: `redacted:${input.budget}`,
-    encryptedContact: `encrypted:${input.contact}`,
+    encryptedEmail: `encrypted:${input.email}`,
     encryptedPhone: `encrypted:${input.phone}`,
-    encryptedNationality: `encrypted:${input.nationality}`,
-    encryptedBudget: `encrypted:${input.budget}`,
     piiEncryptedAt: 1_000,
   })),
   revealClientPii: vi.fn(async () => ({
-    contact: "revealed-contact",
+    email: "revealed-email",
     phone: "revealed-phone",
-    nationality: "revealed-nationality",
-    budget: "revealed-budget",
   })),
 }));
 
@@ -153,7 +147,7 @@ describe("partner resource gateway", () => {
     expect(client).toMatchObject({
       id: "clients_1",
       createdByUserId: "partner:partners_app_1",
-      contact: "redacted:mona@example.com",
+      email: "redacted:mona@example.com",
     });
     expect(operations.inserted).toContainEqual({
       table: "organizationAuditEvents",
@@ -204,16 +198,62 @@ describe("partner resource gateway", () => {
     expect(operations.scheduled).toEqual([]);
   });
 
+  it("creates and updates tasks through an organization API key", async () => {
+    const { ctx, operations } = createFakeCtx();
+    vi.spyOn(Date, "now").mockReturnValue(200);
+    const actor = { type: "apiKey" as const, apiKeyId: "api_key_1" as Id<"organizationApiKeys"> };
+
+    const task = await writePartnerResourceThroughGateway(ctx, {
+      organizationId: "org_1",
+      resource: "task",
+      action: "create",
+      input: { title: "Zapier follow-up", priority: "high" },
+      actor,
+    });
+    await writePartnerResourceThroughGateway(ctx, {
+      organizationId: "org_1",
+      resource: "task",
+      action: "update",
+      input: { taskId: task.id, status: "completed" },
+      actor,
+    });
+
+    expect(task).toMatchObject({ title: "Zapier follow-up", priority: "high", createdByUserId: "apiKey:api_key_1" });
+    expect(operations.patched).toContainEqual({ id: task.id, patch: expect.objectContaining({ status: "completed", updatedAt: 200 }) });
+    expect(operations.inserted).toContainEqual({ table: "organizationAuditEvents", doc: expect.objectContaining({ action: "apiKey.task.create" }) });
+  });
+
+  it("lists and creates documents through the indexed gateway", async () => {
+    const { ctx, operations } = createFakeCtx({ docs: [{ _id: "doc_1", organizationId: "org_1", title: "Existing" }] });
+    const actor = { type: "apiKey" as const, apiKeyId: "api_key_1" as Id<"organizationApiKeys"> };
+
+    await expect(readPartnerResourceThroughGateway(ctx, {
+      organizationId: "org_1",
+      resource: "document",
+      action: "read",
+      defaultLimit: 100,
+    })).resolves.toEqual([expect.objectContaining({ id: "doc_1" })]);
+    const document = await writePartnerResourceThroughGateway(ctx, {
+      organizationId: "org_1",
+      resource: "document",
+      action: "create",
+      input: { title: "Zapier brief", visibility: "workspace" },
+      actor,
+    });
+
+    expect(document).toMatchObject({ title: "Zapier brief", visibility: "workspace", createdByUserId: "apiKey:api_key_1" });
+    expect(operations.takeLimits).toEqual([100]);
+    expect(operations.inserted).toContainEqual({ table: "organizationAuditEvents", doc: expect.objectContaining({ action: "apiKey.document.create" }) });
+  });
+
   it("preserves actor-specific update and delete behavior", async () => {
     const { ctx, operations } = createFakeCtx({
       clients: [
         {
           _id: "client_1",
           organizationId: "org_1",
-          contact: "redacted",
+          email: "redacted",
           phone: "redacted",
-          nationality: "redacted",
-          budget: "redacted",
           updatedAt: 1,
         },
       ],
@@ -246,7 +286,7 @@ describe("partner resource gateway", () => {
       id: "client_1",
       patch: expect.objectContaining({
         deletedAt: 100,
-        isDeleted: true,
+        recordState: "deleted",
         updatedAt: 100,
       }),
     });

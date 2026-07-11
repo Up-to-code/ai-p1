@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
-import { apiKeys } from "../apiKeys";
+import { connectionKeys } from "./connectionKeys";
 import { authUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import {
@@ -194,7 +194,7 @@ export const createFromHono = mutation({
     });
     await assertDelegatedPermissions(ctx, scopePolicy, args.input.permissions);
     const now = Date.now();
-    const key = await apiKeys.create(ctx, {
+    const key = await connectionKeys.create(ctx, {
       name: args.input.name,
       namespace: mcpApiKeyNamespace(args.organizationId, principalType, user._id),
       permissions: mcpPermissionRecord(args.input.permissions),
@@ -206,6 +206,7 @@ export const createFromHono = mutation({
       organizationId: args.organizationId,
       publicId: `pending-${key.keyId}`,
       keyId: key.keyId,
+      tokenHash: key.tokenHash,
       keyLast4: key.tokenLast4,
       name: args.input.name,
       instructions: args.input.instructions,
@@ -221,7 +222,7 @@ export const createFromHono = mutation({
       usageCount: 0,
     });
     await ctx.db.patch(connectionId, { publicId: connectionId });
-    await apiKeys.update(ctx, {
+    await connectionKeys.update(ctx, {
       keyId: key.keyId,
       metadata: mcpApiKeyMetadata(args.organizationId, principalType, user._id, connectionId),
     });
@@ -282,7 +283,7 @@ export const updateFromHono = mutation({
     };
 
     await ctx.db.patch(args.connectionId, patch);
-    await apiKeys.update(ctx, {
+    await connectionKeys.update(ctx, {
       keyId: existing.keyId,
       ...(args.input.name ? { name: args.input.name } : {}),
       ...(args.input.expiresAt !== undefined ? { expiresAt: args.input.expiresAt } : {}),
@@ -344,7 +345,7 @@ export const rotateFromHono = mutation({
     }
     const user = await assertCanUseConnection(ctx, args.organizationId, existing);
 
-    const rotated = await apiKeys.refresh(ctx, {
+    const rotated = await connectionKeys.refresh(ctx, {
       keyId: existing.keyId,
       prefix: "qentrah_mcp_",
       reason: "rotated from organization settings",
@@ -360,6 +361,7 @@ export const rotateFromHono = mutation({
     const now = Date.now();
     await ctx.db.patch(args.connectionId, {
       keyId: rotated.keyId,
+      tokenHash: rotated.tokenHash,
       keyLast4: rotated.tokenLast4,
       status: "active",
       updatedAt: now,
@@ -407,7 +409,7 @@ export const validateConnection = query({
     scopeClientIds: v.optional(v.array(v.id("clients"))),
   }),
   handler: async (ctx, args) => {
-    const key = await apiKeys.validate(ctx, { token: args.secret });
+    const key = await connectionKeys.validate(ctx, { token: args.secret });
     if (!key.ok) return { ok: false, reason: key.reason };
 
     const connection = await ctx.db
@@ -494,7 +496,7 @@ export const reserveUsage = internalMutation({
       return { ok: false, reason: "rate_limited" };
     }
 
-    await apiKeys.touch(ctx, { keyId: args.keyId });
+    await connectionKeys.touch(ctx, { keyId: args.keyId });
     await ctx.db.patch(args.connectionId, {
       lastUsedAt: now,
       usageCount: connection.usageCount + 1,

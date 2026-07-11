@@ -82,7 +82,7 @@ export interface ClientInput {
 
 // ── Calendar Events (matches convex/calendar/validators.ts) ─
 
-export type CalendarEventType = "meeting" | "deadline" | "reminder" | "milestone" | "focusBlock";
+export type CalendarEventType = "meeting" | "deadline" | "document" | "reminder" | "milestone" | "focusBlock";
 export type CalendarEventStatus = "confirmed" | "pending" | "draft";
 
 export interface CalendarEventInput {
@@ -118,7 +118,7 @@ export interface TheoryInput {
 
 // ── Tasks (matches convex validators) ──────────────────
 
-export type TaskStatus = "todo" | "inProgress" | "waiting" | "done" | "canceled";
+export type TaskStatus = string;
 export type TaskPriority = "low" | "normal" | "high" | "urgent";
 
 export interface TaskInput {
@@ -126,6 +126,7 @@ export interface TaskInput {
   status: TaskStatus;
   priority: TaskPriority;
   assigneeUserId?: string;
+  assigneeUserIds?: string[];
   clientId?: string;
   projectId?: string;
   dueDate?: string;

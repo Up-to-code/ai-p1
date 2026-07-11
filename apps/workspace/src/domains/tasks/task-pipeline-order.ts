@@ -68,6 +68,7 @@ export function taskFormValuesForPipeline(
     assigneeUserId: task.assigneeUserId ?? "",
     clientId: task.clientId ?? "",
     projectId: task.projectId ?? "",
+    startDate: task.startDate ?? "",
     dueDate: task.dueDate ?? "",
     description: task.description ?? "",
     tags: (task.tags ?? []).join(", "),

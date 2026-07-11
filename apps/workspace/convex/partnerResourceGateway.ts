@@ -9,10 +9,11 @@ import { protectClientPii, revealClientPii } from "./security/clientPii";
 import { assertConvexBridgeToken } from "./serviceTokens";
 
 type Input = Record<string, unknown>;
+type GatewayResource = PartnerPermissionResource | "document";
 
 type ReadResourceArgs = {
   organizationId: string;
-  resource: PartnerPermissionResource;
+  resource: GatewayResource;
   action: PartnerPermissionAction;
   input?: unknown;
   defaultLimit: number;
@@ -30,7 +31,7 @@ export type PartnerResourceWriteActor =
 
 type WriteResourceArgs = {
   organizationId: string;
-  resource: PartnerPermissionResource;
+  resource: GatewayResource;
   action: PartnerPermissionAction;
   input?: unknown;
   actor: PartnerResourceWriteActor;
@@ -86,6 +87,42 @@ function clientPatch(input: Input) {
     ...(optionalString(input, "notes") ? { notes: optionalString(input, "notes")! } : {}),
     ...(optionalString(input, "source") ? { source: optionalString(input, "source")! } : {}),
     ...(optionalString(input, "status") ? { status: optionalString(input, "status") as "new" | "active" | "nurture" | "inactive" | "archived" } : {}),
+  };
+}
+
+function taskPriority(input: Input) {
+  const priority = optionalString(input, "priority");
+  return priority && ["low", "normal", "high", "urgent"].includes(priority)
+    ? priority as "low" | "normal" | "high" | "urgent"
+    : "normal";
+}
+
+function taskPatch(input: Input) {
+  return {
+    ...(optionalString(input, "title") ? { title: optionalString(input, "title")! } : {}),
+    ...(optionalString(input, "status") ? { status: optionalString(input, "status")! } : {}),
+    ...(optionalString(input, "priority") ? { priority: taskPriority(input) } : {}),
+    ...(optionalString(input, "description") ? { description: optionalString(input, "description")! } : {}),
+    ...(optionalString(input, "projectId") ? { projectId: optionalString(input, "projectId")! } : {}),
+    ...(optionalString(input, "spaceId") ? { spaceId: optionalString(input, "spaceId")! } : {}),
+    ...(optionalString(input, "dueDate") ? { dueDate: optionalString(input, "dueDate")! } : {}),
+  };
+}
+
+function documentVisibility(input: Input) {
+  const visibility = optionalString(input, "visibility");
+  return visibility && ["private", "team", "workspace"].includes(visibility)
+    ? visibility as "private" | "team" | "workspace"
+    : "private";
+}
+
+function documentPatch(input: Input) {
+  return {
+    ...(optionalString(input, "title") ? { title: optionalString(input, "title")! } : {}),
+    ...(typeof input.content === "string" ? { content: input.content } : {}),
+    ...(optionalString(input, "projectId") ? { projectId: optionalString(input, "projectId")! } : {}),
+    ...(optionalString(input, "folderId") ? { folderId: optionalString(input, "folderId")! } : {}),
+    ...(optionalString(input, "visibility") ? { visibility: documentVisibility(input) } : {}),
   };
 }
 
@@ -240,6 +277,20 @@ export async function readPartnerResourceThroughGateway(ctx: QueryCtx, args: Rea
     return listTable(ctx, args.organizationId, "tasks", input, args.defaultLimit);
   }
 
+  if (args.resource === "document") {
+    const docId = optionalString(input, "docId");
+    if (docId) {
+      const document = await ctx.db.get(docId as Id<"docs">);
+      if (!document || document.organizationId !== args.organizationId || document.deletedAt) return null;
+      return present(document);
+    }
+    const rows = await ctx.db
+      .query("docs")
+      .withIndex("by_organization", (q) => q.eq("organizationId", args.organizationId))
+      .take(limitFromInput(input, args.defaultLimit));
+    return rows.filter((row) => !row.deletedAt).map(present);
+  }
+
   if (args.resource === "calendar") {
     const eventId = optionalString(input, "eventId");
     if (eventId) {
@@ -273,6 +324,68 @@ export async function writePartnerResourceThroughGateway(ctx: MutationCtx, args:
   const input = objectInput(args.input);
   const now = Date.now();
   const defaults = actorClientDefaults(args.actor);
+
+  if (args.resource === "task") {
+    if (args.action === "create") {
+      const id = await ctx.db.insert("tasks", {
+        organizationId: args.organizationId,
+        title: requiredString(input, "title", "Zapier task"),
+        status: requiredString(input, "status", "todo"),
+        priority: taskPriority(input),
+        description: optionalString(input, "description"),
+        projectId: optionalString(input, "projectId"),
+        spaceId: optionalString(input, "spaceId"),
+        dueDate: optionalString(input, "dueDate"),
+        visibility: "private",
+        recordState: "active",
+        createdByUserId: defaults.createdByUserId,
+        createdAt: now,
+        updatedAt: now,
+      });
+      await insertActorAudit(ctx, args.organizationId, args.actor, `${args.actor.type}.task.create`, id, "Created task from external integration.", now);
+      return present((await ctx.db.get(id))!);
+    }
+    const taskId = requiredString(input, "taskId") as Id<"tasks">;
+    const existing = await ctx.db.get(taskId);
+    if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
+      throw new Error("Task was not found.");
+    }
+    if (args.action === "update") {
+      await ctx.db.patch(taskId, { ...taskPatch(input), updatedAt: now });
+      await insertActorAudit(ctx, args.organizationId, args.actor, `${args.actor.type}.task.update`, taskId, "Updated task from external integration.", now);
+      return present((await ctx.db.get(taskId))!);
+    }
+    throw new Error("Task API supports create and update actions.");
+  }
+
+  if (args.resource === "document") {
+    if (args.action === "create") {
+      const id = await ctx.db.insert("docs", {
+        organizationId: args.organizationId,
+        title: requiredString(input, "title", "Zapier document"),
+        content: typeof input.content === "string" ? input.content : undefined,
+        projectId: optionalString(input, "projectId"),
+        folderId: optionalString(input, "folderId"),
+        visibility: documentVisibility(input),
+        createdByUserId: defaults.createdByUserId,
+        createdAt: now,
+        updatedAt: now,
+      });
+      await insertActorAudit(ctx, args.organizationId, args.actor, `${args.actor.type}.document.create`, id, "Created document from external integration.", now);
+      return present((await ctx.db.get(id))!);
+    }
+    const docId = requiredString(input, "docId") as Id<"docs">;
+    const existing = await ctx.db.get(docId);
+    if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
+      throw new Error("Document was not found.");
+    }
+    if (args.action === "update") {
+      await ctx.db.patch(docId, { ...documentPatch(input), updatedAt: now });
+      await insertActorAudit(ctx, args.organizationId, args.actor, `${args.actor.type}.document.update`, docId, "Updated document from external integration.", now);
+      return present((await ctx.db.get(docId))!);
+    }
+    throw new Error("Document API supports create and update actions.");
+  }
 
   if (args.resource !== "client") throw new Error(defaults.unsupportedResourceMessage);
 
