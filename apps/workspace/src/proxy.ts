@@ -14,7 +14,7 @@ const PROTECTED_PATTERNS = [
 
 // Routes accessible without authentication
 const AUTH_PATTERNS = [
-  /^\/(ar|en)\/(sign-in|sign-up|sso-callback)(\/|$)/,
+  /^\/(ar|en)\/(sign-in|sign-up|sso-callback|choose-org|verify-email|accept-invite|onboarding)(\/|$)/,
 ];
 
 /** Read the Better Auth session cookie from the request (edge-safe, no next/headers). */
@@ -115,6 +115,13 @@ export default function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
+    // Auth entry routes must be handled before a subdomain rewrite. Otherwise,
+    // `app.qentrah.com/en/sign-in` becomes `/en/ws/sign-in`, which is protected
+    // and redirects back to sign-in with an increasingly nested callback URL.
+    if (isPublicAuth(route)) {
+      return intlMiddleware(request);
+    }
+
     const subdomainRewrite = resolveSubdomainRewrite(request);
     if (subdomainRewrite) {
       if (
@@ -144,11 +151,6 @@ export default function middleware(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = localizedEveMatch[2];
       return NextResponse.rewrite(url);
-    }
-
-    // Public auth routes — pass through to next-intl (no auth guard needed)
-    if (isPublicAuth(route)) {
-      return intlMiddleware(request);
     }
 
     // Protected routes — check for a session cookie
