@@ -2,7 +2,7 @@
 
 import { useTransition, useState } from "react";
 import { Link, useRouter, usePathname } from "@/i18n/routing";
-import { LogOut, User, Settings, Moon, Sun, Globe } from "lucide-react";
+import { Bot, LogOut, User, Settings, Moon, Sun, Globe } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useTheme } from "@/components/providers/theme-provider";
 import {
@@ -102,7 +102,13 @@ export function ProfileMenu() {
             <Settings className="h-4 w-4 me-2" />
             <span>Settings</span>
           </DropdownMenuItem>
-          
+
+          {/* Personal MCP connection */}
+          <DropdownMenuItem render={<Link href="/mcp?create=1" />} className="py-2 rounded-lg">
+            <Bot className="h-4 w-4 me-2" />
+            <span>Create MCP</span>
+          </DropdownMenuItem>
+
           <DropdownMenuSeparator />
 
           {/* Theme toggle */}
