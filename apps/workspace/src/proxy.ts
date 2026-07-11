@@ -2,6 +2,7 @@ import createMiddleware from "next-intl/middleware";
 import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 import { routing } from "./i18n/routing";
+import { resolveSubdomainPath } from "./lib/subdomain-routing";
 
 const intlMiddleware = createMiddleware(routing);
 const SUPPORTED_LOCALES = new Set(["ar", "en"]);
@@ -65,37 +66,13 @@ function resolveSubdomainRewrite(request: NextRequest): URL | null {
   const label = getSubdomainLabel(
     request.headers.get("host") ?? request.nextUrl.hostname,
   );
-  if (!label) return null;
-
   const { locale, pathname } = stripLocale(request.nextUrl.pathname);
+  const targetPath = resolveSubdomainPath(label, locale, pathname);
+  if (!targetPath) return null;
+
   const url = request.nextUrl.clone();
-
-  if (label === "inbox") {
-    url.pathname = `/${locale}/inbox${pathname === "/" ? "" : pathname}`;
-    return url;
-  }
-
-  if (label === "ws" || label === "app") {
-    // Client navigation may already include the canonical workspace prefix.
-    // Rewriting `/en/ws` again would produce the non-existent `/en/ws/ws`.
-    if (pathname === "/ws" || pathname.startsWith("/ws/")) return null;
-    url.pathname = `/${locale}/ws${pathname === "/" ? "" : pathname}`;
-    return url;
-  }
-
-  if (label === "admin") {
-    url.pathname = `/${locale}/organization${
-      pathname === "/" ? "" : pathname
-    }`;
-    return url;
-  }
-
-  if (label === "ai") {
-    url.pathname = `/${locale}/ai${pathname === "/" ? "" : pathname}`;
-    return url;
-  }
-
-  return null;
+  url.pathname = targetPath;
+  return url;
 }
 
 export default function middleware(request: NextRequest) {
