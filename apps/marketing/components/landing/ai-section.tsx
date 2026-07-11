@@ -9,13 +9,13 @@ const copy = {
     tag: "AI AGENTS",
     headline: (
       <>
-        AI that understands your <em>context.</em>
+        AI that starts with <em>context.</em>
       </>
     ),
     subtext: (
-      <>AI agents that see your projects, docs, and conversations to execute real work with full awareness of your business context.</>
+      <>Give AI the workspace context and permissions it needs to help with real work — from organizing tasks to drafting project documents.</>
     ),
-    highlight: "No more generic AI — agents that truly know your business.",
+    highlight: "Less copy-pasting. More useful action inside the work itself.",
     features: [
       { label: "Context-aware actions", desc: "Agents see projects, clients, and history" },
       { label: "MCP protocol", desc: "Connect any tool or service" },
@@ -33,13 +33,13 @@ const copy = {
     tag: "وكلاء الذكاء",
     headline: (
       <>
-        ذكاء اصطناعي يفهم <em>سياقك.</em>
+        ذكاء اصطناعي يبدأ من <em>السياق.</em>
       </>
     ),
     subtext: (
-      <>وكلاء ذكاء اصطناعي يرون مشاريعك ومستنداتك ومحادثاتك لتنفيذ عمل حقيقي مع فهم كامل لسياق عملك.</>
+      <>امنح الذكاء الاصطناعي السياق والصلاحيات اللازمة ليساعد في العمل الحقيقي، من تنظيم المهام إلى إعداد مستندات المشروع.</>
     ),
-    highlight: "لا المزيد من الذكاء الاصطناعي العام — وكلاء يعرفون عملك حقاً.",
+    highlight: "نسخ ولصق أقل، وإنجاز مفيد داخل العمل نفسه.",
     features: [
       { label: "إجراءات واعية بالسياق", desc: "الوكلاء يرون المشاريع والعملاء والتاريخ" },
       { label: "بروتوكول MCP", desc: "اتصل بأي أداة أو خدمة" },
@@ -53,11 +53,29 @@ const copy = {
       { name: "أتمتة سير العمل", desc: "تشغيل إجراءات عبر الأدوات" },
     ],
   },
+  fr: {
+    tag: "AGENTS IA",
+    headline: <>Une IA qui commence par le <em>contexte.</em></>,
+    subtext: <>Donnez à l’IA le contexte et les autorisations nécessaires pour contribuer au travail réel, de l’organisation des tâches à la rédaction des documents projet.</>,
+    highlight: "Moins de copier-coller. Plus d’actions utiles, au cœur du travail.",
+    features: [
+      { label: "Actions contextualisées", desc: "Les agents comprennent projets, clients et historique" },
+      { label: "Protocole MCP", desc: "Connectez vos outils et services" },
+      { label: "Processus automatisés", desc: "Confiez les tâches répétitives à l’IA" },
+      { label: "Suggestions pertinentes", desc: "Une IA guidée par vos habitudes de travail" },
+    ],
+    tools: [
+      { name: "Agents de tâches", desc: "Créent et organisent le travail" },
+      { name: "IA documentaire", desc: "Rédige, résume et améliore" },
+      { name: "Intelligence client", desc: "Analyse l’historique commercial" },
+      { name: "Automatisation", desc: "Déclenche des actions entre vos outils" },
+    ],
+  },
 };
 
 export function AISection({ locale }: { locale: string }) {
   const isAr = locale === "ar";
-  const labels = isAr ? copy.ar : copy.en;
+  const labels = locale === "ar" ? copy.ar : locale === "fr" ? copy.fr : copy.en;
   const staggerRef = useGsapStaggerReveal<HTMLDivElement>(".ai-feature-item", { stagger: 0.12, start: "top 85%" });
   const toolsStaggerRef = useGsapStaggerReveal<HTMLDivElement>(".ai-tool-item", { stagger: 0.1, start: "top 85%" });
 

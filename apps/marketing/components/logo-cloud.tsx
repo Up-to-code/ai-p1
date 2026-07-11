@@ -17,12 +17,17 @@ const toolBrands = [
 const LogoCloud = () => {
   const locale = useLocale();
   const isAr = locale === "ar";
+  const label = isAr
+    ? "يتصل بالأدوات التي تستخدمها بالفعل"
+    : locale === "fr"
+      ? "Connectez les outils que vous utilisez déjà"
+      : "Connect the tools you already use";
 
   return (
     <div className="w-full border-b border-[var(--q-border)] bg-[var(--q-bg)] px-6 py-12 md:py-16">
       <div className="mx-auto max-w-7xl overflow-hidden">
         <p className="text-center text-sm font-bold uppercase tracking-[0.2em] text-[var(--q-text-secondary)] md:text-base">
-          {isAr ? "يعمل مع أدواتك المفضلة" : "Works with your favorite tools"}
+          {label}
         </p>
 
         <div className="mt-8 flex items-center justify-center overflow-hidden">

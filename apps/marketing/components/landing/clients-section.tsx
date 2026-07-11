@@ -9,13 +9,13 @@ const copy = {
     tag: "CLIENTS",
     headline: (
       <>
-        Your clients, your pipeline — <em>all in view.</em>
+        See the whole client journey — <em>not just the deal.</em>
       </>
     ),
     subtext: (
-      <>From first contact to project delivery, manage every client relationship with full history, context, and AI-powered insights.</>
+      <>Keep the relationship, pipeline, active work, documents, and decisions together from first conversation through delivery.</>
     ),
-    highlight: "No more hunting through inboxes for client details.",
+    highlight: "Open a client and see what matters now — without reconstructing the history.",
     features: [
       { label: "360° client view", desc: "Projects, tasks, docs, and chat — all linked" },
       { label: "Pipeline management", desc: "Track deals from lead to close" },
@@ -23,22 +23,22 @@ const copy = {
       { label: "Client portal", desc: "Share updates and deliverables securely" },
     ],
     stats: [
-      { value: "3x", desc: "Faster client onboarding" },
-      { value: "100%", desc: "Context retention across teams" },
-      { value: "40%", desc: "Less time in status meetings" },
+      { value: "One", desc: "Client record across the lifecycle" },
+      { value: "Live", desc: "Project and delivery visibility" },
+      { value: "Shared", desc: "Context for every handoff" },
     ],
   },
   ar: {
     tag: "العملاء",
     headline: (
       <>
-        عملاؤك وقنوات مبيعاتك — <em>كلها في مرمى البصر.</em>
+        شاهد رحلة العميل كاملة — <em>لا الصفقة وحدها.</em>
       </>
     ),
     subtext: (
-      <>من أول اتصال إلى تسليم المشروع، أدر كل علاقة عميل بسجل كامل وسياق ورؤى مدعومة بالذكاء الاصطناعي.</>
+      <>اجمع العلاقة وخط المبيعات والعمل الجاري والمستندات والقرارات منذ أول محادثة وحتى التسليم.</>
     ),
-    highlight: "لا مزيد من البحث في صناديق البريد عن تفاصيل العملاء.",
+    highlight: "افتح ملف العميل واعرف ما يهم الآن، من دون إعادة بناء تاريخه.",
     features: [
       { label: "عرض 360° للعميل", desc: "المشاريع والمهام والمستندات والمحادثات — كلها مرتبطة" },
       { label: "إدارة قنوات البيع", desc: "تتبع الصفقات من البداية إلى الإغلاق" },
@@ -46,16 +46,33 @@ const copy = {
       { label: "بوابة العميل", desc: "مشاركة التحديثات والتسليمات بشكل آمن" },
     ],
     stats: [
-      { value: "3x", desc: "أسرع في تأهيل العملاء" },
-      { value: "١٠٠٪", desc: "الاحتفاظ بالسياق عبر الفرق" },
-      { value: "٤٠٪", desc: "وقت أقل في اجتماعات المتابعة" },
+      { value: "واحد", desc: "سجل للعميل عبر كامل الرحلة" },
+      { value: "مباشر", desc: "وضوح المشروع والتسليم" },
+      { value: "مشترك", desc: "سياق حاضر عند كل تسليم" },
+    ],
+  },
+  fr: {
+    tag: "CLIENTS",
+    headline: <>Suivez tout le parcours client — <em>pas seulement la vente.</em></>,
+    subtext: <>Réunissez relation, pipeline, projets, documents et décisions, du premier échange jusqu’à la livraison.</>,
+    highlight: "Ouvrez une fiche client et voyez immédiatement ce qui compte, sans reconstruire l’historique.",
+    features: [
+      { label: "Vue client complète", desc: "Projets, tâches, documents et échanges reliés" },
+      { label: "Pipeline commercial", desc: "Suivez chaque opportunité jusqu’à la signature" },
+      { label: "Historique des échanges", desc: "Gardez les décisions et interactions au même endroit" },
+      { label: "Portail client", desc: "Partagez avancées et livrables en toute sécurité" },
+    ],
+    stats: [
+      { value: "Unique", desc: "Un dossier pour tout le parcours" },
+      { value: "En direct", desc: "Une vision claire de la livraison" },
+      { value: "Partagé", desc: "Le contexte à chaque passage de relais" },
     ],
   },
 };
 
 export function ClientsSection({ locale }: { locale: string }) {
   const isAr = locale === "ar";
-  const labels = isAr ? copy.ar : copy.en;
+  const labels = locale === "ar" ? copy.ar : locale === "fr" ? copy.fr : copy.en;
   const staggerRef = useGsapStaggerReveal<HTMLDivElement>(".client-feature-item", { stagger: 0.12, start: "top 85%" });
   const statsStaggerRef = useGsapStaggerReveal<HTMLDivElement>(".client-stat-item", { stagger: 0.15, start: "top 85%" });
 

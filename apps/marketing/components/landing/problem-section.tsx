@@ -9,40 +9,40 @@ const copy = {
     label: "PROBLEM",
     headline: (
       <>
-        The problem isn't work.<br />
-        It's <HighlightWord>fragmentation</HighlightWord>.
+        Your work is connected.<br />
+        Your tools <HighlightWord>aren't</HighlightWord>.
       </>
     ),
     subtext: (
-      <>Projects, conversations, documents, clients, and AI are scattered across disconnected tools. Teams spend more time searching for context than executing work.</>
+      <>A client request becomes an email, a task, a document, and three follow-ups. When each lives in a different tool, the story of the work disappears.</>
     ),
     nodes: [
-      { icon: "projects", label: "Projects", sub: "Scattered tasks" },
-      { icon: "clients", label: "Clients", sub: "Lost in emails" },
-      { icon: "docs", label: "Documents", sub: "Version chaos" },
-      { icon: "ai", label: "AI Tools", sub: "No context" },
-      { icon: "comms", label: "Messages", sub: "Endless threads" }
+      { icon: "projects", label: "Projects", sub: "Plans without context" },
+      { icon: "clients", label: "Clients", sub: "History in inboxes" },
+      { icon: "docs", label: "Documents", sub: "Files without ownership" },
+      { icon: "ai", label: "AI Tools", sub: "Prompts without memory" },
+      { icon: "comms", label: "Messages", sub: "Decisions without action" }
     ],
     stats: [
       { 
         tag: "CONTEXT",
-        value: "40%",
-        desc: "Lost to Context Switching"
+        value: "One view",
+        desc: "For work and client context"
       },
       { 
         tag: "TIME",
-        value: "3 Hours",
-        desc: "Lost Every Day"
+        value: "One flow",
+        desc: "From request to delivery"
       },
       { 
         tag: "AI",
-        value: "85%",
-        desc: "Fail Without Context"
+        value: "Useful AI",
+        desc: "Grounded in your workspace"
       },
       { 
         tag: "PRODUCTIVITY",
-        value: "2.5x",
-        desc: "Faster With Unity"
+        value: "Clear handoffs",
+        desc: "Across people and agents"
       }
     ]
   },
@@ -50,41 +50,59 @@ const copy = {
     label: "المشكلة",
     headline: (
       <>
-        المشكلة ليست في العمل.<br />
-        إنها <HighlightWord>التشتت</HighlightWord>.
+        عملك مترابط.<br />
+        لكن أدواتك <HighlightWord>ليست كذلك</HighlightWord>.
       </>
     ),
     subtext: (
-      <>المشاريع والمحادثات والمستندات والعملاء والذكاء الاصطناعي موزعة عبر أدوات منفصلة. تقضي الفرق وقتاً في البحث عن السياق أكثر من تنفيذ العمل.</>
+      <>يبدأ طلب العميل برسالة، ثم يتحول إلى مهمة ومستند وسلسلة من المتابعات. وعندما تتوزع هذه التفاصيل بين أدوات مختلفة، تضيع قصة العمل.</>
     ),
     nodes: [
-      { icon: "projects", label: "المشاريع", sub: "مهام مبعثرة" },
-      { icon: "clients", label: "العملاء", sub: "ضائعة في البريد" },
-      { icon: "docs", label: "المستندات", sub: "فوضى النسخ" },
-      { icon: "ai", label: "الذكاء الاصطناعي", sub: "بدون سياق" },
-      { icon: "comms", label: "الرسائل", sub: "سلاسل لا تنتهي" }
+      { icon: "projects", label: "المشاريع", sub: "خطط بلا سياق" },
+      { icon: "clients", label: "العملاء", sub: "تاريخ موزع في البريد" },
+      { icon: "docs", label: "المستندات", sub: "ملفات بلا مسؤول واضح" },
+      { icon: "ai", label: "أدوات الذكاء", sub: "طلبات بلا ذاكرة" },
+      { icon: "comms", label: "الرسائل", sub: "قرارات بلا إجراء" }
     ],
     stats: [
       { 
         tag: "السياق",
-        value: "40٪",
-        desc: "مفقود في تبديل السياق"
+        value: "رؤية واحدة",
+        desc: "للعمل وسياق العميل"
       },
       { 
         tag: "الوقت",
-        value: "3 ساعات",
-        desc: "مفقودة كل يوم"
+        value: "مسار واحد",
+        desc: "من الطلب إلى التسليم"
       },
       { 
         tag: "الذكاء الاصطناعي",
-        value: "85٪",
-        desc: "يفشل بدون سياق"
+        value: "ذكاء مفيد",
+        desc: "مرتبط بمساحة عملك"
       },
       { 
         tag: "الإنتاجية",
-        value: "2.5x",
-        desc: "أسرع مع الوحدة"
+        value: "تسليم واضح",
+        desc: "بين الفريق والوكلاء"
       }
+    ]
+  },
+  fr: {
+    label: "PROBLÈME",
+    headline: <>Votre travail est connecté.<br />Vos outils ne le sont <HighlightWord>pas</HighlightWord>.</>,
+    subtext: <>Une demande client devient un e-mail, une tâche, un document et plusieurs relances. Quand tout vit dans des outils différents, le fil du travail se perd.</>,
+    nodes: [
+      { icon: "projects", label: "Projets", sub: "Des plans sans contexte" },
+      { icon: "clients", label: "Clients", sub: "L’historique dans les e-mails" },
+      { icon: "docs", label: "Documents", sub: "Des fichiers sans responsable" },
+      { icon: "ai", label: "Outils IA", sub: "Des requêtes sans mémoire" },
+      { icon: "comms", label: "Messages", sub: "Des décisions sans suite" }
+    ],
+    stats: [
+      { tag: "CONTEXTE", value: "Une vue", desc: "Pour le travail et les clients" },
+      { tag: "PARCOURS", value: "Un flux", desc: "De la demande à la livraison" },
+      { tag: "IA", value: "Utile", desc: "Ancrée dans votre espace" },
+      { tag: "ÉQUIPE", value: "Des relais clairs", desc: "Entre humains et agents" }
     ]
   }
 };
@@ -136,7 +154,7 @@ function NodeIcon({ type }: { type: string }) {
 
 export function ProblemSection({ locale }: { locale: string }) {
   const isAr = locale === "ar";
-  const labels = isAr ? copy.ar : copy.en;
+  const labels = locale === "ar" ? copy.ar : locale === "fr" ? copy.fr : copy.en;
 
   return (
     <PublicSection id="problem" tone="default">

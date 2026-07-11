@@ -9,6 +9,11 @@ import { AnimatedTetrahedron } from "./animated-tetrahedron";
 
 export function CtaSection() {
   const locale = useLocale();
+  const copy = locale === "ar"
+    ? { title: <>جاهز لتدير عملك<br />من مكان واحد؟</>, body: "ابدأ بمشروع وعميل وفريق، ثم وسّع مساحة عملك مع نمو أعمالك.", primary: "أنشئ مساحة عملك", sales: "تحدث إلى المبيعات", note: "لا تحتاج إلى بطاقة ائتمانية" }
+    : locale === "fr"
+      ? { title: <>Prêt à piloter votre travail<br />au même endroit&nbsp;?</>, body: "Commencez avec un projet, un client et votre équipe. Développez ensuite votre espace à votre rythme.", primary: "Créer mon espace", sales: "Contacter l’équipe commerciale", note: "Aucune carte bancaire requise" }
+      : { title: <>Ready to run<br />work from one place?</>, body: "Bring your next project, client, and team into Qentrah. Start free and build your workspace as you grow.", primary: "Start your workspace", sales: "Talk to sales", note: "No credit card required" };
   const signUpUrl = getLocalizedWorkspaceUrl(locale, "sign-up");
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -54,13 +59,11 @@ export function CtaSection() {
             <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
               <div className="flex-1">
                 <h2 className="text-4xl lg:text-7xl font-light tracking-tight text-[var(--q-text-primary)] mb-8 leading-[0.95]">
-                  Ready to simplify
-                  <br />
-                  your workflow?
+                  {copy.title}
                 </h2>
 
                 <p className="text-xl text-[var(--q-text-secondary)] mb-12 leading-relaxed max-w-xl">
-                  Join thousands of teams shipping faster with Qentrah. Start free, scale infinitely.
+                  {copy.body}
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-start gap-4">
@@ -68,19 +71,19 @@ export function CtaSection() {
                     href={signUpUrl}
                     className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[var(--q-accent)] px-8 text-sm font-bold text-[var(--q-bg)] transition-all hover:bg-[var(--q-accent-hover)] group"
                   >
-                    Start building free
+                    {copy.primary}
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </a>
                   <Link
                     href="/contact"
                     className="inline-flex h-14 items-center justify-center gap-2 rounded-full border border-[var(--q-border)] px-8 text-sm font-bold text-[var(--q-text-primary)] transition-all hover:bg-[var(--q-card-hover)]"
                   >
-                    Talk to sales
+                    {copy.sales}
                   </Link>
                 </div>
 
                 <p className="text-sm text-[var(--q-text-muted)] mt-8 font-mono">
-                  No credit card required
+                  {copy.note}
                 </p>
               </div>
 

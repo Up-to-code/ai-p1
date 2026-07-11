@@ -25,24 +25,35 @@ const copy = {
     tag: "التواصل",
     headline: (
       <>
-        العمل يحدث من خلال <em>التواصل.</em>
+        حوّل كل محادثة إلى <em>خطوة واضحة.</em>
       </>
     ),
     subtext: (
-      <>كل مهمة ومشروع وطلب عميل وقرار يبدأ بمحادثة.</>
+      <>أبقِ طلبات العملاء والقرارات والأسئلة مرتبطة بالعمل الذي نتج عنها.</>
     ),
-    highlight: "كانترا تحول التواصل إلى تنفيذ.",
+    highlight: "في كانترا، لا تنتهي المحادثة بلا مسؤول أو إجراء تالٍ.",
     features: [
       { label: "قائم على السلاسل", desc: "محادثات منظمة حسب السياق" },
       { label: "مرتبط بالإجراء", desc: "تحويل الرسائل إلى مهام فوراً" },
       { label: "بريد موحد", desc: "كل القنوات في مكان واحد" }
+    ]
+  },
+  fr: {
+    tag: "COMMUNICATION",
+    headline: <>Transformez chaque échange en <em>prochaine étape.</em></>,
+    subtext: <>Gardez demandes, décisions et questions attachées au travail qu’elles font naître.</>,
+    highlight: "Dans Qentrah, une conversation ne se termine pas sans responsable ni suite claire.",
+    features: [
+      { label: "Fils contextualisés", desc: "Des échanges organisés autour du travail" },
+      { label: "Actions reliées", desc: "Transformez un message en tâche" },
+      { label: "Boîte de réception unifiée", desc: "Traitez les signaux au même endroit" }
     ]
   }
 };
 
 export function CommunicationSection({ locale }: { locale: string }) {
   const isAr = locale === "ar";
-  const labels = isAr ? copy.ar : copy.en;
+  const labels = locale === "ar" ? copy.ar : locale === "fr" ? copy.fr : copy.en;
 
   return (
     <PublicSection id="communication" tone="very-dark">

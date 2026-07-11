@@ -12,7 +12,6 @@ import { TaskSection } from "@/components/landing/task-section";
 import { DocSection } from "@/components/landing/doc-section";
 import { ClientsSection } from "@/components/landing/clients-section";
 import { FeatureTabSwitcher } from "@/components/landing/feature-tab-switcher";
-import { TestimonialsSection } from "@/components/landing/testimonials-section";
 import { CtaSection } from "@/components/landing/cta-section";
 import { CommunicationSection } from "@/components/landing/communication-section";
 import { VisionSection } from "@/components/landing/vision-section";
@@ -44,8 +43,6 @@ export function HomePage() {
       <CommunicationSection locale={locale} />
 
       <VisionSection locale={locale} />
-
-      <TestimonialsSection />
 
       <Faq02 />
 

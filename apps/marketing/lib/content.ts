@@ -100,31 +100,31 @@ export type MarketingFooterContent = {
 
 const marketingHero: Record<Locale, MarketingHeroContent> = {
   en: {
-    eyebrow: "FROM QENTRAH WITH LOVE",
-    tagline: "Software made it",
+    eyebrow: "ONE WORKSPACE. FULL CONTEXT.",
+    tagline: "Run your agency",
     description:
-      "All your projects, clients, AI, teams & automation — connected through shared context.",
-    cta: "Get started — Free forever",
-    secondary: "No credit card needed",
-    words: ["simple", "smart", "connected", "universal"],
+      "Plan work, manage clients, create documents, and put AI to work — without losing the context between them.",
+    cta: "Start free",
+    secondary: "Explore pricing",
+    words: ["together", "clearly", "with AI", "from one place"],
   },
   ar: {
-    eyebrow: "من كانترا بكل حب",
-    tagline: "البرمجيات جعلتها",
+    eyebrow: "مساحة واحدة. سياق كامل.",
+    tagline: "أدر أعمالك",
     description:
-      "كل مشاريعك، عملائك، الذكاء الاصطناعي، فرقك، وأتمتتك — متصلة بسياق مشترك.",
-    cta: "ابدأ مجاناً — للأبد",
-    secondary: "لا حاجة لبطاقة ائتمانية",
-    words: ["بسيطة", "ذكية", "متصلة", "شاملة"],
+      "خطط للعمل، وأدر العملاء، وأنشئ المستندات، واستفد من الذكاء الاصطناعي من دون أن تفقد السياق بينها.",
+    cta: "ابدأ مجاناً",
+    secondary: "اطّلع على الأسعار",
+    words: ["معاً", "بوضوح", "بذكاء", "من مكان واحد"],
   },
   fr: {
-    eyebrow: "DE QENTRAH AVEC AMOUR",
-    tagline: "Le logiciel l'a rendue",
+    eyebrow: "UN ESPACE. TOUT LE CONTEXTE.",
+    tagline: "Pilotez votre agence",
     description:
-      "Tous vos projets, clients, IA, équipes et automatisations — connectés via un contexte partagé.",
-    cta: "Commencez gratuitement — pour toujours",
-    secondary: "Aucune carte de crédit requise",
-    words: ["simple", "intelligent", "connecté", "universel"],
+      "Planifiez le travail, gérez vos clients, créez vos documents et mettez l’IA à contribution sans perdre le contexte.",
+    cta: "Commencer gratuitement",
+    secondary: "Voir les tarifs",
+    words: ["ensemble", "clairement", "avec l’IA", "au même endroit"],
   },
 };
 

@@ -8,29 +8,34 @@ const copy = {
     label: "VISION",
     headline: (
       <>
-        The future isn't more <span className="font-semibold">software</span>.
+        Better work does not need more <span className="font-semibold">tabs</span>.
       </>
     ),
     subtext: (
-      <>The future is a shared layer where people, information, and AI work together.</>
+      <>It needs one trusted place where your team, your knowledge, and your AI can move work forward together.</>
     )
   },
   ar: {
     label: "الرؤية",
     headline: (
       <>
-        المستقبل ليس المزيد من <span className="font-semibold">البرمجيات</span>.
+        العمل الأفضل لا يحتاج إلى المزيد من <span className="font-semibold">علامات التبويب</span>.
       </>
     ),
     subtext: (
-      <>المستقبل هو طبقة مشتركة حيث يعمل الناس والمعلومات والذكاء الاصطناعي معاً.</>
+      <>بل إلى مكان موثوق يجمع فريقك ومعرفته والذكاء الاصطناعي لدفع العمل إلى الأمام.</>
     )
+  },
+  fr: {
+    label: "VISION",
+    headline: <>Mieux travailler ne demande pas plus <span className="font-semibold">d’onglets</span>.</>,
+    subtext: <>Il faut un espace fiable où votre équipe, vos connaissances et l’IA font avancer le travail ensemble.</>
   }
 };
 
 export function VisionSection({ locale }: { locale: string }) {
   const isAr = locale === "ar";
-  const labels = isAr ? copy.ar : copy.en;
+  const labels = locale === "ar" ? copy.ar : locale === "fr" ? copy.fr : copy.en;
 
   return (
     <PublicSection id="vision" tone="default">

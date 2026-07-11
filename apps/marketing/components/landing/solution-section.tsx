@@ -8,47 +8,57 @@ const copy = {
     tag: "SOLUTION",
     headline: (
       <>
-        Everything your agency needs.<br />
-        One <em>workspace.</em>
+        One operating layer for<br />
+        your <em>client work.</em>
       </>
     ),
     subtext: (
       <>
-        Projects. Clients. Documents. Communication. AI.<br /><br />
-        <span className="font-medium">Connected through shared context.</span>
+        Bring projects, clients, documents, conversations, and AI into one connected system.<br /><br />
+        <span className="font-medium">Everyone works from the same source of truth.</span>
       </>
     ),
     features: [
-      { label: "Unified workspace", desc: "All tools in one place" },
-      { label: "Shared context", desc: "No more information silos" },
-      { label: "AI-powered", desc: "Smart automation everywhere" }
+      { label: "Connected work", desc: "Projects, clients, and knowledge stay linked" },
+      { label: "Clear ownership", desc: "Know what is next and who owns it" },
+      { label: "Contextual AI", desc: "Agents act with the right permissions and history" }
     ]
   },
   ar: {
     tag: "الحل",
     headline: (
       <>
-        كل ما تحتاجه وكالتك.<br />
-        في <em>مساحة واحدة.</em>
+        نظام تشغيل واحد<br />
+        لكل <em>أعمال عملائك.</em>
       </>
     ),
     subtext: (
       <>
-        المشاريع. العملاء. المستندات. التواصل. الذكاء الاصطناعي.<br /><br />
-        <span className="font-medium">متصلة عبر سياق مشترك.</span>
+        اجمع المشاريع والعملاء والمستندات والمحادثات والذكاء الاصطناعي في منظومة مترابطة.<br /><br />
+        <span className="font-medium">ليعمل الجميع انطلاقاً من مرجع واحد موثوق.</span>
       </>
     ),
     features: [
-      { label: "مساحة عمل موحدة", desc: "كل الأدوات في مكان واحد" },
-      { label: "سياق مشترك", desc: "لا المزيد من عزل المعلومات" },
-      { label: "مدعوم بالذكاء الاصطناعي", desc: "أتمتة ذكية في كل مكان" }
+      { label: "عمل مترابط", desc: "المشاريع والعملاء والمعرفة في سياق واحد" },
+      { label: "مسؤوليات واضحة", desc: "اعرف الخطوة التالية ومن يتولاها" },
+      { label: "ذكاء يفهم السياق", desc: "وكلاء يعملون بالصلاحيات والسجل المناسبين" }
+    ]
+  },
+  fr: {
+    tag: "SOLUTION",
+    headline: <>Un seul système pour<br />le <em>travail client.</em></>,
+    subtext: <>Réunissez projets, clients, documents, conversations et IA dans un environnement connecté.<br /><br /><span className="font-medium">Toute l’équipe travaille à partir de la même source fiable.</span></>,
+    features: [
+      { label: "Travail connecté", desc: "Projets, clients et savoir restent liés" },
+      { label: "Responsabilités claires", desc: "Sachez quoi faire et qui s’en charge" },
+      { label: "IA contextuelle", desc: "Des agents guidés par les bons droits et le bon historique" }
     ]
   }
 };
 
 export function SolutionSection({ locale }: { locale: string }) {
   const isAr = locale === "ar";
-  const labels = isAr ? copy.ar : copy.en;
+  const labels = locale === "ar" ? copy.ar : locale === "fr" ? copy.fr : copy.en;
 
   return (
     <PublicSection id="solution" tone="default">

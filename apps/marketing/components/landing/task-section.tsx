@@ -32,13 +32,13 @@ const copy = {
     tag: "المهام",
     headline: (
       <>
-        مهام تتحرك بسرعة <em>مثلك.</em>
+        مهام تتقدم <em>مع فريقك.</em>
       </>
     ),
     subtext: (
-      <>من المهام البسيطة إلى سير العمل المعقد — أدر كل جزء من العمل بوضوح ومواعيد نهائية وسياق كامل.</>
+      <>من التذكير البسيط إلى سير العمل المعقد، أدر كل خطوة بمسؤول واضح وموعد محدد وسياق كامل.</>
     ),
-    highlight: "لا مزيد من الملاحظات المفقودة أو رسائل البريد الإلكتروني المدفونة.",
+    highlight: "لا مزيد من العمل الضائع بين الملاحظات ورسائل البريد.",
     features: [
       { label: "أولوية ذكية", desc: "الذكاء الاصطناعي يقترح ما يجب العمل عليه بعد ذلك" },
       { label: "سير عمل بصري", desc: "كانبان، قائمة، جدول زمني — أي عرض" },
@@ -51,6 +51,23 @@ const copy = {
       { title: "قوالب المهام", desc: "توحيد العمل المتكرر في المشاريع", color: "purple" },
     ],
   },
+  fr: {
+    tag: "TÂCHES",
+    headline: <>Des tâches qui avancent <em>avec vous.</em></>,
+    subtext: <>Du simple rappel au processus complexe, pilotez chaque étape avec des responsables, des échéances et tout le contexte utile.</>,
+    highlight: "Le travail ne se perd plus dans les notes ou les e-mails.",
+    features: [
+      { label: "Priorités intelligentes", desc: "Identifiez clairement la prochaine action" },
+      { label: "Vues adaptées", desc: "Kanban, liste ou chronologie" },
+      { label: "Contexte relié", desc: "Chaque tâche reste liée au projet et au client" },
+      { label: "Récurrence et automatisation", desc: "Standardisez le travail répétitif" },
+    ],
+    cards: [
+      { title: "Tableaux Kanban", desc: "Pilotez le flux par glisser-déposer", color: "blue" },
+      { title: "Chronologie", desc: "Visualisez échéances et dépendances", color: "coral" },
+      { title: "Modèles de tâches", desc: "Normalisez les processus récurrents", color: "purple" },
+    ],
+  },
 };
 
 const cardColors: Record<string, string> = {
@@ -61,7 +78,7 @@ const cardColors: Record<string, string> = {
 
 export function TaskSection({ locale }: { locale: string }) {
   const isAr = locale === "ar";
-  const labels = isAr ? copy.ar : copy.en;
+  const labels = locale === "ar" ? copy.ar : locale === "fr" ? copy.fr : copy.en;
   const staggerRef = useGsapStaggerReveal<HTMLDivElement>(".task-feature-item", { stagger: 0.12, start: "top 85%" });
 
   return (

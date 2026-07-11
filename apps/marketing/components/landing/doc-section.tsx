@@ -33,13 +33,13 @@ const copy = {
     tag: "المستندات",
     headline: (
       <>
-        المعرفة تعيش <em>هنا.</em>
+        المعرفة تبقى <em>داخل العمل.</em>
       </>
     ),
     subtext: (
-      <>اكتب وشارك وتعاون في مستندات تعيش بجانب مشاريعك، وليس مدفونة في محرك أقراص في مكان ما.</>
+      <>اكتب وشارك مستندات مرتبطة بمشاريعك، بدلاً من أن تضيع في مجلد منفصل.</>
     ),
-    highlight: "السياق هو كل شيء. كل مستند يعرف المشروع الذي ينتمي إليه.",
+    highlight: "يحتفظ كل مستند بمشروعه ومسؤوله وسجل تعديلاته.",
     features: [
       { label: "تعاون مباشر", desc: "التحرير معاً في الوقت الفعلي" },
       { label: "محتوى غني", desc: "تضمين المهام والجداول الزمنية والبيانات" },
@@ -53,11 +53,29 @@ const copy = {
       { name: "قاعدة المعرفة", desc: "قابلة للبحث عبر مؤسستك" },
     ],
   },
+  fr: {
+    tag: "DOCUMENTS",
+    headline: <>Le savoir reste <em>dans le travail.</em></>,
+    subtext: <>Rédigez et partagez des documents qui vivent avec vos projets, au lieu de disparaître dans un dossier isolé.</>,
+    highlight: "Chaque document garde son projet, son responsable et son historique.",
+    features: [
+      { label: "Collaboration en direct", desc: "Écrivez et révisez ensemble" },
+      { label: "Contenu riche", desc: "Intégrez tâches, données et échéances" },
+      { label: "Historique des versions", desc: "Suivez et restaurez chaque modification" },
+      { label: "Aide à la rédaction", desc: "Rédigez, résumez et améliorez avec l’IA" },
+    ],
+    tools: [
+      { name: "Éditeur riche", desc: "Markdown et blocs de contenu" },
+      { name: "Documents projet", desc: "Reliés automatiquement au travail" },
+      { name: "Rapports client", desc: "Prêts à partager avec les parties prenantes" },
+      { name: "Base de connaissances", desc: "Consultable dans toute l’organisation" },
+    ],
+  },
 };
 
 export function DocSection({ locale }: { locale: string }) {
   const isAr = locale === "ar";
-  const labels = isAr ? copy.ar : copy.en;
+  const labels = locale === "ar" ? copy.ar : locale === "fr" ? copy.fr : copy.en;
   const staggerRef = useGsapStaggerReveal<HTMLDivElement>(".doc-feature-item", { stagger: 0.12, start: "top 85%" });
   const toolsStaggerRef = useGsapStaggerReveal<HTMLDivElement>(".doc-tool-item", { stagger: 0.1, start: "top 85%" });
 
