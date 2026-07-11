@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
-import { brandDomainUrl, brandLabel, brandProductName } from "@qentrah/brand-identity";
+import {
+  brandDomainUrl,
+  brandLabel,
+  brandProductName,
+} from "@qentrah/brand-identity";
 import { routing } from "@/i18n/routing";
 
 export type Locale = (typeof routing.locales)[number];
@@ -69,14 +73,11 @@ export const rootMetadata: Metadata = {
     images: ["/logo.ico"],
   },
   robots: {
-    index: true,
-    follow: true,
+    index: false,
+    follow: false,
     googleBot: {
-      index: true,
-      follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
+      index: false,
+      follow: false,
     },
   },
 };
@@ -143,14 +144,11 @@ export const localizedWorkspaceMetadata: Metadata = {
     images: ["/logo.ico"],
   },
   robots: {
-    index: true,
-    follow: true,
+    index: false,
+    follow: false,
     googleBot: {
-      index: true,
-      follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
+      index: false,
+      follow: false,
     },
   },
   alternates: {
