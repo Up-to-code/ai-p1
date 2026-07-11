@@ -55,6 +55,7 @@
     "@svar-ui/react-kanban": "^2.6.0",
     "@tanstack/react-query": "^5.101.2",
     "@vercel/analytics": "^1.0.0",
+    "@xyflow/react": "^12.11.2",
     "@yoopta/accordion": "^6.0.5",
     "@yoopta/blockquote": "^6.0.5",
     "@yoopta/callout": "^6.0.5",
