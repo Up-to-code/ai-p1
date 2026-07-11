@@ -31,6 +31,15 @@ function redirectDebugTarget(url: URL) {
 export async function GET(request: NextRequest) {
   const target = new URL("/api/auth/oauth2/authorize", request.nextUrl.origin);
   target.search = request.nextUrl.search;
+  const prompts = new Set(
+    (target.searchParams.get("prompt") ?? "")
+      .split(/\s+/u)
+      .filter(Boolean),
+  );
+  prompts.delete("none");
+  prompts.add("select_account");
+  prompts.add("consent");
+  target.searchParams.set("prompt", [...prompts].join(" "));
   oauthDebug("workspace.oauth.authorize.start", {
     clientId: request.nextUrl.searchParams.get("client_id"),
     redirectUri: request.nextUrl.searchParams.get("redirect_uri"),

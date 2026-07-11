@@ -1,7 +1,8 @@
-type McpPermissionResource =
+export type McpPermissionResource =
   | "organization"
   | "member"
   | "role"
+  | "space"
   | "client"
   | "project"
   | "deal"
@@ -9,7 +10,7 @@ type McpPermissionResource =
   | "task"
   | "media";
 
-type McpPermissionAction = "read" | "create" | "update" | "delete";
+export type McpPermissionAction = "read" | "create" | "update" | "delete";
 
 export type McpAdapter = "agent" | "mcp";
 export type McpToolRiskLevel = "read" | "low_write" | "sensitive_write" | "destructive" | "admin";
@@ -21,7 +22,7 @@ export type McpToolDataSensitivity =
   | "secret_bearing"
   | "encrypted_payload";
 
-type McpToolRegistryItem = {
+export type McpToolRegistryItem = {
   name: string;
   title: string;
   description: string;
@@ -97,6 +98,15 @@ const mcpToolRegistry = [
   tool({ name: "roles_create", title: "Create work role", description: "Create an organization work role.", resource: "role", action: "create", adapters: agentOnly }),
   tool({ name: "roles_update", title: "Update work role", description: "Update an organization work role.", resource: "role", action: "update", adapters: agentOnly }),
   tool({ name: "roles_delete", title: "Delete work role", description: "Delete an organization work role.", resource: "role", action: "delete", destructive: true, adapters: agentOnly }),
+  tool({ name: "spaces_list", title: "List spaces", description: "List all spaces in the organization.", resource: "space", action: "read", adapters: both }),
+  tool({ name: "spaces_get", title: "Get space", description: "Get details of a specific space by ID or slug.", resource: "space", action: "read", adapters: both }),
+  tool({ name: "spaces_create", title: "Create space", description: "Create a new space in the organization.", resource: "space", action: "create", adapters: both }),
+  tool({ name: "spaces_update", title: "Update space", description: "Update an existing space's name, slug, description, or visibility.", resource: "space", action: "update", adapters: both }),
+  tool({ name: "spaces_delete", title: "Delete space", description: "Delete a space. Only organization owners can delete spaces.", resource: "space", action: "delete", destructive: true, adapters: both }),
+  tool({ name: "space_members_list", title: "List space members", description: "List all members of a space.", resource: "space", action: "read", adapters: both }),
+  tool({ name: "space_members_add", title: "Add space member", description: "Add a user to a space with a specific role.", resource: "space", action: "update", adapters: both }),
+  tool({ name: "space_members_remove", title: "Remove space member", description: "Remove a user from a space.", resource: "space", action: "delete", destructive: true, adapters: both }),
+  tool({ name: "space_members_update_role", title: "Update space member role", description: "Update a user's role in a space.", resource: "space", action: "update", adapters: both }),
   tool({ name: "clients_list", title: "List clients", description: "List active clients in the organization.", resource: "client", action: "read", adapters: both }),
   tool({ name: "clients_get", title: "Get client", description: "Get one client profile.", resource: "client", action: "read", adapters: both }),
   tool({ name: "clients_create", title: "Create client", description: "Create a workspace client profile. Required: name. Optional contact fields include email, phone, company, contactName, website, source, notes, type, and status.", resource: "client", action: "create", adapters: both }),
@@ -104,13 +114,13 @@ const mcpToolRegistry = [
   tool({ name: "clients_delete", title: "Remove client", description: "Soft delete a client profile.", resource: "client", action: "delete", destructive: true, adapters: both }),
   tool({ name: "projects_list", title: "List projects", description: "List active projects.", resource: "project", action: "read", adapters: both }),
   tool({ name: "projects_get", title: "Get project", description: "Get one project.", resource: "project", action: "read", adapters: both }),
-  tool({ name: "projects_create", title: "Create project", description: "Create a client delivery project.", resource: "project", action: "create", adapters: both }),
+  tool({ name: "projects_create", title: "Create project", description: "Create a client delivery project. Prefer setting clientId when the client is known.", resource: "project", action: "create", adapters: both }),
   tool({ name: "projects_update", title: "Update project", description: "Update a project.", resource: "project", action: "update", adapters: both }),
   tool({ name: "projects_delete", title: "Delete project", description: "Soft delete a project.", resource: "project", action: "delete", destructive: true, adapters: both }),
   tool({ name: "deals_list", title: "List deals", description: "List workspace deals, optionally scoped to a client or project.", resource: "deal", action: "read", adapters: both }),
   tool({ name: "deals_get", title: "Get deal", description: "Get one workspace deal.", resource: "deal", action: "read", adapters: both }),
-  tool({ name: "deals_create", title: "Create deal", description: "Create a workspace deal.", resource: "deal", action: "create", adapters: both }),
-  tool({ name: "deals_update", title: "Update deal", description: "Update a workspace deal or move it between global, client, and project context.", resource: "deal", action: "update", adapters: both }),
+  tool({ name: "deals_create", title: "Create deal", description: "Create a workspace deal. Prefer setting clientId and projectId when the deal is tied to a client product/project.", resource: "deal", action: "create", adapters: both }),
+  tool({ name: "deals_update", title: "Update deal", description: "Update a workspace deal. Set projectId to a project id to move it into a project or null to move it back to global.", resource: "deal", action: "update", adapters: both }),
   tool({ name: "deals_delete", title: "Delete deal", description: "Soft delete a workspace deal.", resource: "deal", action: "delete", destructive: true, adapters: both }),
   tool({ name: "calendar_list_today", title: "Today calendar", description: "List today's calendar events.", resource: "calendar", action: "read", adapters: both }),
   tool({ name: "calendar_list_range", title: "Calendar range", description: "List calendar events in a date range.", resource: "calendar", action: "read", adapters: both }),

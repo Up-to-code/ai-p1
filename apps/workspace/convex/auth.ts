@@ -1,13 +1,17 @@
 import { betterAuth } from "better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { requireRunMutationCtx } from "@convex-dev/better-auth/utils";
-import { emailOTP, organization } from "better-auth/plugins";
+import { emailOTP, jwt, organization } from "better-auth/plugins";
+import { oauthProvider } from "@better-auth/oauth-provider";
 import { betterAuthClient } from "./betterAuth";
 import authConfig from "./auth.config";
 import { getAuthUser, safeGetAuthUser } from "./betterAuth";
 import { getAppUrl, getTransactionalFromEmail, resend } from "./email";
 
 export const createAuth = (ctx: any) => {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
+  const mcpResource = `${appUrl.replace(/\/$/u, "")}/mcp`;
+
   return betterAuth({
     database: betterAuthClient.adapter(ctx),
 
@@ -121,6 +125,34 @@ export const createAuth = (ctx: any) => {
             ].join("\n"),
           });
         },
+      }),
+      jwt(),
+      oauthProvider({
+        loginPage: "/en/sign-in",
+        consentPage: "/oauth/consent",
+        validAudiences: [mcpResource],
+        scopes: ["openid", "profile", "email", "offline_access", "mcp:read", "mcp:write"],
+        allowDynamicClientRegistration: true,
+        allowUnauthenticatedClientRegistration: true,
+        silenceWarnings: { oauthAuthServerConfig: true },
+        clientRegistrationDefaultScopes: ["openid", "profile", "email", "mcp:read"],
+        clientRegistrationAllowedScopes: ["offline_access", "mcp:write"],
+        selectAccount: {
+          page: "/oauth/select-organization",
+          shouldRedirect: () => true,
+        },
+        postLogin: {
+          page: "/oauth/select-organization",
+          shouldRedirect: ({ session }) =>
+            typeof session.activeOrganizationId !== "string" ||
+            session.activeOrganizationId.length === 0,
+          consentReferenceId: ({ session }) =>
+            typeof session.activeOrganizationId === "string"
+              ? session.activeOrganizationId
+              : undefined,
+        },
+        customAccessTokenClaims: ({ referenceId }) =>
+          referenceId ? { org_id: referenceId } : {},
       }),
       convex({ authConfig }),
     ],

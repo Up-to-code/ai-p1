@@ -8,10 +8,11 @@ import {
   createTaskRequest,
   updateTaskRequest,
   deleteTaskRequest,
+  taskFormValuesFromRecord,
 } from "../api/tasks";
 import { nextTaskPipelineOrder, taskFormValuesForPipeline } from "../task-pipeline-order";
 import { defaultTaskVisibility } from "../task-visibility";
-import type { TaskRecord, TaskFormValues, TaskStatus, TaskPriority, TaskVisibility } from "../tasks.types";
+import type { TaskFormValues, TaskRecord, TaskStatus, TaskPriority, TaskVisibility } from "../tasks.types";
 
 export interface CreateTaskInput {
   title: string;
@@ -26,24 +27,6 @@ export interface CreateTaskInput {
   dueDate?: string;
   description?: string;
   tags?: string;
-}
-
-function taskFormValuesFromRecord(task: TaskRecord, changes: Partial<TaskRecord>): TaskFormValues {
-  const merged = { ...task, ...changes };
-  return {
-    title: merged.title,
-    status: merged.status,
-    priority: merged.priority,
-    visibility: merged.visibility ?? "team",
-    assigneeUserId: merged.assigneeUserId ?? "",
-    assigneeUserIds: merged.assigneeUserIds ?? (merged.assigneeUserId ? [merged.assigneeUserId] : []),
-    clientId: merged.clientId ?? "",
-    projectId: merged.projectId ?? "",
-    startDate: merged.startDate ?? "",
-    dueDate: merged.dueDate ?? "",
-    description: merged.description ?? "",
-    tags: (merged.tags ?? []).join(", "),
-  };
 }
 
 export function patchTaskInListData(
@@ -162,6 +145,35 @@ export function useTaskMutations(organizationId: string) {
     [updateTaskMutation],
   );
 
+  // Editors already own complete form state. Keeping this write here ensures
+  // they receive the same optimistic overlay, invalidation, and error policy
+  // as partial Task changes from Workspace views.
+  const saveTaskMutation = useMutation({
+    mutationFn: async ({ task, values }: { task: TaskRecord; values: TaskFormValues }) =>
+      updateTaskRequest(organizationId, task.id, values),
+    onMutate: async ({ task, values }) => {
+      addPatch(task.id, {
+        ...values,
+        tags: values.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
+        updatedAt: Date.now(),
+      });
+    },
+    onError: (_err, { task }) => {
+      removePatch(task.id);
+      toast({ title: "Failed to update task", type: "error" });
+    },
+    onSuccess: (_data, { task }) => {
+      removePatch(task.id);
+      invalidate();
+    },
+  });
+
+  const saveTask = useCallback(
+    async (task: TaskRecord, values: TaskFormValues) =>
+      saveTaskMutation.mutateAsync({ task, values }),
+    [saveTaskMutation],
+  );
+
   // ── Delete ──────────────────────────────────────────────────────────────
 
   const deleteTaskMutation = useMutation({
@@ -229,11 +241,13 @@ export function useTaskMutations(organizationId: string) {
     // Async functions (backward-compatible interface)
     createTask,
     updateTask,
+    saveTask,
     deleteTask,
     moveTask,
     // TanStack mutation objects (for consumers needing isPending/isError)
     createTaskMutation,
     updateTaskMutation,
+    saveTaskMutation,
     deleteTaskMutation,
     moveTaskMutation,
     // Optimistic helpers (for Convex-based readers)

@@ -1,19 +1,13 @@
 "use client";
 
-import { type MouseEvent, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
-  ArrowRight,
-  Building2,
   Loader2,
   MailCheck,
   Plus,
 } from "lucide-react";
-import { useMutation } from "convex/react";
 import { useTranslations } from "next-intl";
-import { api } from "@convex/_generated/api";
 import { BrandMark } from "@/components/logo";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,94 +18,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Link, useRouter } from "@/i18n/routing";
-import { writeAuthHandoff } from "@/domains/auth";
-import { acceptOrganizationInvitation } from "@/domains/organization/api";
-import { authClient } from "@/lib/auth-client";
+import { Link } from "@/i18n/routing";
 import { AuthAccountButton } from "./auth-account-button";
-import { resolveAuthEntryCallbackUrl } from "../utils/auth-callback-url";
+import { useOrganizationEntry } from "../hooks/use-organization-entry";
 
 type ChooseOrganizationClientProps = {
   callbackURL?: string | null;
   locale: string;
 };
-
-type UserInvitation = {
-  id: string;
-  email?: string;
-  role: string;
-  status: string;
-  organizationId: string;
-  organizationName?: string | null;
-};
-
-function authErrorMessage(error: unknown, fallback: string) {
-  if (!error) return fallback;
-  if (error instanceof Error) return error.message;
-  if (typeof error === "string") return error;
-  if (
-    typeof error === "object" &&
-    "message" in error &&
-    typeof error.message === "string"
-  ) {
-    return error.message;
-  }
-  return fallback;
-}
-
-function authErrorText(error: unknown) {
-  return authErrorMessage(error, "").toLowerCase();
-}
-
-function isEmailVerificationRequiredError(error: unknown) {
-  const message = authErrorText(error);
-  return (
-    message.includes("email verification required") ||
-    (message.includes("verify") && message.includes("email"))
-  );
-}
-
-function isOrganizationsDisabledError(error: unknown) {
-  const message = authErrorText(error);
-  return (
-    message.includes("organization") &&
-    (message.includes("disabled") ||
-      message.includes("not enabled") ||
-      message.includes("plugin"))
-  );
-}
-
-function isOrganizationSlugsDisabledError(error: unknown) {
-  const message = authErrorText(error);
-  return (
-    message.includes("slug") &&
-    (message.includes("disabled") || message.includes("not enabled"))
-  );
-}
-
-function createOrganizationWithoutSlug(name: string) {
-  const create = authClient.organization.create as unknown as (input: {
-    name: string;
-  }) => ReturnType<typeof authClient.organization.create>;
-  return create({ name });
-}
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 48);
-}
 
 function WorkspaceListSkeleton({ label }: { label: string }) {
   return (
@@ -135,218 +49,29 @@ function WorkspaceListSkeleton({ label }: { label: string }) {
   );
 }
 
-function toRouterPath(locale: string, localizedHref: string) {
-  const localePrefix = `/${locale}`;
-  return localizedHref.startsWith(`${localePrefix}/`)
-    ? localizedHref.slice(localePrefix.length)
-    : localizedHref;
-}
-
-async function listPendingUserInvitations() {
-  const response = await fetch("/api/v1/organizations/invitations/mine", {
-    credentials: "include",
-    headers: { accept: "application/json" },
-  });
-
-  if (!response.ok) {
-    let message = "Could not load invitations.";
-    try {
-      const body = (await response.json()) as { message?: string };
-      message = body.message ?? message;
-    } catch {
-      message = response.statusText || message;
-    }
-    throw new Error(message);
-  }
-
-  const payload = (await response.json()) as
-    { invitations?: UserInvitation[] } | UserInvitation[];
-  const invitations = Array.isArray(payload)
-    ? payload
-    : (payload.invitations ?? []);
-  return invitations.filter((invitation) => invitation.status === "pending");
-}
-
 export function ChooseOrganizationClient({
   callbackURL,
   locale,
 }: ChooseOrganizationClientProps) {
   const t = useTranslations("ChooseOrg");
-  const router = useRouter();
-  const { data: session, isPending: sessionPending } = authClient.useSession();
-  const { data: orgs, isPending: orgsPending } =
-    authClient.useListOrganizations();
-  const seedWorkspaceDefaults = useMutation(
-    api.modelization.write.seedWorkspaceDefaults,
-  );
-  const [createOpen, setCreateOpen] = useState(false);
-  const [organizationName, setOrganizationName] = useState("");
-  const [invitations, setInvitations] = useState<UserInvitation[]>([]);
-  const [invitationsPending, setInvitationsPending] = useState(false);
-  const [busyId, setBusyId] = useState("");
-  const [busyAction, setBusyAction] = useState<"create" | "sign-out" | "">("");
-  const [error, setError] = useState("");
-
-  const isInitialLoading = sessionPending || orgsPending;
-  const hasOrganizations = Boolean(orgs?.length);
-  const currentOrganizationIds = useMemo(
-    () => new Set((orgs ?? []).map((org) => org.id)),
-    [orgs],
-  );
-  const visibleInvitations = useMemo(
-    () =>
-      invitations.filter(
-        (invitation) => !currentOrganizationIds.has(invitation.organizationId),
-      ),
-    [currentOrganizationIds, invitations],
-  );
-  const hasInvitations = visibleInvitations.length > 0;
-  const organizationSlug = useMemo(
-    () => slugify(organizationName),
-    [organizationName],
-  );
-  const resolvedCallbackURL = useMemo(
-    () => resolveAuthEntryCallbackUrl(locale, callbackURL, "/ws"),
-    [callbackURL, locale],
-  );
-
-  useEffect(() => {
-    if (!isInitialLoading && !session?.user) {
-      router.replace(
-        `/sign-in?callbackURL=${encodeURIComponent(resolvedCallbackURL)}`,
-      );
-    }
-  }, [isInitialLoading, session, resolvedCallbackURL, router]);
-
-  useEffect(() => {
-    if (isInitialLoading || !session?.user) return;
-
-    let cancelled = false;
-    setInvitationsPending(true);
-
-    listPendingUserInvitations()
-      .then((nextInvitations) => {
-        if (!cancelled) setInvitations(nextInvitations);
-      })
-      .catch((caught) => {
-        if (!cancelled) setError(authErrorMessage(caught, t("errorDesc")));
-      })
-      .finally(() => {
-        if (!cancelled) setInvitationsPending(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isInitialLoading, session?.user, t]);
-
-  async function finishOrganizationSelection(organizationId: string) {
-    const result = await authClient.organization.setActive({ organizationId });
-    if (result.error) {
-      throw new Error(authErrorMessage(result.error, t("errorDesc")));
-    }
-    writeAuthHandoff(organizationId);
-    await seedWorkspaceDefaults({ organizationId });
-    router.replace(toRouterPath(locale, resolvedCallbackURL));
-  }
-
-  async function selectOrganization(organizationId: string) {
-    setBusyId(organizationId);
-    setError("");
-    try {
-      await finishOrganizationSelection(organizationId);
-    } catch (caught) {
-      setError(authErrorMessage(caught, t("errorDesc")));
-    } finally {
-      setBusyId("");
-    }
-  }
-
-  async function acceptInvitation(invitation: UserInvitation) {
-    setBusyId(`invitation:${invitation.id}`);
-    setError("");
-    try {
-      const accepted = await acceptOrganizationInvitation(invitation.id);
-      const organizationId =
-        accepted.organizationId ??
-        accepted.invitation?.organizationId ??
-        accepted.member?.organizationId ??
-        invitation.organizationId;
-
-      await finishOrganizationSelection(organizationId);
-    } catch (caught) {
-      if (isEmailVerificationRequiredError(caught)) {
-        const verifyCallbackURL = `/${locale}/choose-org?callbackURL=${encodeURIComponent(resolvedCallbackURL)}`;
-        router.push(
-          `/verify-email?callbackURL=${encodeURIComponent(verifyCallbackURL)}`,
-        );
-        return;
-      }
-      setError(authErrorMessage(caught, t("errorDesc")));
-    } finally {
-      setBusyId("");
-    }
-  }
-
-  async function createOrganization() {
-    const name = organizationName.trim();
-    if (!name) {
-      setError(t("nameRequired"));
-      return;
-    }
-
-    setBusyAction("create");
-    setError("");
-    try {
-      let result = await authClient.organization.create({
-        name,
-        slug: organizationSlug || `workspace-${Date.now()}`,
-      });
-      if (result.error && isOrganizationSlugsDisabledError(result.error)) {
-        result = await createOrganizationWithoutSlug(name);
-      }
-      if (result.error) {
-        if (isOrganizationsDisabledError(result.error)) {
-          throw new Error(t("organizationsDisabled"));
-        }
-        if (isOrganizationSlugsDisabledError(result.error)) {
-          throw new Error(t("slugsDisabled"));
-        }
-        throw new Error(authErrorMessage(result.error, t("errorDesc")));
-      }
-      if (result.data?.id) {
-        const activeResult = await authClient.organization.setActive({
-          organizationId: result.data.id,
-        });
-        if (activeResult.error) {
-          throw new Error(authErrorMessage(activeResult.error, t("errorDesc")));
-        }
-        writeAuthHandoff(result.data.id);
-        await seedWorkspaceDefaults({ organizationId: result.data.id });
-        setCreateOpen(false);
-        router.replace("/onboarding");
-        return;
-      }
-      throw new Error(t("errorDesc"));
-    } catch (caught) {
-      setError(authErrorMessage(caught, t("errorDesc")));
-    } finally {
-      setBusyAction("");
-    }
-  }
-
-  async function handleUseAnotherAccount() {
-    setBusyAction("sign-out");
-    setError("");
-    try {
-      await authClient.signOut();
-      router.replace("/sign-in");
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : t("errorDesc"));
-    } finally {
-      setBusyAction("");
-    }
-  }
+  const {
+    session,
+    organizations: orgs,
+    createOpen,
+    setCreateOpen,
+    organizationName,
+    setOrganizationName,
+    busyId,
+    busyAction,
+    error,
+    isInitialLoading,
+    visibleInvitations,
+    organizationSlug,
+    selectOrganization,
+    acceptInvitation,
+    createOrganization,
+    useAnotherAccount,
+  } = useOrganizationEntry({ callbackURL, locale });
 
   return (
     <main className="relative flex min-h-svh flex-col bg-[var(--q-bg)] text-foreground">
@@ -363,7 +88,7 @@ export function ChooseOrganizationClient({
             label={t("useAnotherAccount")}
             loading={busyAction === "sign-out"}
             loadingLabel={t("signingOut")}
-            onClick={() => void handleUseAnotherAccount()}
+            onClick={() => void useAnotherAccount()}
             user={session?.user}
           />
         </header>
@@ -462,265 +187,6 @@ export function ChooseOrganizationClient({
         )}
       </div>
 
-      <div className="hidden">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-6">
-          <Link href="/" className="flex items-center gap-2">
-            <BrandMark className="h-5 w-5" priority />
-            <span className="text-xs font-semibold tracking-tight">
-              qentrah
-            </span>
-          </Link>
-          <AuthAccountButton
-            disabled={busyAction === "sign-out"}
-            label={t("useAnotherAccount")}
-            loading={busyAction === "sign-out"}
-            loadingLabel={t("signingOut")}
-            onClick={() => void handleUseAnotherAccount()}
-            user={session?.user}
-          />
-        </header>
-
-        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border px-6 py-4">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">
-              {t("title")}
-            </h1>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {t("subtitle")}
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            {session?.session?.activeOrganizationId ? (
-              <Button
-                className="h-9 rounded-lg px-4 text-sm font-medium"
-                onClick={() => router.replace("/ws")}
-                type="button"
-                variant="outline"
-              >
-                {t("continueWorkspace")}
-                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-              </Button>
-            ) : null}
-            <Button
-              className="h-9 rounded-lg px-4 text-sm font-medium"
-              disabled={Boolean(busyId || busyAction)}
-              onClick={() => setCreateOpen(true)}
-              type="button"
-            >
-              <Plus className="h-4 w-4" />
-              {t("createNew")}
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-auto bg-[var(--q-bg)]">
-          {error ? (
-            <div className="mx-6 mt-4 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <p>{error}</p>
-            </div>
-          ) : null}
-
-          {isInitialLoading ? (
-            <div className="mx-6 mt-4 max-w-5xl">
-              <WorkspaceListSkeleton label={t("loading")} />
-            </div>
-          ) : (
-            <div className="space-y-6 pb-8">
-              {hasInvitations || invitationsPending ? (
-                <section className="mx-6 mt-6 max-w-5xl">
-                  <div className="mb-3 flex items-center justify-between">
-                    <div>
-                      <h2 className="text-sm font-semibold text-foreground">
-                        {t("invitedTitle")}
-                      </h2>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {t("invitedDesc")}
-                      </p>
-                    </div>
-                    {invitationsPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    ) : null}
-                  </div>
-                  {hasInvitations ? (
-                    <div className="overflow-hidden rounded-xl border border-border bg-card">
-                      <Table>
-                        <TableHeader className="bg-muted/40">
-                          <TableRow className="hover:bg-transparent">
-                            <TableHead>Organization</TableHead>
-                            <TableHead className="w-40">Access</TableHead>
-                            <TableHead className="w-36 text-right">
-                              Action
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {visibleInvitations.map((invitation) => {
-                            const invitationBusy =
-                              busyId === `invitation:${invitation.id}`;
-                            return (
-                              <TableRow key={invitation.id}>
-                                <TableCell>
-                                  <div className="flex items-center gap-3">
-                                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                                      {invitationBusy ? (
-                                        <Loader2 className="size-4 animate-spin" />
-                                      ) : (
-                                        <MailCheck className="size-4" />
-                                      )}
-                                    </span>
-                                    <span className="min-w-0">
-                                      <span className="block truncate font-medium text-foreground">
-                                        {invitation.organizationName ||
-                                          invitation.organizationId}
-                                      </span>
-                                      <span className="block truncate text-xs text-muted-foreground">
-                                        {invitation.email}
-                                      </span>
-                                    </span>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <Badge
-                                    variant="secondary"
-                                    className="h-5 normal-case tracking-normal"
-                                  >
-                                    {invitation.role}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  <Button
-                                    className="h-8 rounded-lg px-3 text-xs"
-                                    disabled={Boolean(busyId || busyAction)}
-                                    onClick={() =>
-                                      void acceptInvitation(invitation)
-                                    }
-                                    type="button"
-                                  >
-                                    {invitationBusy ? (
-                                      <Loader2 className="size-3.5 animate-spin" />
-                                    ) : null}
-                                    {invitationBusy
-                                      ? t("acceptingInvite")
-                                      : t("acceptInvite")}
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : null}
-                </section>
-              ) : null}
-
-              <section className="mx-6 max-w-5xl">
-                <div className="mb-3 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-sm font-semibold text-foreground">
-                      {t("existingTitle")}
-                    </h2>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {hasOrganizations
-                        ? t("subtitle")
-                        : t("noOrganizationsDesc")}
-                    </p>
-                  </div>
-                </div>
-                {hasOrganizations ? (
-                  <div className="overflow-hidden rounded-xl border border-border bg-card">
-                    <Table>
-                      <TableHeader className="bg-muted/40">
-                        <TableRow className="hover:bg-transparent">
-                          <TableHead>Organization</TableHead>
-                          <TableHead className="w-40">Status</TableHead>
-                          <TableHead className="w-32 text-right">
-                            Action
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {orgs?.map((org) => {
-                          const isCurrent =
-                            session?.session?.activeOrganizationId === org.id;
-                          const isBusy = busyId === org.id;
-                          return (
-                            <TableRow
-                              key={org.id}
-                              className="cursor-pointer"
-                              onClick={() => void selectOrganization(org.id)}
-                            >
-                              <TableCell>
-                                <div className="flex min-w-0 items-center gap-3">
-                                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                                    {isBusy ? (
-                                      <Loader2 className="size-4 animate-spin" />
-                                    ) : (
-                                      <Building2 className="size-4" />
-                                    )}
-                                  </span>
-                                  <span className="min-w-0">
-                                    <span className="block truncate font-medium text-foreground">
-                                      {org.name ?? t("untitledWorkspace")}
-                                    </span>
-                                    <span className="block truncate text-xs text-muted-foreground">
-                                      {org.slug ?? org.id}
-                                    </span>
-                                  </span>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                {isCurrent ? (
-                                  <Badge
-                                    variant="secondary"
-                                    className="h-5 normal-case tracking-normal"
-                                  >
-                                    {t("currentWorkspace")}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-sm text-muted-foreground">
-                                    —
-                                  </span>
-                                )}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <Button
-                                  className="h-8 rounded-lg px-3 text-xs"
-                                  disabled={Boolean(busyId || busyAction)}
-                                  onClick={(
-                                    event: MouseEvent<HTMLButtonElement>,
-                                  ) => {
-                                    event.stopPropagation();
-                                    void selectOrganization(org.id);
-                                  }}
-                                  type="button"
-                                  variant={isCurrent ? "outline" : "ghost"}
-                                >
-                                  {isBusy ? (
-                                    <Loader2 className="size-3.5 animate-spin" />
-                                  ) : null}
-                                  <span className="sr-only">{org.name}</span>
-                                  <ArrowRight className="size-3.5 rtl:rotate-180" />
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </div>
-                ) : (
-                  <div className="rounded-xl border border-border bg-card px-4 py-8 text-sm text-muted-foreground">
-                    {t("noOrganizationsDesc")}
-                  </div>
-                )}
-              </section>
-            </div>
-          )}
-        </div>
-      </div>
-
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-md rounded-md p-5 sm:p-6">
           <DialogHeader>
@@ -738,7 +204,6 @@ export function ChooseOrganizationClient({
               id="organization-name"
               onChange={(event) => {
                 setOrganizationName(event.target.value);
-                setError("");
               }}
               placeholder={t("createNamePlaceholder")}
               value={organizationName}

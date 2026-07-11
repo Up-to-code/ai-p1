@@ -77,4 +77,14 @@ const handler = withMcpAuth(
   { required: true },
 );
 
-export { handler as POST };
+export async function POST(request: Request) {
+  const response = await handler(request);
+  if (response.status !== 401) return response;
+
+  const headers = new Headers(response.headers);
+  headers.set(
+    "WWW-Authenticate",
+    `Bearer resource_metadata="${new URL("/.well-known/oauth-protected-resource/mcp", request.url).toString()}"`,
+  );
+  return new Response(response.body, { status: response.status, headers });
+}

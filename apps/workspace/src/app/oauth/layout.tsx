@@ -1,35 +1,18 @@
 import type { Metadata } from "next";
-import { brandIdentity, brandLabel, brandProductName } from "@qentrah/brand-identity";
-import { Cairo } from "next/font/google";
+import { brandLabel, brandProductName } from "@qentrah/brand-identity";
 import { cookies, headers } from "next/headers";
-import "../globals.css";
 import { resolveOAuthLocale } from "./oauth-locale";
 
-const cairo = Cairo({
-  variable: "--font-cairo",
-  subsets: ["arabic", "latin"],
-});
-
-const themeInitScript = `
-(() => {
-  try {
-    const stored = window.localStorage.getItem("${brandIdentity.themeStorageKey}");
-    const theme = stored === "light" ? "light" : "dark";
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    document.documentElement.style.colorScheme = theme;
-  } catch {
-    document.documentElement.classList.add("dark");
-    document.documentElement.style.colorScheme = "dark";
-  }
-})();
-`;
-
 export const metadata: Metadata = {
-  title: `Partner authorization | ${brandProductName("platform", "en")}`,
-  description: `Authorize partner application access to a ${brandLabel("en")} workspace.`,
+  title: `Secure authorization | ${brandProductName("platform", "en")}`,
+  description: `Review and authorize secure access to a ${brandLabel("en")} workspace.`,
 };
 
-export default async function OAuthLayout({ children }: { children: React.ReactNode }) {
+export default async function OAuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const cookieStore = await cookies();
   const headerStore = await headers();
   const locale = resolveOAuthLocale({
@@ -39,19 +22,12 @@ export default async function OAuthLayout({ children }: { children: React.ReactN
   const isArabic = locale === "ar";
 
   return (
-    <html
+    <div
       lang={locale}
       dir={isArabic ? "rtl" : "ltr"}
-      className={`${cairo.variable} h-full antialiased`}
-      suppressHydrationWarning
+      className={`h-full bg-background text-text-primary ${isArabic ? "font-cairo" : ""}`}
     >
-      <body className={`h-full bg-background text-text-primary ${isArabic ? "font-cairo" : ""}`} suppressHydrationWarning>
-        <script
-          dangerouslySetInnerHTML={{ __html: themeInitScript }}
-          suppressHydrationWarning
-        />
-        {children}
-</body>
-    </html>
+      {children}
+    </div>
   );
 }

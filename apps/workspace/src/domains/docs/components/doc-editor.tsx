@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -23,37 +23,10 @@ import type { DocFormValues, DocRecord, CustomField } from "../docs.types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/components/ui/toast";
-import { logger } from "@/lib/logger";
 import { CustomFieldsModal } from "./custom-fields-modal";
 import { DocumentCustomFields } from "./document-custom-fields";
 import { listOrganizationMembers } from "@/domains/organization/api/members";
-
-const DOCUMENT_AUTOSAVE_DELAY = 60_000;
-
-function formFromDoc(doc: DocRecord): DocFormValues {
-  return {
-    title: doc.title,
-    content: doc.content ?? "",
-    folderId: doc.folderId ?? "",
-    projectId: doc.projectId ?? "",
-    visibility: doc.visibility ?? "team",
-    tags: (doc.tags ?? []).join(", "),
-    customFields: doc.customFields ?? [],
-  };
-}
-
-function persistedDocFormKey(values: DocFormValues) {
-  return JSON.stringify({
-    title: values.title,
-    content: values.content,
-    folderId: values.folderId,
-    projectId: values.projectId,
-    visibility: values.visibility,
-    tags: values.tags,
-    customFields: values.customFields ?? [],
-  });
-}
+import { useDocumentDraft } from "../hooks/use-document-draft";
 
 export function DocEditor({
   doc,
@@ -69,7 +42,6 @@ export function DocEditor({
   onClose?: () => void;
 }) {
   const t = useTranslations("Docs");
-  const toast = useToast();
   const updateDoc = useUpdateDocMutation();
   const relatedDocsResult = useDocsQuery(organizationId, {
     projectId: doc.projectId ?? undefined,
@@ -83,162 +55,28 @@ export function DocEditor({
     enabled: Boolean(organizationId),
   });
 
-  const [draft, setDraft] = useState<DocFormValues>(() => formFromDoc(doc));
-  const [lastPersistedKey, setLastPersistedKey] = useState(() => persistedDocFormKey(formFromDoc(doc)));
-  const [busyId, setBusyId] = useState<string | null>(null);
+  const persistDocument = useCallback(
+    (values: DocFormValues) => updateDoc(organizationId, doc.id, values),
+    [doc.id, organizationId, updateDoc],
+  );
+  const {
+    draft,
+    isSaving,
+    saveMode,
+    hasUnsavedChanges,
+    updateDraft,
+    updateBody,
+    saveDraft,
+  } = useDocumentDraft({
+    doc,
+    organizationId,
+    persist: persistDocument,
+    onSaved,
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showCustomFieldsModal, setShowCustomFieldsModal] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [draftLoaded, setDraftLoaded] = useState(false);
-  const [saveMode, setSaveMode] = useState<"saved" | "local" | "autosaving">("saved");
-
-  const latestDraftRef = useRef(draft);
-  const lastPersistedKeyRef = useRef(lastPersistedKey);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const localDraftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const saveVersionRef = useRef(0);
-
-  const hasUnsavedChanges = persistedDocFormKey(draft) !== lastPersistedKey;
-  const storageKey = `doc-draft:${organizationId}:${doc.id}`;
-
-  const markPersisted = useCallback((key: string) => {
-    lastPersistedKeyRef.current = key;
-    setLastPersistedKey(key);
-  }, []);
-
-  useEffect(() => {
-    latestDraftRef.current = draft;
-  }, [draft]);
-
-  useEffect(() => {
-    const nextServerDraft = formFromDoc(doc);
-    const nextServerKey = persistedDocFormKey(nextServerDraft);
-    const currentKey = persistedDocFormKey(latestDraftRef.current);
-    const hasLocalChanges = currentKey !== lastPersistedKeyRef.current;
-
-    if (!hasLocalChanges || currentKey === nextServerKey) {
-      latestDraftRef.current = nextServerDraft;
-      setDraft(nextServerDraft);
-      markPersisted(nextServerKey);
-    }
-  }, [
-    doc.id,
-    doc.title,
-    doc.content,
-    doc.folderId,
-    doc.projectId,
-    doc.visibility,
-    doc.tags,
-    doc.customFields,
-    doc.updatedAt,
-    markPersisted,
-  ]);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      const { getItem } = await import("@/domains/storage");
-      const stored = await getItem("drafts", storageKey);
-      if (cancelled) return;
-      if (stored?.value && typeof stored.value === "object") {
-        const restored = { ...formFromDoc(doc), ...(stored.value as Partial<DocFormValues>) };
-        latestDraftRef.current = restored;
-        setDraft(restored);
-        setSaveMode("local");
-      }
-      setDraftLoaded(true);
-    })();
-    return () => { cancelled = true; };
-  }, [doc.id, organizationId, storageKey]);
-
-  useEffect(() => {
-    if (!draftLoaded || !hasUnsavedChanges) return;
-    if (localDraftTimerRef.current) clearTimeout(localDraftTimerRef.current);
-    localDraftTimerRef.current = setTimeout(() => {
-      void (async () => {
-        const { setItem } = await import("@/domains/storage");
-        await setItem("drafts", storageKey, latestDraftRef.current as Record<string, unknown>);
-      })();
-    }, 300);
-    return () => {
-      if (localDraftTimerRef.current) clearTimeout(localDraftTimerRef.current);
-    };
-  }, [draft, draftLoaded, hasUnsavedChanges, storageKey]);
-
-  const persistDraft = useCallback(async (nextDraft: DocFormValues, options?: { showToast?: boolean; automatic?: boolean }) => {
-    const nextKey = persistedDocFormKey(nextDraft);
-    if (nextKey === lastPersistedKeyRef.current) return;
-
-    const saveVersion = ++saveVersionRef.current;
-    if (options?.automatic) setSaveMode("autosaving");
-    setBusyId("patch");
-    try {
-      await updateDoc(organizationId, doc.id, nextDraft);
-      markPersisted(nextKey);
-      setSaveMode("saved");
-      const { removeItem } = await import("@/domains/storage");
-      await removeItem("drafts", storageKey);
-      if (options?.showToast) {
-        toast.toast({ title: t("form.savedToast"), type: "success" });
-      }
-      onSaved?.();
-    } catch (error) {
-      logger.error("docs.save_failed", { docId: doc.id, error });
-      if (options?.showToast) {
-        toast.toast({ title: "Document could not be saved.", type: "error" });
-      }
-      setSaveMode("local");
-    } finally {
-      if (saveVersion === saveVersionRef.current) setBusyId(null);
-    }
-  }, [doc.id, markPersisted, onSaved, organizationId, storageKey, t, toast, updateDoc]);
-
-  const scheduleServerAutosave = useCallback(
-    (nextDraft: DocFormValues) => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = setTimeout(() => {
-        saveTimerRef.current = null;
-        void persistDraft(nextDraft, { automatic: true });
-      }, DOCUMENT_AUTOSAVE_DELAY);
-    },
-    [persistDraft],
-  );
-
-  const updateDraft = useCallback(
-    (partial: Partial<DocFormValues>, options?: { autosave?: boolean }) => {
-      setDraft((current) => {
-        const next = { ...current, ...partial };
-        latestDraftRef.current = next;
-        setSaveMode("local");
-        scheduleServerAutosave(next);
-        return next;
-      });
-    },
-    [scheduleServerAutosave],
-  );
-
-  const flushAutosave = useCallback(
-    (options?: { showToast?: boolean }) => {
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-        saveTimerRef.current = null;
-      }
-      return persistDraft(latestDraftRef.current, options);
-    },
-    [persistDraft],
-  );
-
-  const saveDraft = useCallback(() => {
-    void flushAutosave({ showToast: true });
-  }, [flushAutosave]);
-
-  const handleBodyBlur = useCallback((html: string) => {
-    const next = { ...latestDraftRef.current, content: html };
-    latestDraftRef.current = next;
-    setDraft(next);
-    setSaveMode("local");
-    scheduleServerAutosave(next);
-  }, [scheduleServerAutosave]);
 
   const mentionOptions = useMemo<DocEditorMentionOption[]>(() => {
     const memberOptions =
@@ -279,12 +117,6 @@ export function DocEditor({
     return [...memberOptions, ...docOptions, ...taskOptions];
   }, [doc.id, membersResult.data, relatedDocsResult.data, relatedTasksResult.data]);
 
-  useEffect(() => {
-    return () => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    };
-  }, []);
-
   const fields: DocEditorMetaField[] = [
     {
       key: "custom-fields",
@@ -306,14 +138,14 @@ export function DocEditor({
   }, [updateDraft]);
 
   async function confirmDelete() {
-    setBusyId("delete");
+    setIsDeleting(true);
     try {
       await deleteDocRequest(organizationId, doc.id);
       onDeleted?.();
     } catch (error) {
       throw error;
     } finally {
-      setBusyId(null);
+      setIsDeleting(false);
       setDeleting(false);
     }
   }
@@ -336,10 +168,10 @@ export function DocEditor({
               type="button"
               size="sm"
               onClick={saveDraft}
-              disabled={Boolean(busyId) || !hasUnsavedChanges}
+              disabled={isSaving || !hasUnsavedChanges}
               className="h-8 rounded-lg px-3 text-xs transition-all duration-200"
             >
-              {busyId === "patch" ? "Saving..." : "Save"}
+              {isSaving ? "Saving..." : "Save"}
             </Button>
             <span className="text-[11px] font-medium text-amber-700 dark:text-amber-300">
               {saveMode === "autosaving" ? "Autosaving…" : saveMode === "local" ? "Autosave in 1 min" : "Autosave on"}
@@ -369,18 +201,14 @@ export function DocEditor({
             t("form.bodyPlaceholder") ||
             "Start writing... Type / for commands"
           }
-          isSaving={busyId === "patch"}
+          isSaving={isSaving}
           onTitleBlur={(v) => {
             if (v !== draft.title) {
               updateDraft({ title: v });
             }
           }}
-          onBodyChange={(html) => {
-            if (html !== latestDraftRef.current.content) {
-              updateDraft({ content: html }, { autosave: true });
-            }
-          }}
-          onBodyBlur={handleBodyBlur}
+          onBodyChange={updateBody}
+          onBodyBlur={updateBody}
           mentionOptions={mentionOptions}
           compactFormatting
         />
@@ -391,7 +219,7 @@ export function DocEditor({
         onOpenChange={setDeleting}
         title={t("actions.deleteDoc")}
         description={t("actions.deleteDesc", { title: draft.title })}
-        isDeleting={busyId === "delete"}
+        isDeleting={isDeleting}
         onConfirm={confirmDelete}
       />
 

@@ -23,6 +23,19 @@ type CreateOrganizationInput<TOrganization extends OrganizationSelection> = {
   nextHref: string;
 };
 
+type CompleteOrganizationEntryInput = {
+  organizationId: string;
+  setActive: (input: { organizationId: string }) => Promise<{
+    data?: unknown;
+    error?: AuthError | null;
+  }>;
+  writeHandoff: (organizationId: string) => void;
+  seedWorkspace: (organizationId: string) => Promise<unknown>;
+  navigate: (href: string) => void;
+  nextHref: string;
+  errorMessage: string;
+};
+
 function authResultError(error: AuthError | null | undefined, fallback: string) {
   if (!error) return fallback;
   return error.message ?? error.code ?? fallback;
@@ -86,4 +99,28 @@ export async function createAndSelectOrganization<TOrganization extends Organiza
   navigate(nextHref, organization.id!);
 
   return organization;
+}
+
+/**
+ * Completes the Organization entry transaction in its required order.
+ * Callers should not navigate until the active Organization, auth handoff,
+ * and idempotent Workspace seed have all succeeded.
+ */
+export async function completeOrganizationEntry({
+  organizationId,
+  setActive,
+  writeHandoff,
+  seedWorkspace,
+  navigate,
+  nextHref,
+  errorMessage,
+}: CompleteOrganizationEntryInput) {
+  const result = await setActive({ organizationId });
+  if (result.error) {
+    throw new Error(authResultError(result.error, errorMessage));
+  }
+
+  writeHandoff(organizationId);
+  await seedWorkspace(organizationId);
+  navigate(nextHref);
 }

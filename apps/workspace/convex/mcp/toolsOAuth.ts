@@ -23,17 +23,23 @@ export const callToolOAuth = action({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Authentication required.");
 
+    const scopes = String((identity as Record<string, unknown>).scope ?? "")
+      .split(/\s+/u)
+      .filter(Boolean);
+    if (!scopes.includes("mcp:read")) {
+      throw new Error("MCP read permission is required.");
+    }
+
     const userId = identity.subject;
     const orgId = (identity as Record<string, unknown>)["org_id"] as string | undefined
       ?? (identity as Record<string, unknown>)["orgId"] as string | undefined;
-    const orgRole = (identity as Record<string, unknown>)["org_role"] as string | undefined
-      ?? (identity as Record<string, unknown>)["orgRole"] as string | undefined;
-
     if (!orgId) throw new Error("Organization context required.");
-    if (!orgRole) throw new Error("Organization role required.");
 
     const permission = toolPermissions[args.tool];
     if (!permission) throw new Error("Unknown tool.");
+    if (!readTools.has(args.tool) && !scopes.includes("mcp:write")) {
+      throw new Error("MCP write permission is required.");
+    }
 
     const common = {
       organizationId: orgId,

@@ -27,6 +27,17 @@ interface UseAuthFlowResult {
   goBack: () => void;
 }
 
+type OAuthContinueResult = {
+  data?: { redirect?: boolean; url?: string } | null;
+  error?: { message?: string; code?: string } | null;
+};
+
+function oauthAuthorizationQuery() {
+  if (typeof window === "undefined") return undefined;
+  const params = new URLSearchParams(window.location.search);
+  return params.has("client_id") && params.has("sig") ? params.toString() : undefined;
+}
+
 export function useAuthFlow(
   options: UseAuthFlowOptions
 ): UseAuthFlowResult {
@@ -40,6 +51,20 @@ export function useAuthFlow(
   const [resetVerificationCode, setResetVerificationCode] = useState("");
 
   const finalizeCallback = async () => {
+    const oauthQuery = oauthAuthorizationQuery();
+    if (oauthQuery) {
+      const result = await (authClient as typeof authClient & {
+        oauth2: {
+          continue: (input: { postLogin: true; oauth_query: string }) => Promise<OAuthContinueResult>;
+        };
+      }).oauth2.continue({ postLogin: true, oauth_query: oauthQuery });
+      if (result.error || !result.data?.url) {
+        throw new Error(result.error?.message ?? result.error?.code ?? "Could not continue MCP authorization.");
+      }
+      window.location.assign(result.data.url);
+      return;
+    }
+
     if (options.callbackURL) {
       const localePrefixPattern = new RegExp(`^/(${["en", "ar"].join("|")})/`);
       const cleanPath = options.callbackURL.replace(localePrefixPattern, "/");
@@ -87,9 +112,12 @@ export function useAuthFlow(
     setPhase("sso");
 
     try {
+      const oauthQuery = oauthAuthorizationQuery();
       const { error: ssoErr } = await authClient.signIn.social({
         provider,
-        callbackURL: options.callbackURL ?? undefined,
+        callbackURL: oauthQuery
+          ? `/oauth/select-organization?${oauthQuery}`
+          : options.callbackURL ?? undefined,
       });
       if (ssoErr) throw ssoErr;
     } catch (err: any) {

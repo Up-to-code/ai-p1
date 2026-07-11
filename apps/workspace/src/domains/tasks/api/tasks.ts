@@ -156,6 +156,34 @@ export function taskPayloadFromForm(values: TaskFormValues) {
   };
 }
 
+/**
+ * Produces the complete Task form state required by the write interface.
+ * Keeping this conversion here prevents Task views from silently dropping
+ * fields they do not render when they save a Task.
+ */
+export function taskFormValuesFromRecord(
+  task: TaskRecord,
+  changes: Partial<TaskRecord> = {},
+): TaskFormValues {
+  const merged = { ...task, ...changes };
+  return {
+    title: merged.title,
+    status: merged.status,
+    pipelineOrder: merged.pipelineOrder,
+    priority: merged.priority,
+    visibility: merged.visibility ?? "team",
+    assigneeUserId: merged.assigneeUserId ?? "",
+    assigneeUserIds: merged.assigneeUserIds ?? (merged.assigneeUserId ? [merged.assigneeUserId] : []),
+    clientId: merged.clientId ?? "",
+    projectId: merged.projectId ?? "",
+    spaceId: merged.spaceId ?? "",
+    startDate: merged.startDate ?? "",
+    dueDate: merged.dueDate ?? "",
+    description: merged.description ?? "",
+    tags: (merged.tags ?? []).join(", "),
+  };
+}
+
 export const taskApi = createResourceApi<TaskRecord, TaskFormValues, TaskFormValues>({
   resourcePath: "tasks",
   resourceKey: "task",

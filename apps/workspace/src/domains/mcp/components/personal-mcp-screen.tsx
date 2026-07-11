@@ -138,6 +138,16 @@ export function PersonalMcpScreen() {
     setCreateOpen(true);
   }
 
+  async function copyOAuthEndpoint() {
+    const endpoint = `${window.location.origin}/mcp`;
+    await navigator.clipboard?.writeText(endpoint).catch(() => undefined);
+    toast({
+      title: "Secure MCP URL copied",
+      description: "Paste it into your agent. Qentrah will open sign-in and approval before access is granted.",
+      type: "success",
+    });
+  }
+
   function chooseQuickAction(kind: "full" | "read" | "work" | "crm") {
     setAgentLink("");
     setApproved(false);
@@ -166,8 +176,10 @@ export function PersonalMcpScreen() {
               {createOpen ? "MCP for your agent" : "MCPs"}
             </h1>
           </div>
-          {!createOpen && <Button onClick={openCreate} className="rounded-lg"><Plus className="me-2 h-4 w-4" />Create MCP</Button>}
+          {!createOpen && <div className="flex gap-2"><Button variant="outline" onClick={() => void copyOAuthEndpoint()} className="rounded-lg"><ShieldCheck className="me-2 h-4 w-4" />Copy secure URL</Button><Button onClick={openCreate} className="rounded-lg"><Plus className="me-2 h-4 w-4" />Create legacy MCP</Button></div>}
         </header>
+
+        {!createOpen ? <section className="rounded-xl border border-primary/25 bg-primary/5 p-4 text-sm text-foreground"><div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><div><p className="font-semibold">OAuth MCP connection</p><p className="mt-1 text-muted-foreground">Use the secure URL for new agents. The agent opens Qentrah sign-in and a permission approval screen; no long-lived secret is copied into its configuration.</p></div></div></section> : null}
 
         {createOpen ? (
           <section className="rounded-xl border border-border bg-card p-4 md:p-6">

@@ -3,7 +3,8 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { type Project } from "../../../store/projects.types";
-import { useTasksQuery, createTaskRequest, updateTaskRequest } from "@/domains/tasks/api/tasks";
+import { useTasksQuery } from "@/domains/tasks/api/tasks";
+import { useTaskMutations } from "@/domains/tasks/hooks/use-task-mutations";
 import { useAuthSession } from "@/domains/auth";
 import { logger } from "@/lib/logger";
 import { EditableText } from "@/components/ui/editable-text";
@@ -202,6 +203,7 @@ export function TasksTimelineTab({ project, organizationId, spaceId }: TasksTime
   const t = useTranslations("Projects");
   const tasksResult = useTasksQuery(organizationId, { projectId: project.id, spaceId });
   const tasks = tasksResult.data ?? [];
+  const { createTask, updateTask } = useTaskMutations(organizationId);
 
   const defaultTabs = useMemo(() => FALLBACK_PROJECT_TABS, []);
   const tasksScope = `project:${project.id}:tasks`;
@@ -231,13 +233,10 @@ export function TasksTimelineTab({ project, organizationId, spaceId }: TasksTime
     if (!newTitle.trim()) return;
     setIsSubmitting(true);
     try {
-      await createTaskRequest(organizationId, {
+      await createTask({
         title: newTitle.trim(),
         status: "todo",
         priority: newPriority as TaskPriority,
-        visibility: "team",
-        assigneeUserId: "",
-        clientId: "",
         projectId: project.id,
         dueDate: newDueDate || "",
         description: "",
@@ -256,23 +255,12 @@ export function TasksTimelineTab({ project, organizationId, spaceId }: TasksTime
   const handleStatusChange = useCallback(
     async (task: TaskRecord, newStatus: TaskStatus) => {
       try {
-        await updateTaskRequest(organizationId, task.id, {
-          title: task.title,
-          status: newStatus,
-          priority: task.priority,
-          visibility: task.visibility ?? "team",
-          assigneeUserId: task.assigneeUserId ?? "",
-          clientId: task.clientId ?? "",
-          projectId: task.projectId ?? "",
-          dueDate: task.dueDate ?? "",
-          description: task.description ?? "",
-          tags: Array.isArray(task.tags) ? task.tags.join(",") : (task.tags ?? ""),
-        });
+      await updateTask(task, { status: newStatus });
       } catch (err) {
         logger.error("tasks_timeline.update_failed", { error: err });
       }
     },
-    [organizationId],
+    [updateTask],
   );
 
   return (

@@ -3,12 +3,12 @@
 import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useDashboardContext } from "../dashboard-context";
-import { useTasksQuery, updateTaskRequest } from "@/domains/tasks/api/tasks";
-import { useQueryClient } from "@tanstack/react-query";
+import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import { cn } from "@/lib/utils";
 import { logger } from "@/lib/logger";
 import { Check, Circle } from "lucide-react";
 import type { TaskRecord } from "@/domains/tasks/tasks.types";
+import { useTaskMutations } from "@/domains/tasks/hooks/use-task-mutations";
 
 const statusColors: Record<string, { color: string; dot: string }> = {
   todo: { color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400", dot: "bg-gray-400" },
@@ -45,7 +45,7 @@ function formatDueDate(dateStr: string | undefined, t: (key: string, params?: Re
 export function TaskTableWidget() {
   const t = useTranslations("Widgets.taskTable");
   const { projectId, organizationId } = useDashboardContext();
-  const queryClient = useQueryClient();
+  const { updateTask } = useTaskMutations(organizationId);
   const tasksResult = useTasksQuery(organizationId, { projectId });
   const tasks = tasksResult.data ?? [];
   const [showAddRow, setShowAddRow] = useState(false);
@@ -65,19 +65,7 @@ export function TaskTableWidget() {
   const toggleDone = async (task: TaskRecord) => {
     const newStatus: TaskRecord["status"] = task.status === "done" ? "todo" : "done";
     try {
-      await updateTaskRequest(organizationId, task.id, {
-        title: task.title,
-        status: newStatus,
-        priority: task.priority,
-        visibility: task.visibility ?? "team",
-        assigneeUserId: task.assigneeUserId ?? "",
-        projectId: task.projectId ?? "",
-        clientId: task.clientId ?? "",
-        dueDate: task.dueDate ?? "",
-        description: task.description ?? "",
-        tags: (task.tags ?? []).join(", "),
-      });
-      queryClient.invalidateQueries({ queryKey: ["tasks", organizationId] });
+      await updateTask(task, { status: newStatus });
     } catch (err) {
       logger.error("task_table.toggle_failed", { error: err });
     }
@@ -88,19 +76,7 @@ export function TaskTableWidget() {
     const nextIdx = (currentIdx + 1) % statusOrder.length;
     const newStatus = statusOrder[nextIdx];
     try {
-      await updateTaskRequest(organizationId, task.id, {
-        title: task.title,
-        status: newStatus,
-        priority: task.priority,
-        visibility: task.visibility ?? "team",
-        assigneeUserId: task.assigneeUserId ?? "",
-        projectId: task.projectId ?? "",
-        clientId: task.clientId ?? "",
-        dueDate: task.dueDate ?? "",
-        description: task.description ?? "",
-        tags: (task.tags ?? []).join(", "),
-      });
-      queryClient.invalidateQueries({ queryKey: ["tasks", organizationId] });
+      await updateTask(task, { status: newStatus });
     } catch (err) {
       logger.error("task_table.status_update_failed", { error: err });
     }

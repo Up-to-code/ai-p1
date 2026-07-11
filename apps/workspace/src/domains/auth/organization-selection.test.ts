@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   createAndSelectOrganization,
+  completeOrganizationEntry,
   requireOrganizationResult,
   selectExistingOrganization,
 } from "./organization-selection";
@@ -117,5 +118,68 @@ describe("organization selection flow", () => {
   it("normalizes result errors with code fallbacks", () => {
     expect(() => requireOrganizationResult({ error: { code: "ORG_NOT_FOUND" } }, "fallback")).toThrow("ORG_NOT_FOUND");
     expect(() => requireOrganizationResult({ error: {} }, "fallback")).toThrow("fallback");
+  });
+
+  it("completes Organization entry in activation, handoff, seed, navigation order", async () => {
+    const calls: string[] = [];
+
+    await completeOrganizationEntry({
+      organizationId: "org_1",
+      setActive: async () => {
+        calls.push("active");
+        return { data: { id: "org_1" } };
+      },
+      writeHandoff: () => calls.push("handoff"),
+      seedWorkspace: async () => {
+        calls.push("seed");
+      },
+      navigate: (href) => calls.push(`navigate:${href}`),
+      nextHref: "/ws",
+      errorMessage: "Could not enter workspace.",
+    });
+
+    expect(calls).toEqual(["active", "handoff", "seed", "navigate:/ws"]);
+  });
+
+  it("does not hand off, seed, or navigate when activation fails", async () => {
+    const writeHandoff = vi.fn();
+    const seedWorkspace = vi.fn();
+    const navigate = vi.fn();
+
+    await expect(
+      completeOrganizationEntry({
+        organizationId: "org_1",
+        setActive: async () => ({ error: { message: "Not a member" } }),
+        writeHandoff,
+        seedWorkspace,
+        navigate,
+        nextHref: "/ws",
+        errorMessage: "Could not enter workspace.",
+      }),
+    ).rejects.toThrow("Not a member");
+
+    expect(writeHandoff).not.toHaveBeenCalled();
+    expect(seedWorkspace).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("does not navigate when Workspace seeding fails", async () => {
+    const navigate = vi.fn();
+
+    await expect(
+      completeOrganizationEntry({
+        organizationId: "org_1",
+        setActive: async () => ({}),
+        writeHandoff: vi.fn(),
+        seedWorkspace: async () => {
+          throw new Error("Seed failed");
+        },
+        navigate,
+        nextHref: "/ws",
+        errorMessage: "Could not enter workspace.",
+      }),
+    ).rejects.toThrow("Seed failed");
+
+    expect(navigate).not.toHaveBeenCalled();
   });
 });

@@ -3,24 +3,14 @@ import { evaluateAgentToolRisk } from "./risk-policy";
 import {
   getRegistryTool,
   type McpAdapter,
+  type McpPermissionAction,
+  type McpPermissionResource,
   type McpToolApprovalRequirement,
   type McpToolDataSensitivity,
   type McpToolRiskLevel,
 } from "./registry-core";
 
-export type McpPermissionResource =
-  | "organization"
-  | "member"
-  | "role"
-  | "space"
-  | "client"
-  | "project"
-  | "deal"
-  | "calendar"
-  | "task"
-  | "media";
-
-export type McpPermissionAction = "read" | "create" | "update" | "delete";
+export type { McpPermissionAction, McpPermissionResource } from "./registry-core";
 
 export type McpPermission = {
   resource: McpPermissionResource;
@@ -643,12 +633,15 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
 function withSafetyMetadata(tool: Omit<McpToolDefinition, "riskLevel" | "approvalRequirement" | "dataSensitivity">): McpToolDefinition {
   const registryTool = getRegistryTool(tool.name);
   if (!registryTool) {
-    return {
-      ...tool,
-      riskLevel: "admin",
-      approvalRequirement: "admin",
-      dataSensitivity: "private_organization",
-    };
+    throw new Error(`MCP tool '${tool.name}' is missing its Tool Registry definition.`);
+  }
+  if (
+    registryTool.title !== tool.title ||
+    registryTool.resource !== tool.resource ||
+    registryTool.action !== tool.action ||
+    Boolean(registryTool.destructive) !== Boolean(tool.destructive)
+  ) {
+    throw new Error(`MCP tool '${tool.name}' disagrees with its Tool Registry definition.`);
   }
   return {
     ...tool,

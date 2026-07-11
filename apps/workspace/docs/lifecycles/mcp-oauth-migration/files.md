@@ -2,7 +2,7 @@
 
 ## New
 - `src/app/mcp/[transport]/route.ts` — MCP handler using createMcpHandler + withMcpAuth
-- `src/app/.well-known/oauth-authorization-server/route.ts` — OAuth auth server metadata
+- `src/app/.well-known/oauth-authorization-server/api/auth/route.ts` — issuer-scoped OAuth auth-server metadata proxy
 - `src/app/.well-known/oauth-protected-resource/mcp/route.ts` — OAuth protected resource metadata
 - `convex/mcp/toolsOAuth.ts` — callToolOAuth action + readToolOAuth/writeToolOAuth
 

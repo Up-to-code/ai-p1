@@ -54,6 +54,11 @@ import type {
   MessageMention,
   MessageAttachment,
 } from "@/domains/inbox/types/inbox.types";
+import {
+  isOptimisticMessageId,
+  mergeConversationMessages,
+  type OptimisticMessage,
+} from "../lib/optimistic-conversation";
 
 function escapeHtml(value: string) {
   return value
@@ -95,59 +100,6 @@ function formatAiResponseHtml(content: string) {
   flushList();
 
   return html.join("");
-}
-
-type OptimisticMessage = Message & { optimistic?: true };
-
-function isOptimisticMessageId(messageId: string) {
-  return messageId.startsWith("optimistic-");
-}
-
-function mergeMessagesWithOptimisticState({
-  loadedMessages,
-  optimisticMessages,
-  optimisticDeletedIds,
-  optimisticEdits,
-  optimisticReactions,
-  channelId,
-}: {
-  loadedMessages: Message[];
-  optimisticMessages: OptimisticMessage[];
-  optimisticDeletedIds: Set<string>;
-  optimisticEdits: Record<string, { content: string; editedAt: number }>;
-  optimisticReactions: Record<string, Message["reactions"]>;
-  channelId?: string;
-}) {
-  const serverClientMessageIds = new Set(
-    loadedMessages
-      .map((message) => message.clientMessageId)
-      .filter((id): id is string => Boolean(id)),
-  );
-
-  return [
-    ...loadedMessages
-      .filter((message) => !optimisticDeletedIds.has(message.id))
-      .map((message) => ({
-        ...message,
-        ...(optimisticEdits[message.id]
-          ? {
-              content: optimisticEdits[message.id].content,
-              editedAt: optimisticEdits[message.id].editedAt,
-              updatedAt: optimisticEdits[message.id].editedAt,
-            }
-          : null),
-        ...(optimisticReactions[message.id]
-          ? { reactions: optimisticReactions[message.id] }
-          : null),
-      })),
-    ...optimisticMessages.filter(
-      (message) =>
-        message.channelId === channelId &&
-        !optimisticDeletedIds.has(message.id) &&
-        (!message.clientMessageId ||
-          !serverClientMessageIds.has(message.clientMessageId)),
-    ),
-  ];
 }
 
 export function InboxChannelScreen() {
@@ -233,7 +185,7 @@ export function InboxChannelScreen() {
     isInitialLoading: isMessagesLoading,
     isLoadingMore,
   } = useLoadMoreMessages(readableActiveChannelId);
-  const visibleMessages = mergeMessagesWithOptimisticState({
+  const visibleMessages = mergeConversationMessages({
     loadedMessages,
     optimisticMessages,
     optimisticDeletedIds,

@@ -41,7 +41,7 @@ describe("Workspace auth route source", () => {
     expect(authScreen).toContain("GoogleMark");
     expect(authEntry).toContain("useAuth");
     const chooseOrgClient = readSource("src/domains/auth/components/choose-organization-client.tsx");
-    expect(chooseOrgClient).toContain("resolvedCallbackURL");
+    expect(chooseOrgClient).toContain("useOrganizationEntry");
     expect(authFlow).toContain("authClient.signIn.email");
     expect(authFlow).toContain("authClient.signUp.email");
   });
@@ -59,6 +59,7 @@ describe("Workspace auth route source", () => {
 
   it("keeps organization creation name-only and routes new workspaces through onboarding", () => {
     const chooseOrgClient = readSource("src/domains/auth/components/choose-organization-client.tsx");
+    const organizationEntry = readSource("src/domains/auth/hooks/use-organization-entry.ts");
     const enMessages = readSource("messages/en.json");
     const arMessages = readSource("messages/ar.json");
 
@@ -67,21 +68,23 @@ describe("Workspace auth route source", () => {
       expect(enMessages).not.toContain(term);
       expect(arMessages).not.toContain(term);
     }
-    expect(chooseOrgClient).toContain('router.replace("/onboarding")');
-    expect(chooseOrgClient).toContain("resolvedCallbackURL");
-    expect(chooseOrgClient).toContain("api.modelization.write.seedWorkspaceDefaults");
+    expect(chooseOrgClient).toContain("useOrganizationEntry");
+    expect(organizationEntry).toContain('finishOrganizationSelection(result.data.id, "/onboarding")');
+    expect(organizationEntry).toContain("resolvedCallbackURL");
+    expect(organizationEntry).toContain("api.modelization.write.seedWorkspaceDefaults");
   });
 
   it("handles Better Auth organization setup errors", () => {
     const chooseOrgClient = readSource("src/domains/auth/components/choose-organization-client.tsx");
+    const organizationEntry = readSource("src/domains/auth/hooks/use-organization-entry.ts");
     const enMessages = readSource("messages/en.json");
 
-    expect(chooseOrgClient).toContain("isOrganizationsDisabledError");
-    expect(chooseOrgClient).toContain("organizationsDisabled");
-    expect(chooseOrgClient).toContain("isOrganizationSlugsDisabledError");
-    expect(chooseOrgClient).toContain("slugsDisabled");
-    expect(chooseOrgClient).not.toContain("slugify" + "Organization" + "Name");
-    expect(chooseOrgClient).not.toContain("slug: " + "slugify");
+    expect(organizationEntry).toContain("isOrganizationsDisabledError");
+    expect(organizationEntry).toContain("organizationsDisabled");
+    expect(organizationEntry).toContain("isOrganizationSlugsDisabledError");
+    expect(organizationEntry).toContain("slugsDisabled");
+    expect(organizationEntry).not.toContain("slugify" + "Organization" + "Name");
+    expect(organizationEntry).not.toContain("slug: " + "slugify");
     expect(enMessages).toContain("Organizations are not enabled");
   });
 });

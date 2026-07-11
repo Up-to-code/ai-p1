@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   ArrowLeftRight,
+  Bot,
   Building2,
   CheckCircle2,
   Home,
@@ -14,9 +15,12 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { getOAuthCopy } from "../oauth-copy";
+import { formatTemplate, getOAuthCopy } from "../oauth-copy";
 import type { OAuthLocale } from "../oauth-locale";
-import { createPartnerConnectionGrant, fetchPartnerCatalogApps } from "@/domains/integrations/integrations-runtime";
+import {
+  createPartnerConnectionGrant,
+  fetchPartnerCatalogApps,
+} from "@/domains/integrations/integrations-runtime";
 
 type BetterAuthOrganization = { id: string; name: string };
 type PartnerCatalogApp = {
@@ -27,20 +31,26 @@ type PartnerCatalogApp = {
   homepageUrl?: string;
   logoUrl?: string;
 };
-type AuthResult<T> = { data?: T | null; error?: { message?: string; code?: string } | null };
+type AuthResult<T> = {
+  data?: T | null;
+  error?: { message?: string; code?: string } | null;
+};
 type OAuthAuthClient = typeof authClient & {
   oauth2: {
-    consent: (input: { accept: boolean; scope?: string }) => Promise<AuthResult<{ redirect: boolean; url: string }>>;
+    consent: (input: {
+      accept: boolean;
+      scope?: string;
+      oauth_query?: string;
+    }) => Promise<AuthResult<{ redirect: boolean; url: string }>>;
   };
 };
 
 const oauthClient = authClient as OAuthAuthClient;
 
-function scopesFromSearch() {
-  if (typeof window === "undefined") return [];
-  return (new URLSearchParams(window.location.search).get("scope") ?? "")
-    .split(/\s+/)
-    .filter(Boolean);
+function oauthQuery() {
+  if (typeof window === "undefined") return undefined;
+  const query = window.location.search.slice(1);
+  return query || undefined;
 }
 
 const knownLocalApps: Record<string, PartnerCatalogApp> = {
@@ -50,7 +60,16 @@ const knownLocalApps: Record<string, PartnerCatalogApp> = {
   },
 };
 
-const permissionMeta: Record<string, { icon: LucideIcon; en: string; ar: string; detailEn: string; detailAr: string }> = {
+const permissionMeta: Record<
+  string,
+  {
+    icon: LucideIcon;
+    en: string;
+    ar: string;
+    detailEn: string;
+    detailAr: string;
+  }
+> = {
   "organization:read": {
     icon: Building2,
     en: "Organization profile",
@@ -72,21 +91,28 @@ const permissionMeta: Record<string, { icon: LucideIcon; en: string; ar: string;
     detailEn: "Read asset records and related workspace details.",
     detailAr: "قراءة سجلات الأصول والتفاصيل المرتبطة بمساحة العمل.",
   },
+  "mcp:read": {
+    icon: KeyRound,
+    en: "Read workspace data",
+    ar: "قراءة بيانات مساحة العمل",
+    detailEn: "View the workspace data exposed to this MCP connection.",
+    detailAr: "عرض بيانات مساحة العمل المتاحة لاتصال MCP هذا.",
+  },
+  "mcp:write": {
+    icon: KeyRound,
+    en: "Make workspace changes",
+    ar: "إجراء تغييرات في مساحة العمل",
+    detailEn: "Create and update workspace data through this MCP connection.",
+    detailAr: "إنشاء وتحديث بيانات مساحة العمل عبر اتصال MCP هذا.",
+  },
   offline_access: {
     icon: RefreshCw,
-    en: "Refresh access",
-    ar: "تجديد الوصول",
-    detailEn: "Keep the integration connected without exposing tokens to the browser.",
-    detailAr: "إبقاء التكامل متصلاً دون كشف الرموز للمتصفح.",
+    en: "Stay securely connected",
+    ar: "البقاء متصلاً بأمان",
+    detailEn: "Keep this connection active without exposing credentials.",
+    detailAr: "إبقاء هذا الاتصال نشطاً دون كشف بيانات الاعتماد.",
   },
 };
-
-function formatTemplate(value: string, replacements: Record<string, string>) {
-  return Object.entries(replacements).reduce(
-    (text, [key, replacement]) => text.replaceAll(`{${key}}`, replacement),
-    value,
-  );
-}
 
 function fallbackScopeLabel(scope: string) {
   return scope
@@ -97,33 +123,70 @@ function fallbackScopeLabel(scope: string) {
 
 async function fetchPartnerApp(clientId: string) {
   return fetchPartnerCatalogApps()
-    .then((apps) => apps.find((app) => app.partnersClientId === clientId) ?? null)
+    .then(
+      (apps) => apps.find((app) => app.partnersClientId === clientId) ?? null,
+    )
     .catch(() => null);
 }
 
-export function OAuthConsentClient({ locale }: { locale: OAuthLocale }) {
+export function OAuthConsentClient({
+  clientId,
+  locale,
+  scopes,
+}: {
+  clientId: string;
+  locale: OAuthLocale;
+  scopes: string[];
+}) {
   const copy = getOAuthCopy(locale);
   const activeOrganization = authClient.useActiveOrganization();
-  const organization = activeOrganization.data as BetterAuthOrganization | null | undefined;
+  const organization = activeOrganization.data as
+    BetterAuthOrganization | null | undefined;
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [scopes] = useState<string[]>(() => scopesFromSearch());
-  const [clientId] = useState(() => {
-    if (typeof window === "undefined") return "";
-    return new URLSearchParams(window.location.search).get("client_id") ?? "";
-  });
   const [partnerApp, setPartnerApp] = useState<PartnerCatalogApp | null>(null);
   const isArabic = locale === "ar";
   const direction = isArabic ? "rtl" : "ltr";
-  const displayScopes = scopes.filter((scope) => scope.includes(":") || scope === "offline_access");
+  const displayScopes = scopes.filter(
+    (scope) => scope.includes(":") || scope === "offline_access",
+  );
   const resourceScopes = scopes.filter((scope) => scope.includes(":"));
+  const isMcpAuthorization = scopes.some((scope) => scope.startsWith("mcp:"));
   const organizationName = organization?.name ?? copy.fallbackOrganization;
-  const appName = partnerApp?.name ?? (clientId ? knownLocalApps[clientId]?.name : undefined) ?? copy.fallbackApp;
-  const consentTitle = formatTemplate(copy.consentTitle, { app: appName, organization: organizationName });
-  const consentDescription = formatTemplate(copy.consentDescription, { app: appName, organization: organizationName });
+  const appName =
+    (isMcpAuthorization
+      ? copy.mcpAppName
+      : (partnerApp?.name ??
+        (clientId ? knownLocalApps[clientId]?.name : undefined))) ??
+    copy.fallbackApp;
+  const consentTitle = formatTemplate(
+    isMcpAuthorization ? copy.mcpConsentTitle : copy.consentTitle,
+    {
+      app: appName,
+      organization: organizationName,
+    },
+  );
+  const consentDescription = formatTemplate(
+    isMcpAuthorization ? copy.mcpConsentDescription : copy.consentDescription,
+    {
+      app: appName,
+      organization: organizationName,
+    },
+  );
+  const permissionIntro = formatTemplate(
+    isMcpAuthorization ? copy.mcpPermissionIntro : copy.permissionIntro,
+    {
+      app: appName,
+      organization: organizationName,
+    },
+  );
+  const trustNote = isMcpAuthorization ? copy.mcpTrustNote : copy.trustNote;
+  const approveLabel = isMcpAuthorization
+    ? copy.connectAgent
+    : copy.allowAccess;
 
   useEffect(() => {
-    if (!clientId) return;
+    if (!clientId || isMcpAuthorization) return;
     let active = true;
     fetchPartnerApp(clientId)
       .then((app) => {
@@ -133,14 +196,18 @@ export function OAuthConsentClient({ locale }: { locale: OAuthLocale }) {
     return () => {
       active = false;
     };
-  }, [clientId]);
+  }, [clientId, isMcpAuthorization]);
 
   async function submitConsent(accept: boolean) {
     setBusy(true);
     setError("");
     try {
-      if (accept && organization?.id) {
-        if (!partnerApp?.id || !partnerApp.partnersClientId) throw new Error(copy.connectionError);
+      if (
+        accept &&
+        organization?.id &&
+        partnerApp?.id &&
+        partnerApp.partnersClientId
+      ) {
         await createPartnerConnectionGrant(organization.id, {
           partnersAppId: partnerApp.id,
           partnersClientId: partnerApp.partnersClientId,
@@ -151,9 +218,12 @@ export function OAuthConsentClient({ locale }: { locale: OAuthLocale }) {
       const result = await oauthClient.oauth2.consent({
         accept,
         scope: scopes.join(" "),
+        oauth_query: oauthQuery(),
       });
       if (result.error || !result.data?.url) {
-        throw new Error(result.error?.message ?? result.error?.code ?? copy.consentError);
+        throw new Error(
+          result.error?.message ?? result.error?.code ?? copy.consentError,
+        );
       }
       window.location.assign(result.data.url);
     } catch (caught) {
@@ -182,17 +252,36 @@ export function OAuthConsentClient({ locale }: { locale: OAuthLocale }) {
 
           <div className="flex items-center justify-center gap-3">
             <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[12px] border border-[#d9dee6] bg-[#111827]">
-              <Image src="/brand-logo-white.svg" alt="Qentrah" width={28} height={28} className="h-7 w-7" priority />
+              <Image
+                src="/brand-logo-white.svg"
+                alt="Qentrah"
+                width={28}
+                height={28}
+                className="h-7 w-7"
+                priority
+              />
             </span>
             <span className="flex h-8 w-8 items-center justify-center text-[#9aa3af]">
               <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
             </span>
             <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[12px] border border-[#d9dee6] bg-white">
-              {partnerApp?.logoUrl ? (
+              {isMcpAuthorization ? (
+                <Bot
+                  className="h-6 w-6 text-[var(--q-accent)]"
+                  aria-hidden="true"
+                />
+              ) : partnerApp?.logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={partnerApp.logoUrl} alt="" className="h-full w-full object-cover" />
+                <img
+                  src={partnerApp.logoUrl}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
               ) : (
-                <KeyRound className="h-6 w-6 text-[var(--q-accent)]" aria-hidden="true" />
+                <KeyRound
+                  className="h-6 w-6 text-[var(--q-accent)]"
+                  aria-hidden="true"
+                />
               )}
             </span>
           </div>
@@ -201,12 +290,16 @@ export function OAuthConsentClient({ locale }: { locale: OAuthLocale }) {
             <h1 className="text-[22px] font-black leading-7 tracking-normal text-[#111827]">
               {consentTitle}
             </h1>
-            <p className="mt-2 text-sm font-medium leading-6 text-[#4b5563]">{consentDescription}</p>
+            <p className="mt-2 text-sm font-medium leading-6 text-[#4b5563]">
+              {consentDescription}
+            </p>
           </div>
         </div>
 
         <div className="px-5 py-5 sm:px-8">
-          <h2 className="text-sm font-black text-[#111827]">{formatTemplate(copy.permissionIntro, { app: appName, organization: organizationName })}</h2>
+          <h2 className="text-sm font-black text-[#111827]">
+            {permissionIntro}
+          </h2>
 
           <div className="mt-3 space-y-3">
             {displayScopes.map((scope) => {
@@ -219,14 +312,22 @@ export function OAuthConsentClient({ locale }: { locale: OAuthLocale }) {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-sm font-semibold leading-5 text-[#374151]">
-                        {meta ? (isArabic ? meta.ar : meta.en) : fallbackScopeLabel(scope)}
+                        {meta
+                          ? isArabic
+                            ? meta.ar
+                            : meta.en
+                          : fallbackScopeLabel(scope)}
                       </p>
                       <code className="rounded-full bg-[#f0f2f5] px-2 py-0.5 text-[10px] font-bold text-[#667085]">
                         {scope}
                       </code>
                     </div>
                     <p className="mt-0.5 text-xs font-medium leading-5 text-[#667085]">
-                      {meta ? (isArabic ? meta.detailAr : meta.detailEn) : scope}
+                      {meta
+                        ? isArabic
+                          ? meta.detailAr
+                          : meta.detailEn
+                        : scope}
                     </p>
                   </div>
                 </div>
@@ -234,11 +335,17 @@ export function OAuthConsentClient({ locale }: { locale: OAuthLocale }) {
             })}
           </div>
 
-          {error ? <p className="mt-4 rounded-[10px] bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p> : null}
+          {error ? (
+            <p className="mt-4 rounded-[10px] bg-red-50 p-3 text-sm font-semibold text-red-700">
+              {error}
+            </p>
+          ) : null}
         </div>
 
         <div className="flex flex-col-reverse gap-3 border-t border-[#e4e7ec] bg-white px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p className="text-xs font-medium leading-5 text-[#667085]">{copy.trustNote}</p>
+          <p className="text-xs font-medium leading-5 text-[#667085]">
+            {trustNote}
+          </p>
           <div className="flex shrink-0 gap-3">
             <button
               type="button"
@@ -251,10 +358,12 @@ export function OAuthConsentClient({ locale }: { locale: OAuthLocale }) {
             <button
               type="button"
               onClick={() => submitConsent(true)}
-              disabled={busy || !organization?.id || resourceScopes.length === 0}
+              disabled={
+                busy || !organization?.id || resourceScopes.length === 0
+              }
               className="inline-flex h-10 items-center justify-center rounded-[8px] bg-[#3246bd] px-4 text-sm font-bold text-white transition hover:bg-[#263aa3] disabled:opacity-50"
             >
-              {copy.allowAccess}
+              {approveLabel}
             </button>
           </div>
         </div>

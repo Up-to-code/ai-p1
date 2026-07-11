@@ -84,7 +84,9 @@ export default function middleware(request: NextRequest) {
     if (
       route.startsWith("/eve/") ||
       route.startsWith("/_eve_internal/") ||
+      route === "/mcp" ||
       route.startsWith("/mcp/") ||
+      route.startsWith("/oauth/") ||
       route.startsWith("/.well-known/")
     ) {
       return NextResponse.next();
@@ -163,6 +165,6 @@ export default function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Match all routes except static files and public assets
-    "/((?!_next/static|_next/image|favicon.ico|ai/|images/|icons/|eve/|_eve_internal/|mcp/|\\.well-known/|.*\\..*).*)",
+    "/((?!_next/static|_next/image|favicon.ico|ai/|images/|icons/|eve/|_eve_internal/|mcp(?:/|$)|oauth/|\\.well-known/|.*\\..*).*)",
   ],
 };

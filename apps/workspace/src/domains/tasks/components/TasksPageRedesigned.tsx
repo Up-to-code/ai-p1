@@ -30,7 +30,7 @@ const DEFAULT_TABS: ViewItem[] = [
 
 const TASK_PAGE_SIZE = 50;
 
-export function TasksPageRedesigned({
+export function TaskWorkspace({
   projectId: projectIdProp,
 }: { projectId?: string | null } = {}) {
   const t = useTranslations("Tasks");

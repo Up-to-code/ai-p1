@@ -12,7 +12,7 @@ export function GET() {
       resource: `${appUrl}/mcp`,
       authorization_servers: [`${appUrl}/api/auth`],
       bearer_methods_supported: ["header"],
-      scopes_supported: ["profile", "email"],
+      scopes_supported: ["mcp:read", "mcp:write"],
     },
     {
       headers: {

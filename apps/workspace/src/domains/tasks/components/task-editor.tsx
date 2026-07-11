@@ -21,8 +21,7 @@ import {
 import { DeleteRecordDialog } from "@/components/shared/crud-ui";
 import type { WorkOsPickerOption } from "@/domains/work-os/components/work-os-record-picker";
 import {
-  deleteTaskRequest,
-  updateTaskRequest,
+  taskFormValuesFromRecord,
 } from "../api/tasks";
 import type { TaskFormValues, TaskRecord } from "../tasks.types";
 import { cn } from "@/lib/utils";
@@ -36,32 +35,15 @@ import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
 import { taskHref } from "./task-hooks";
 import { taskLog } from "../task-log";
 import { CustomFieldsSection } from "@/components/shared/custom-fields/custom-fields-section";
+import { useTaskMutations } from "../hooks/use-task-mutations";
 
 // ─── Form helpers ──────────────────────────────────────────────────────────────
-
-function formFromTask(task: TaskRecord): TaskFormValues {
-  return {
-    title: task.title,
-    status: task.status,
-    pipelineOrder: task.pipelineOrder,
-    priority: task.priority,
-    visibility: task.visibility ?? "team",
-    assigneeUserId: task.assigneeUserId ?? "",
-    assigneeUserIds: task.assigneeUserIds ?? (task.assigneeUserId ? [task.assigneeUserId] : []),
-    clientId: task.clientId ?? "",
-    projectId: task.projectId ?? "",
-    startDate: task.startDate ?? new Date(task.createdAt).toISOString().slice(0, 10),
-    dueDate: task.dueDate ?? "",
-    description: task.description ?? "",
-    tags: (task.tags ?? []).join(", "),
-  };
-}
 
 // ─── Task Editor panel ────────────────────────────────────────────────────────
 
 /**
  * Renders the doc-editor for a single task.
- * Used both inside the split-pane TasksScreen and standalone TaskDetailScreen.
+ * Used both inside the Task Workspace modal and standalone Task detail screen.
  */
 export function TaskEditor({
   task,
@@ -90,6 +72,7 @@ export function TaskEditor({
 }) {
   const t = useTranslations("Tasks");
   const toast = useToast();
+  const { saveTask, deleteTask } = useTaskMutations(organizationId);
   const context = useMemo(
     () => taskDocumentContext(organizationId, routeProjectId, task.projectId),
     [organizationId, routeProjectId, task.projectId],
@@ -101,12 +84,12 @@ export function TaskEditor({
     () => projectOptions.data ?? [],
     [projectOptions.data],
   );
-  const serverDraft = useMemo(() => formFromTask(task), [task]);
+  const serverDraft = useMemo(() => taskFormValuesFromRecord(task), [task]);
   const [draft, setDraft] = useState<TaskFormValues>(serverDraft);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
-  const savedSnapshot = useMemo(() => formFromTask(task), [task]);
+  const savedSnapshot = useMemo(() => taskFormValuesFromRecord(task), [task]);
   const hasUnsavedChanges =
     JSON.stringify(draft) !== JSON.stringify(savedSnapshot);
 
@@ -144,7 +127,7 @@ export function TaskEditor({
     taskLog.info("save:start", { taskId: task.id });
     setBusyId("patch");
     try {
-      await updateTaskRequest(organizationId, task.id, draft);
+      await saveTask(task, draft);
       const { removeItem } = await import("@/domains/storage");
       await removeItem("drafts", storageKey);
       taskLog.info("save:success", { taskId: task.id });
@@ -156,7 +139,7 @@ export function TaskEditor({
     } finally {
       setBusyId(null);
     }
-  }, [draft, organizationId, task.id, storageKey, toast, onSaved]);
+  }, [draft, saveTask, storageKey, task, toast, onSaved]);
 
   const fields: DocEditorMetaField[] = [
     {
@@ -240,7 +223,7 @@ export function TaskEditor({
     taskLog.info("delete:start", { taskId: task.id });
     setBusyId("delete");
     try {
-      await deleteTaskRequest(organizationId, task.id);
+      await deleteTask(task);
       taskLog.info("delete:success", { taskId: task.id });
       onDeleted?.();
     } catch (error) {
