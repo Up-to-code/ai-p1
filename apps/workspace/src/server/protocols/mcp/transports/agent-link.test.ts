@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { convexHttp } from "@/server/convex/http-client";
-import { handleMcpAgent, handleMcpMethodNotAllowed } from "./agent-link";
+import { registerMcpAgentTransport } from "./agent-link";
 
 vi.mock("@convex/_generated/api", () => ({
   api: {
@@ -27,10 +27,8 @@ const convexActionMock = vi.mocked(convexHttp.action);
 const convexQueryMock = vi.mocked(convexHttp.query);
 
 function appForMcpTests() {
-  const app = new Hono();
-  app.get("/api/mcp/agent/:publicId/:secret", handleMcpMethodNotAllowed);
-  app.delete("/api/mcp/agent/:publicId/:secret", handleMcpMethodNotAllowed);
-  app.post("/api/mcp/agent/:publicId/:secret", handleMcpAgent);
+  const app = new Hono().basePath("/api");
+  registerMcpAgentTransport(app);
   return app;
 }
 

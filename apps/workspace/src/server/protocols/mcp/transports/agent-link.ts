@@ -1,4 +1,4 @@
-import type { Context } from "hono";
+import type { Context, Hono } from "hono";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { z } from "zod";
@@ -59,6 +59,13 @@ export function handleMcpMethodNotAllowed() {
     "Method not allowed. Use POST for this stateless MCP endpoint.",
     405,
   );
+}
+
+/** Registers the public, stateless MCP agent-link transport under the API app. */
+export function registerMcpAgentTransport(app: Hono) {
+  app.get("/mcp/agent/:publicId/:secret", handleMcpMethodNotAllowed);
+  app.delete("/mcp/agent/:publicId/:secret", handleMcpMethodNotAllowed);
+  app.post("/mcp/agent/:publicId/:secret", handleMcpAgent);
 }
 
 export async function handleMcpAgent(c: Context) {

@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import * as Sentry from "@sentry/nextjs";
 import { v1Router } from "@/server/routing/v1/router";
 import { uploadThingHandler } from "@/server/uploadthing/router";
+import { registerMcpAgentTransport } from "@/server/protocols/mcp/transports/agent-link";
 
 import { requestSafetyMiddleware } from "@/server/security";
 
@@ -47,6 +48,7 @@ app.use("*", async (c, next) => {
 });
 
 app.all("/uploadthing", (c) => uploadThingHandler(c.req.raw));
+registerMcpAgentTransport(app);
 app.route("/v1", v1Router);
 
 app.notFound((c) => c.json({ error: "Not Found" }, 404));
