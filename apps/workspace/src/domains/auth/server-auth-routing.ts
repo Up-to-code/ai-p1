@@ -8,7 +8,8 @@ function localizedPath(locale: string, path: string) {
 
 /**
  * Called from the sign-in / sign-up server page.
- * If the user is already authenticated, send them to the workspace (or the given callbackURL).
+ * If the user is already authenticated, send them to organization selection
+ * (or the given callbackURL).
  * If not authenticated, let them land on the auth page.
  */
 export async function redirectAuthenticatedUserFromAuthEntry(locale: string, callbackURL?: string | null) {
@@ -16,10 +17,10 @@ export async function redirectAuthenticatedUserFromAuthEntry(locale: string, cal
   if (!authed) return; // not signed in — show the auth page
 
   if (callbackURL) {
-    redirect(resolveAuthEntryCallbackUrl(locale, callbackURL, "/ws"));
+    redirect(resolveAuthEntryCallbackUrl(locale, callbackURL, "/choose-org"));
   }
 
-  redirect(localizedPath(locale, "/ws"));
+  redirect(localizedPath(locale, "/choose-org"));
 }
 
 /**

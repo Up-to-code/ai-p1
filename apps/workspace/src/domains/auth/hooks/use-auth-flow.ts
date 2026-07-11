@@ -45,7 +45,7 @@ export function useAuthFlow(
       const cleanPath = options.callbackURL.replace(localePrefixPattern, "/");
       router.push(cleanPath);
     } else {
-      router.push("/ws");
+      router.push("/choose-org");
     }
   };
 
