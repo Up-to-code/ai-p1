@@ -76,6 +76,9 @@ function resolveSubdomainRewrite(request: NextRequest): URL | null {
   }
 
   if (label === "ws" || label === "app") {
+    // Client navigation may already include the canonical workspace prefix.
+    // Rewriting `/en/ws` again would produce the non-existent `/en/ws/ws`.
+    if (pathname === "/ws" || pathname.startsWith("/ws/")) return null;
     url.pathname = `/${locale}/ws${pathname === "/" ? "" : pathname}`;
     return url;
   }
