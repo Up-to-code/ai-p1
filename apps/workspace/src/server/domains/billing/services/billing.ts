@@ -4,22 +4,121 @@ import { convexCalls } from "@/server/convex/http-client";
 import type { BillingCheckoutPayload, DodoWebhookPayload } from "../validation/billing.schema";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-// The single DodoPayments product used for all Qentrah subscriptions.
-// Quantity = number of seats. Add-ons are attached to this product in DodoPay.
-const DODO_PRODUCT_ID = "pdt_0NhGI8pfoyfuPWt0TLZ1x";
-const PRICE_PER_SEAT = 6.99;
+type BillingPlanId = "good_monthly" | "good_yearly" | "better_monthly" | "better_yearly";
 
-const QENTRAH_PLAN = {
-  id: "qentrah_workspace" as const,
-  dodoProductId: DODO_PRODUCT_ID,
-  name: "Qentrah Workspace",
-  amount: PRICE_PER_SEAT,
-  currency: "USD",
-  periodDays: 30,
-  checkoutMode: "provider",
+const BILLING_PLANS: Record<BillingPlanId, {
+  id: BillingPlanId;
+  dodoProductId: string;
+  name: string;
+  amount: number;
+  currency: "USD";
+  periodDays: number;
+  checkoutMode: "provider";
+  trialDays: number;
+  includedMemberCount: number;
+  additionalMemberAmount: number;
+  access: {
+    memberLimit: number | null;
+    aiCreditLimit: number;
+    aiCardLimit: number;
+    automationRuns: number;
+    auditLogDays: number | null;
+    customRoles: boolean;
+    sso: boolean;
+    support: "email" | "priority";
+  };
+}> = {
+  good_monthly: {
+    id: "good_monthly",
+    dodoProductId: process.env.DODO_PRODUCT_GOOD_MONTHLY ?? "",
+    name: "Unlimited",
+    amount: 7,
+    currency: "USD",
+    periodDays: 30,
+    checkoutMode: "provider",
+    trialDays: 7,
+    includedMemberCount: 3,
+    additionalMemberAmount: 7,
+    access: {
+      memberLimit: null,
+      aiCreditLimit: 12000,
+      aiCardLimit: 3,
+      automationRuns: 1000,
+      auditLogDays: 7,
+      customRoles: false,
+      sso: false,
+      support: "email",
+    },
+  },
+  good_yearly: {
+    id: "good_yearly",
+    dodoProductId: process.env.DODO_PRODUCT_GOOD_YEARLY ?? "",
+    name: "Unlimited Annual",
+    amount: 70,
+    currency: "USD",
+    periodDays: 365,
+    checkoutMode: "provider",
+    trialDays: 7,
+    includedMemberCount: 3,
+    additionalMemberAmount: 70,
+    access: {
+      memberLimit: null,
+      aiCreditLimit: 12000,
+      aiCardLimit: 3,
+      automationRuns: 1000,
+      auditLogDays: 7,
+      customRoles: false,
+      sso: false,
+      support: "email",
+    },
+  },
+  better_monthly: {
+    id: "better_monthly",
+    dodoProductId: process.env.DODO_PRODUCT_BETTER_MONTHLY ?? "",
+    name: "Business",
+    amount: 19,
+    currency: "USD",
+    periodDays: 30,
+    checkoutMode: "provider",
+    trialDays: 7,
+    includedMemberCount: 3,
+    additionalMemberAmount: 19,
+    access: {
+      memberLimit: null,
+      aiCreditLimit: 50000,
+      aiCardLimit: 10,
+      automationRuns: 5000,
+      auditLogDays: 7,
+      customRoles: false,
+      sso: false,
+      support: "priority",
+    },
+  },
+  better_yearly: {
+    id: "better_yearly",
+    dodoProductId: process.env.DODO_PRODUCT_BETTER_YEARLY ?? "",
+    name: "Business Annual",
+    amount: 190,
+    currency: "USD",
+    periodDays: 365,
+    checkoutMode: "provider",
+    trialDays: 7,
+    includedMemberCount: 3,
+    additionalMemberAmount: 190,
+    access: {
+      memberLimit: null,
+      aiCreditLimit: 50000,
+      aiCardLimit: 10,
+      automationRuns: 5000,
+      auditLogDays: 7,
+      customRoles: false,
+      sso: false,
+      support: "priority",
+    },
+  },
 };
 
-type BillingPlanId = "qentrah_workspace";
+const DEFAULT_BILLING_PLAN = BILLING_PLANS.good_monthly;
 
 type Payment = {
   _id: string;
@@ -30,7 +129,7 @@ type Payment = {
 };
 
 type BillingOverview = {
-  plan: typeof QENTRAH_PLAN;
+  plan: typeof DEFAULT_BILLING_PLAN;
   subscription: {
     organizationId: string;
     planId: BillingPlanId;
@@ -91,7 +190,7 @@ const refs = {
     organizationId: string;
     input: { planId: BillingPlanId; seats: number };
   }, {
-    plan: typeof QENTRAH_PLAN;
+    plan: typeof DEFAULT_BILLING_PLAN;
     payment: { _id: string; id: string; orderId: string };
     organization: { name: string; legalName: string; email: string; phone: string; address: string };
   }>("billing/write:createPendingPaymentFromHono"),
@@ -146,10 +245,10 @@ function localOrderReference() {
 
 function localBillingOverview(organizationId: string): BillingOverview {
   return {
-    plan: QENTRAH_PLAN,
+    plan: DEFAULT_BILLING_PLAN,
     subscription: {
       organizationId,
-      planId: "qentrah_workspace",
+      planId: DEFAULT_BILLING_PLAN.id,
       seatCount: 1,
       status: "inactive",
       createdAt: Date.now(),
@@ -177,7 +276,7 @@ function localBillingUsage(organizationId: string): OrganizationBillingUsage {
 function localCheckoutContext(organizationId: string) {
   const reference = localOrderReference();
   return {
-    plan: QENTRAH_PLAN,
+    plan: DEFAULT_BILLING_PLAN,
     payment: { _id: reference, id: reference, orderId: reference },
     organization: {
       name: "Qentrah Workspace",
@@ -189,6 +288,44 @@ function localCheckoutContext(organizationId: string) {
     localOnly: true,
     organizationId,
   };
+}
+
+function billingPlan(planId: string) {
+  return BILLING_PLANS[planId as BillingPlanId] ?? DEFAULT_BILLING_PLAN;
+}
+
+function requireDodoProductId(plan: typeof DEFAULT_BILLING_PLAN) {
+  const productId = plan.dodoProductId.trim();
+  if (!productId || productId.includes("unconfigured")) {
+    throw new Error(`Dodo product id is not configured for ${plan.id}. Set DODO_PRODUCT_${plan.id.toUpperCase()} in the workspace environment.`);
+  }
+  return productId;
+}
+
+function billableMemberUnits(plan: typeof DEFAULT_BILLING_PLAN, memberCount: number) {
+  const safeMemberCount = Math.max(1, Math.floor(memberCount));
+  const includedMembers = Math.max(1, plan.includedMemberCount);
+  return Math.max(1, safeMemberCount - includedMembers + 1);
+}
+
+function normalizeCheckoutError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/Dodo checkout configuration error/i.test(message)) {
+    const detail = message.split("Dodo checkout configuration error:").pop()?.trim() || message;
+    const configError = new Error(
+      `Dodo checkout configuration error: ${detail}`,
+    ) as Error & { status: number };
+    configError.status = 400;
+    return configError;
+  }
+  if (/401|Unauthorized/i.test(message) && /Dodo Payments|Checkout Session/i.test(message)) {
+    const configError = new Error(
+      "Dodo checkout configuration error: Dodo rejected the checkout request as unauthorized. Verify DODO_PAYMENTS_API_KEY matches DODO_PAYMENTS_ENVIRONMENT and the configured Dodo product IDs.",
+    ) as Error & { status: number };
+    configError.status = 400;
+    return configError;
+  }
+  return error instanceof Error ? error : new Error(message);
 }
 
 // ─── Service functions ────────────────────────────────────────────────────────
@@ -237,11 +374,12 @@ export async function recordAgentCreditUsage(organizationId: string, input: {
 
 export async function createBillingCheckout(organizationId: string, input: BillingCheckoutPayload) {
   const seats = input.seats ?? 1;
+  const plan = billingPlan(input.planId);
 
   // 1. Create a pending payment record in Convex
   const context = await fetchAuthMutation(refs.createPendingPaymentFromHono, {
     organizationId,
-    input: { planId: "qentrah_workspace", seats },
+    input: { planId: plan.id, seats },
   }).catch((error) => {
     if (isDevelopmentConvexFunctionError(error)) return localCheckoutContext(organizationId);
     throw error;
@@ -250,8 +388,8 @@ export async function createBillingCheckout(organizationId: string, input: Billi
   try {
     // 2. Create DodoPayments hosted checkout — product ID + seat quantity
     const checkoutResult = await convexCalls.action(refs.createCheckout, {
-      productId: DODO_PRODUCT_ID,
-      quantity: seats,
+      productId: requireDodoProductId(plan),
+      quantity: billableMemberUnits(plan, seats),
       returnUrl: input.returnUrl,
     }) as { checkout_url?: string } | null;
 
@@ -277,14 +415,15 @@ export async function createBillingCheckout(organizationId: string, input: Billi
       payment: context.payment,
     };
   } catch (error) {
+    const checkoutError = normalizeCheckoutError(error);
     await fetchAuthMutation(refs.markPaymentFailedFromHono, {
       organizationId,
       paymentId: context.payment._id,
-      reason: error instanceof Error ? error.message : "Checkout failed.",
+      reason: checkoutError.message,
     }).catch((markError) => {
       if (!isDevelopmentConvexFunctionError(markError)) throw markError;
     });
-    throw error;
+    throw checkoutError;
   }
 }
 

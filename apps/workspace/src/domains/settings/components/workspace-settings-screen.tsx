@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
   Bell,
-  CheckCircle2,
   ChevronRight,
   Copy,
   CreditCard,
@@ -20,10 +19,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { useBillingUsage } from "@/domains/billing/api/billing";
+import { BILLING_PLANS, useBillingOverview, useBillingUsage, type BillingPlan, type BillingPlanId } from "@/domains/billing/api/billing";
 import { useBillingCheckout } from "@/domains/billing/hooks/use-billing-checkout";
+import { billableMemberUnits, subscriptionTotalForMembers } from "@/domains/billing/lib/billing-helpers";
 import { listOrganizationMembers } from "@/domains/organization/api";
-import { OrganizationBillingPanel } from "@/domains/organization/components/panels/organization-billing-panel";
 import { organizationSettingsKeys } from "@/domains/organization/settings-cache";
 import { CreditProgress } from "@/domains/usage/components/credit-progress";
 import { PaymentsLedger } from "@/domains/usage/components/payments-ledger";
@@ -52,6 +51,12 @@ const linearButtonClass =
   "dark:border-[#222326] dark:bg-[#222326] dark:text-[#F4F5F8] dark:hover:bg-[#2b2b30]";
 const linearInputClass =
   "dark:border-[#222326] dark:bg-[#121214] dark:text-[#F4F5F8] dark:placeholder:text-[#6f6f76]";
+
+const membershipPlans = [
+  BILLING_PLANS.good_monthly,
+  BILLING_PLANS.better_monthly,
+  BILLING_PLANS.custom_monthly,
+] as const;
 
 function initialsFor(name: string) {
   return name
@@ -361,7 +366,11 @@ function BillingSettingsSection({ organizationId }: { organizationId?: string | 
     queryFn: () => listOrganizationMembers(organizationId ?? ""),
     enabled: Boolean(organizationId),
   });
+  const overview = useBillingOverview(organizationId);
+  const subscription = overview?.subscription ?? null;
   const memberCount = Math.max(1, membersQuery.data?.length ?? 1);
+  const currentPlan = overview?.plan ?? BILLING_PLANS.good_monthly;
+  const isSubscribed = subscription?.status === "active" || subscription?.status === "past_due";
   const { isStartingCheckout, startCheckout } = useBillingCheckout({
     organizationId: organizationId ?? null,
     effectiveSeats: memberCount,
@@ -372,18 +381,153 @@ function BillingSettingsSection({ organizationId }: { organizationId?: string | 
     return <SettingsSection title="Billing"><div className="p-4 text-sm text-muted-foreground">Choose an organization to view billing.</div></SettingsSection>;
   }
 
+  const upgradePlans = membershipPlans.filter((plan) => plan.id !== currentPlan.id);
+
   return (
-    <OrganizationBillingPanel
-      organizationId={organizationId}
-      locale={locale}
-      memberCount={memberCount}
-      planAction={
-        <Button disabled={isStartingCheckout} onClick={startCheckout} className="h-9 gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest">
+    <div className="max-w-5xl space-y-6">
+      {!isSubscribed ? (
+        <SettingsSection title="Choose a membership plan" eyebrow="Start the workspace subscription. The current offer includes 1-3 members in the first billing unit, then adds one billing unit for each extra member.">
+          <div className="grid gap-3 p-3 md:grid-cols-2">
+            {membershipPlans.map((plan) => (
+              <MembershipPlanCard
+                key={plan.id}
+                plan={plan}
+                memberCount={memberCount}
+                isStartingCheckout={isStartingCheckout}
+                onCheckout={startCheckout}
+              />
+            ))}
+          </div>
+        </SettingsSection>
+      ) : (
+        <>
+          <SettingsSection title="Memberships" eyebrow={`${memberCount} active ${memberCount === 1 ? "member" : "members"} on ${currentPlan.name}.`}>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead className="border-b border-border bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground dark:border-[#222326]">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-black">Member</th>
+                    <th className="px-4 py-3 text-left font-black">Role</th>
+                    <th className="px-4 py-3 text-left font-black">Billing</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(membersQuery.data ?? []).map((member, index) => {
+                    const name = member.user?.name || member.user?.email || member.userId;
+                    const email = member.user?.email || "No email";
+                    const billingLabel = index < currentPlan.includedMemberCount ? "Included" : "Additional";
+                    return (
+                      <tr key={member.id} className="border-b border-border last:border-b-0 dark:border-[#222326]">
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-foreground">{name}</div>
+                          <div className="mt-0.5 text-xs text-muted-foreground">{email}</div>
+                        </td>
+                        <td className="px-4 py-3 text-xs font-semibold capitalize text-muted-foreground">{member.role}</td>
+                        <td className="px-4 py-3 text-xs font-semibold text-foreground">{billingLabel}</td>
+                      </tr>
+                    );
+                  })}
+                  {!membersQuery.isLoading && (membersQuery.data ?? []).length === 0 && (
+                    <tr>
+                      <td className="px-4 py-4 text-xs text-muted-foreground" colSpan={3}>No members found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="grid gap-3 border-t border-border p-3 dark:border-[#222326] sm:grid-cols-3">
+              <InfoCard title="Current plan" value={currentPlan.name} description={subscription?.status ?? "active"} />
+              <InfoCard title="Billing units" value={String(billableMemberUnits(currentPlan, memberCount))} description={`$${subscriptionTotalForMembers(currentPlan, memberCount)}/${currentPlan.periodDays >= 365 ? "year" : "month"}`} />
+              <InfoCard title="Trial" value={`${currentPlan.trialDays} days`} description="Configured in Dodo" />
+            </div>
+          </SettingsSection>
+
+          <SettingsSection title="Upgrade plan" eyebrow="Available plan changes for this workspace.">
+            <div className="grid gap-3 p-3 md:grid-cols-2">
+              {upgradePlans.map((plan) => (
+                <MembershipPlanCard
+                  key={plan.id}
+                  plan={plan}
+                  memberCount={memberCount}
+                  currentPlanId={currentPlan.id}
+                  isStartingCheckout={isStartingCheckout}
+                  onCheckout={startCheckout}
+                />
+              ))}
+            </div>
+          </SettingsSection>
+        </>
+      )}
+    </div>
+  );
+}
+
+function MembershipPlanCard({
+  plan,
+  memberCount,
+  currentPlanId,
+  isStartingCheckout,
+  onCheckout,
+}: {
+  plan: BillingPlan;
+  memberCount: number;
+  currentPlanId?: BillingPlanId;
+  isStartingCheckout: boolean;
+  onCheckout: (planId?: BillingPlanId) => void;
+}) {
+  const isCustom = plan.checkoutMode === "contact_sales";
+  const isCurrent = currentPlanId === plan.id;
+  const periodLabel = plan.periodDays >= 365 ? "year" : "month";
+  const total = subscriptionTotalForMembers(plan, memberCount);
+
+  return (
+    <div className={cn(
+      "flex min-h-56 flex-col justify-between rounded-lg border bg-background p-4 dark:bg-[#141416]",
+      isCustom ? "border-red-200 dark:border-red-950" : "border-border dark:border-[#222326]",
+      isCustom && "md:col-span-2",
+    )}>
+      <div>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className={cn("text-[10px] font-black uppercase tracking-wider", isCustom ? "text-red-500" : "text-muted-foreground")}>
+              {isCustom ? "Custom" : "Plan"}
+            </div>
+            <h3 className="mt-2 text-lg font-semibold text-foreground">{plan.name}</h3>
+          </div>
+          {isCurrent && <span className="rounded-full bg-muted px-2 py-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground">Current</span>}
+        </div>
+        <div className="mt-4 text-2xl font-black text-foreground">
+          {plan.amount === null ? "Custom" : `$${plan.amount}`}
+          {plan.amount !== null && <span className="ml-1 text-xs font-semibold text-muted-foreground">/{periodLabel}</span>}
+        </div>
+        <div className="mt-1 text-xs text-muted-foreground">
+          {plan.amount === null
+            ? "Sales-led plan for advanced governance and support."
+            : `Includes ${plan.includedMemberCount} members. ${memberCount} members = $${total}/${periodLabel}.`}
+        </div>
+        <div className="mt-4 grid gap-2 text-xs">
+          <div className="flex justify-between rounded-md bg-muted/40 px-3 py-2"><span className="text-muted-foreground">AI credits</span><span className="font-semibold">{plan.access.aiCreditLimit.toLocaleString()}/month</span></div>
+          <div className="flex justify-between rounded-md bg-muted/40 px-3 py-2"><span className="text-muted-foreground">AI cards</span><span className="font-semibold">{plan.access.aiCardLimit}</span></div>
+          <div className="flex justify-between rounded-md bg-muted/40 px-3 py-2"><span className="text-muted-foreground">Support</span><span className="font-semibold capitalize">{plan.access.support}</span></div>
+        </div>
+      </div>
+      {isCustom ? (
+        <Link
+          href="/contact"
+          className={cn(
+            "mt-4 inline-flex h-9 items-center justify-center rounded-xl border border-red-200 px-3 text-[10px] font-black uppercase tracking-widest text-red-600 hover:bg-red-50 dark:border-red-950 dark:text-red-400 dark:hover:bg-red-950/20",
+            linearButtonClass,
+          )}
+        >
+          Contact sales
+        </Link>
+      ) : (
+        <Button disabled={isCurrent || isStartingCheckout} onClick={() => onCheckout(plan.id)} className="mt-4 h-9 gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest">
           {isStartingCheckout ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
-          Manage plan
+          {isCurrent ? "Current plan" : "Start plan"}
         </Button>
-      }
-    />
+      )}
+    </div>
   );
 }
 
@@ -391,24 +535,63 @@ function AiUsageSettingsSection({ organizationId }: { organizationId?: string | 
   const locale = useLocale() as UsageLocale;
   const usage = useBillingUsage(organizationId);
   const credits = usage.status === "ready" ? usage.data.credits : null;
+  const plan = usage.status === "ready" ? usage.data.overview.plan : BILLING_PLANS.good_monthly;
+  const usedCredits = credits?.subscriptionCreditsUsed ?? 0;
+  const grantedCredits = credits?.subscriptionCreditsGranted ?? plan.access.aiCreditLimit;
+  const usagePercent = grantedCredits > 0 ? Math.round((usedCredits / grantedCredits) * 100) : 0;
 
   return (
-    <SettingsSection title="Qentrah AI usage" eyebrow="Brain credits used by chat, agents, tools, and automation.">
-      {usage.status === "loading" && <div className="grid gap-4 p-3 md:grid-cols-2"><Skeleton className="h-24 rounded-lg dark:bg-[#222326]" /><Skeleton className="h-24 rounded-lg dark:bg-[#222326]" /></div>}
-      {usage.status === "error" && <div className="p-3 text-xs text-destructive">Billing usage could not be loaded.</div>}
+    <div className="max-w-5xl space-y-6">
+      <SettingsSection title="AI Super Credits" eyebrow="For agents, AI cards, fields, task assistance, and image generation. Credits are shared by the organization.">
+        <div className="flex items-start justify-between gap-4 border-b border-border p-4 dark:border-[#222326]">
+          <div>
+            <div className="text-sm font-semibold text-foreground">Credits usage</div>
+            <div className="mt-3 text-3xl font-black text-foreground">{usagePercent}%</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              {usedCredits.toLocaleString()} used out of {grantedCredits.toLocaleString()}
+            </div>
+          </div>
+          <Button variant="outline" size="sm" className={cn("h-9 rounded-xl text-[10px] font-black uppercase tracking-widest", linearButtonClass)}>
+            Add credits
+          </Button>
+        </div>
+        {usage.status === "loading" && <div className="grid gap-4 p-4 md:grid-cols-2"><Skeleton className="h-24 rounded-lg dark:bg-[#222326]" /><Skeleton className="h-24 rounded-lg dark:bg-[#222326]" /></div>}
+        {usage.status === "error" && <div className="p-4 text-xs text-destructive">Billing usage could not be loaded: {usage.error.message}</div>}
+        {credits && (
+          <>
+            <div className="grid gap-5 p-4">
+              <CreditProgress label="Organization credits" value={credits.subscriptionCreditsUsed} total={credits.subscriptionCreditsGranted} toneClassName="bg-primary" locale={locale} />
+              {credits.addOnCreditsGranted > 0 && (
+                <CreditProgress label="Add-on credits" value={credits.addOnCreditsUsed} total={credits.addOnCreditsGranted} toneClassName="bg-emerald-500" locale={locale} />
+              )}
+            </div>
+            <div className="grid gap-3 border-t border-border p-3 dark:border-[#222326] sm:grid-cols-3">
+              <InfoCard title="Credits left" value={(credits.subscriptionCreditsRemaining + credits.addOnCreditsRemaining).toLocaleString()} description="Available to the organization" />
+              <InfoCard title="Plan limit" value={plan.access.aiCreditLimit.toLocaleString()} description={`${plan.name} included credits`} />
+              <InfoCard title="Default member limit" value="Unlimited" description="Members share organization credits" />
+            </div>
+          </>
+        )}
+      </SettingsSection>
+
       {credits && (
-        <div className="grid gap-5 p-4 md:grid-cols-2">
-          <CreditProgress label="Subscription credits" value={credits.subscriptionCreditsUsed} total={credits.subscriptionCreditsGranted} toneClassName="bg-primary" locale={locale} />
-          <CreditProgress label="Add-on credits" value={credits.addOnCreditsUsed} total={credits.addOnCreditsGranted} toneClassName="bg-emerald-500" locale={locale} />
-        </div>
+        <SettingsSection title="Credit ledger" eyebrow="Backed by the current organization billing balance.">
+          <div className="grid gap-3 p-3 md:grid-cols-3">
+            <InfoCard title="Subscription used" value={credits.subscriptionCreditsUsed.toLocaleString()} description={`${credits.subscriptionCreditsRemaining.toLocaleString()} remaining`} />
+            <InfoCard title="Subscription granted" value={credits.subscriptionCreditsGranted.toLocaleString()} description={plan.name} />
+            <InfoCard title="Add-on balance" value={credits.addOnCreditsRemaining.toLocaleString()} description={`${credits.addOnCreditsUsed.toLocaleString()} used of ${credits.addOnCreditsGranted.toLocaleString()}`} />
+          </div>
+        </SettingsSection>
       )}
+
       {usage.status === "ready" && (
-        <div className="border-t border-border p-3 dark:border-[#222326]">
-          <div className="mb-3 flex items-center gap-2 text-xs font-semibold text-foreground"><CheckCircle2 className="h-4 w-4 text-emerald-500" />Payment history</div>
-          <PaymentsLedger locale={locale} payments={usage.data.payments} />
-        </div>
+        <SettingsSection title="Payment history">
+          <div className="p-3">
+            <PaymentsLedger locale={locale} payments={usage.data.payments} />
+          </div>
+        </SettingsSection>
       )}
-    </SettingsSection>
+    </div>
   );
 }
 

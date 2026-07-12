@@ -2,9 +2,13 @@ import { action } from "../_generated/server";
 import { v } from "convex/values";
 import { checkout, customerPortal, PRICING_PLANS } from "./dodo";
 
-// The single active product ID — passed directly from the Hono layer.
-// Falls back to the env var if not provided.
-const DEFAULT_PRODUCT_ID = "pdt_0NhGI8pfoyfuPWt0TLZ1x";
+const DEFAULT_PRODUCT_ID = process.env.DODO_PRODUCT_GOOD_MONTHLY ?? "";
+const DODO_API_KEY = process.env.DODO_PAYMENTS_API_KEY ?? "";
+const DODO_ENVIRONMENT = process.env.DODO_PAYMENTS_ENVIRONMENT || "test_mode";
+
+function dodoCheckoutConfigurationError(message: string) {
+  throw new Error(`Dodo checkout configuration error: ${message}`);
+}
 
 export const createCheckout = action({
   args: {
@@ -30,6 +34,14 @@ export const createCheckout = action({
     } else {
       dodoProductId = DEFAULT_PRODUCT_ID;
     }
+    if (!dodoProductId) {
+      dodoCheckoutConfigurationError("Dodo product id is not configured for checkout.");
+    }
+    if (!DODO_API_KEY) {
+      dodoCheckoutConfigurationError(
+        `DODO_PAYMENTS_API_KEY is not configured in Convex for ${DODO_ENVIRONMENT}.`,
+      );
+    }
 
     const quantity = Math.max(1, args.quantity ?? 1);
 
@@ -48,7 +60,17 @@ export const createCheckout = action({
       checkoutPayload.return_url = args.returnUrl;
     }
 
-    return await checkout(ctx, { payload: checkoutPayload });
+    try {
+      return await checkout(ctx, { payload: checkoutPayload });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (/401|Unauthorized/i.test(message)) {
+        dodoCheckoutConfigurationError(
+          `Dodo rejected the checkout request for ${DODO_ENVIRONMENT}. Verify the Convex DODO_PAYMENTS_API_KEY belongs to this environment and can access product ${dodoProductId}.`,
+        );
+      }
+      throw error;
+    }
   },
 });
 

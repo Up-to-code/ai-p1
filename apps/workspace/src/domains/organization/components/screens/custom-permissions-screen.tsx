@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   ModulePanel,
   ModulePanelContent,
@@ -52,11 +52,13 @@ export function CustomPermissionsDrawer({
           right={
             <div className="flex items-center gap-2">
               <ModulePanelFullscreenToggle className="h-9 w-9 rounded-lg" />
-              <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-lg">
-                <Link href={`/${locale}/organization/custom-permissions`} aria-label={t("roles.pageTitle")}>
-                  <ExternalLink className="h-4 w-4" />
-                </Link>
-              </Button>
+              <Link
+                href={`/${locale}/organization/custom-permissions`}
+                aria-label={t("roles.pageTitle")}
+                className={buttonVariants({ variant: "ghost", size: "icon", className: "h-9 w-9 rounded-lg" })}
+              >
+                <ExternalLink className="h-4 w-4" />
+              </Link>
               <ModulePanelCloseButton />
             </div>
           }
