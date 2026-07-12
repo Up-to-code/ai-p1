@@ -15,14 +15,14 @@ export function CmdRow({
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+      className="group flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-start transition-colors hover:bg-[var(--q-sidebar-accent)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20"
     >
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-text-secondary group-hover:border-border group-hover:text-text-primary transition-colors">
-        <Icon className="h-[15px] w-[15px]" />
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[var(--q-sidebar)] text-text-secondary transition-colors group-hover:text-text-primary">
+        <Icon className="h-3.5 w-3.5" />
       </span>
-      <span className="min-w-0 flex-1 text-sm font-semibold text-text-primary">{label}</span>
+      <span className="min-w-0 flex-1 truncate text-xs font-medium text-text-primary">{label}</span>
       {hint && (
-        <span className="shrink-0 rounded-md bg-muted/60 px-1.5 py-0.5 text-[11px] font-medium text-text-muted">
+        <span className="max-w-[45%] shrink-0 truncate text-[10px] font-medium text-text-muted">
           {hint}
         </span>
       )}

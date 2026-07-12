@@ -122,5 +122,116 @@
     "statusTokens": ["--q-status-todo", "--q-status-inProgress", "--q-status-waiting", "--q-status-done", "--q-status-canceled"],
     "priorityTokens": ["--q-priority-urgent", "--q-priority-high", "--q-priority-normal", "--q-priority-low"],
     "suffixes": ["", "-bg", "-text", "-dot", "-border", "-icon"]
+  },
+  "governance": {
+    "sourceOfTruth": "This file defines Qentrah's product and public-site visual language. CSS custom properties implement its tokens; component-local values must reference those properties.",
+    "rules": [
+      "Use semantic --q-* tokens for color, radius, shadow, spacing, and type decisions; do not introduce a one-off value when a token exists.",
+      "Use the 8px spacing grid. A 4px value is allowed only for tight inline icon or label adjustments.",
+      "Use one visual emphasis per region: primary action, selected state, or alert—not multiple competing treatments.",
+      "Keep borders subtle and use elevation only for overlays, dialogs, and intentional floating navigation.",
+      "Support light and dark themes. Never communicate status, priority, or selection through color alone.",
+      "Maintain a 44px minimum pointer target for interactive controls on touch layouts."
+    ]
+  },
+  "semanticTokens": {
+    "color": {
+      "canvas": "--q-bg",
+      "section": "--q-bg-secondary",
+      "surface": "--q-surface",
+      "card": "--q-card",
+      "primaryText": "--q-text-primary",
+      "secondaryText": "--q-text-secondary",
+      "mutedText": "--q-text-muted",
+      "border": "--q-border",
+      "strongBorder": "--q-border-strong",
+      "primaryAction": "--q-accent",
+      "success": "--q-success",
+      "warning": "--q-warning",
+      "danger": "--q-error",
+      "information": "--q-info"
+    },
+    "radius": {
+      "control": "--radius-lg",
+      "card": "--radius-xl",
+      "dialog": "--radius-2xl",
+      "pill": "--radius-pill"
+    },
+    "elevation": {
+      "raised": "--shadow-sm",
+      "overlay": "--shadow-md",
+      "modal": "--shadow-lg"
+    }
+  },
+  "componentRules": {
+    "button": {
+      "height": { "compact": 32, "default": 40, "large": 48 },
+      "radius": "--radius-lg",
+      "primary": "Use --q-accent with the matching foreground token.",
+      "secondary": "Use a card or secondary surface with a 1px --q-border outline.",
+      "disabled": "Use disabled opacity and retain a visible text label."
+    },
+    "card": {
+      "background": "--q-card",
+      "border": "1px solid --q-border",
+      "radius": "--radius-xl",
+      "padding": 24,
+      "hover": "Do not add elevation by default; use a state change only when the whole card is interactive."
+    },
+    "formField": {
+      "height": 40,
+      "radius": "--radius-lg",
+      "background": "--q-input-bg",
+      "border": "1px solid --q-input-border",
+      "focus": "Use a visible --q-accent focus ring with no color-only error state."
+    },
+    "table": {
+      "headerHeight": 48,
+      "rowHeight": 52,
+      "cellPaddingX": 16,
+      "use": "Keep the first column descriptive and horizontally scroll large data sets on narrow viewports."
+    }
+  },
+  "pricingPage": {
+    "layout": {
+      "maxContentWidth": 1240,
+      "cardColumns": { "desktop": 4, "tablet": 2, "mobile": 1 },
+      "cardGap": 12,
+      "sectionGap": 96,
+      "controlsToCardsGap": 36
+    },
+    "hero": {
+      "eyebrow": { "size": 11, "weight": 700, "tracking": "0.12em" },
+      "headline": { "minSize": 44, "maxSize": 76, "weight": 700, "lineHeight": 1, "tracking": "-0.055em" },
+      "body": { "size": 17, "lineHeight": 1.6, "color": "--q-text-secondary" }
+    },
+    "planCard": {
+      "radius": 16,
+      "padding": { "top": 28, "horizontal": 24, "bottom": 30 },
+      "headerMinHeight": 176,
+      "ctaHeight": 48,
+      "ctaRadius": "pill",
+      "highlight": "Use --q-text-primary as the surface and --q-bg as the foreground. Lift by 8px only at desktop widths.",
+      "featurePreviewCount": 6
+    },
+    "price": {
+      "amountSize": 36,
+      "originalAmountSize": 18,
+      "originalAmount": "Show the original monthly price with a line-through only when there is a real limited offer.",
+      "unitSize": 13,
+      "amountToUnitGap": 8,
+      "defaultBillingCycle": "monthly"
+    },
+    "offer": {
+      "plan": "Unlimited",
+      "monthly": { "original": 10, "offer": 7, "currency": "USD", "unit": "per user / month" },
+      "annual": { "price": 70, "currency": "USD", "unit": "per user / year, billed yearly" },
+      "rule": "Do not show a generic yearly-savings message. Show the concrete original and offer price in the applicable plan instead."
+    },
+    "accessibility": [
+      "Every price communicates its billing unit in text.",
+      "Promotional original prices are supplementary; the current price remains clear in reading order.",
+      "Plan cards remain readable and action buttons remain aligned at all supported breakpoints."
+    ]
   }
 }

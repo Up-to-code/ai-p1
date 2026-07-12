@@ -62,6 +62,7 @@ export function authContextFromClaims(claims: QentrahOidcClaims, token?: string)
     audience: claims.aud,
     subject,
     userId: subject,
+    clientId: readString(claims.azp ?? claims.client_id) ?? null,
     email: readString(claims.email) ?? null,
     name: readString(claims.name) ?? null,
     image: readString(claims.picture) ?? null,

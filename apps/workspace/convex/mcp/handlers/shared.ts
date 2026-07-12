@@ -1,4 +1,3 @@
-import type { Id } from "../../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
 import { writeMcpWorkspaceAudit } from "../../workspace/businessData";
 import { mcpCalendarEventPage } from "../readSurface";
@@ -7,7 +6,7 @@ import { listCursor, listLimit, type Input } from "../toolInputs";
 
 export interface ReadToolArgs {
   organizationId: string;
-  connectionId: Id<"organizationMcpConnections">;
+  connectionId: string;
   input: Record<string, unknown>;
   appBaseUrl?: string;
   permissions: unknown[];
@@ -17,7 +16,7 @@ export interface ReadToolArgs {
 
 export interface WriteToolArgs {
   organizationId: string;
-  connectionId: Id<"organizationMcpConnections">;
+  connectionId: string;
   input: Record<string, unknown>;
   appBaseUrl?: string;
   permissions: unknown[];
@@ -149,5 +148,4 @@ export async function listEvents(
   const page = await query.paginate({ numItems: limit, cursor });
   return mcpCalendarEventPage(page);
 }
-
 

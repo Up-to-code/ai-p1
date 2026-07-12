@@ -7,9 +7,9 @@ import { AtSign, CheckCheck, ClipboardCheck, Inbox } from "lucide-react";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthSession } from "@/domains/auth";
+import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import { cn } from "@/lib/utils";
-
-type PrimaryFilter = "all" | "mentions" | "assigned";
+import { buildPrimaryInboxItems, type PrimaryFilter } from "./inbox-primary-items";
 
 const filters: Array<{ id: PrimaryFilter; label: string }> = [
   { id: "all", label: "All" },
@@ -52,14 +52,19 @@ function PrimaryLoading() {
 export function InboxPrimaryScreen() {
   const session = useAuthSession();
   const organizationId = session.workspace.organizationId;
+  const userId = session.user.id;
   const [filter, setFilter] = useState<PrimaryFilter>("all");
   const events = useQuery(
     api.notifications.inbox.listPrimary,
-    organizationId ? { organizationId, filter } : "skip",
+    organizationId ? { organizationId, filter: "all" } : "skip",
   );
+  const assignedTasks = useTasksQuery(organizationId ?? undefined).data;
   const markRead = useMutation(api.notifications.inbox.markRead);
   const markAllRead = useMutation(api.notifications.inbox.markAllRead);
   const unreadCount = events?.filter((event) => !event.readAt).length ?? 0;
+  const items = events && assignedTasks
+    ? buildPrimaryInboxItems({ events, assignedTasks, userId, filter })
+    : undefined;
 
   return (
     <main className="flex h-full min-h-0 flex-col bg-background">
@@ -110,8 +115,8 @@ export function InboxPrimaryScreen() {
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {events === undefined ? <PrimaryLoading /> : null}
-        {events?.length === 0 ? (
+        {items === undefined ? <PrimaryLoading /> : null}
+        {items?.length === 0 ? (
           <div className="flex min-h-72 flex-col items-center justify-center px-6 text-center">
             <span className="mb-3 grid h-10 w-10 place-items-center rounded-xl border border-border bg-muted/30">
               <Inbox className="h-4 w-4 text-muted-foreground" />
@@ -122,42 +127,42 @@ export function InboxPrimaryScreen() {
             </p>
           </div>
         ) : null}
-        {events && events.length > 0 ? (
+        {items && items.length > 0 ? (
           <div className="divide-y divide-border/60">
-            {events.map((event) => {
-              const EventIcon = event.kind === "mentioned" ? AtSign : ClipboardCheck;
+            {items.map((item) => {
+              const EventIcon = item.kind === "mentioned" ? AtSign : ClipboardCheck;
               return (
                 <WorkspaceLink
-                  key={event._id}
-                  href={event.href}
+                  key={item.id}
+                  href={item.href}
                   onClick={() => {
-                    if (!event.readAt && organizationId) {
-                      void markRead({ organizationId, eventId: event._id });
+                    if (item.source === "notification" && !item.readAt && organizationId) {
+                      void markRead({ organizationId, eventId: item.eventId });
                     }
                   }}
                   className={cn(
                     "group flex items-start gap-3 px-5 py-4 transition-colors hover:bg-muted/40",
-                    !event.readAt && "bg-muted/20",
+                    !item.readAt && "bg-muted/20",
                   )}
                 >
                   <span className="relative grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-border bg-background">
                     <EventIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                    {!event.readAt ? (
+                    {!item.readAt ? (
                       <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-blue-500 ring-2 ring-background" />
                     ) : null}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className={cn("block text-sm", !event.readAt ? "font-semibold" : "font-medium")}>
-                      {event.title}
+                    <span className={cn("block text-sm", !item.readAt ? "font-semibold" : "font-medium")}>
+                      {item.title}
                     </span>
-                    {event.body ? (
+                    {item.body ? (
                       <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                        {event.body}
+                        {item.body}
                       </span>
                     ) : null}
                   </span>
                   <span className="shrink-0 pt-0.5 text-[11px] text-muted-foreground">
-                    {relativeTime(event.createdAt)}
+                    {relativeTime(item.createdAt)}
                   </span>
                 </WorkspaceLink>
               );

@@ -64,7 +64,7 @@ export function FeatureTable({
         <span className="feature-table-anchor-line" aria-hidden />
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="feature-table-scroll" tabIndex={0} aria-label={isAr ? "جدول مقارنة الميزات" : "Feature comparison table. Scroll horizontally to compare every plan."}>
         <table
           className={cn(
             "feature-table",
@@ -146,13 +146,17 @@ export function FeatureTable({
         .feature-table {
           width: 100%;
           border-collapse: collapse;
-          border-radius: 16px;
+          min-width: 760px;
+          border-radius: 12px;
           overflow: hidden;
           border: 1px solid var(--q-border);
           background: var(--q-card);
         }
         .feature-table-stub {
-          width: 220px;
+          width: 240px;
+          position: sticky;
+          left: 0;
+          z-index: 2;
           padding: 16px 20px;
           background: var(--q-card);
           border-bottom: 1px solid var(--q-border);
@@ -168,7 +172,7 @@ export function FeatureTable({
         }
         .feature-table-plan-header--highlight {
           background: var(--q-bg-secondary);
-          border-bottom: 2px solid var(--q-text-primary);
+          box-shadow: inset 0 -2px 0 var(--q-text-primary);
         }
         .feature-table-category {
           padding: 10px 20px;
@@ -206,6 +210,36 @@ export function FeatureTable({
         }
         .feature-table-row:hover .feature-table-cell--highlight {
           background: var(--q-card-hover);
+        }
+        .feature-table-scroll {
+          overflow-x: auto;
+          border-radius: 12px;
+          scrollbar-color: var(--q-border-strong) transparent;
+          scrollbar-width: thin;
+        }
+        .feature-table-scroll:focus-visible {
+          outline: 2px solid var(--q-text-primary);
+          outline-offset: 4px;
+        }
+        [dir="rtl"] .feature-table-stub {
+          left: auto;
+          right: 0;
+        }
+        @media (max-width: 768px) {
+          .feature-table-wrapper { margin-top: 64px; }
+          .feature-table-anchor { margin-bottom: 20px; }
+          .feature-table-scroll::after {
+            content: "";
+            position: sticky;
+            right: 0;
+            display: block;
+            width: 1px;
+          }
+          .feature-table-stub { width: 180px; }
+          .feature-table-stub,
+          .feature-table-row-label { padding: 13px 16px; }
+          .feature-table-plan-header,
+          .feature-table-cell { padding: 13px 16px; }
         }
       `}</style>
     </div>

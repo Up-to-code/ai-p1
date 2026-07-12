@@ -38,11 +38,12 @@ export interface RouteCatalogEntry {
 const contextParams = ["project", "space"] as const;
 const aiParams = ["mode", "threadId", "state"] as const;
 const dealParams = ["filter", "sort"] as const;
+const taskParams = ["filter", "project", "space"] as const;
 
 export const ROUTE_CATALOG: readonly RouteCatalogEntry[] = [
   { id: "ws", path: "/ws", persistentParams: [], railItem: "home" },
   { id: "ai", path: "/ai", persistentParams: aiParams, railItem: "home" },
-  { id: "tasks", path: "/tasks", persistentParams: contextParams, railItem: "tasks" },
+  { id: "tasks", path: "/tasks", persistentParams: taskParams, railItem: "tasks" },
   { id: "calendar", path: "/calendar", persistentParams: contextParams, railItem: "calendar" },
   { id: "docs", path: "/docs", persistentParams: contextParams, railItem: "docs" },
   { id: "clients", path: "/clients", persistentParams: [], railItem: "clients" },

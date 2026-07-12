@@ -1,10 +1,10 @@
 ---
 title: "What different agents can help with"
 label: "Agent examples"
-description: "Use the same Qentrah organization link with popular AI agents or with your own internal assistant."
+description: "Use Qentrah OAuth MCP with popular AI agents or your own internal assistant."
 ---
 
-Different agents can use the same Qentrah link, but you should create separate links when the purpose is different. A sales helper, a vendor helper, and an internal automation should not share one broad key.
+Each OAuth client receives its own reviewed grant. A sales helper, vendor helper, and internal automation should receive separate scopes and permissions.
 
 ## Technical Setup Examples
 
@@ -12,14 +12,14 @@ Different agents can use the same Qentrah link, but you should create separate l
 Good for a non-technical team member asking questions, drafting follow-ups, or summarizing approved records.
 
 * **Connector name**: `Qentrah organization`
-* **Connector URL**: `https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET`
-* **Suggested scope**: only the tools selected when the link was created
+* **Connector URL**: `https://mcp.qentrah.com/mcp`
+* **Suggested scope**: only the resources and actions approved during OAuth consent
 
 ### Claude
 Good for reviewing long notes, vendor handoffs, policy documents, or detailed client context.
 
 * **Name**: `Qentrah organization`
-* **Remote MCP URL**: `https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET`
+* **Remote MCP URL**: `https://mcp.qentrah.com/mcp`
 * **Notes**: Claude cloud must be able to reach this HTTPS endpoint.
 
 ### Grok / xAI
@@ -33,7 +33,7 @@ Good for a custom cloud workflow that needs the same approved Qentrah tools.
     {
       "type": "mcp",
       "server_label": "qentrah",
-      "server_url": "https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET"
+      "server_url": "https://mcp.qentrah.com/mcp"
     }
   ]
 }
@@ -43,7 +43,8 @@ Good for a custom cloud workflow that needs the same approved Qentrah tools.
 Good for technical teams building automation around your organization data.
 
 ```bash
-codex mcp add qentrah --url https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET
+codex mcp add qentrah --url https://mcp.qentrah.com/mcp
+codex mcp login qentrah
 ```
 
 Or write it in your configuration:
@@ -51,7 +52,7 @@ Or write it in your configuration:
 {
   "mcpServers": {
     "qentrah": {
-      "url": "https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET"
+      "url": "https://mcp.qentrah.com/mcp"
     }
   }
 }
@@ -68,7 +69,7 @@ Good when your own product calls OpenAI and attaches Qentrah as a remote MCP ser
     {
       "type": "mcp",
       "server_label": "qentrah",
-      "server_url": "https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET",
+      "server_url": "https://mcp.qentrah.com/mcp",
       "allowed_tools": ["organization_info", "clients_list", "tasks_create"],
       "require_approval": "never"
     }

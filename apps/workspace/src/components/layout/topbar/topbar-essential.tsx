@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import {
-  AppWindow,
   Building2,
   Check,
   ChevronDown,
@@ -13,7 +12,6 @@ import {
   Layers,
   Plus,
   SlidersHorizontal,
-  Tags,
   UsersRound,
   Workflow,
 } from "lucide-react";
@@ -25,8 +23,11 @@ import { useNavigation } from "@/domains/navigation";
 import { useWorkspaceSpacesQuery } from "@/domains/spaces/api/spaces";
 import { SpaceCreateForm } from "@/domains/spaces";
 import { useProjectSwitcher } from "@/domains/projects/hooks/use-project-switcher";
+import { getOrganizationCapabilities } from "@/domains/organization/api/capabilities";
+import type { OrganizationCapabilities } from "@/domains/organization/api/types";
 import { CreateProjectForm } from "@/domains/projects/components/create-project-form";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,16 +50,32 @@ function planLabel(type?: string | null) {
   return type === "company" ? "Business" : "Free";
 }
 
-function WorkspaceContextSection({ organizationId }: { organizationId?: string }) {
+function roleLabel(role?: string | null) {
+  const normalized = role?.replace(/^org:/, "").toLowerCase();
+  if (normalized === "owner") return "Owner";
+  if (normalized === "admin") return "Admin";
+  return "Member";
+}
+
+function WorkspaceContextSection({
+  organizationId,
+  capabilities,
+}: {
+  organizationId?: string;
+  capabilities?: OrganizationCapabilities;
+}) {
   const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
   const { spaceSlug, setSpace, setProject } = useNavigation();
   const spaces = useWorkspaceSpacesQuery(organizationId);
   const { projects, activeProject, isLoading: projectsLoading } = useProjectSwitcher();
+  const canCreate = capabilities?.canCreateProjects ?? false;
 
   const spaceList = spaces ?? [];
   const activeSpace = spaceList.find((space) => space.slug === spaceSlug) ?? null;
   const isLoadingSpaces = spaces === undefined;
+
+  if (!capabilities?.canReadProjects) return null;
 
   return (
     <>
@@ -67,7 +84,7 @@ function WorkspaceContextSection({ organizationId }: { organizationId?: string }
         Workspace context
       </div>
       <div className="space-y-1 px-1.5 pb-1">
-        <div className="rounded-lg border border-border/70 bg-muted/30 p-1">
+        <div className="rounded-lg bg-[var(--q-sidebar-accent)] p-1">
           <div className="px-1.5 pb-1 text-[10px] font-semibold uppercase text-muted-foreground">
             Space
           </div>
@@ -103,7 +120,7 @@ function WorkspaceContextSection({ organizationId }: { organizationId?: string }
           </div>
         </div>
 
-        <div className="rounded-lg border border-border/70 bg-muted/30 p-1">
+        <div className="rounded-lg bg-[var(--q-sidebar-accent)] p-1">
           <div className="px-1.5 pb-1 text-[10px] font-semibold uppercase text-muted-foreground">
             Project
           </div>
@@ -139,24 +156,26 @@ function WorkspaceContextSection({ organizationId }: { organizationId?: string }
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-1">
-          <button
-            type="button"
-            className="flex items-center justify-center gap-1.5 rounded-lg border border-border/70 px-2 py-1.5 text-xs font-medium transition-colors hover:bg-accent"
-            onClick={() => setCreateSpaceOpen(true)}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Space
-          </button>
-          <button
-            type="button"
-            className="flex items-center justify-center gap-1.5 rounded-lg border border-border/70 px-2 py-1.5 text-xs font-medium transition-colors hover:bg-accent"
-            onClick={() => setCreateProjectOpen(true)}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Project
-          </button>
-        </div>
+        {canCreate ? (
+          <div className="grid grid-cols-2 gap-1">
+            <button
+              type="button"
+              className="flex items-center justify-center gap-1.5 rounded-lg bg-[var(--q-sidebar-accent)] px-2 py-2 text-xs font-medium transition-colors hover:brightness-95 dark:hover:brightness-125"
+              onClick={() => setCreateSpaceOpen(true)}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Space
+            </button>
+            <button
+              type="button"
+              className="flex items-center justify-center gap-1.5 rounded-lg bg-[var(--q-sidebar-accent)] px-2 py-2 text-xs font-medium transition-colors hover:brightness-95 dark:hover:brightness-125"
+              onClick={() => setCreateProjectOpen(true)}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Project
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <SpaceCreateForm open={createSpaceOpen} onOpenChange={setCreateSpaceOpen} />
@@ -189,11 +208,37 @@ export function TopbarEssential() {
   const organizationCount = Math.max(allOrgs.length, session.organization.id ? 1 : 0);
   const currentOrganization = allOrgs.find((org) => org.id === session.organization.id);
   const currentRole = (currentOrganization as BetterAuthOrganization & { role?: string | null } | undefined)?.role;
-  const isOwner = currentRole?.includes("owner") ?? false;
+  const currentRoleLabel = roleLabel(currentRole);
   const organizationId =
     session.workspace.status === "ready"
       ? session.workspace.organizationId ?? undefined
       : undefined;
+  const capabilitiesQuery = useQuery({
+    queryKey: ["organization-capabilities", organizationId],
+    queryFn: () => getOrganizationCapabilities(organizationId!),
+    enabled: Boolean(organizationId),
+  });
+  const capabilities = capabilitiesQuery.data;
+  const canManageOrganization = Boolean(capabilities?.canUpdateOrganization);
+  const canManagePeople = Boolean(
+    capabilities?.canInviteMembers ||
+    capabilities?.canUpdateMembers ||
+    capabilities?.canRemoveMembers,
+  );
+  const organizationLinks = [
+    capabilities?.canReadOrganization
+      ? { label: "Organization", icon: Building2, href: `/${locale}/organization` }
+      : null,
+    canManagePeople
+      ? { label: "People", icon: UsersRound, href: `/${locale}/organization?tab=members` }
+      : null,
+    canManageOrganization
+      ? { label: "Workspace settings", icon: SlidersHorizontal, href: `/${locale}/settings/general` }
+      : null,
+    canManageOrganization
+      ? { label: "Billing", icon: CreditCard, href: `/${locale}/settings/billing` }
+      : null,
+  ].filter((item): item is NonNullable<typeof item> => item !== null);
 
   return (
     <div className="flex items-center gap-1.5">
@@ -202,7 +247,7 @@ export function TopbarEssential() {
           render={
             <button
               type="button"
-              className="flex h-9 min-w-[154px] items-center gap-2 rounded-lg px-2 text-left transition-colors hover:bg-[var(--q-bg-secondary)]"
+              className="flex h-9 min-w-0 max-w-[190px] items-center gap-2 rounded-lg px-2 text-left transition-colors hover:bg-[var(--q-bg-secondary)] sm:min-w-[154px]"
             >
               <div className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[var(--q-bg-secondary)] text-[10px] font-black uppercase">
                 {session.organization.logo ? (
@@ -222,12 +267,9 @@ export function TopbarEssential() {
         <DropdownMenuContent
           align="start"
           sideOffset={6}
-          className="w-72 rounded-xl border-border p-1.5"
+          className="w-80 rounded-2xl border-transparent bg-[var(--q-sidebar)] p-2 shadow-xl shadow-black/10"
         >
-          <DropdownMenuItem
-            render={<Link href={`/${locale}/organization`} />}
-            className="flex items-start gap-3 rounded-lg px-2 py-2.5"
-          >
+          <div className="flex items-start gap-3 rounded-xl bg-[var(--q-sidebar-accent)] px-3 py-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary text-sm font-black uppercase text-primary-foreground">
               {session.organization.logo ? (
                 <img src={session.organization.logo} alt="" className="h-full w-full object-cover" />
@@ -237,63 +279,42 @@ export function TopbarEssential() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="max-w-[190px] truncate text-left text-sm font-semibold text-foreground">{organizationDisplayName}</div>
-              <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
                 <span>{currentPlan}</span>
-                {isOwner && (
-                  <>
-                    <span aria-hidden="true">/</span>
-                    <span>Owner</span>
-                  </>
-                )}
+                <span aria-hidden="true">/</span>
+                <span className="rounded-full bg-background/70 px-1.5 py-0.5 font-semibold text-foreground">{currentRoleLabel}</span>
                 <span aria-hidden="true">/</span>
                 <span>{organizationCount} workspace{organizationCount === 1 ? "" : "s"}</span>
               </div>
             </div>
-          </DropdownMenuItem>
+          </div>
 
-          {[
-            { label: "Organization", icon: Building2, href: `/${locale}/organization` },
-            { label: "People", icon: UsersRound, href: `/${locale}/organization?tab=members` },
-            { label: "WS Settings", icon: SlidersHorizontal, href: `/${locale}/settings/general` },
-            { label: "Billing", icon: CreditCard, href: `/${locale}/settings/billing` },
-          ].map((item) => (
+          {organizationLinks.map((item) => (
             <DropdownMenuItem
               key={item.label}
               render={<Link href={item.href} />}
-              className="mx-1.5 gap-2 rounded-lg px-2 py-1.5 text-sm"
+              className="mx-1 gap-2 rounded-lg px-2.5 py-2 text-sm focus:bg-[var(--q-sidebar-accent)]"
             >
               <item.icon className="h-4 w-4 text-muted-foreground" />
               <span className="truncate">{item.label}</span>
             </DropdownMenuItem>
           ))}
 
-          <WorkspaceContextSection organizationId={organizationId} />
+          <WorkspaceContextSection organizationId={organizationId} capabilities={capabilities} />
 
-          <DropdownMenuSeparator />
-
-          <div className="px-2 py-1.5 text-[11px] font-medium text-muted-foreground">
-            Manage
-          </div>
-          {[
-            { label: "Apps", icon: AppWindow },
-            { label: "Custom Fields", icon: Tags },
-            { label: "Automations", icon: Workflow, href: `/${locale}/automations` },
-          ].map((item) => (
-            <DropdownMenuItem
-              key={item.label}
-              disabled={!item.href}
-              render={item.href ? <Link href={item.href} /> : undefined}
-              className="mx-1.5 gap-2 rounded-lg px-2 py-1.5 text-sm opacity-100"
-            >
-              <item.icon className="h-4 w-4 text-muted-foreground" />
-              <span className="flex-1">{item.label}</span>
-              {!item.href && (
-                <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                  Coming soon
-                </span>
-              )}
-            </DropdownMenuItem>
-          ))}
+          {capabilities?.canUpdateProjects ? (
+            <>
+              <DropdownMenuSeparator />
+              <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Manage</div>
+              <DropdownMenuItem
+                render={<Link href={`/${locale}/automations`} />}
+                className="mx-1.5 gap-2 rounded-lg px-2 py-2 text-sm focus:bg-[var(--q-sidebar-accent)]"
+              >
+                <Workflow className="h-4 w-4 text-muted-foreground" />
+                <span className="flex-1">Automations</span>
+              </DropdownMenuItem>
+            </>
+          ) : null}
 
           <DropdownMenuSeparator />
 
@@ -304,10 +325,11 @@ export function TopbarEssential() {
             const isActive = org.id === session.organization.id;
             const displayName = org.name || "Organization";
             const initials = organizationInitials(displayName);
+            const orgRole = roleLabel((org as BetterAuthOrganization & { role?: string | null }).role);
             return (
               <DropdownMenuItem
                 key={org.id}
-                className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5"
+                className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 focus:bg-[var(--q-sidebar-accent)]"
                 onClick={() => {
                   if (!isActive && org.id) {
                     switchOrganization(org.id);
@@ -332,6 +354,7 @@ export function TopbarEssential() {
                     <span className="truncate text-sm text-foreground">{displayName}</span>
                     {isActive && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
                   </div>
+                  <div className="mt-0.5 text-[10px] font-medium text-muted-foreground">{orgRole}</div>
                 </div>
               </DropdownMenuItem>
             );
@@ -339,14 +362,18 @@ export function TopbarEssential() {
           {allOrgs.length === 0 && (
             <div className="px-3 py-2 text-sm text-muted-foreground">No organizations found</div>
           )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            render={<Link href={`/${locale}/choose-org`} />}
-            className="mx-1.5 justify-center gap-2 rounded-lg border border-border/70 px-2 py-1.5 text-sm"
-          >
-            <Plus className="h-4 w-4" />
-            Create Workspace
-          </DropdownMenuItem>
+          {canManageOrganization ? (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                render={<Link href={`/${locale}/choose-org`} />}
+                className="mx-1 justify-center gap-2 rounded-lg bg-[var(--q-sidebar-accent)] px-2 py-2 text-sm font-medium focus:bg-[var(--q-sidebar-accent)]"
+              >
+                <Plus className="h-4 w-4" />
+                Create Workspace
+              </DropdownMenuItem>
+            </>
+          ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -13,7 +13,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -74,9 +73,14 @@ export function ChooseOrganizationClient({
   } = useOrganizationEntry({ callbackURL, locale });
 
   return (
-    <main className="relative flex min-h-svh flex-col bg-[var(--q-bg)] text-foreground">
-      <div className="flex flex-1 animate-in items-center justify-center fade-in zoom-in-95 duration-300">
-        <header className="absolute inset-x-0 top-0 z-10 flex h-14 items-center justify-between px-6">
+    <main className="relative flex min-h-[100dvh] flex-col overflow-hidden bg-white text-foreground dark:bg-[oklch(10%_0.008_260)]">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-64"
+        style={{ background: "var(--q-entry-canvas-wash)" }}
+      />
+      <div className="relative flex flex-1 animate-in items-center justify-center px-5 py-6 fade-in duration-300 sm:px-8">
+        <header className="absolute inset-x-0 top-0 z-10 flex h-[72px] items-center justify-between px-5 sm:px-8">
           <Link href="/" className="flex items-center gap-2">
             <BrandMark className="h-5 w-5" priority />
             <span className="text-xs font-semibold tracking-tight">
@@ -101,22 +105,34 @@ export function ChooseOrganizationClient({
         ) : null}
 
         {isInitialLoading ? (
-          <div className="w-full max-w-md px-6">
+          <div className="w-full max-w-[368px]">
             <WorkspaceListSkeleton label={t("loading")} />
           </div>
         ) : (
-          <div className="flex w-full max-w-md flex-col gap-3 px-6">
+          <div className="w-full max-w-[368px]">
+            <div className="mb-7 text-center">
+              <div className="mb-4 flex justify-center">
+                <BrandMark className="h-9 w-9" priority />
+              </div>
+              <p className="text-xs font-medium text-text-secondary">{t("eyebrow")}</p>
+              <h1 className="mt-1.5 text-2xl font-semibold tracking-[-0.025em] text-foreground">
+                {t("title")}
+              </h1>
+              <p className="mt-2 text-sm leading-6 text-text-secondary">{t("subtitle")}</p>
+            </div>
+
+            <div className="flex flex-col gap-2.5">
             {visibleInvitations.map((invitation) => {
               const invitationBusy = busyId === `invitation:${invitation.id}`;
               return (
                 <button
-                  className="group flex min-h-24 items-center gap-4 rounded-2xl border border-border bg-card p-4 text-start transition duration-200 hover:-translate-y-0.5 hover:border-foreground/25 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60"
+                  className="group flex min-h-[72px] items-center gap-3 rounded-md border border-border bg-white px-4 py-3 text-start transition hover:border-foreground/30 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60 dark:bg-white/5"
                   disabled={Boolean(busyId || busyAction)}
                   key={invitation.id}
                   onClick={() => void acceptInvitation(invitation)}
                   type="button"
                 >
-                  <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
                     {invitationBusy ? (
                       <Loader2 className="size-5 animate-spin" />
                     ) : (
@@ -140,13 +156,13 @@ export function ChooseOrganizationClient({
               const isBusy = busyId === org.id;
               return (
                 <button
-                  className="group flex min-h-24 items-center gap-4 rounded-2xl border border-border bg-card p-4 text-start transition duration-200 hover:-translate-y-0.5 hover:border-foreground/25 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60"
+                  className="group flex min-h-[72px] items-center gap-3 rounded-md border border-border bg-white px-4 py-3 text-start transition hover:border-foreground/30 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60 dark:bg-white/5"
                   disabled={Boolean(busyId || busyAction)}
                   key={org.id}
                   onClick={() => void selectOrganization(org.id)}
                   type="button"
                 >
-                  <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-muted text-muted-foreground">
+                  <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-muted-foreground">
                     {isBusy ? (
                       <Loader2 className="size-5 animate-spin" />
                     ) : org.logo ? (
@@ -171,36 +187,39 @@ export function ChooseOrganizationClient({
               );
             })}
             <button
-              className="group flex min-h-24 items-center gap-4 rounded-2xl border border-dashed border-border bg-card/40 p-4 text-start transition duration-200 hover:-translate-y-0.5 hover:border-foreground/30 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60"
+              className="group flex min-h-[72px] items-center gap-3 rounded-md border border-dashed border-border bg-transparent px-4 py-3 text-start transition hover:border-foreground/35 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60"
               disabled={Boolean(busyId || busyAction)}
               onClick={() => setCreateOpen(true)}
               type="button"
             >
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-border bg-background text-muted-foreground transition duration-200 group-hover:scale-110 group-hover:text-foreground">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition group-hover:text-foreground">
                 <Plus className="size-5" />
               </span>
               <span className="text-sm font-medium text-foreground">
                 {t("createNew")}
               </span>
             </button>
+            </div>
           </div>
         )}
       </div>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-md rounded-md p-5 sm:p-6">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">
+        <DialogContent className="max-w-[520px] gap-0 rounded-lg border border-border bg-card p-8 shadow-none">
+          <DialogHeader className="gap-2 pe-8">
+            <DialogTitle className="text-xl font-semibold tracking-[-0.02em]">
               {t("createModalTitle")}
             </DialogTitle>
-            <DialogDescription>{t("createModalDesc")}</DialogDescription>
+            <DialogDescription className="text-sm leading-6">
+              {t("createModalDesc")}
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3">
-            <label htmlFor="organization-name" className="text-sm font-black">
+          <div className="mt-8">
+            <label htmlFor="organization-name" className="mb-3 block text-xs font-medium text-text-secondary">
               {t("createNameLabel")}
             </label>
             <Input
-              className="h-10 rounded-md"
+              className="h-12 rounded-md bg-background"
               id="organization-name"
               onChange={(event) => {
                 setOrganizationName(event.target.value);
@@ -208,13 +227,13 @@ export function ChooseOrganizationClient({
               placeholder={t("createNamePlaceholder")}
               value={organizationName}
             />
-            <p className="text-xs font-semibold text-muted-foreground">
+            <p className="mt-3 rounded-md bg-muted/60 px-3 py-3 text-xs text-muted-foreground">
               {organizationSlug || "workspace-slug"}
             </p>
           </div>
-          <DialogFooter className="mt-2 rounded-b-lg">
+          <div className="mt-8 flex items-center justify-end gap-2">
             <Button
-              className="h-9 rounded-md"
+              className="h-11 rounded-md px-5"
               disabled={busyAction === "create"}
               onClick={() => setCreateOpen(false)}
               type="button"
@@ -223,7 +242,8 @@ export function ChooseOrganizationClient({
               {t("hideCreate")}
             </Button>
             <Button
-              className="h-9 rounded-md"
+              aria-busy={busyAction === "create"}
+              className="h-11 min-w-28 rounded-md bg-foreground px-5 text-background hover:bg-foreground/90"
               disabled={busyAction === "create" || Boolean(busyId)}
               onClick={() => void createOrganization()}
               type="button"
@@ -233,7 +253,7 @@ export function ChooseOrganizationClient({
               ) : null}
               {busyAction === "create" ? t("creating") : t("createBtn")}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </main>

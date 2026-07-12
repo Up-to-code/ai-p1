@@ -1,9 +1,33 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, CheckCircle2, ChevronDown, ChevronRight, Circle, Expand, GripVertical, ListFilter, MoreHorizontal, Plus, Search, Save, Trash2, UserRound, X } from "lucide-react";
 import {
-  DateEditor,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent,
+  type MouseEvent,
+  type PointerEvent,
+} from "react";
+import { format } from "date-fns";
+import {
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Circle,
+  Expand,
+  GripVertical,
+  ListFilter,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Save,
+  Trash2,
+  UserRound,
+  X,
+} from "lucide-react";
+import {
   NameCell,
   PriorityEditor,
   QentrahTable,
@@ -14,7 +38,10 @@ import {
 import type { TaskRecord } from "../../tasks.types";
 import { sortPipelineTasks } from "../../task-pipeline-order";
 import { TASK_STAGES, normalizeTaskStatus } from "../../tasks.constants";
-import { useCreateSavedViewMutation, useDefaultSavedViewQuery } from "../../api/saved-views";
+import {
+  useCreateSavedViewMutation,
+  useDefaultSavedViewQuery,
+} from "../../api/saved-views";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,8 +49,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { WorkOsPickerOption } from "@/domains/work-os/components/work-os-record-picker";
-import { TaskTableFieldsPanel } from "../task-table-fields-panel";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { WorkspaceDatePicker } from "@/components/shared";
 
 const TASK_TABLE_COLUMN_DEFAULTS = {
   filter: false,
@@ -32,8 +63,11 @@ const TASK_TABLE_COLUMN_DEFAULTS = {
   suppressHeaderFilterButton: true,
 } as const;
 
-const TASK_TABLE_ROW_HEIGHT = 36;
-const TASK_TABLE_COLUMNS = "48px minmax(240px,1.4fr) 180px 150px 160px 150px minmax(160px,0.9fr) 48px";
+const TASK_TABLE_ROW_HEIGHT = 32;
+const TASK_TABLE_COLUMNS =
+  "40px minmax(260px,1.55fr) 150px 128px 132px 120px minmax(180px,1fr) 36px";
+const GROUPED_TASK_LIST_COLUMNS =
+  "40px minmax(360px,1.9fr) 140px 132px 120px minmax(96px,0.45fr) 36px";
 
 function plainText(value: string | undefined) {
   return value
@@ -42,10 +76,57 @@ function plainText(value: string | undefined) {
     .trim();
 }
 
+function taskDate(value?: string) {
+  return value ? new Date(`${value}T12:00:00`) : undefined;
+}
+
+function TaskDateEditor({
+  task,
+  onChange,
+}: {
+  task: TaskRecord;
+  onChange: (
+    changes: Partial<Pick<TaskRecord, "startDate" | "dueDate">>,
+  ) => void;
+}) {
+  const toStoredDate = (date: Date | undefined) =>
+    date ? format(date, "yyyy-MM-dd") : "";
+  const [draftStartDate, setDraftStartDate] = useState(task.startDate ?? "");
+  const [draftDueDate, setDraftDueDate] = useState(task.dueDate ?? "");
+
+  useEffect(() => {
+    setDraftStartDate(task.startDate ?? "");
+    setDraftDueDate(task.dueDate ?? "");
+  }, [task.startDate, task.dueDate]);
+
+  return (
+    <WorkspaceDatePicker
+      startDate={taskDate(draftStartDate)}
+      dueDate={taskDate(draftDueDate)}
+      onStartDateChange={(date) => {
+        const startDate = toStoredDate(date);
+        setDraftStartDate(startDate);
+        onChange({ startDate });
+      }}
+      onDueDateChange={(date) => {
+        const dueDate = toStoredDate(date);
+        setDraftDueDate(dueDate);
+        onChange({ dueDate });
+      }}
+      defaultField="due"
+      className="h-6 w-full justify-start rounded bg-transparent px-1.5 text-[11px] hover:bg-[var(--q-sidebar-accent)]"
+    />
+  );
+}
+
 type TaskCreateDefaults = Pick<Partial<TaskRecord>, "status" | "priority">;
 type TaskGroupBy = "none" | "status" | "priority";
 type SortDirection = "ascending" | "descending";
 type DragState = { id: string; group: string } | null;
+
+const ROW_LONG_PRESS_DRAG_DELAY_MS = 220;
+const ROW_DRAG_INTERACTIVE_SELECTOR =
+  "button,input,textarea,select,a,[role='button'],[data-board-property]";
 
 interface TaskTableViewProps {
   tasks: TaskRecord[];
@@ -54,13 +135,31 @@ interface TaskTableViewProps {
   spaceId?: string | null;
   memberOptions?: WorkOsPickerOption[];
   onTaskOpen?: (taskId: string) => void;
-  onTaskUpdate?: (task: TaskRecord, changes: Partial<TaskRecord>) => void | Promise<void>;
+  onTaskUpdate?: (
+    task: TaskRecord,
+    changes: Partial<TaskRecord>,
+  ) => void | Promise<void>;
   onTaskDelete?: (task: TaskRecord) => void | Promise<void>;
-  onTaskCreate?: (title: string, defaults?: TaskCreateDefaults) => void | Promise<void>;
-  onTaskMove?: (itemId: string, fromStage: string, toStage: string, targetIndex: number) => void;
+  onTaskCreate?: (
+    title: string,
+    defaults?: TaskCreateDefaults,
+  ) => void | Promise<void>;
+  onTaskMove?: (
+    itemId: string,
+    fromStage: string,
+    toStage: string,
+    targetIndex: number,
+  ) => void;
+  onOpenFields?: () => void;
 }
 
-function DescriptionCell({ task, onCommit }: { task: TaskRecord; onCommit: (value: string) => void }) {
+function DescriptionCell({
+  task,
+  onCommit,
+}: {
+  task: TaskRecord;
+  onCommit: (value: string) => void;
+}) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(() => plainText(task.description) ?? "");
 
@@ -77,7 +176,8 @@ function DescriptionCell({ task, onCommit }: { task: TaskRecord; onCommit: (valu
         onChange={(event) => setDraft(event.target.value)}
         onBlur={commit}
         onKeyDown={(event) => {
-          if ((event.metaKey || event.ctrlKey) && event.key === "Enter") commit();
+          if ((event.metaKey || event.ctrlKey) && event.key === "Enter")
+            commit();
           if (event.key === "Escape") {
             setDraft(plainText(task.description) ?? "");
             setEditing(false);
@@ -94,7 +194,7 @@ function DescriptionCell({ task, onCommit }: { task: TaskRecord; onCommit: (valu
       type="button"
       onDoubleClick={() => setEditing(true)}
       title="Double-click to add notes"
-      className="block w-full truncate text-left text-[12px] text-muted-foreground/70"
+      className="block w-full truncate text-left text-[11px] text-muted-foreground/70"
     >
       {plainText(task.description) || "Add notes…"}
     </button>
@@ -111,52 +211,114 @@ function MultiAssigneeCell({
   onChange: (ids: string[]) => void;
 }) {
   const [query, setQuery] = useState("");
-  const ids = task.assigneeUserIds ?? (task.assigneeUserId ? [task.assigneeUserId] : []);
+  const ids =
+    task.assigneeUserIds ?? (task.assigneeUserId ? [task.assigneeUserId] : []);
   const selected = options.filter((option) => ids.includes(option.id));
-  const visible = options.filter((option) => option.label.toLowerCase().includes(query.toLowerCase()));
+  const visible = options.filter((option) =>
+    option.label.toLowerCase().includes(query.toLowerCase()),
+  );
 
   return (
-    <Popover onOpenChange={(open) => { if (!open) setQuery(""); }}>
+    <Popover
+      onOpenChange={(open) => {
+        if (!open) setQuery("");
+      }}
+    >
       <PopoverTrigger
         render={
-          <button type="button" className="flex h-7 min-w-0 items-center rounded px-1 hover:bg-muted">
+          <button
+            type="button"
+            className="flex h-6 min-w-0 items-center rounded px-1 hover:bg-muted"
+          >
             {selected.length ? (
               <span className="flex min-w-0 items-center gap-2">
                 <span className="flex -space-x-1.5">
                   {selected.slice(0, 3).map((person) => (
-                    <span key={person.id} title={person.label} className="flex size-5 items-center justify-center overflow-hidden rounded-full border-2 border-background bg-primary/10 text-[8px] font-black text-primary">
-                      {person.imageUrl ? <img src={person.imageUrl} alt="" className="size-full object-cover" /> : person.label.slice(0, 2).toUpperCase()}
+                    <span
+                      key={person.id}
+                      title={person.label}
+                      className="flex size-5 items-center justify-center overflow-hidden rounded-full border-2 border-background bg-primary/10 text-[8px] font-black text-primary"
+                    >
+                      {person.imageUrl ? (
+                        <img
+                          src={person.imageUrl}
+                          alt=""
+                          className="size-full object-cover"
+                        />
+                      ) : (
+                        person.label.slice(0, 2).toUpperCase()
+                      )}
                     </span>
                   ))}
                 </span>
-                <span className="truncate text-xs text-foreground">{selected.length === 1 ? selected[0]?.label : `${selected.length} people`}</span>
+                <span className="truncate text-[11px] text-foreground">
+                  {selected.length === 1
+                    ? selected[0]?.label
+                    : `${selected.length} people`}
+                </span>
               </span>
-            ) : <span className="text-xs text-muted-foreground">—</span>}
+            ) : (
+              <span className="text-[11px] text-muted-foreground">—</span>
+            )}
           </button>
         }
       />
       <PopoverContent align="start" className="w-64 rounded-xl p-1.5">
         <div className="mb-1 flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-2 py-1.5">
           <Search className="size-3.5 text-muted-foreground" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search members…" className="min-w-0 flex-1 bg-transparent text-xs outline-none" />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search members…"
+            className="min-w-0 flex-1 bg-transparent text-xs outline-none"
+          />
         </div>
         {visible.map((person) => {
           const active = ids.includes(person.id);
           return (
-            <button key={person.id} type="button" onClick={() => onChange(active ? ids.filter((id) => id !== person.id) : [...ids, person.id])} className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-muted">
-              <span className="flex size-6 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-[9px] font-black text-primary">{person.imageUrl ? <img src={person.imageUrl} alt="" className="size-full object-cover" /> : person.label.slice(0, 2).toUpperCase()}</span>
+            <button
+              key={person.id}
+              type="button"
+              onClick={() =>
+                onChange(
+                  active
+                    ? ids.filter((id) => id !== person.id)
+                    : [...ids, person.id],
+                )
+              }
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-muted"
+            >
+              <span className="flex size-6 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-[9px] font-black text-primary">
+                {person.imageUrl ? (
+                  <img
+                    src={person.imageUrl}
+                    alt=""
+                    className="size-full object-cover"
+                  />
+                ) : (
+                  person.label.slice(0, 2).toUpperCase()
+                )}
+              </span>
               <span className="min-w-0 flex-1 truncate">{person.label}</span>
               {active ? <Check className="size-3.5 text-primary" /> : null}
             </button>
           );
         })}
-        {!visible.length ? <p className="px-2 py-3 text-xs text-muted-foreground">No members found</p> : null}
+        {!visible.length ? (
+          <p className="px-2 py-3 text-xs text-muted-foreground">
+            No members found
+          </p>
+        ) : null}
       </PopoverContent>
     </Popover>
   );
 }
 
-const STATUS_GROUPS: Array<{ key: TaskRecord["status"]; label: string; color: string }> = TASK_STAGES.map((stage) => ({
+const STATUS_GROUPS: Array<{
+  key: TaskRecord["status"];
+  label: string;
+  color: string;
+}> = TASK_STAGES.map((stage) => ({
   key: stage.key,
   label: stage.name,
   color:
@@ -171,7 +333,11 @@ const STATUS_GROUPS: Array<{ key: TaskRecord["status"]; label: string; color: st
             : "bg-zinc-600",
 }));
 
-const PRIORITY_GROUPS: Array<{ key: TaskRecord["priority"]; label: string; color: string }> = [
+const PRIORITY_GROUPS: Array<{
+  key: TaskRecord["priority"];
+  label: string;
+  color: string;
+}> = [
   { key: "urgent", label: "Urgent", color: "bg-red-600" },
   { key: "high", label: "High", color: "bg-amber-500" },
   { key: "normal", label: "Normal", color: "bg-blue-600" },
@@ -181,9 +347,18 @@ const PRIORITY_GROUPS: Array<{ key: TaskRecord["priority"]; label: string; color
 function AddTaskRow({
   onTaskCreate,
   defaults,
+  columns = TASK_TABLE_COLUMNS,
+  label = "Task Name or type '/' for commands",
+  trailingEmptyCells = 5,
 }: {
-  onTaskCreate?: (title: string, defaults?: TaskCreateDefaults) => void | Promise<void>;
+  onTaskCreate?: (
+    title: string,
+    defaults?: TaskCreateDefaults,
+  ) => void | Promise<void>;
   defaults?: TaskCreateDefaults;
+  columns?: string;
+  label?: string;
+  trailingEmptyCells?: number;
 }) {
   const [title, setTitle] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -208,8 +383,8 @@ function AddTaskRow({
     <div
       onClick={() => setIsEditing(true)}
       onDoubleClick={() => setIsEditing(true)}
-      className="grid h-9 shrink-0 cursor-text border-b border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] bg-[var(--q-bg)] text-[12px] text-muted-foreground hover:bg-[var(--q-bg-secondary)]"
-      style={{ gridTemplateColumns: TASK_TABLE_COLUMNS }}
+      className="grid h-8 shrink-0 cursor-text border-b border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] bg-[var(--q-bg)] text-[11px] text-muted-foreground hover:bg-[var(--q-bg-secondary)]"
+      style={{ gridTemplateColumns: columns }}
     >
       <div className="flex items-center justify-center border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] text-muted-foreground">
         <Plus className="h-3.5 w-3.5" />
@@ -233,19 +408,20 @@ function AddTaskRow({
               onBlur={() => {
                 if (!title.trim()) setIsEditing(false);
               }}
-              placeholder="Task Name or type '/' for commands"
-              className="h-full min-w-0 flex-1 bg-transparent text-[12px] font-medium text-foreground outline-none placeholder:text-muted-foreground"
+              placeholder={label}
+              className="h-full min-w-0 flex-1 bg-transparent text-[11px] font-medium text-foreground outline-none placeholder:text-muted-foreground"
             />
           </>
         ) : (
-          <span className="text-muted-foreground">Task Name or type '/' for commands</span>
+          <span className="text-muted-foreground">{label}</span>
         )}
       </div>
-      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)]" />
-      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)]" />
-      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)]" />
-      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)]" />
-      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)]" />
+      {Array.from({ length: trailingEmptyCells }).map((_, index) => (
+        <div
+          key={index}
+          className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)]"
+        />
+      ))}
       <div className="flex items-center justify-end gap-1 px-1">
         {isEditing && title.trim() ? (
           <>
@@ -301,16 +477,17 @@ function TaskTableControls({
   onCompleteSelected: () => void;
   onDeleteSelected: () => void;
 }) {
-  const groupLabel = groupBy === "none" ? "None" : groupBy === "status" ? "Status" : "Priority";
+  const groupLabel =
+    groupBy === "none" ? "None" : groupBy === "status" ? "Status" : "Priority";
 
   return (
-    <div className="flex h-10 shrink-0 items-center justify-between gap-3 border-b border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[var(--q-bg)] px-3">
+    <div className="flex h-9 shrink-0 items-center justify-between gap-3 border-b border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[var(--q-bg)] px-2">
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
             <button
               type="button"
-              className="inline-flex h-7 items-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-transparent px-2.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+              className="inline-flex h-6 items-center gap-1.5 rounded-md border border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-transparent px-2 text-[10px] font-semibold text-muted-foreground transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
             />
           }
         >
@@ -319,8 +496,15 @@ function TaskTableControls({
           <span className="text-foreground">{groupLabel}</span>
           <ChevronDown className="h-3 w-3" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" collisionPadding={12} sideOffset={6} className="w-56 rounded-lg border border-border bg-popover p-1.5 shadow-xl">
-          <div className="px-2 py-1.5 text-[10px] font-semibold uppercase text-muted-foreground">Group by</div>
+        <DropdownMenuContent
+          align="start"
+          collisionPadding={12}
+          sideOffset={6}
+          className="w-56 rounded-lg border border-border bg-popover p-1.5 shadow-xl"
+        >
+          <div className="px-2 py-1.5 text-[10px] font-semibold uppercase text-muted-foreground">
+            Group by
+          </div>
           {[
             ["none", "None", "Flat editable table"],
             ["status", "Status", "Create draggable status sections"],
@@ -332,10 +516,16 @@ function TaskTableControls({
               className="flex items-center justify-between gap-3 rounded px-2 py-2"
             >
               <span className="min-w-0">
-                <span className="block text-[12px] font-semibold text-foreground">{label}</span>
-                <span className="block truncate text-[10px] text-muted-foreground">{description}</span>
+                <span className="block text-[12px] font-semibold text-foreground">
+                  {label}
+                </span>
+                <span className="block truncate text-[10px] text-muted-foreground">
+                  {description}
+                </span>
               </span>
-              {groupBy === value ? <Check className="h-3.5 w-3.5 shrink-0 text-violet-300" /> : null}
+              {groupBy === value ? (
+                <Check className="h-3.5 w-3.5 shrink-0 text-violet-300" />
+              ) : null}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
@@ -344,18 +534,35 @@ function TaskTableControls({
       <div className="flex items-center gap-2">
         {selectedCount > 0 ? (
           <>
-            <span className="text-[11px] font-medium text-muted-foreground">{selectedCount} selected</span>
+            <span className="text-[11px] font-medium text-muted-foreground">
+              {selectedCount} selected
+            </span>
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={<button type="button" aria-label="Actions for selected tasks" className="inline-flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground" />}
+                render={
+                  <button
+                    type="button"
+                    aria-label="Actions for selected tasks"
+                    className="inline-flex size-6 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
+                  />
+                }
               >
                 <MoreHorizontal className="size-4" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 rounded-lg p-1.5">
-                <DropdownMenuItem onClick={onCompleteSelected} className="gap-2 rounded px-2 py-2 text-xs">
+              <DropdownMenuContent
+                align="end"
+                className="w-48 rounded-lg p-1.5"
+              >
+                <DropdownMenuItem
+                  onClick={onCompleteSelected}
+                  className="gap-2 rounded px-2 py-2 text-xs"
+                >
                   <CheckCircle2 className="size-3.5" /> Mark complete
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={onDeleteSelected} className="gap-2 rounded px-2 py-2 text-xs text-destructive focus:text-destructive">
+                <DropdownMenuItem
+                  onClick={onDeleteSelected}
+                  className="gap-2 rounded px-2 py-2 text-xs text-destructive focus:text-destructive"
+                >
                   <Trash2 className="size-3.5" /> Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -368,7 +575,7 @@ function TaskTableControls({
               type="button"
               onClick={onSaveView}
               disabled={isSaving}
-              className="inline-flex h-7 items-center rounded-md bg-amber-500 px-2.5 text-[11px] font-bold text-black transition-colors hover:bg-amber-400 disabled:opacity-60"
+              className="inline-flex h-6 items-center rounded-md bg-amber-500 px-2.5 text-[10px] font-bold text-black transition-colors hover:bg-amber-400 disabled:opacity-60"
             >
               {isSaving ? "Saving..." : "Save view"}
             </button>
@@ -377,14 +584,19 @@ function TaskTableControls({
                 render={
                   <button
                     type="button"
-                    className="inline-flex h-7 items-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-transparent px-2.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
+                    className="inline-flex h-6 items-center gap-1.5 rounded-md border border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-transparent px-2 text-[10px] font-semibold text-muted-foreground transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
                   />
                 }
               >
                 {sortDirection === "ascending" ? "Ascending" : "Descending"}
                 <ChevronDown className="h-3 w-3" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" collisionPadding={12} sideOffset={6} className="w-40 rounded-lg border border-border bg-popover p-1.5 shadow-xl">
+              <DropdownMenuContent
+                align="end"
+                collisionPadding={12}
+                sideOffset={6}
+                className="w-40 rounded-lg border border-border bg-popover p-1.5 shadow-xl"
+              >
                 {[
                   ["ascending", "Ascending"],
                   ["descending", "Descending"],
@@ -395,7 +607,9 @@ function TaskTableControls({
                     className="flex h-8 items-center justify-between rounded px-2 text-[12px] font-medium"
                   >
                     {label}
-                    {sortDirection === value ? <Check className="h-3.5 w-3.5 text-violet-300" /> : null}
+                    {sortDirection === value ? (
+                      <Check className="h-3.5 w-3.5 text-violet-300" />
+                    ) : null}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -418,14 +632,22 @@ export function TaskTableView({
   onTaskDelete,
   onTaskCreate,
   onTaskMove,
+  onOpenFields,
 }: TaskTableViewProps) {
   const tableRef = useRef<QentrahTableRef<TaskRecord>>(null);
   const [groupBy, setGroupBy] = useState<TaskGroupBy>("none");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("descending");
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => new Set());
+  const [sortDirection, setSortDirection] =
+    useState<SortDirection>("descending");
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [dragging, setDragging] = useState<DragState>(null);
+  const [dragArm, setDragArm] = useState<DragState>(null);
+  const [suppressClickTaskId, setSuppressClickTaskId] = useState<string | null>(
+    null,
+  );
   const [selectedTasks, setSelectedTasks] = useState<TaskRecord[]>([]);
-  const [fieldsOpen, setFieldsOpen] = useState(false);
+  const dragArmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const createSavedView = useCreateSavedViewMutation();
   const defaultView = useDefaultSavedViewQuery({
     resourceType: "task",
@@ -438,16 +660,17 @@ export function TaskTableView({
   const savedViewVersion = defaultView.data?.config.taskTableVersion ?? null;
 
   useEffect(() => {
-    if (savedViewVersion !== 2) return;
-    if (savedViewGroupBy === "status" || savedViewGroupBy === "priority" || savedViewGroupBy === "none") {
+    if (savedViewVersion !== 3) return;
+    if (
+      savedViewGroupBy === "status" ||
+      savedViewGroupBy === "priority" ||
+      savedViewGroupBy === "none"
+    ) {
       setGroupBy(savedViewGroupBy);
     }
   }, [savedViewGroupBy, savedViewVersion]);
 
-  const rows = useMemo(
-    () => tasks.filter((task) => !task._deleted),
-    [tasks],
-  );
+  const rows = useMemo(() => tasks.filter((task) => !task._deleted), [tasks]);
 
   async function updateTask(task: TaskRecord, changes: Partial<TaskRecord>) {
     const optimistic = { ...task, ...changes };
@@ -462,7 +685,10 @@ export function TaskTableView({
   function saveView() {
     if (!organizationId) return;
     createSavedView.mutate({
-      name: groupBy === "status" ? "Tasks grouped by status" : "Tasks grouped by priority",
+      name:
+        groupBy === "status"
+          ? "Tasks grouped by status"
+          : "Tasks grouped by priority",
       resourceType: "task",
       viewType: "table",
       scope: projectId ? "project" : spaceId ? "space" : "workspace",
@@ -470,7 +696,7 @@ export function TaskTableView({
       organizationId,
       projectId: projectId ?? undefined,
       spaceId: spaceId ?? undefined,
-      config: { groupBy, sortBy: sortDirection, taskTableVersion: 2 },
+      config: { groupBy, sortBy: sortDirection, taskTableVersion: 3 },
       isDefault: true,
     });
   }
@@ -504,11 +730,18 @@ export function TaskTableView({
           return (
             <div className="group/name flex min-w-0 items-center gap-1">
               <div className="min-w-0 flex-1">
-                <NameCell value={params.value ?? ""} status={normalizeTaskStatus(task.status)} onCommit={(next) => void updateTask(task, { title: next })} />
+                <NameCell
+                  value={params.value ?? ""}
+                  status={normalizeTaskStatus(task.status)}
+                  onCommit={(next) => void updateTask(task, { title: next })}
+                />
               </div>
               <button
                 type="button"
-                onClick={(event) => { event.stopPropagation(); onTaskOpen?.(task.id); }}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onTaskOpen?.(task.id);
+                }}
                 aria-label={`Open ${task.title}`}
                 title="Open task"
                 className="flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover/name:opacity-100 focus:opacity-100"
@@ -531,7 +764,12 @@ export function TaskTableView({
             <MultiAssigneeCell
               task={params.data as TaskRecord}
               options={memberOptions}
-              onChange={(ids) => void updateTask(params.data as TaskRecord, { assigneeUserIds: ids, assigneeUserId: ids[0] ?? "" })}
+              onChange={(ids) =>
+                void updateTask(params.data as TaskRecord, {
+                  assigneeUserIds: ids,
+                  assigneeUserId: ids[0] ?? "",
+                })
+              }
             />
           );
         },
@@ -541,12 +779,19 @@ export function TaskTableView({
         headerName: "Status",
         field: "status",
         minWidth: 150,
-        cellRenderer: (params: { data?: TaskRecord; value?: TaskRecord["status"] }) => {
+        cellRenderer: (params: {
+          data?: TaskRecord;
+          value?: TaskRecord["status"];
+        }) => {
           if (!params.data) return null;
           return (
             <StatusEditor
               value={normalizeTaskStatus(params.value)}
-              onChange={(next) => void updateTask(params.data as TaskRecord, { status: next as TaskRecord["status"] })}
+              onChange={(next) =>
+                void updateTask(params.data as TaskRecord, {
+                  status: next as TaskRecord["status"],
+                })
+              }
             />
           );
         },
@@ -559,9 +804,11 @@ export function TaskTableView({
         cellRenderer: (params: { data?: TaskRecord; value?: string }) => {
           if (!params.data) return null;
           return (
-            <DateEditor
-              value={params.value ?? null}
-              onChange={(next) => void updateTask(params.data as TaskRecord, { dueDate: next ?? "" })}
+            <TaskDateEditor
+              task={params.data as TaskRecord}
+              onChange={(changes) =>
+                void updateTask(params.data as TaskRecord, changes)
+              }
             />
           );
         },
@@ -571,14 +818,25 @@ export function TaskTableView({
         headerName: "Priority",
         field: "priority",
         minWidth: 150,
-        cellRenderer: (params: { data?: TaskRecord; value?: TaskRecord["priority"] }) => {
+        cellRenderer: (params: {
+          data?: TaskRecord;
+          value?: TaskRecord["priority"];
+        }) => {
           if (!params.data) return null;
           return (
             <PriorityEditor
               value={params.value ?? "normal"}
               clearable
-              onClear={() => void updateTask(params.data as TaskRecord, { priority: "normal" })}
-              onChange={(next) => void updateTask(params.data as TaskRecord, { priority: next as TaskRecord["priority"] })}
+              onClear={() =>
+                void updateTask(params.data as TaskRecord, {
+                  priority: "normal",
+                })
+              }
+              onChange={(next) =>
+                void updateTask(params.data as TaskRecord, {
+                  priority: next as TaskRecord["priority"],
+                })
+              }
             />
           );
         },
@@ -589,9 +847,15 @@ export function TaskTableView({
         field: "description",
         minWidth: 160,
         flex: 0.9,
-        cellRenderer: (params: { data?: TaskRecord }) => params.data ? (
-          <DescriptionCell task={params.data} onCommit={(description) => void updateTask(params.data as TaskRecord, { description })} />
-        ) : null,
+        cellRenderer: (params: { data?: TaskRecord }) =>
+          params.data ? (
+            <DescriptionCell
+              task={params.data}
+              onCommit={(description) =>
+                void updateTask(params.data as TaskRecord, { description })
+              }
+            />
+          ) : null,
       },
       {
         ...TASK_TABLE_COLUMN_DEFAULTS,
@@ -602,7 +866,13 @@ export function TaskTableView({
         maxWidth: 48,
         resizable: false,
         headerComponent: () => (
-          <button type="button" onClick={() => setFieldsOpen(true)} aria-label="Add task field" title="Add task field" className="flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground">
+          <button
+            type="button"
+            onClick={onOpenFields}
+            aria-label="Add task field"
+            title="Add task field"
+            className="flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
             <Plus className="size-3.5" />
           </button>
         ),
@@ -610,20 +880,25 @@ export function TaskTableView({
         cellClass: "justify-center",
       },
     ],
-    [memberOptions, onTaskOpen],
+    [memberOptions, onOpenFields, onTaskOpen],
   );
 
   const groupedSections = useMemo(() => {
-    const activeGroupBy: "status" | "priority" = groupBy === "priority" ? "priority" : "status";
-    const groupDefs = activeGroupBy === "priority" ? PRIORITY_GROUPS : STATUS_GROUPS;
+    const activeGroupBy: "status" | "priority" =
+      groupBy === "priority" ? "priority" : "status";
+    const groupDefs =
+      activeGroupBy === "priority" ? PRIORITY_GROUPS : STATUS_GROUPS;
     const sections = groupDefs.map((group) => {
       const groupRows = rows.filter((task) => {
-        if (activeGroupBy === "status") return normalizeTaskStatus(task.status) === group.key;
+        if (activeGroupBy === "status")
+          return normalizeTaskStatus(task.status) === group.key;
         return task.priority === group.key;
       });
       return { ...group, rows: sortPipelineTasks(groupRows) };
     });
-    return sortDirection === "ascending" ? sections.slice().reverse() : sections;
+    return sortDirection === "ascending"
+      ? sections.slice().reverse()
+      : sections;
   }, [groupBy, rows, sortDirection]);
 
   function toggleGroup(groupKey: string) {
@@ -635,6 +910,68 @@ export function TaskTableView({
     });
   }
 
+  function clearDragArmTimer() {
+    if (!dragArmTimer.current) return;
+    clearTimeout(dragArmTimer.current);
+    dragArmTimer.current = null;
+  }
+
+  function armRowDrag(
+    event: PointerEvent<HTMLElement>,
+    task: TaskRecord,
+    group: string,
+  ) {
+    if (event.button !== 0) return;
+    // Pointer capture on the row steals the click from popover/select triggers.
+    // Property controls must remain immediately interactive; row dragging only
+    // arms from the non-interactive surface of the row.
+    if (
+      event.target instanceof Element &&
+      event.target.closest(ROW_DRAG_INTERACTIVE_SELECTOR)
+    ) {
+      return;
+    }
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    clearDragArmTimer();
+    setSuppressClickTaskId(null);
+    dragArmTimer.current = setTimeout(() => {
+      setDragArm({ id: task.id, group });
+      setSuppressClickTaskId(task.id);
+    }, ROW_LONG_PRESS_DRAG_DELAY_MS);
+  }
+
+  function cancelRowDragArm() {
+    clearDragArmTimer();
+    if (!dragging) setDragArm(null);
+  }
+
+  function startRowDrag(event: DragEvent<HTMLElement>, task: TaskRecord) {
+    if (dragArm?.id !== task.id) {
+      event.preventDefault();
+      return;
+    }
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", task.id);
+    setDragging(dragArm);
+  }
+
+  function finishRowDrag() {
+    clearDragArmTimer();
+    setDragging(null);
+    setDragArm(null);
+  }
+
+  function suppressArmedRowClick(
+    event: MouseEvent<HTMLElement>,
+    taskId: string,
+  ) {
+    if (suppressClickTaskId !== taskId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setSuppressClickTaskId(null);
+    setDragArm(null);
+  }
+
   function dropTask(targetGroup: string, targetIndex: number) {
     if (!dragging) return;
     if (groupBy === "status") {
@@ -642,13 +979,19 @@ export function TaskTableView({
     }
     if (groupBy === "priority") {
       const task = rows.find((row) => row.id === dragging.id);
-      if (task) void updateTask(task, { priority: targetGroup as TaskRecord["priority"] });
+      if (task)
+        void updateTask(task, {
+          priority: targetGroup as TaskRecord["priority"],
+        });
     }
     setDragging(null);
+    setDragArm(null);
   }
 
   async function completeSelected() {
-    await Promise.all(selectedTasks.map((task) => updateTask(task, { status: "done" })));
+    await Promise.all(
+      selectedTasks.map((task) => updateTask(task, { status: "done" })),
+    );
     tableRef.current?.api?.deselectAll();
     setSelectedTasks([]);
   }
@@ -660,12 +1003,12 @@ export function TaskTableView({
   }
 
   const flatTable = (
-    <div className="min-w-[980px] overflow-hidden rounded-lg">
+    <div className="min-w-[980px] overflow-hidden rounded-md border border-[color-mix(in_srgb,var(--q-border)_78%,transparent)]">
       <QentrahTable
         ref={tableRef}
         rows={rows}
         columns={columns}
-        density="normal"
+        density="compact"
         theme="auto"
         height="auto"
         domLayout="autoHeight"
@@ -677,7 +1020,9 @@ export function TaskTableView({
           enableClickSelection: false,
         }}
         suppressRowClickSelection
-        onSelectionChanged={(event) => setSelectedTasks(event.api.getSelectedRows())}
+        onSelectionChanged={(event) =>
+          setSelectedTasks(event.api.getSelectedRows())
+        }
         animateRows={false}
         emptyMessage="No tasks"
         className="qentrah-task-table"
@@ -688,89 +1033,178 @@ export function TaskTableView({
   );
 
   const groupedTable = (
-    <div className="min-w-[980px] overflow-hidden rounded-lg">
-      <div
-        className="grid h-8 items-center border-b border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[var(--q-bg-secondary)] text-[11px] font-semibold text-muted-foreground"
-        style={{ gridTemplateColumns: TASK_TABLE_COLUMNS }}
-      >
-        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)]" />
-        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Name</div>
-        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Assignee</div>
-        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Status</div>
-        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Due date</div>
-        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Priority</div>
-        <div className="border-r border-[color-mix(in_srgb,var(--q-border)_72%,transparent)] px-3">Description</div>
-        <div className="px-3">+</div>
-      </div>
-
-      <div className="space-y-2 p-2">
-        {groupedSections.map((group) => {
-          const isCollapsed = collapsedGroups.has(group.key);
-          return (
-            <section
-              key={group.key}
-              className="overflow-hidden rounded-md border border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[var(--q-bg)]"
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={() => dropTask(group.key, group.rows.length)}
-            >
-              <button
-                type="button"
-                onClick={() => toggleGroup(group.key)}
-                className="flex h-8 w-full items-center gap-2 border-b border-[color-mix(in_srgb,var(--q-border)_65%,transparent)] bg-[var(--q-bg-secondary)] px-3 text-left transition-colors hover:bg-[var(--q-bg-tertiary)]"
+    <div className="min-w-[980px] bg-[var(--q-bg)]">
+      <div className="space-y-5">
+        {groupedSections
+          .filter((group) => group.rows.length > 0)
+          .map((group) => {
+            const isCollapsed = collapsedGroups.has(group.key);
+            const groupedByStatus = groupBy === "status";
+            return (
+              <section
+                key={group.key}
+                className="overflow-hidden rounded-md border border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[var(--q-bg)]"
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={() => dropTask(group.key, group.rows.length)}
               >
-                {isCollapsed ? <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
-                <span className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-black uppercase text-white ${group.color}`}>
-                  {group.label}
-                </span>
-                <span className="text-[11px] font-semibold text-muted-foreground">{group.rows.length}</span>
-              </button>
-              {!isCollapsed ? (
-                <>
-                  {group.rows.map((task, index) => (
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.key)}
+                  className="group flex h-9 w-full items-center gap-2 bg-[var(--q-bg)] px-3 text-left transition-colors hover:bg-[var(--q-bg-secondary)]"
+                >
+                  {isCollapsed ? (
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                  )}
+                  <span
+                    className={`inline-flex h-4 items-center rounded px-1.5 text-[9px] font-black uppercase leading-none text-white ${group.color}`}
+                  >
+                    {group.label}
+                  </span>
+                  <span className="text-[11px] font-semibold text-muted-foreground">
+                    {group.rows.length}
+                  </span>
+                  <MoreHorizontal className="ml-1 size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                </button>
+                {!isCollapsed ? (
+                  <>
                     <div
-                      key={task.id}
-                      draggable
-                      onDragStart={() => setDragging({ id: task.id, group: groupBy === "priority" ? String(task.priority) : normalizeTaskStatus(task.status) })}
-                      onDragEnd={() => setDragging(null)}
-                      onDragOver={(event) => event.preventDefault()}
-                      onDrop={(event) => {
-                        event.stopPropagation();
-                        dropTask(group.key, index);
-                      }}
-                      className="group grid min-h-9 items-center border-b border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] text-[12px] last:border-b-0 hover:bg-muted/20"
-                      style={{ gridTemplateColumns: TASK_TABLE_COLUMNS }}
+                      className="grid h-7 items-center border-y border-[color-mix(in_srgb,var(--q-border)_62%,transparent)] bg-[var(--q-bg)] text-[10px] font-semibold text-muted-foreground"
+                      style={{ gridTemplateColumns: GROUPED_TASK_LIST_COLUMNS }}
                     >
-                      <div className="flex items-center justify-center gap-1 border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] text-muted-foreground">
-                        <GripVertical className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
-                        <span>{index + 1}</span>
+                      <div />
+                      <div className="px-3">Name</div>
+                      <div className="px-2">Assignee</div>
+                      <div className="px-2">Due date</div>
+                      <div className="px-2">
+                        {groupedByStatus ? "Priority" : "Status"}
                       </div>
-                      <div className="min-w-0 border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] px-2">
-                        <NameCell value={task.title} status={normalizeTaskStatus(task.status)} onCommit={(next) => void updateTask(task, { title: next })} />
-                      </div>
-                      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] px-2">
-                        <MultiAssigneeCell task={task} options={memberOptions} onChange={(ids) => void updateTask(task, { assigneeUserIds: ids, assigneeUserId: ids[0] ?? "" })} />
-                      </div>
-                      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] px-2">
-                        <StatusEditor value={normalizeTaskStatus(task.status)} onChange={(next) => void updateTask(task, { status: next as TaskRecord["status"] })} />
-                      </div>
-                      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] px-2">
-                        <DateEditor value={task.dueDate ?? null} onChange={(next) => void updateTask(task, { dueDate: next ?? "" })} />
-                      </div>
-                      <div className="border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] px-2">
-                        <PriorityEditor value={task.priority ?? "normal"} clearable onClear={() => void updateTask(task, { priority: "normal" })} onChange={(next) => void updateTask(task, { priority: next as TaskRecord["priority"] })} />
-                      </div>
-                      <div className="truncate border-r border-[color-mix(in_srgb,var(--q-border)_60%,transparent)] px-3 text-muted-foreground/70">
-                        {task.description?.trim() || "-"}
-                      </div>
-                      <div className="h-full" />
+                      <div className="px-3">Description</div>
+                      <div className="px-3">+</div>
                     </div>
-                  ))}
-                  <AddTaskRow onTaskCreate={onTaskCreate} defaults={groupBy === "status" ? { status: group.key as TaskRecord["status"] } : { priority: group.key as TaskRecord["priority"] }} />
-                </>
-              ) : null}
-            </section>
-          );
-        })}
+                    {group.rows.map((task, index) => (
+                      <div
+                        key={task.id}
+                        draggable={dragArm?.id === task.id}
+                        onPointerDown={(event) =>
+                          armRowDrag(
+                            event,
+                            task,
+                            groupBy === "priority"
+                              ? String(task.priority)
+                              : normalizeTaskStatus(task.status),
+                          )
+                        }
+                        onPointerUp={cancelRowDragArm}
+                        onPointerCancel={cancelRowDragArm}
+                        onClickCapture={(event) =>
+                          suppressArmedRowClick(event, task.id)
+                        }
+                        onDragStart={(event) => startRowDrag(event, task)}
+                        onDragEnd={finishRowDrag}
+                        onDragOver={(event) => event.preventDefault()}
+                        onDrop={(event) => {
+                          event.stopPropagation();
+                          dropTask(group.key, index);
+                        }}
+                        className={`group grid min-h-8 items-center border-b border-[color-mix(in_srgb,var(--q-border)_58%,transparent)] text-[11px] last:border-b-0 hover:bg-muted/20 ${
+                          dragArm?.id === task.id
+                            ? "cursor-grab select-none bg-muted/20"
+                            : ""
+                        }`}
+                        style={{
+                          gridTemplateColumns: GROUPED_TASK_LIST_COLUMNS,
+                        }}
+                      >
+                        <div className="flex items-center justify-center gap-1 text-muted-foreground">
+                          <button
+                            type="button"
+                            aria-label={`Drag ${task.title}`}
+                            title="Hold row to drag"
+                            onClick={(event) => event.stopPropagation()}
+                            className="flex size-5 cursor-grab items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:bg-muted active:cursor-grabbing group-hover:opacity-100 focus:opacity-100"
+                          >
+                            <GripVertical className="h-3.5 w-3.5" />
+                          </button>
+                          <Circle className="size-3 text-muted-foreground/70" />
+                        </div>
+                        <div className="min-w-0 px-2">
+                          <NameCell
+                            value={task.title}
+                            status={normalizeTaskStatus(task.status)}
+                            onCommit={(next) =>
+                              void updateTask(task, { title: next })
+                            }
+                          />
+                        </div>
+                        <div className="px-2">
+                          <MultiAssigneeCell
+                            task={task}
+                            options={memberOptions}
+                            onChange={(ids) =>
+                              void updateTask(task, {
+                                assigneeUserIds: ids,
+                                assigneeUserId: ids[0] ?? "",
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="px-2">
+                          <TaskDateEditor
+                            task={task}
+                            onChange={(changes) =>
+                              void updateTask(task, changes)
+                            }
+                          />
+                        </div>
+                        <div className="px-2">
+                          {groupedByStatus ? (
+                            <PriorityEditor
+                              value={task.priority ?? "normal"}
+                              clearable
+                              onClear={() =>
+                                void updateTask(task, { priority: "normal" })
+                              }
+                              onChange={(next) =>
+                                void updateTask(task, {
+                                  priority: next as TaskRecord["priority"],
+                                })
+                              }
+                            />
+                          ) : (
+                            <StatusEditor
+                              value={normalizeTaskStatus(task.status)}
+                              onChange={(next) =>
+                                void updateTask(task, {
+                                  status: next as TaskRecord["status"],
+                                })
+                              }
+                            />
+                          )}
+                        </div>
+                        <div className="truncate px-3 text-[11px] text-muted-foreground/70">
+                          {plainText(task.description) || "-"}
+                        </div>
+                        <div className="h-full" />
+                      </div>
+                    ))}
+                    <AddTaskRow
+                      onTaskCreate={onTaskCreate}
+                      columns={GROUPED_TASK_LIST_COLUMNS}
+                      label="Add Task"
+                      trailingEmptyCells={4}
+                      defaults={
+                        groupBy === "status"
+                          ? { status: group.key as TaskRecord["status"] }
+                          : { priority: group.key as TaskRecord["priority"] }
+                      }
+                    />
+                  </>
+                ) : null}
+              </section>
+            );
+          })}
       </div>
     </div>
   );
@@ -788,10 +1222,9 @@ export function TaskTableView({
         onCompleteSelected={() => void completeSelected()}
         onDeleteSelected={() => void deleteSelected()}
       />
-      <div className="pt-2">{groupBy === "none" ? flatTable : groupedTable}</div>
-      {organizationId ? (
-        <TaskTableFieldsPanel organizationId={organizationId} open={fieldsOpen} onClose={() => setFieldsOpen(false)} />
-      ) : null}
+      <div className="pt-2">
+        {groupBy === "none" ? flatTable : groupedTable}
+      </div>
     </div>
   );
 }

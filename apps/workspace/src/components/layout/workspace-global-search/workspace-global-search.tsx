@@ -26,6 +26,7 @@ import { CmdRow } from "./components/cmd-row";
 import { SearchFilterTabs, type FilterTab } from "./components/search-filter-tabs";
 import { SearchResultsSkeleton } from "./components/search-results-skeleton";
 import { InlineAiAnswer } from "./components/inline-ai-answer";
+import { useQuickChat } from "@/components/layout/quick-chat-context";
 
 const AI_TRIGGER_DELAY_MS = 2500;
 
@@ -36,6 +37,7 @@ export function WorkspaceGlobalSearch() {
   const t = useTranslations("Workspace");
   const tSidebar = useTranslations("Sidebar");
   const session = useAuthSession();
+  const { isOpen: isQuickChatOpen, toggle: toggleQuickChat } = useQuickChat();
   const organizationId =
     session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
 
@@ -43,6 +45,7 @@ export function WorkspaceGlobalSearch() {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const [aiQuery, setAiQuery] = useState<string | null>(null);
+  const [aiMode, setAiMode] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -161,17 +164,22 @@ export function WorkspaceGlobalSearch() {
     setQuery("");
     setAiQuery(null);
     setActiveTab("all");
+    setAiMode(false);
   }, []);
 
   const handleAskAi = useCallback(() => {
-    if (!query.trim()) return;
-    setAiQuery(query.trim());
+    setAiMode(true);
+    if (query.trim()) setAiQuery(query.trim());
   }, [query]);
 
   const handleContinueWithAi = useCallback((q: string) => {
     closeDialog();
     router.push(`/ai?q=${encodeURIComponent(q)}`);
   }, [closeDialog, router]);
+
+  const handleOpenAiPanel = useCallback(() => {
+    toggleQuickChat();
+  }, [toggleQuickChat]);
 
   // ── Render logic ─────────────────────────────────────────────────────────
   const showInlineAi = Boolean(aiQuery);
@@ -184,7 +192,7 @@ export function WorkspaceGlobalSearch() {
   return (
     <>
       {/* ── Topbar trigger ──────────────────────────────────────────────── */}
-      <div className="flex h-8 w-full max-w-[420px] items-center rounded-md border border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-bg-secondary)] px-2 transition-colors hover:bg-[var(--q-bg-tertiary)]">
+      <div className="flex h-9 w-full max-w-[440px] items-center rounded-lg bg-[#F9F9F9] px-2.5 transition-colors hover:bg-[#F3F3F3] dark:bg-[#101010] dark:hover:bg-[#181818]">
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -196,13 +204,27 @@ export function WorkspaceGlobalSearch() {
             {t("searchShortcut")}
           </span>
         </button>
+        <button
+          type="button"
+          onClick={handleOpenAiPanel}
+          data-active={isQuickChatOpen}
+          aria-expanded={isQuickChatOpen}
+          aria-label="Open AI panel"
+          title="Open AI panel"
+          className="q-ai-panel-chip ms-2 inline-flex h-6 shrink-0 items-center gap-1 rounded-md border border-transparent px-2 text-[10px] font-semibold text-[#4d4d4d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20 dark:text-[#d5d5d5]"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/ai/logo.png" alt="" width={12} height={12} className="h-3 w-3 object-contain" />
+          Ask AI
+        </button>
       </div>
 
       {/* ── Command palette ──────────────────────────────────────────────── */}
       <Dialog open={open} onOpenChange={(v) => { if (!v) closeDialog(); }}>
         <DialogContent
           className={cn(
-            "max-w-[680px] gap-0 overflow-hidden rounded-2xl border border-border/30 bg-card p-0 text-text-primary shadow-2xl",
+            "max-w-[760px] gap-0 overflow-hidden rounded-xl border border-border/70 bg-background p-0 text-text-primary shadow-[0_24px_70px_rgba(0,0,0,.22)]",
+            aiMode && "border-violet-400/35",
             isRtl && "font-cairo",
           )}
           containerClassName="items-start pt-[12vh]"
@@ -214,31 +236,34 @@ export function WorkspaceGlobalSearch() {
           </DialogHeader>
 
           {/* Input row */}
-          <div className="flex items-center gap-2.5 px-4 py-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/ai/logo.png"
-              alt=""
-              width={16}
-              height={16}
-              className="h-4 w-4 shrink-0 object-contain opacity-50"
-            />
+          <div className={cn("flex items-center gap-2.5 border-b border-border/60 px-3 py-3", aiMode && "bg-[var(--q-sidebar)]")}>
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search, run a command, or ask a question..."
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && aiMode && query.trim()) handleAskAi();
+              }}
+              placeholder={aiMode ? "Ask Qentrah AI anything..." : "Search, run a command, or ask a question..."}
               className="min-w-0 flex-1 bg-transparent text-[14px] font-medium text-text-primary outline-none placeholder:text-text-muted"
             />
             {isLoading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-text-muted" />}
-            <AskAiButton onClick={handleAskAi} disabled={!query.trim()} />
+            <AskAiButton onClick={handleAskAi} active={aiMode} />
           </div>
 
           {/* Filter tabs */}
-          <SearchFilterTabs active={activeTab} onChange={setActiveTab} />
+          <SearchFilterTabs
+            active={activeTab}
+            onChange={(tab) => {
+              setActiveTab(tab);
+              setAiMode(false);
+              setAiQuery(null);
+            }}
+          />
 
           {/* Results area */}
-          <div className="max-h-[58vh] overflow-y-auto">
+          <div className="max-h-[52vh] min-h-56 overflow-y-auto">
 
             {/* Inline AI answer */}
             {showInlineAi && (
@@ -354,6 +379,17 @@ export function WorkspaceGlobalSearch() {
                 {t("searchError")}
               </p>
             )}
+          </div>
+
+          <div className="flex items-center justify-between border-t border-border/60 px-3 py-2 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <span>Press</span>
+              <kbd className="rounded border border-border bg-[var(--q-sidebar)] px-1 py-0.5 font-mono">↵</kbd>
+              <span>to open</span>
+              <kbd className="ml-1 rounded border border-border bg-[var(--q-sidebar)] px-1 py-0.5 font-mono">Esc</kbd>
+              <span>to close</span>
+            </div>
+            <span>Search your Qentrah workspace</span>
           </div>
         </DialogContent>
       </Dialog>

@@ -19,6 +19,7 @@ export function PublicSection({
   return (
     <section
       id={id}
+      data-tone={tone}
       className={cn(
         "px-6 py-20 transition-colors duration-500 md:py-32",
         // Very dark - dark sections with light text

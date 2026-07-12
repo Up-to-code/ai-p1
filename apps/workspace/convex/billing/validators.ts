@@ -35,6 +35,24 @@ export const billingPlanValidator = v.object({
   currency: v.string(),
   periodDays: v.number(),
   checkoutMode: v.union(v.literal("provider"), v.literal("contact_sales")),
+  access: v.object({
+    memberLimit: v.union(v.number(), v.null()),
+    aiCreditLimit: v.number(),
+    aiCardLimit: v.number(),
+    automationRuns: v.number(),
+    auditLogDays: v.union(v.number(), v.null()),
+    customRoles: v.boolean(),
+    sso: v.boolean(),
+    support: v.union(
+      v.literal("community"),
+      v.literal("email"),
+      v.literal("priority"),
+      v.literal("dedicated"),
+    ),
+  }),
+  trialDays: v.number(),
+  includedMemberCount: v.number(),
+  additionalMemberAmount: v.union(v.number(), v.null()),
 });
 
 export const organizationSubscriptionValidator = v.object({

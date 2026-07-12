@@ -107,8 +107,17 @@ export function CellPopover({
     <>
       <div
         ref={triggerRef}
+        role="button"
+        tabIndex={0}
+        aria-expanded={open}
         className="inline-flex max-w-full"
         onClick={(e) => {
+          e.stopPropagation()
+          onOpenChange(!open)
+        }}
+        onKeyDown={(e) => {
+          if (e.key !== "Enter" && e.key !== " ") return
+          e.preventDefault()
           e.stopPropagation()
           onOpenChange(!open)
         }}

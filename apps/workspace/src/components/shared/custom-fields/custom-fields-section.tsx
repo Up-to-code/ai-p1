@@ -3,16 +3,16 @@
 import { useMemo } from "react";
 import { useCustomFieldDefinitionsQuery, useCustomFieldValuesQuery, type CustomFieldDefinition, type CustomFieldValue } from "@/domains/custom-fields/api/custom-fields";
 import { CustomFieldRenderer } from "./custom-field-renderer";
-import { Settings } from "lucide-react";
-import { Link } from "@/i18n/routing";
+import { InlineCustomFieldCreator } from "./inline-custom-field-creator";
 
 interface CustomFieldsSectionProps {
   recordType: string;
   recordId: string;
   editable?: boolean;
+  allowCreate?: boolean;
 }
 
-export function CustomFieldsSection({ recordType, recordId, editable = true }: CustomFieldsSectionProps) {
+export function CustomFieldsSection({ recordType, recordId, editable = true, allowCreate = false }: CustomFieldsSectionProps) {
   const definitionsQuery = useCustomFieldDefinitionsQuery(recordType);
   const valuesQuery = useCustomFieldValuesQuery(recordType, recordId);
 
@@ -49,19 +49,14 @@ export function CustomFieldsSection({ recordType, recordId, editable = true }: C
     return (
       <div className="rounded-xl border border-dashed border-border p-6 text-center">
         <p className="text-sm text-muted-foreground">No custom fields configured.</p>
-        <Link
-          href="/organization?tab=profile"
-          className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
-        >
-          <Settings className="h-3 w-3" />
-          Add custom fields in settings
-        </Link>
+        {allowCreate ? <div className="mt-3 flex justify-center"><InlineCustomFieldCreator recordType={recordType as "task"} /></div> : null}
       </div>
     );
   }
 
   return (
     <div className="space-y-0.5">
+      {allowCreate ? <div className="mb-2 flex justify-end"><InlineCustomFieldCreator recordType={recordType as "task"} compact /></div> : null}
       {visibleDefinitions.map((definition: CustomFieldDefinition) => (
         <CustomFieldRenderer
           key={definition.id}

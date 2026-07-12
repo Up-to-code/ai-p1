@@ -10,9 +10,9 @@ import {
   Link,
   Search,
   Plus,
-  ListTodo,
-  UserRound,
-  CalendarClock,
+  Sparkles,
+  Plug,
+  ChevronRight,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useWorkspaceRouter } from "@/hooks/use-workspace-router";
@@ -131,61 +131,41 @@ export function SidebarChatPanel() {
 
   return (
     <SidebarPanelLayout
-      title="AI agent"
+      title="AI"
       bodyClassName="p-0"
+      showModeSwitch={false}
       header={
-        <div className="p-2">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search chats" value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 rounded-md pl-8 text-xs shadow-none" />
-          </div>
+        <div className="px-2.5 py-3">
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className="flex h-9 w-full items-center gap-2 rounded-lg bg-[var(--q-sidebar-accent)] px-2.5 text-xs font-semibold text-[var(--q-sidebar-accent-foreground)]"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span className="flex-1 text-left">Ask or create</span>
+            <ChevronRight className="h-3.5 w-3.5 opacity-50" />
+          </button>
         </div>
       }
       primaryAction={
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                aria-label="Quick access"
-                title="Quick access"
-                className="flex h-8 w-full items-center gap-2 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-[var(--q-bg-tertiary)] hover:text-foreground"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                New chat or quick action
-              </button>
-            }
-          />
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={handleNewChat}>
-              <Plus className="mr-2 h-3.5 w-3.5" />
-              New chat
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push("/tasks") }>
-              <ListTodo className="mr-2 h-3.5 w-3.5" />
-              All tasks
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push("/tasks?filter=my") }>
-              <UserRound className="mr-2 h-3.5 w-3.5" />
-              My tasks
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push("/tasks?filter=assigned") }>
-              <UserRound className="mr-2 h-3.5 w-3.5" />
-              Assigned by me
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push("/tasks?filter=today") }>
-              <CalendarClock className="mr-2 h-3.5 w-3.5" />
-              Due today
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input placeholder="Search recent chats" value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 rounded-md border-transparent bg-transparent pl-8 text-[11px] shadow-none focus-visible:border-[var(--q-sidebar-border)] focus-visible:bg-[var(--q-sidebar-accent)] focus-visible:ring-0" />
+        </div>
+      }
+      footer={
+        <button type="button" onClick={() => router.push("/web-apps")} className="flex h-9 w-full items-center gap-2 px-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
+          <Plug className="h-3.5 w-3.5" />
+          <span className="flex-1 text-left">Connections</span>
+          <ChevronRight className="h-3.5 w-3.5 opacity-50" />
+        </button>
       }
     >
       <div className="flex flex-1 flex-col overflow-hidden">
-        <p className="px-3 pb-1 pt-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-          Recent
-        </p>
+        <div className="flex items-center justify-between px-3 pb-1.5 pt-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Recent</p>
+          {!loading && threads.length > 0 ? <span className="text-[10px] tabular-nums text-muted-foreground/60">{threads.length}</span> : null}
+        </div>
 
         <div className="flex-1 overflow-y-auto px-1.5 pb-1.5">
           {loading && orgId ? (
@@ -204,10 +184,10 @@ export function SidebarChatPanel() {
                 return (
                   <div
                     key={thread.id}
-                    className={`group flex items-center gap-1 rounded-md border px-2 py-2 text-left text-xs transition-colors cursor-pointer ${
+                    className={`group flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2.5 text-left text-xs transition-colors ${
                       isActive
-                        ? "border-primary/30 bg-primary/10 text-foreground"
-                        : "border-transparent text-muted-foreground hover:border-border hover:bg-card hover:text-foreground"
+                        ? "bg-[var(--q-sidebar-accent)] text-[var(--q-sidebar-accent-foreground)]"
+                        : "text-muted-foreground hover:bg-[var(--q-sidebar-accent)] hover:text-foreground"
                     }`}
                     onClick={() => {
                       if (renamingId !== thread.id) {
@@ -219,7 +199,7 @@ export function SidebarChatPanel() {
                       }
                     }}
                   >
-                    <MessageSquare className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : ""}`} />
+                    <MessageSquare className="h-3.5 w-3.5 shrink-0" />
                     {renamingId === thread.id ? (
                       <input
                         type="text"
@@ -304,17 +284,11 @@ export function SidebarChatPanel() {
               </p>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <MessageSquare
-                className="mb-2 h-6 w-6 text-muted-foreground/30"
-                strokeWidth={1.5}
-              />
-              <p className="text-xs font-medium text-muted-foreground">
-                No conversations yet
-              </p>
-              <p className="mt-1 text-[11px] text-muted-foreground/50">
-                Start a new conversation to see it here
-              </p>
+            <div className="mx-2 mt-2 flex flex-col items-start rounded-xl bg-[var(--q-sidebar-accent)] p-4 text-left">
+              <span className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-background text-foreground"><Sparkles className="h-4 w-4" /></span>
+              <p className="text-xs font-semibold text-foreground">Start with Qentrah AI</p>
+              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">Ask about your workspace, plan work, or take action with context.</p>
+              <button type="button" onClick={handleNewChat} className="mt-3 text-[11px] font-semibold text-foreground hover:underline">Start conversation →</button>
             </div>
           )}
         </div>

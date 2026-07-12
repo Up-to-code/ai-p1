@@ -88,7 +88,7 @@ export function SidebarSecondaryPanel() {
   return (
     <div
       className={cn(
-        "relative flex h-screen shrink-0 flex-col overflow-hidden border-r border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-bg-secondary)] transition-[width] duration-200 ease-in-out dark:bg-[#0b0b0c]",
+        "pointer-events-auto absolute inset-y-0 left-0 z-10 flex h-dvh shrink-0 flex-col overflow-hidden border-r border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-sidebar)] shadow-2xl transition-[width] duration-200 ease-in-out md:relative md:z-auto md:h-screen md:shadow-none",
         isOpen ? "" : "w-0 border-0",
       )}
       style={{ width: isOpen ? width : 0 }}
@@ -115,7 +115,7 @@ export function SidebarSecondaryPanel() {
           type="button"
           aria-label="Resize sidebar"
           onPointerDown={startResize}
-          className="absolute right-0 top-0 h-full w-1 cursor-col-resize bg-transparent hover:bg-[var(--q-bg-tertiary)]"
+          className="absolute right-0 top-0 hidden h-full w-1 cursor-col-resize bg-transparent hover:bg-[var(--q-bg-tertiary)] md:block"
         />
       ) : null}
     </div>

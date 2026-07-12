@@ -2,7 +2,7 @@
 
 import { createAuthClient } from "better-auth/react";
 import { convexClient } from "@convex-dev/better-auth/client/plugins";
-import { emailOTPClient, organizationClient } from "better-auth/client/plugins";
+import { emailOTPClient, lastLoginMethodClient, organizationClient } from "better-auth/client/plugins";
 import { oauthProviderClient } from "@better-auth/oauth-provider/client";
 
 export const authClient = createAuthClient({
@@ -11,6 +11,7 @@ export const authClient = createAuthClient({
     convexClient(),
     emailOTPClient(),
     organizationClient(),
+    lastLoginMethodClient({ domain: ".qentrah.com" }),
     oauthProviderClient(),
   ],
 });

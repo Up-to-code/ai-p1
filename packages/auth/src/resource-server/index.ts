@@ -1,3 +1,3 @@
-export * from "./jwks";
-export * from "./require-scopes";
-export * from "./verify-access-token";
+export * from "./jwks.js";
+export * from "./require-scopes.js";
+export * from "./verify-access-token.js";

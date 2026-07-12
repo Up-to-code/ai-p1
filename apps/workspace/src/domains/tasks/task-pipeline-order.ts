@@ -66,8 +66,12 @@ export function taskFormValuesForPipeline(
     priority: task.priority,
     visibility: task.visibility ?? "team",
     assigneeUserId: task.assigneeUserId ?? "",
+    assigneeUserIds:
+      task.assigneeUserIds ??
+      (task.assigneeUserId ? [task.assigneeUserId] : []),
     clientId: task.clientId ?? "",
     projectId: task.projectId ?? "",
+    spaceId: task.spaceId ?? "",
     startDate: task.startDate ?? "",
     dueDate: task.dueDate ?? "",
     description: task.description ?? "",

@@ -2,8 +2,6 @@ import { ActivityIndicator, Alert, AppState, Linking, Platform, Pressable, Style
 import { Redirect, useIsFocused, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Animated, { FadeIn } from "react-native-reanimated";
-import { useSSO } from "@clerk/expo";
-
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { isWorkspaceAuthConfigured } from "@/auth/authClient";
@@ -18,7 +16,6 @@ import { sanitizeAuthCallback } from "@/auth/authNavigation";
 import { useMobileAuthGate } from "@/auth/mobileAuthGate";
 import {
   signInWithWorkspaceSocialProvider,
-  type SocialAuthFlow,
 } from "@/auth/socialAuth";
 import { AppBootScreen } from "@/shell/components/AppBootScreen";
 import {
@@ -126,9 +123,8 @@ function GoogleButton({ disabled, loading, onSignIn, styles, colors }: {
   disabled: boolean;
   loading: boolean;
   styles: ReturnType<typeof createStyles>;
-  onSignIn: (flow: SocialAuthFlow) => void;
+  onSignIn: () => void;
 }) {
-  const sso = useSSO();
   return (
     <NativeAuthButton
       colors={colors}
@@ -136,7 +132,7 @@ function GoogleButton({ disabled, loading, onSignIn, styles, colors }: {
       icon={<GoogleIcon size={20} />}
       label={loading ? "Connecting..." : "Continue with Google"}
       loading={loading}
-      onPress={() => onSignIn(sso)}
+      onPress={onSignIn}
       styles={styles}
       testID="auth.continue_google"
     />
@@ -148,9 +144,8 @@ function AppleButton({ disabled, loading, onSignIn, styles, colors }: {
   disabled: boolean;
   loading: boolean;
   styles: ReturnType<typeof createStyles>;
-  onSignIn: (flow: SocialAuthFlow) => void;
+  onSignIn: () => void;
 }) {
-  const sso = useSSO();
   if (Platform.OS !== "ios") return null;
 
   return (
@@ -160,7 +155,7 @@ function AppleButton({ disabled, loading, onSignIn, styles, colors }: {
       icon={<AppleIcon size={18} color={colors.background} />}
       label={loading ? "Connecting..." : "Continue with Apple"}
       loading={loading}
-      onPress={() => onSignIn(sso)}
+      onPress={onSignIn}
       primary
       styles={styles}
       testID="auth.continue_apple"
@@ -286,13 +281,13 @@ export default function AuthScreen() {
     setEmailSheetMode(mode);
   };
 
-  const handleSocialSignIn = async (flow: SocialAuthFlow, provider: "apple" | "google") => {
+  const handleSocialSignIn = async (provider: "apple" | "google") => {
     if (signInInFlightRef.current || sessionHandoffPending || !ensureAuthConfigured()) return;
     signInInFlightRef.current = true;
     setSessionHandoffPending(false);
     setBusyProvider(provider);
     try {
-      await signInWithWorkspaceSocialProvider(flow, provider);
+      await signInWithWorkspaceSocialProvider(provider);
       markAuthSessionActive();
       setSessionHandoffPending(true);
     } catch (error) {
@@ -336,8 +331,8 @@ export default function AuthScreen() {
         </View>
 
         <View style={[styles.actions, { paddingBottom: Math.max(insets.bottom + 18, 28) }]}>
-          <AppleButton colors={colors} disabled={authBusy} loading={busyProvider === "apple"} styles={styles} onSignIn={(flow) => void handleSocialSignIn(flow, "apple")} />
-          <GoogleButton colors={colors} disabled={authBusy} loading={busyProvider === "google"} styles={styles} onSignIn={(flow) => void handleSocialSignIn(flow, "google")} />
+          <AppleButton colors={colors} disabled={authBusy} loading={busyProvider === "apple"} styles={styles} onSignIn={() => void handleSocialSignIn("apple")} />
+          <GoogleButton colors={colors} disabled={authBusy} loading={busyProvider === "google"} styles={styles} onSignIn={() => void handleSocialSignIn("google")} />
           <NativeAuthButton
             colors={colors}
             disabled={authBusy}

@@ -12,6 +12,7 @@ import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useAppLocalization } from "@/foundation/localization";
 import { useWorkspaceAccess } from "@/auth/useWorkspaceAccess";
 import { shouldResetThreadForOrganizationSwitch, workspaceOrganizationLabel } from "@/auth/workspaceAccess";
+import { canManageWorkspaceMembers } from "@/auth/workspace-roles";
 import { mirrorIcon } from "@/foundation/utils/layoutDirection";
 import { useAppStore } from "@/store";
 import { useOrganizationProfile } from "@/persistence/api/conversationData";
@@ -32,8 +33,17 @@ export default function OrganizationScreen() {
       workspace.activeOrganization,
       t.workspaceAccess.untitledWorkspace,
     );
+  const activeOrganizationWithRole = workspace.organizations.find(
+    (organization) => organization.id === workspace.organizationId,
+  ) ?? workspace.activeOrganization;
+  const canManageMembers = canManageWorkspaceMembers(activeOrganizationWithRole);
 
   const handleCreateInviteLink = async () => {
+    if (!canManageMembers) {
+      Alert.alert(t.workspaceAccess.errorTitle, t.workspaceAccess.errorBody);
+      return;
+    }
+
     if (!workspace.organizationId) {
       router.push("/(auth)/choose-workspace" as never);
       return;
@@ -99,15 +109,17 @@ export default function OrganizationScreen() {
             colors={colors}
             isRTL={isRTL}
           />
-          <ActionRow
-            testID="organization.invite"
-            icon={<Link size={24} color={colors.textPrimary} />}
-            title={t.workspaceAccess.createInviteLink}
-            description={t.workspaceAccess.organizationSettingsBody}
-            colors={colors}
-            isRTL={isRTL}
-            onPress={() => void handleCreateInviteLink()}
-          />
+          {canManageMembers ? (
+            <ActionRow
+              testID="organization.invite"
+              icon={<Link size={24} color={colors.textPrimary} />}
+              title={t.workspaceAccess.createInviteLink}
+              description={t.workspaceAccess.organizationSettingsBody}
+              colors={colors}
+              isRTL={isRTL}
+              onPress={() => void handleCreateInviteLink()}
+            />
+          ) : null}
         </View>
 
         <View style={styles.section}>

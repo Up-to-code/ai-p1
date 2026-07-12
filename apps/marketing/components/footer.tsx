@@ -4,7 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import { useLocale } from "next-intl";
 
 import { Link } from "@/i18n/routing";
-import { BrandMark } from "@/components/logo";
+import { Logo } from "@/components/logo";
 import { publicSeoLinks } from "@/lib/public-links";
 import { marketingFooter, isLocale } from "@/lib/content";
 
@@ -39,15 +39,10 @@ export default function Footer() {
       <div className="mx-auto max-w-(--breakpoint-xl)">
         <div className="flex flex-col items-start justify-between gap-x-10 gap-y-10 px-6 py-12 sm:flex-row xl:px-0">
           <div className="max-w-sm">
-            <Link href="/" className="inline-flex items-center gap-3">
-              <BrandMark className="h-5 w-5" />
-              <span>
-                <span className="block text-lg font-black tracking-tight text-[var(--q-text-primary)]">qentrah</span>
-                <span className="block text-[9px] font-black uppercase tracking-[0.2em] text-[var(--q-text-secondary)]">
-                  {footer.tagline}
-                </span>
-              </span>
-            </Link>
+            <Logo />
+            <span className="mt-3 block text-[9px] font-semibold uppercase tracking-[0.18em] text-[var(--q-text-secondary)]">
+              {footer.tagline}
+            </span>
 
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-[var(--q-text-secondary)]">
               {footer.description}

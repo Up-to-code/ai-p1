@@ -66,7 +66,7 @@ export function MarkdownText({
                       ]}
                     >
                       {getDirectionalTextAnchor(isRtl ? "rtl" : "ltr")}
-                      {parseInlineMarkdown(cell, lineIdx + cellIndex, onBadgePress)}
+                      {parseInlineMarkdown(cell, lineIdx + cellIndex, colors.accent, onBadgePress)}
                     </Text>
                   );
                 })}
@@ -87,7 +87,7 @@ export function MarkdownText({
                       ]}
                     >
                       {getDirectionalTextAnchor(isRtl ? "rtl" : "ltr")}
-                      {parseInlineMarkdown(cell, lineIdx + rowIndex + cellIndex, onBadgePress)}
+                      {parseInlineMarkdown(cell, lineIdx + rowIndex + cellIndex, colors.accent, onBadgePress)}
                     </Text>
                   );
                   })}
@@ -130,7 +130,7 @@ export function MarkdownText({
       const isListItem = line.trim().match(/^(\d+\.|•|-)\s/);
       const headerMatch = line.trim().match(/^(#{1,3})\s(.*)/);
       const isRtl = detectTextBlockDirection(line) === "rtl";
-      const renderedLine = parseInlineMarkdown(line, lineIdx, onBadgePress);
+      const renderedLine = parseInlineMarkdown(line, lineIdx, colors.accent, onBadgePress);
 
       if (headerMatch) {
         const [, hashes, content] = headerMatch;
@@ -148,7 +148,7 @@ export function MarkdownText({
             ]}
           >
             {getDirectionalTextAnchor(isRtl ? "rtl" : "ltr")}
-            {parseInlineMarkdown(content, lineIdx)}
+            {parseInlineMarkdown(content, lineIdx, colors.accent)}
           </Text>
         );
         continue;
@@ -161,7 +161,7 @@ export function MarkdownText({
             <Text tone={tone} style={[styles.bulletPoint, isRtl && styles.rtlText]}>•</Text>
             <Text tone={tone} selectable={true} style={[styles.baseText, styles.listText, style, isRtl && styles.listTextRtl]}>
               {getDirectionalTextAnchor(isRtl ? "rtl" : "ltr")}
-              {parseInlineMarkdown(listText, lineIdx, onBadgePress)}
+              {parseInlineMarkdown(listText, lineIdx, colors.accent, onBadgePress)}
             </Text>
           </View>
         );
@@ -187,7 +187,7 @@ export function MarkdownText({
     }
 
     return elements;
-  }, [colors.background, contentWidth, onBadgePress, text, style, tone]);
+  }, [colors.accent, colors.background, contentWidth, onBadgePress, text, style, tone]);
 
   return <View style={[styles.container, { width: contentWidth, maxWidth: "100%" }]}>{renderedContent}</View>;
 }
@@ -195,7 +195,7 @@ export function MarkdownText({
 /**
  * Parses a string for **bold** and *italic* tokens and returns a tree of Text components.
  */
-function parseInlineMarkdown(line: string, lineKey: number, onBadgePress?: (query: string) => void) {
+function parseInlineMarkdown(line: string, lineKey: number, accentColor: string, onBadgePress?: (query: string) => void) {
   // Regex: Badge [[t]](q), Bold (** or __), Italic (* or _), Link [t](u), Hashtag #w
   const regex = /(\[\[.*?\]\]\(.*?\)|\[.*?\]\(.*?\)|#\w+|\*\*.*?\*\*|__.*?__|\*[^*]+\*|_[^_]+_)/g;
   const parts = line.split(regex);
@@ -211,7 +211,7 @@ function parseInlineMarkdown(line: string, lineKey: number, onBadgePress?: (quer
         <Text 
           key={key}
           onPress={() => onBadgePress?.(query)}
-          style={[styles.inlineBadge, detectTextBlockDirection(label) === "rtl" && { writingDirection: "rtl" }]}
+          style={[styles.inlineBadge, { color: accentColor }, detectTextBlockDirection(label) === "rtl" && { writingDirection: "rtl" }]}
         >
           {label}
         </Text>
@@ -247,7 +247,7 @@ function parseInlineMarkdown(line: string, lineKey: number, onBadgePress?: (quer
       return (
         <Text
           key={key}
-          style={styles.link}
+          style={[styles.link, { color: accentColor }]}
           onPress={() => Linking.openURL(url).catch(() => {})}
         >
           {label}
@@ -258,7 +258,7 @@ function parseInlineMarkdown(line: string, lineKey: number, onBadgePress?: (quer
     // Hashtag: #word
     if (part.startsWith("#") && part.length > 1 && !part.includes(" ")) {
       return (
-        <Text key={key} style={styles.hashtag}>
+        <Text key={key} style={[styles.hashtag, { color: accentColor }]}>
           {part}
         </Text>
       );
@@ -339,16 +339,13 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   link: {
-    color: colors.accent,
     textDecorationLine: "underline",
     fontFamily: "Manrope_600SemiBold",
   },
   hashtag: {
-    color: colors.accent,
     fontFamily: "Manrope_700Bold",
   },
   inlineBadge: {
-    color: colors.accent,
     textDecorationLine: "underline",
     fontSize: 14,
     fontFamily: "Manrope_700Bold",

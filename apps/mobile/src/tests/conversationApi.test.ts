@@ -192,7 +192,7 @@ test("mobile agent SSE parser handles split chunks, ag_ui, errors, and done even
 test("mobile agent chat request streams incrementally with native XHR", async () => {
   process.env.EXPO_PUBLIC_WORKSPACE_API_URL = "https://app.qentrah.com";
   const restoreNativeRuntime = setNativeRuntimeForTest();
-  setWorkspaceAuthTokenGetter(async () => "clerk-mobile-token");
+  setWorkspaceAuthTokenGetter(async () => "mobile-auth-token");
   const events: AgentChatEvent[] = [];
 
   try {
@@ -207,7 +207,7 @@ test("mobile agent chat request streams incrementally with native XHR", async ()
     assert.equal(xhr.url, "https://app.qentrah.com/api/v1/organizations/org_1/agents/chat");
     assert.equal(xhr.withCredentials, true);
     assert.equal(xhr.headers["content-type"], "application/json");
-    assert.equal(xhr.headers.authorization, "Bearer clerk-mobile-token");
+    assert.equal(xhr.headers.authorization, "Bearer mobile-auth-token");
     assert.equal(xhr.headers["x-qentrah-client"], "mobile");
     assert.match(xhr.headers["x-request-id"] ?? "", /^mobile-/);
     assert.equal(xhr.body, JSON.stringify({ message: "hello" }));
@@ -320,7 +320,7 @@ test("mobile native XHR chat request surfaces server JSON errors", async () => {
 
 test("mobile agent chat request streams workspace API events", async () => {
   process.env.EXPO_PUBLIC_WORKSPACE_API_URL = "https://app.qentrah.com";
-  setWorkspaceAuthTokenGetter(async () => "clerk-fetch-token");
+  setWorkspaceAuthTokenGetter(async () => "mobile-fetch-token");
   const events: AgentChatEvent[] = [];
   const originalFetch = globalThis.fetch;
   globalThis.fetch = (async (url, init) => {
@@ -329,7 +329,7 @@ test("mobile agent chat request streams workspace API events", async () => {
     assert.equal(init?.credentials, "include");
     assert.equal(init?.body, JSON.stringify({ message: "hello" }));
     const headers = init?.headers as Headers;
-    assert.equal(headers.get("authorization"), "Bearer clerk-fetch-token");
+    assert.equal(headers.get("authorization"), "Bearer mobile-fetch-token");
     assert.equal(headers.get("x-qentrah-client"), "mobile");
     assert.match(headers.get("x-request-id") ?? "", /^mobile-/);
     assert.ok(headers.get("x-qentrah-platform"));

@@ -6,10 +6,11 @@ import { NextResponse } from "next/server";
  * obtained from the application's own auth server.
  */
 export function GET() {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/u, "");
+  const resource = (process.env.MCP_RESOURCE_URL ?? `${appUrl}/mcp`).replace(/\/$/u, "");
   return NextResponse.json(
     {
-      resource: `${appUrl}/mcp`,
+      resource,
       authorization_servers: [`${appUrl}/api/auth`],
       bearer_methods_supported: ["header"],
       scopes_supported: ["mcp:read", "mcp:write"],

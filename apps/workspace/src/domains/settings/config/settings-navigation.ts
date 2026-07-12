@@ -69,11 +69,16 @@ export const settingsNavGroups: SettingsNavGroup[] = [
       { label: "General", icon: SlidersHorizontal, section: "general" },
       { label: "People", icon: UsersRound, section: "people" },
       { label: "Teams", icon: ShieldCheck, section: "teams" },
-      { label: "Billing", icon: CreditCard, section: "billing" },
-      { label: "Qentrah AI Usage", icon: Bot, section: "ai-usage" },
       { label: "Security & Permissions", icon: KeyRound, section: "security" },
       { label: "Audit Logs", icon: FileClock, section: "audit" },
       { label: "Trash", icon: Trash2, section: "trash" },
+    ],
+  },
+  {
+    title: "Billing",
+    items: [
+      { label: "Memberships", icon: CreditCard, section: "billing" },
+      { label: "AI Credits", icon: Bot, section: "ai-usage" },
     ],
   },
   {

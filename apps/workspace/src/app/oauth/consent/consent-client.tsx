@@ -21,6 +21,8 @@ import {
   createPartnerConnectionGrant,
   fetchPartnerCatalogApps,
 } from "@/domains/integrations/integrations-runtime";
+import { McpGrantFields } from "./mcp-grant-fields";
+import { useMcpConsentGrant } from "./use-mcp-consent-grant";
 
 type BetterAuthOrganization = { id: string; name: string };
 type PartnerCatalogApp = {
@@ -184,6 +186,13 @@ export function OAuthConsentClient({
   const approveLabel = isMcpAuthorization
     ? copy.connectAgent
     : copy.allowAccess;
+  const mcpGrant = useMcpConsentGrant({
+    enabled: isMcpAuthorization,
+    organizationId: organization?.id,
+    clientId,
+    clientName: appName,
+    canWrite: scopes.includes("mcp:write"),
+  });
 
   useEffect(() => {
     if (!clientId || isMcpAuthorization) return;
@@ -213,6 +222,9 @@ export function OAuthConsentClient({
           partnersClientId: partnerApp.partnersClientId,
           scopes: resourceScopes,
         });
+      }
+      if (accept && isMcpAuthorization) {
+        await mcpGrant.persistGrant();
       }
 
       const result = await oauthClient.oauth2.consent({
@@ -335,6 +347,8 @@ export function OAuthConsentClient({
             })}
           </div>
 
+          {isMcpAuthorization ? <McpGrantFields controller={mcpGrant} /> : null}
+
           {error ? (
             <p className="mt-4 rounded-[10px] bg-red-50 p-3 text-sm font-semibold text-red-700">
               {error}
@@ -359,7 +373,8 @@ export function OAuthConsentClient({
               type="button"
               onClick={() => submitConsent(true)}
               disabled={
-                busy || !organization?.id || resourceScopes.length === 0
+                busy || !organization?.id || resourceScopes.length === 0 ||
+                (isMcpAuthorization && !mcpGrant.canApprove)
               }
               className="inline-flex h-10 items-center justify-center rounded-[8px] bg-[#3246bd] px-4 text-sm font-bold text-white transition hover:bg-[#263aa3] disabled:opacity-50"
             >

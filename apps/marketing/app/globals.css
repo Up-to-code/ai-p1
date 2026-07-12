@@ -1,24 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is([data-theme="dark"]));
 
+.qentrah-brand-mark-dark { display: none; }
+[data-theme="dark"] .qentrah-brand-mark-light { display: none; }
+[data-theme="dark"] .qentrah-brand-mark-dark { display: block; }
+
 :root {
   /* ── Surface & Background ── */
   --q-bg: #FFFFFF;
-  --q-bg-secondary: #F5F5F5;
+  --q-bg-secondary: #F6F7F8;
   --q-bg-tertiary: #EEEEEE;
   --q-bg-very-light: #FFFFFF;
   --q-bg-light: #FFFFFF;
-  --q-bg-dark: #F5F5F5;
+  --q-bg-dark: #1A1A1A;
   --q-bg-very-dark: #111111;
 
   /* ── Surface / Card ── */
   --q-surface: #FFFFFF;
-  --q-surface-hover: #F5F5F5;
+  --q-surface-hover: #F6F7F8;
   --q-card: #FFFFFF;
-  --q-card-hover: #F5F5F5;
+  --q-card-hover: #F6F7F8;
 
   /* ── Sidebar ── */
   --q-sidebar: #F5F5F5;
@@ -35,7 +38,7 @@
   --q-topbar-btn: #111111;
 
   /* ── Text ── */
-  --q-text-primary: #111111;
+  --q-text-primary: #202020;
   --q-text-secondary: #4D4D4D;
   --q-text-muted: #787878;
 
@@ -45,10 +48,10 @@
   --q-divider: #E5E5E5;
 
   /* ── Accent / Primary ── */
-  --q-accent: #111111;
-  --q-accent-hover: #222222;
+  --q-accent: #202020;
+  --q-accent-hover: #2A2A2A;
   --q-accent-active: #000000;
-  --q-accent-muted: #EBEBEB;
+  --q-accent-muted: #F0F0F0;
   --q-accent-border: #D0D0D0;
 
   /* ── Form Inputs ── */
@@ -62,19 +65,19 @@
   --q-success: #5F7768;
   --q-warning: #B78544;
   --q-error: #A55B52;
-  --q-info: #4388FF;
-  --q-note: #8A5CFF;
+  --q-info: #555555;
+  --q-note: #737373;
 
   /* ── Legacy blue alias (used by landing sections) ── */
-  --blue: #4388FF;
-  --blue-pale: rgba(67, 136, 255, 0.08);
+  --blue: #222222;
+  --blue-pale: rgba(17, 17, 17, 0.06);
 
   /* ── Domain Colors ── */
-  --q-network-blue: #4F80FF;
-  --q-agent-purple: #8A5CFF;
-  --q-human-green: #2BB673;
-  --q-automation-orange: #FF9A3D;
-  --q-data-cyan: #00A3FF;
+  --q-network-blue: #222222;
+  --q-agent-purple: #3A3A3A;
+  --q-human-green: #555555;
+  --q-automation-orange: #6B6B6B;
+  --q-data-cyan: #888888;
   --q-system-gray: #5D6570;
 
   /* ── Status Colors (light) — Qentrah brand palette ── */
@@ -127,12 +130,13 @@
   --chart-5: var(--q-error);
 
   /* ── Fonts ── */
-  --font-sans: Inter, -apple-system, sans-serif;
+  --font-sans: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif;
+  --font-display: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif;
   --font-serif: Georgia, serif;
-  --font-mono: JetBrains Mono, monospace;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* ── Arabic: Cairo ── */
-  --font-arabic: Cairo, sans-serif;
+  --font-arabic: var(--font-cairo), Tahoma, Arial, sans-serif;
 
   /* ── Radius ── */
   --radius-xs: 4px;
@@ -159,6 +163,8 @@
   --marketing-grid: color-mix(in srgb, var(--q-border) 58%, transparent);
   --marketing-glow: color-mix(in srgb, var(--q-info) 9%, transparent);
   --marketing-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 18px 48px rgba(0, 0, 0, 0.05);
+  --marketing-heading-start: var(--q-text-primary);
+  --marketing-heading-end: var(--q-text-secondary);
 }
 
 [data-theme="dark"] {
@@ -355,6 +361,9 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-kerning: normal;
+    font-optical-sizing: auto;
     background-image:
       radial-gradient(circle at 50% -12rem, var(--marketing-glow), transparent 32rem),
       linear-gradient(to right, var(--marketing-grid) 1px, transparent 1px),
@@ -362,12 +371,33 @@
     background-size: auto, 48px 48px, 48px 48px;
     background-attachment: fixed;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-weight: 500;
   }
-  :lang(ar) {
-    --font-sans: var(--font-arabic);
+  :is(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-display);
+    font-weight: 500;
   }
-  :lang(ar) body {
-    font-family: var(--font-arabic);
+  main :is(h1, h2) {
+    background-image: linear-gradient(90deg, var(--marketing-heading-start) 0%, var(--marketing-heading-start) 42%, var(--marketing-heading-end) 100%);
+    background-clip: text;
+    color: transparent !important;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  main section[data-tone="very-dark"],
+  main section[data-tone="inverse"] {
+    --marketing-heading-start: #ffffff;
+    --marketing-heading-end: rgba(255, 255, 255, 0.58);
+  }
+  [dir="rtl"] main :is(h1, h2) {
+    background-image: linear-gradient(270deg, var(--marketing-heading-start) 0%, var(--marketing-heading-start) 42%, var(--marketing-heading-end) 100%);
+  }
+  html[lang="ar"] body {
+    font-family: var(--font-arabic) !important;
+  }
+
+  :lang(ar) :is(h1, h2, h3, h4, p, span, a, button) {
+    letter-spacing: normal;
   }
 }
 

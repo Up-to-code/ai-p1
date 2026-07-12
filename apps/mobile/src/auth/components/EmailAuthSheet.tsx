@@ -5,11 +5,10 @@ import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition } from "react-n
 import { Eye, EyeOff } from "lucide-react-native";
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView, type BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 
-import { useSignIn, useSignUp } from "@clerk/expo";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { isWorkspaceAuthConfigured } from "@/auth/authClient";
-import { clerkEmailAuthErrorMessage, sendSignUpEmailVerificationCode, signInWithEmailPassword, signUpWithEmailPassword } from "@/auth/emailPasswordAuth";
+import { authClient, isWorkspaceAuthConfigured } from "@/auth/authClient";
+import { emailAuthErrorMessage, sendSignUpEmailVerificationCode, signInWithEmailPassword, signUpWithEmailPassword } from "@/auth/emailPasswordAuth";
 import { mobilePostAuthRoute, sanitizeAuthCallback } from "@/auth/authNavigation";
 import { markAuthSessionActive } from "@/auth/signOut";
 import { useMobileAuthGate } from "@/auth/mobileAuthGate";
@@ -41,8 +40,17 @@ export function EmailAuthSheet({ callbackURL, mode: providedMode, onClose, visib
   const { t, isRTL } = useAppLocalization();
   const { dismissKeyboard, extraClearance, handleInputFocus, keyboardVisible, scrollViewRef } = useKeyboardClearance();
   const gate = useMobileAuthGate();
-  const { signIn } = useSignIn();
-  const { signUp } = useSignUp();
+  const signIn = {
+    password: ({ emailAddress, password }: { emailAddress: string; password: string }) =>
+      authClient.signIn.email({ email: emailAddress, password }),
+    finalize: async () => undefined,
+  };
+  const signUp = {
+    password: async ({ emailAddress, firstName, lastName, password }: { emailAddress: string; firstName?: string; lastName?: string; password: string }) =>
+      authClient.signUp.email({ email: emailAddress, password, name: [firstName, lastName].filter(Boolean).join(" ") || emailAddress }),
+    finalize: async () => undefined,
+    status: "complete",
+  };
   const postAuthRoute = sanitizeAuthCallback(callbackURL);
   const [mode, setMode] = useState<AuthMode>(providedMode ?? "login");
   const [step, setStep] = useState<AuthStep>("email");
@@ -180,7 +188,7 @@ export function EmailAuthSheet({ callbackURL, mode: providedMode, onClose, visib
       }
     } catch (error) {
       console.warn("[email-auth] submit failed", error);
-      setError(clerkEmailAuthErrorMessage(error, t.auth.signInUnavailableBody));
+      setError(emailAuthErrorMessage(error, t.auth.signInUnavailableBody));
     } finally {
       submitInFlightRef.current = false;
       if (!authenticated) {
@@ -203,7 +211,7 @@ export function EmailAuthSheet({ callbackURL, mode: providedMode, onClose, visib
       setResentCode(true);
     } catch (error) {
       console.warn("[email-auth] resend verification code failed", error);
-      setError(clerkEmailAuthErrorMessage(error, t.auth.signInUnavailableBody));
+      setError(emailAuthErrorMessage(error, t.auth.signInUnavailableBody));
     } finally {
       setResendBusy(false);
     }
@@ -338,7 +346,7 @@ export function EmailAuthSheet({ callbackURL, mode: providedMode, onClose, visib
               ) : null}
 
               {mode === "signup" && step !== "verification" ? (
-                <View nativeID="clerk-captcha" collapsable={false} style={styles.captchaSlot} />
+                <View nativeID="auth-challenge" collapsable={false} style={styles.captchaSlot} />
               ) : null}
 
               {step === "verification" ? (

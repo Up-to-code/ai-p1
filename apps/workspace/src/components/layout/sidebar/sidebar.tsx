@@ -8,7 +8,7 @@ import { SidebarSecondaryPanel } from "./components/sidebar-secondary-panel";
 import { useSidebarRail } from "./sidebar-rail-context";
 
 export function Sidebar() {
-  const { activeRailItem } = useSidebarRail();
+  const { activeRailItem, closeAll } = useSidebarRail();
   const session = useAuthSession();
 
   const isLoading = session.workspace.status === "loadingSession" || !session.workspace.organizationId;
@@ -16,12 +16,21 @@ export function Sidebar() {
   return (
     <div
       className={cn(
-        "flex h-screen shrink-0 overflow-hidden transition-all duration-300 ease-in-out",
+        "pointer-events-none fixed inset-0 z-40 flex h-dvh w-full shrink-0 overflow-hidden transition-all duration-300 ease-in-out md:pointer-events-auto md:relative md:h-screen md:w-auto",
+        activeRailItem && "pointer-events-auto",
         activeRailItem
-          ? "max-w-[412px] fixed inset-y-0 left-0 z-50 md:relative"
-          : "max-w-12",
+          ? "md:max-w-[412px]"
+          : "md:max-w-12",
       )}
     >
+      {activeRailItem ? (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          className="absolute inset-0 bg-foreground/25 backdrop-blur-[1px] md:hidden"
+          onClick={closeAll}
+        />
+      ) : null}
       {isLoading ? <SidebarRailSkeleton /> : <SidebarRail />}
       <div
         className={cn(

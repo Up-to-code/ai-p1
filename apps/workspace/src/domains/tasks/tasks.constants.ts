@@ -82,7 +82,11 @@ export const DEFAULT_FORM_VALUES = {
 };
 
 export function normalizeTaskStatus(status: unknown): TaskStatus {
-  if (status === "notStarted" || status === "not_started" || status === "not started") {
+  if (
+    status === "notStarted" ||
+    status === "not_started" ||
+    status === "not started"
+  ) {
     return "todo";
   }
   if (status === "complete" || status === "completed") {
@@ -91,7 +95,13 @@ export function normalizeTaskStatus(status: unknown): TaskStatus {
   if (status === "cancelled") {
     return "canceled";
   }
-  if (status === "todo" || status === "inProgress" || status === "waiting" || status === "done" || status === "canceled") {
+  if (
+    status === "todo" ||
+    status === "inProgress" ||
+    status === "waiting" ||
+    status === "done" ||
+    status === "canceled"
+  ) {
     return status;
   }
   return "todo";
@@ -104,13 +114,28 @@ export const emptyTask: typeof DEFAULT_FORM_VALUES = {
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-export function getDueDateColor(dueDate?: string | null) {
-  if (!dueDate) return "text-muted-foreground";
+export type TaskDueDateTone = "neutral" | "dueSoon" | "overdue";
+
+export function getTaskDueDateTone(
+  dueDate?: string | null,
+  now = new Date(),
+): TaskDueDateTone {
+  if (!dueDate) return "neutral";
   const dateStr = dueDate.length === 10 ? dueDate : dueDate.slice(0, 10);
-  const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  if (dateStr < todayStr) return "text-red-500";
-  if (dateStr === todayStr) return "text-amber-500";
+  if (dateStr < todayStr) return "overdue";
+  const today = new Date(`${todayStr}T12:00:00`);
+  const due = new Date(`${dateStr}T12:00:00`);
+  const daysUntilDue = Math.round(
+    (due.getTime() - today.getTime()) / 86_400_000,
+  );
+  return daysUntilDue <= 2 ? "dueSoon" : "neutral";
+}
+
+export function getDueDateColor(dueDate?: string | null, now = new Date()) {
+  const tone = getTaskDueDateTone(dueDate, now);
+  if (tone === "overdue") return "text-red-500";
+  if (tone === "dueSoon") return "text-amber-500";
   return "text-muted-foreground";
 }
 

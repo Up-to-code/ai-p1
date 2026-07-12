@@ -4,6 +4,8 @@ export type QentrahOidcClaims = {
   iss?: string;
   aud?: string | string[];
   sub?: string;
+  azp?: string;
+  client_id?: string;
   exp?: number;
   iat?: number;
   jti?: string;

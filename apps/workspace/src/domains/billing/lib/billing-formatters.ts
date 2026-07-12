@@ -21,6 +21,7 @@ export function subscriptionTone(status?: string) {
 }
 
 export function billingPriceLabel(plan: BillingPlan, locale: BillingLocale) {
+  if (plan.amount === null) return "Contact sales";
   return localeNumberFormatter(locale, {
     style: "currency",
     currency: plan.currency,
@@ -29,7 +30,7 @@ export function billingPriceLabel(plan: BillingPlan, locale: BillingLocale) {
 }
 
 export function seatTotalLabel(seats: number, locale: BillingLocale) {
-  const total = Math.round(seats * PRICE_PER_SEAT * 100) / 100;
+  const total = Math.round(seats * (PRICE_PER_SEAT ?? 0) * 100) / 100;
   return localeNumberFormatter(locale, {
     style: "currency",
     currency: PLAN_CURRENCY,
@@ -42,5 +43,5 @@ export function billingPricePerSeatLabel(locale: BillingLocale) {
     style: "currency",
     currency: PLAN_CURRENCY,
     maximumFractionDigits: 2,
-  }).format(PRICE_PER_SEAT);
+  }).format(PRICE_PER_SEAT ?? 0);
 }

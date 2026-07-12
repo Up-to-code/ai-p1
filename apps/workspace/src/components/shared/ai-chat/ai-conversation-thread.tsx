@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, CircleDashed, Loader2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Markdown } from "@/components/ui/markdown";
 import {
@@ -164,12 +163,12 @@ function ActionProgressCard({
   progress: AiActionProgress;
   compact: boolean;
 }) {
-  const completedCount = progress.items.filter((item) => item.status === "completed" || item.status === "rejected").length;
   const hasFailure = progress.items.some((item) => item.status === "failed");
+
+  if (progress.status === "completed") return null;
+
   const title =
-    progress.status === "completed"
-      ? "Completed"
-      : hasFailure || progress.status === "failed"
+    hasFailure || progress.status === "failed"
         ? "Needs attention"
         : progress.status === "waiting"
           ? "Waiting"
@@ -178,8 +177,8 @@ function ActionProgressCard({
   return (
     <motion.div
       className={cn(
-        "w-full max-w-[min(720px,100%)] rounded-xl border border-border bg-card text-card-foreground shadow-xs",
-        compact ? "px-3 py-3" : "px-4 py-4",
+        "w-full max-w-[min(720px,100%)] text-card-foreground",
+        compact ? "py-2" : "py-3",
       )}
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
@@ -187,78 +186,56 @@ function ActionProgressCard({
       role="status"
       aria-live="polite"
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <motion.div
-            className={cn(
-              "flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
-              hasFailure ? "text-danger" : progress.status === "completed" ? "text-emerald-500" : "text-primary",
-            )}
-            animate={
-              progress.status === "running"
-                ? { scale: [1, 1.08, 1], opacity: [0.75, 1, 0.75] }
-                : { scale: 1, opacity: 1 }
-            }
-            transition={progress.status === "running" ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" } : undefined}
-          >
-            {hasFailure ? (
-              <XCircle className="h-4 w-4" />
-            ) : progress.status === "completed" ? (
-              <CheckCircle2 className="h-4 w-4" />
-            ) : (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            )}
-          </motion.div>
-          <div className="min-w-0">
-            <p className={cn("font-semibold text-foreground", compact ? "text-xs" : "text-sm")}>{title}</p>
-            <p className="text-[11px] font-medium text-muted-foreground">
-              {completedCount} of {progress.items.length} completed
-            </p>
-          </div>
-        </div>
+      <div className="flex items-center gap-2">
+        <motion.div
+          className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-card p-0.5 ring-1 ring-border"
+          animate={progress.status === "running" ? { opacity: [0.6, 1, 0.6], scale: [0.96, 1, 0.96] } : undefined}
+          transition={progress.status === "running" ? { duration: 1.4, ease: "easeInOut", repeat: Infinity } : undefined}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/ai/logo.png" alt="QentrahAI" className="h-full w-full object-contain" />
+        </motion.div>
+        <p className={cn("font-semibold text-foreground", compact ? "text-xs" : "text-sm")}>QentrahAI</p>
+        <span className="text-[10px] font-medium text-muted-foreground">{title}</span>
       </div>
-      <div className={cn("mt-3 space-y-1.5", compact ? "text-[11px]" : "text-xs")}>
+      <div className={cn("relative ml-2 mt-2 border-l border-border/70 pl-4", compact ? "text-[11px]" : "text-xs")}>
         <AnimatePresence initial={false}>
           {progress.items.map((item) => (
             <motion.div
               key={item.id}
-              className="flex items-start gap-2 rounded-lg px-2 py-1.5"
+              className={cn(
+                "relative py-1.5",
+                item.status === "pending" && "text-muted-foreground/45",
+              )}
               initial={{ opacity: 0, x: -6 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -6 }}
               transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
             >
-              <ProgressItemIcon status={item.status} />
-              <div className="min-w-0 flex-1">
+              <span className="absolute -left-[19px] top-2.5 flex h-1.5 w-1.5 items-center justify-center rounded-full bg-[var(--q-ai-canvas)] ring-1 ring-border">
+                <span className={cn("h-1 w-1 rounded-full", item.status === "failed" ? "bg-danger" : item.status === "running" ? "animate-pulse bg-primary" : item.status === "completed" ? "bg-emerald-500" : "bg-muted-foreground/35")} />
+              </span>
+              <div className="min-w-0">
                 <div className="flex min-w-0 items-center gap-2">
-                  <span className="truncate font-semibold text-foreground">{item.label}</span>
-                  <span className="shrink-0 text-[10px] font-semibold uppercase text-muted-foreground">
-                    {PROGRESS_STATUS_LABEL[item.status]}
-                  </span>
+                  <span className={cn("font-medium", item.status === "pending" ? "text-muted-foreground/45" : "text-muted-foreground")}>{item.label}</span>
+                  <span className="text-[9px] font-semibold uppercase text-muted-foreground/55">{PROGRESS_STATUS_LABEL[item.status]}</span>
                 </div>
                 {item.detail ? (
-                  <p className="mt-0.5 truncate text-muted-foreground">{item.detail}</p>
+                  <p className="mt-1 max-w-prose text-[11px] leading-4 text-muted-foreground">{item.detail}</p>
                 ) : null}
               </div>
             </motion.div>
           ))}
         </AnimatePresence>
       </div>
+      {hasFailure ? (
+        <div className="mt-2 flex items-center gap-2 text-xs">
+          <span className="font-medium text-danger">Stopped — review the failed step</span>
+          <span aria-hidden="true" className="h-px min-w-8 flex-1 bg-border/70" />
+        </div>
+      ) : null}
     </motion.div>
   );
-}
-
-function ProgressItemIcon({ status }: { status: AiActionProgressItem["status"] }) {
-  if (status === "completed" || status === "rejected") {
-    return <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />;
-  }
-  if (status === "failed") {
-    return <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-danger" />;
-  }
-  if (status === "running") {
-    return <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-primary" />;
-  }
-  return <CircleDashed className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />;
 }
 
 const PROGRESS_STATUS_LABEL: Record<AiActionProgressItem["status"], string> = {
@@ -279,7 +256,7 @@ function UserMessage({ content, compact }: { content: string; compact: boolean }
       ) : null}
       <div
         className={cn(
-          "rounded-2xl border border-border bg-card font-medium leading-relaxed text-card-foreground shadow-xs",
+          "rounded-2xl border border-border bg-card font-medium leading-relaxed text-card-foreground shadow-none",
           compact
             ? "max-w-[88%] px-4 py-3 text-sm"
             : "max-w-[min(760px,100%)] px-4 py-3 text-sm",
@@ -300,7 +277,7 @@ function AssistantHeader({ mode, isStreaming }: { mode: ResponseMode; isStreamin
         transition={isStreaming ? { duration: 1.6, ease: "easeInOut", repeat: Infinity } : undefined}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/ai/logo.png" alt="Brain" className="h-full w-full object-contain" />
+        <img src="/ai/logo.png" alt="QentrahAI" className="h-full w-full object-contain" />
       </motion.div>
       <span className="text-xs font-semibold text-foreground">
         {isStreaming ? "Thinking" : MODE_LABEL[mode]}
@@ -374,7 +351,7 @@ function ThinkingStatus() {
           transition={{ duration: 1.4, ease: "easeInOut", repeat: Infinity }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/ai/logo.png" alt="Brain" className="h-full w-full object-contain" />
+          <img src="/ai/logo.png" alt="QentrahAI" className="h-full w-full object-contain" />
         </motion.div>
         <span className="text-sm font-semibold text-muted-foreground">
           Thinking
@@ -436,7 +413,7 @@ function detectResponseMode(
 }
 
 const MODE_LABEL: Record<ResponseMode, string> = {
-  default: "Brain",
+  default: "QentrahAI",
   plan: "Plan",
   work: "Work",
   search: "Results",

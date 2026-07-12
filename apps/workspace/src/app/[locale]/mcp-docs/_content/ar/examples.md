@@ -12,14 +12,14 @@ description: "استخدم نفس رابط مؤسسة كانترا مع الوك
 مناسب لعضو فريق غير تقني يسأل أسئلة أو يكتب متابعات أو يلخص السجلات المسموحة.
 
 * **اسم الموصّل**: `Qentrah organization`
-* **رابط الموصّل**: `https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET`
+* **رابط الموصّل**: `https://mcp.qentrah.com/mcp`
 * **النطاق المقترح**: الأدوات المحددة فقط عند إنشاء الرابط.
 
 ### Claude
 مناسب لمراجعة الملاحظات الطويلة وتسليمات الموردين والسياسات وسياق العملاء المفصل.
 
 * **الاسم**: `Qentrah organization`
-* **رابط MCP البعيد**: `https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET`
+* **رابط MCP البعيد**: `https://mcp.qentrah.com/mcp`
 * **ملاحظات**: سحابة Claude يجب أن تكون قادرة على الوصول لهذا الرابط عبر HTTPS.
 
 ### Grok / xAI
@@ -33,7 +33,7 @@ description: "استخدم نفس رابط مؤسسة كانترا مع الوك
     {
       "type": "mcp",
       "server_label": "qentrah",
-      "server_url": "https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET"
+      "server_url": "https://mcp.qentrah.com/mcp"
     }
   ]
 }
@@ -43,7 +43,8 @@ description: "استخدم نفس رابط مؤسسة كانترا مع الوك
 مناسب للفرق التقنية التي تبني أتمتة حول بيانات المؤسسة.
 
 ```bash
-codex mcp add qentrah --url https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET
+codex mcp add qentrah --url https://mcp.qentrah.com/mcp
+codex mcp login qentrah
 ```
 
 أو اكتبها في ملف الإعدادات:
@@ -51,7 +52,7 @@ codex mcp add qentrah --url https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECR
 {
   "mcpServers": {
     "qentrah": {
-      "url": "https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET"
+      "url": "https://mcp.qentrah.com/mcp"
     }
   }
 }
@@ -68,7 +69,7 @@ codex mcp add qentrah --url https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECR
     {
       "type": "mcp",
       "server_label": "qentrah",
-      "server_url": "https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET",
+      "server_url": "https://mcp.qentrah.com/mcp",
       "allowed_tools": ["organization_info", "clients_list", "tasks_create"],
       "require_approval": "never"
     }

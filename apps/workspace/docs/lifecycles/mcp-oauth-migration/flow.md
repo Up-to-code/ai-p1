@@ -11,8 +11,8 @@
 ## New Flow (OAuth)
 
 1. MCP client discovers OAuth metadata from `.well-known/oauth-protected-resource/mcp`
-2. MCP client initiates OAuth flow with Clerk (user authenticates in browser)
-3. Clerk issues OAuth access token
+2. MCP client initiates OAuth 2.1 with Better Auth (user authenticates in browser)
+3. Better Auth issues a resource-bound OAuth access token
 4. Client connects via `POST /api/mcp` with `Authorization: Bearer <token>`
 5. `withMcpAuth` calls verify callback → `auth({ acceptsToken: 'oauth_token' })` → verifies token
 6. `createMcpHandler` dispatches to tool handler with `authInfo`

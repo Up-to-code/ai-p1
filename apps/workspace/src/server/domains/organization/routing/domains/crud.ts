@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { handleReadOpportunities, handleReadOpportunity, handleReadOpportunityOptions, handleReadOpportunityStats } from "@/server/domains/opportunities/handlers/opportunities-read";
 import { handleReadDeals, handleReadDeal, handleReadDealOptions, handleReadDealStats } from "@/server/domains/deals/handlers/deals-read";
 import { handleReadTasks, handleReadTask, handleReadTaskOptions, handleReadTaskStats } from "@/server/domains/clientTasks/handlers/client-tasks-read";
@@ -11,7 +11,6 @@ import { handleCreateProject, handleDeleteProject, handleUpdateProject } from "@
 import { handleCreateSpace, handleDeleteSpace, handleUpdateSpace } from "@/server/domains/spaces/handlers/spaces";
 import { handleReadSpaceOptions } from "@/server/domains/spaces/handlers/spaces-read";
 import { handleReadSpaces, handleReadSpace } from "@/server/domains/spaces/handlers/spaces-junction";
-import { handleCreateOpportunity, handleDeleteOpportunity, handleUpdateOpportunity } from "@/server/domains/opportunities/handlers/opportunities";
 import { handleCreateDeal, handleDeleteDeal, handleUpdateDeal } from "@/server/domains/deals/handlers/deals";
 import { handleCreateClient, handleDeleteClient, handleUpdateClient } from "@/server/domains/clients/handlers/clients";
 import { handleCreateClientTask, handleDeleteClientTask, handleUpdateClientTask } from "@/server/domains/clientTasks/handlers/client-tasks";
@@ -37,6 +36,11 @@ import {
 } from "@/server/domains/inbox/handlers/inbox";
 
 export const crudSubRouter = new Hono();
+
+const retiredOpportunityWrite = (c: Context) => c.json({
+  error: "legacy_opportunity_write_retired",
+  message: "Sales opportunities are managed through the Deals interface.",
+}, 410);
 
 crudSubRouter.get("/:organizationId/read/projects", handleReadProjects);
 crudSubRouter.get("/:organizationId/read/projects/stats", handleReadProjectStats);
@@ -77,9 +81,9 @@ crudSubRouter.get("/:organizationId/read/activity/index", handleReadActivityInde
 crudSubRouter.get("/:organizationId/read/dashboard", handleReadDashboardOverview);
 crudSubRouter.get("/:organizationId/read/dashboard/index", handleReadDashboardIndex);
 
-crudSubRouter.post("/:organizationId/opportunities", handleCreateOpportunity);
-crudSubRouter.patch("/:organizationId/opportunities/:opportunityId", handleUpdateOpportunity);
-crudSubRouter.delete("/:organizationId/opportunities/:opportunityId", handleDeleteOpportunity);
+crudSubRouter.post("/:organizationId/opportunities", retiredOpportunityWrite);
+crudSubRouter.patch("/:organizationId/opportunities/:opportunityId", retiredOpportunityWrite);
+crudSubRouter.delete("/:organizationId/opportunities/:opportunityId", retiredOpportunityWrite);
 
 crudSubRouter.post("/:organizationId/deals", handleCreateDeal);
 crudSubRouter.patch("/:organizationId/deals/:dealId", handleUpdateDeal);

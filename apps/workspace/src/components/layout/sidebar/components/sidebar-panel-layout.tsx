@@ -13,14 +13,15 @@ type SidebarPanelLayoutProps = {
   primaryAction?: ReactNode;
   footer?: ReactNode;
   bodyClassName?: string;
+  showModeSwitch?: boolean;
   children: ReactNode;
 };
 
-export function SidebarPanelLayout({ title, navbarActions, header, primaryAction, footer, bodyClassName, children }: SidebarPanelLayoutProps) {
+export function SidebarPanelLayout({ title, navbarActions, header, primaryAction, footer, bodyClassName, showModeSwitch = true, children }: SidebarPanelLayoutProps) {
   const { closeAll } = useSidebarRail();
 
   return (
-    <div className="flex h-full flex-col bg-[var(--q-bg-secondary)] dark:bg-[#0b0b0c]">
+    <div className="flex h-full flex-col bg-[var(--q-sidebar)]">
       {/* Domain title and panel controls */}
       <div className="flex h-10 shrink-0 items-center justify-between border-b border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] px-3">
         <span className="min-w-0 truncate text-[13px] font-semibold text-foreground">{title}</span>
@@ -38,9 +39,11 @@ export function SidebarPanelLayout({ title, navbarActions, header, primaryAction
         </div>
       </div>
 
-      <div className="shrink-0 border-b border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] p-2">
-        <SidebarPanelModeSwitch />
-      </div>
+      {showModeSwitch ? (
+        <div className="shrink-0 border-b border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] p-2">
+          <SidebarPanelModeSwitch />
+        </div>
+      ) : null}
 
       {/* Header section — static/non-dynamic items per domain */}
       {header && (

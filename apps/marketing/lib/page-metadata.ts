@@ -14,16 +14,16 @@ type PageMeta = {
 
 const en: Record<string, PageMeta> = {
   home: {
-    title: "Qentrah: AI-First Project Management for Small Teams & Agencies",
+    title: "Qentrah: The Connected Workspace for Teams and AI",
     description:
-      "Qentrah is an AI-first Work OS built for small teams and agencies. Human-led project management where AI handles the busywork — not the other way around. Unify clients, projects, tasks, and AI agents in one workspace.",
+      "Qentrah is a connected workspace for organizing spaces, projects, tasks, documents, calendars, communication, and scoped AI agents in one operating context.",
     keywords: [
-      "AI project management",
-      "project management for small teams",
-      "agency management software",
-      "AI-first Work OS",
-      "team productivity",
-      "client operations platform",
+      "connected workspace",
+      "team work management",
+      "AI workspace",
+      "project and task management",
+      "team spaces",
+      "scoped AI agents",
       "Qentrah",
     ],
   },
@@ -91,15 +91,15 @@ const en: Record<string, PageMeta> = {
 
 const ar: Record<string, PageMeta> = {
   home: {
-    title: "كانترا: إدارة مشاريع ذكية للفرق الصغيرة والوكالات",
+    title: "كانترا: مساحة العمل المترابطة للفرق والذكاء الاصطناعي",
     description:
-      "كانترا هي منصة تشغيل ذكية للفرق الصغيرة والوكالات. إدارة مشاريع يقودها الإنسان والذكاء الاصطناعي يقوم بالمهام الروتينية — وليس العكس. وحد العملاء والمشاريع والمهام والوكلاء الذكيين في مساحة عمل واحدة.",
+      "كانترا مساحة عمل مترابطة لتنظيم المساحات والمشاريع والمهام والمستندات والتقويم والتواصل ووكلاء الذكاء محددي النطاق ضمن سياق تشغيل واحد.",
     keywords: [
-      "إدارة مشاريع بالذكاء الاصطناعي",
-      "إدارة مشاريع للفرق الصغيرة",
-      "برنامج إدارة وكالات",
-      "منصة تشغيل ذكية",
-      "إنتاجية الفريق",
+      "مساحة عمل مترابطة",
+      "إدارة عمل الفرق",
+      "مساحة عمل بالذكاء الاصطناعي",
+      "إدارة المشاريع والمهام",
+      "مساحات الفرق",
       "كانترا",
     ],
   },
@@ -167,16 +167,16 @@ const ar: Record<string, PageMeta> = {
 
 const fr: Record<string, PageMeta> = {
   home: {
-    title: "Qentrah : Gestion de projet IA pour petites équipes et agences",
+    title: "Qentrah : L’espace connecté pour les équipes et l’IA",
     description:
-      "Qentrah est un Work OS piloté par l'IA conçu pour les petites équipes et les agences. Une gestion de projet où l'humain dirige et l'IA s'occupe des tâches répétitives — et non l'inverse. Unifiez clients, projets, tâches et agents IA dans un seul espace de travail.",
+      "Qentrah est un espace connecté pour organiser équipes, espaces, projets, tâches, documents, calendriers, communication et agents IA cadrés dans un même contexte.",
     keywords: [
-      "gestion de projet IA",
-      "gestion de projet petites équipes",
-      "logiciel agence",
-      "Work OS IA",
-      "productivité équipe",
-      "plateforme opérations clients",
+      "espace de travail connecté",
+      "gestion du travail d’équipe",
+      "espace IA",
+      "gestion projets et tâches",
+      "espaces d’équipe",
+      "agents IA cadrés",
       "Qentrah",
     ],
   },

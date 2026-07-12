@@ -32,7 +32,7 @@
     }
   },
   "dependencies": {
-    "@clerk/expo": "^3.3.1",
+    "@better-auth/expo": "^1.6.23",
     "@expo-google-fonts/cairo": "^0.4.2",
     "@expo-google-fonts/manrope": "^0.4.1",
     "@expo/metro-runtime": "~56.0.13",
@@ -40,6 +40,8 @@
     "@gorhom/bottom-sheet": "^5.2.14",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@shopify/flash-list": "2.0.2",
+    "better-auth": "~1.6.9",
+    "expo-network": "~8.0.8",
     "expo": "^56.0.0",
     "expo-apple-authentication": "~56.0.4",
     "expo-auth-session": "~56.0.13",
@@ -60,6 +62,7 @@
     "expo-system-ui": "~56.0.5",
     "expo-web-browser": "~56.0.5",
     "lucide-react-native": "^0.542.0",
+    "merge-options": "^3.0.4",
     "nativewind": "^4.2.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",

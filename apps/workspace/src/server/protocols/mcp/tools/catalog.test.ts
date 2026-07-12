@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { mcpReadToolNames, mcpToolPermissionMap } from "../../../../../convex/mcp/tools";
+import { mcpReadToolNames, mcpToolPermissionMap } from "../../../../../convex/mcp/toolRegistry";
 import { allowedMcpTools, canUseMcpTool, getMcpToolDefinition, mcpToolCatalog } from "./catalog";
-import { createMcpConnectionSchema } from "@/server/domains/mcpConnections/validation/mcp-connection.schema";
 
 describe("MCP tool catalog", () => {
   it("filters tools by selected permissions", () => {
@@ -16,20 +15,6 @@ describe("MCP tool catalog", () => {
     expect(tools.map((tool) => tool.name)).toContain("calendar_list_today");
     expect(tools.map((tool) => tool.name)).not.toContain("clients_delete");
     expect(tools.map((tool) => tool.name)).not.toContain("calendar_create");
-  });
-
-  it("validates create connection payloads", () => {
-    const result = createMcpConnectionSchema.safeParse({
-      name: "Client operator",
-      instructions: "Help with follow-ups.",
-      principalType: "organization",
-      permissions: [
-        { resource: "client", actions: ["read", "create"] },
-        { resource: "task", actions: ["read", "update"] },
-      ],
-    });
-
-    expect(result.success).toBe(true);
   });
 
   it("bounds list tool inputs for large workspaces", () => {

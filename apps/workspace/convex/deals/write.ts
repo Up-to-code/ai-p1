@@ -76,7 +76,7 @@ export const createFromHono = mutation({
   returns: dealValidator,
   handler: async (ctx, args) => {
     const user = await authUser.getAuthUser(ctx);
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "deal", "create");
     const { presented, now } = await createDealCore(ctx, {
       organizationId: args.organizationId,
       input: args.input,
@@ -99,7 +99,7 @@ export const updateFromHono = mutation({
   returns: dealValidator,
   handler: async (ctx, args) => {
     const user = await authUser.getAuthUser(ctx);
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "deal", "update");
     const { presented, now } = await updateDealCore(ctx, {
       organizationId: args.organizationId,
       dealId: args.dealId,
@@ -123,7 +123,7 @@ export const deleteFromHono = mutation({
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
     const user = await authUser.getAuthUser(ctx);
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "deal", "delete");
     const { now, title } = await deleteDealCore(ctx, {
       organizationId: args.organizationId,
       dealId: args.dealId,

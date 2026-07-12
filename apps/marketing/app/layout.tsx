@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Cairo } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { rootMarketingMetadata } from "@/lib/seo";
@@ -6,6 +7,8 @@ import { brandIdentity } from "@qentrah/brand-identity";
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = rootMarketingMetadata("ar");
+
+const cairo = Cairo({ subsets: ["arabic", "latin"], variable: "--font-cairo", display: "swap" });
 
 // Inline theme-init script: runs before paint, no flash of wrong theme.
 const themeInitScript = `
@@ -37,7 +40,7 @@ const stripExtensionAttributes = `
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html suppressHydrationWarning>
+    <html className={cairo.variable} suppressHydrationWarning>
       <head>
         {/* eslint-disable-next-line react/no-danger */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} suppressHydrationWarning />

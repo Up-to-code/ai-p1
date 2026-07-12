@@ -1001,15 +1001,15 @@
         "items": [
           {
             "question": "Who is Qentrah built for?",
-            "answer": "Qentrah is built for teams that need one trusted workspace for projects, assets, tasks, clients, approvals, and handoffs."
+            "answer": "Qentrah is built for teams that need one trusted workspace for spaces, projects, tasks, documents, calendars, communication, and AI-assisted work."
           },
           {
             "question": "How does onboarding work?",
-            "answer": "Teams can start with the workspace, then map their project, asset, client, calendar, and organization flows with the Qentrah team when deeper setup is needed."
+            "answer": "Create an organization, add a space for each team or function, then bring in projects, tasks, documents, and calendars as the workspace grows."
           },
           {
             "question": "Can different teams work from the same data?",
-            "answer": "Yes. Qentrah is designed around shared project and asset context so operators, client teams, and partners can act from the same verified records."
+            "answer": "Yes. Spaces and projects give each team the context it needs while shared records, roles, and permissions keep work aligned across the organization."
           },
           {
             "question": "How is pricing handled?",
@@ -1391,6 +1391,7 @@
     "agreementPrivacy": "Privacy Policy",
     "agreementSuffix": ".",
     "backToHome": "Back to Home",
+    "needHelp": "Need help?",
     "errors": {
       "authStillLoading": "Authentication is still loading. Try again in a moment.",
       "callbackFailed": "Could not complete sign-in. Return to sign-in and try again.",

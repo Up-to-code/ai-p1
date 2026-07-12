@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useAuthSession } from "@/domains/auth";
 import { useTaskQuery, useTasksQuery } from "../api/tasks";
 import { taskDocumentContext } from "../tasks.constants";
 import { useTaskMentionOptions, useMemberOptions } from "./task-hooks";
 import { TaskEditor } from "./task-editor";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 interface TaskEditModalProps {
   taskId: string | null;
@@ -18,6 +20,11 @@ interface TaskEditModalProps {
  * Self-contained: fetches the task and wires up the full TaskEditor.
  */
 export function TaskEditModal({ taskId, open, onClose }: TaskEditModalProps) {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const closeEditor = () => {
+    setIsFullscreen(false);
+    onClose();
+  };
   const session = useAuthSession();
   const workspaceStatus = session.workspace.status;
   const organizationId =
@@ -49,10 +56,26 @@ export function TaskEditModal({ taskId, open, onClose }: TaskEditModalProps) {
   });
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) onClose(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen: boolean) => {
+        if (!isOpen) {
+          closeEditor();
+        }
+      }}
+    >
       <DialogContent
         showCloseButton={false}
-        className="h-[90vh] w-full max-w-[90vw] gap-0 overflow-hidden p-0"
+        containerClassName={isFullscreen ? "p-0" : undefined}
+        style={
+          isFullscreen
+            ? { width: "100vw", maxWidth: "none", height: "100vh" }
+            : { width: "94vw", maxWidth: "1180px", height: "92vh" }
+        }
+        className={cn(
+          "gap-0 overflow-hidden border-border/80 bg-background p-0 shadow-2xl",
+          isFullscreen && "rounded-none border-0 ring-0",
+        )}
       >
         {/* Loading / not ready states */}
         {(!task || !organizationId) && (
@@ -84,9 +107,11 @@ export function TaskEditModal({ taskId, open, onClose }: TaskEditModalProps) {
             organizationId={organizationId}
             memberOptions={memberOptions}
             mentionOptions={mentionOptions}
-            onSaved={onClose}
-            onDeleted={onClose}
-            onClose={onClose}
+            onSaved={closeEditor}
+            onDeleted={closeEditor}
+            onClose={closeEditor}
+            isFullscreen={isFullscreen}
+            onToggleFullscreen={() => setIsFullscreen((current) => !current)}
           />
         )}
       </DialogContent>

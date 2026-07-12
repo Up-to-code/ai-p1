@@ -50,7 +50,7 @@ export function NoOrganizationModal() {
   return (
     <Dialog open>
       <DialogContent
-        className="max-w-md"
+        className="max-w-md rounded-md border border-border bg-background p-6 shadow-none"
         showCloseButton={false}
       >
         <DialogHeader>
@@ -66,15 +66,15 @@ export function NoOrganizationModal() {
             </div>
           )}
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label
               htmlFor="no-org-name"
-              className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary"
+              className="text-xs font-medium text-text-secondary"
             >
               {t("nameLabel")}
             </Label>
             <Input
-              className="h-12 rounded-2xl"
+              className="h-11 rounded-md"
               id="no-org-name"
               onChange={(event) => {
                 setOrganizationName(event.target.value);
@@ -91,7 +91,7 @@ export function NoOrganizationModal() {
           </div>
 
           <Button
-            className="h-12 w-full rounded-2xl text-sm font-bold"
+            className="h-11 w-full rounded-md bg-foreground text-sm font-semibold text-background hover:bg-foreground/90"
             disabled={isBusy}
             onClick={() => void createOrganization()}
             type="button"
@@ -114,7 +114,7 @@ export function NoOrganizationModal() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-border bg-muted/40 p-4">
+          <div className="rounded-md border border-border bg-muted/40 p-4">
             <div className="flex items-start gap-3">
               <Mail className="mt-0.5 h-5 w-5 shrink-0 text-text-secondary" />
               <div>

@@ -1,9 +1,8 @@
 import {
   applyUsageToCreditBalance,
   calculateAiCredits,
-  resolveSubscriptionEntitlements,
-  type SubscriptionPlanId,
 } from "@qentrah/domain-contracts/subscription-pricing";
+import { getBillingPlanAccess } from "./data";
 
 export type StoredCreditBalance = {
   _id: string;
@@ -45,14 +44,7 @@ export type CreditUsageSummary = {
 
 export function includedCreditsForBillingPlan(planId?: string | null) {
   if (!planId) return 0;
-  // Single plan: qentrah_workspace gets the same credits as "better"
-  if (planId === "qentrah_workspace") {
-    return resolveSubscriptionEntitlements("better").includedCredits;
-  }
-  // Legacy plan IDs
-  const base = planId.replace(/_monthly|_yearly$/, "") as SubscriptionPlanId;
-  if (base !== "good" && base !== "better" && base !== "custom") return 0;
-  return resolveSubscriptionEntitlements(base).includedCredits;
+  return getBillingPlanAccess(planId).aiCreditLimit;
 }
 
 function nonNegativeInteger(value: number | undefined) {

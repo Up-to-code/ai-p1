@@ -14,7 +14,9 @@ export function AnimatedTetrahedron() {
     if (!ctx) return;
 
     const chars = "░▒▓█▀▄▌▐│─┤├┴┬╭╮╰╯";
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let time = 0;
+    let isVisible = true;
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
@@ -137,15 +139,38 @@ export function AnimatedTetrahedron() {
         ctx.fillText(point.char, point.x, point.y);
       });
 
-      time += 0.015;
-      frameRef.current = requestAnimationFrame(render);
+      if (!reduceMotion && isVisible && !document.hidden) {
+        time += 0.015;
+        frameRef.current = requestAnimationFrame(render);
+      }
     };
 
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      const nextVisible = entry.isIntersecting;
+      if (nextVisible && !isVisible && !reduceMotion && !document.hidden) {
+        isVisible = true;
+        frameRef.current = requestAnimationFrame(render);
+      } else {
+        isVisible = nextVisible;
+        if (!nextVisible) cancelAnimationFrame(frameRef.current);
+      }
+    });
+    const handleVisibilityChange = () => {
+      cancelAnimationFrame(frameRef.current);
+      if (!document.hidden && isVisible && !reduceMotion) {
+        frameRef.current = requestAnimationFrame(render);
+      }
+    };
+
+    visibilityObserver.observe(canvas);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     render();
 
     return () => {
       window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       resizeObserver.disconnect();
+      visibilityObserver.disconnect();
       cancelAnimationFrame(frameRef.current);
     };
   }, []);

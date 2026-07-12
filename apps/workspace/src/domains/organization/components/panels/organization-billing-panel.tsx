@@ -9,6 +9,7 @@ import { Link as LocaleLink } from "@/i18n/routing";
 import { StatusPill } from "@/components/shared/crud-ui";
 import { useBillingOverview, useBillingUsage } from "@/domains/billing/api/billing";
 import { billingDateLabel, subscriptionTone } from "@/domains/billing/billing-view-model";
+import { billableMemberUnits, subscriptionTotalForMembers } from "@/domains/billing/lib/billing-helpers";
 import { isRtlLocale } from "@/lib/i18n/locale";
 
 import { BillingMeter } from "./billing-meter";
@@ -36,21 +37,30 @@ export function OrganizationBillingPanel({
   const plan = overview?.plan ?? null;
   const status = subscription?.status ?? "inactive";
   const isActive = status === "active";
+  const isYearly = (plan?.periodDays ?? 30) >= 365;
+  const billingPeriodLabel = isYearly
+    ? isRtl ? "/ مستخدم / سنة" : "/ user / year"
+    : isRtl ? "/ مستخدم / شهر" : "/ user / month";
+  const totalPeriodLabel = isYearly
+    ? isRtl ? "/ سنة" : "/ year"
+    : isRtl ? "/ شهر" : "/ month";
 
   // Price per seat
-  const pricePerUser = plan?.amount ?? 6.99;
+  const pricePerUser = plan?.amount ?? 7;
+  const billableUnits = plan ? billableMemberUnits(plan, memberCount) : 1;
+  const includedMemberCount = plan?.includedMemberCount ?? 3;
   const priceLabel = plan
     ? new Intl.NumberFormat(isRtl ? "ar-EG" : "en-US", {
         style: "currency",
         currency: plan.currency,
         maximumFractionDigits: 2,
       }).format(pricePerUser)
-    : "$6.99";
+    : "$7.00";
   const totalLabel = new Intl.NumberFormat(isRtl ? "ar-EG" : "en-US", {
     style: "currency",
     currency: plan?.currency ?? "USD",
     maximumFractionDigits: 2,
-  }).format(pricePerUser * memberCount);
+  }).format(plan ? subscriptionTotalForMembers(plan, memberCount) : pricePerUser);
 
   const renewalLabel = billingDateLabel(subscription?.currentPeriodEndAt, locale);
 
@@ -80,14 +90,19 @@ export function OrganizationBillingPanel({
             <p className="text-sm font-bold text-muted-foreground">
               {priceLabel}
               <span className="ms-1 text-xs text-muted-foreground/60">
-                {isRtl ? "/ مستخدم / شهر" : "/ user / month"}
+                {billingPeriodLabel} · {isRtl ? "يشمل حتى" : "includes up to"} {includedMemberCount} {isRtl ? "أعضاء" : "members"}
               </span>
             </p>
             {/* Seat total */}
             <p className="text-[10px] font-bold text-[var(--q-accent)]">
-              {priceLabel} × {memberCount} {isRtl ? "مستخدم" : memberCount === 1 ? "user" : "users"}{" "}
-              = {totalLabel} {isRtl ? "/ شهر" : "/ month"}
+              {priceLabel} × {billableUnits} {isRtl ? "وحدة فوترة" : billableUnits === 1 ? "billing unit" : "billing units"}{" "}
+              = {totalLabel} {totalPeriodLabel}
             </p>
+            {plan?.trialDays ? (
+              <p className="text-[10px] font-bold text-muted-foreground">
+                {plan.trialDays}-{isRtl ? "أيام تجربة مجانية" : "day free trial"}.
+              </p>
+            ) : null}
             {isActive && (
               <p className="text-[10px] font-bold text-muted-foreground">
                 {isRtl ? "يجدد في" : "Renews"} {renewalLabel}

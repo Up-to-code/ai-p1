@@ -91,9 +91,6 @@ export type PermissionCheckResult = {
 };
 
 type PermissionCtx = {
-  auth: {
-    getUserIdentity: () => Promise<{ subject?: string } | null>;
-  };
   db: any;
   runQuery: any;
 };
@@ -130,31 +127,6 @@ function normalizeProjectVisibility(
   return "private";
 }
 
-async function getIdentityForUser(ctx: PermissionCtx, userId: string) {
-  const identity = await ctx.auth.getUserIdentity();
-  return identity?.subject === userId ? identity : null;
-}
-
-async function getTokenOrganizationRoles(
-  ctx: PermissionCtx,
-  organizationId: string,
-  userId: string,
-): Promise<string[]> {
-  const identity = await getIdentityForUser(ctx, userId);
-  if (!identity) return [];
-
-  const claims = identity as Record<string, unknown>;
-  const tokenOrgId =
-    (claims.org_id as string | undefined) ??
-    (claims.orgId as string | undefined);
-  const tokenOrgRole =
-    (claims.org_role as string | undefined) ??
-    (claims.orgRole as string | undefined);
-
-  if (tokenOrgId !== organizationId || !tokenOrgRole) return [];
-  return splitRoleList(tokenOrgRole);
-}
-
 async function getBetterAuthMembershipRole(
   ctx: PermissionCtx,
   organizationId: string,
@@ -176,13 +148,8 @@ async function getOrganizationRoleNames(
   organizationId: string,
   userId: string,
 ): Promise<string[]> {
-  const tokenRoles = await getTokenOrganizationRoles(
-    ctx,
-    organizationId,
-    userId,
-  );
-  if (tokenRoles.length > 0) return tokenRoles;
-
+  // Authorization is deliberately resolved from live membership state instead
+  // of JWT role claims so removals and role changes apply on the next request.
   const membershipRole = await getBetterAuthMembershipRole(
     ctx,
     organizationId,

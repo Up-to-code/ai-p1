@@ -10,6 +10,9 @@ export function defaultTaskVisibility(
   projectId?: string,
   spaceId?: string,
 ): TaskVisibility {
+  if (requestedVisibility === "team" && !projectId && !spaceId) {
+    return "private";
+  }
   if (requestedVisibility) return requestedVisibility;
   return projectId || spaceId ? "team" : "private";
 }

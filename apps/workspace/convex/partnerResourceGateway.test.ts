@@ -210,6 +210,7 @@ describe("partner resource gateway", () => {
       input: { title: "Zapier follow-up", priority: "high" },
       actor,
     });
+    if (!("id" in task)) throw new Error("Expected a created task.");
     await writePartnerResourceThroughGateway(ctx, {
       organizationId: "org_1",
       resource: "task",

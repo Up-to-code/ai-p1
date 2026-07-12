@@ -7,17 +7,20 @@ import {
   UserRound,
   CalendarDays,
   Flag,
+  Tag,
   Trash2,
   Maximize2,
   Minimize2,
   X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { format } from "date-fns";
 import {
   WorkOsDocEditor,
   type DocEditorMentionOption,
   type DocEditorMetaField,
 } from "@/components/shared/work-os-doc-editor";
+import { WorkspaceDatePicker } from "@/components/shared";
 import { DeleteRecordDialog } from "@/components/shared/crud-ui";
 import type { WorkOsPickerOption } from "@/domains/work-os/components/work-os-record-picker";
 import {
@@ -30,7 +33,7 @@ import { useToast } from "@/components/ui/toast";
 import {
   taskDocumentContext,
 } from "../tasks.constants";
-import { StatusPicker, PriorityPicker, DueDatePicker, AssigneePicker, ProjectPicker } from "./task-pickers";
+import { StatusPicker, PriorityPicker, AssigneePicker, ProjectPicker } from "./task-pickers";
 import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
 import { taskHref } from "./task-hooks";
 import { taskLog } from "../task-log";
@@ -38,6 +41,14 @@ import { CustomFieldsSection } from "@/components/shared/custom-fields/custom-fi
 import { useTaskMutations } from "../hooks/use-task-mutations";
 
 // ─── Form helpers ──────────────────────────────────────────────────────────────
+
+function editorDate(value?: string) {
+  return value ? new Date(`${value}T12:00:00`) : undefined;
+}
+
+function storedDate(value: Date | undefined) {
+  return value ? format(value, "yyyy-MM-dd") : "";
+}
 
 // ─── Task Editor panel ────────────────────────────────────────────────────────
 
@@ -86,6 +97,7 @@ export function TaskEditor({
   );
   const serverDraft = useMemo(() => taskFormValuesFromRecord(task), [task]);
   const [draft, setDraft] = useState<TaskFormValues>(serverDraft);
+  const projectName = projectList.find((project) => project.id === draft.projectId)?.name;
   const [busyId, setBusyId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
@@ -184,11 +196,13 @@ export function TaskEditor({
       icon: <CalendarDays className="h-3.5 w-3.5" />,
       label: "Start date",
       value: (
-        <DueDatePicker
-          value={draft.startDate ?? ""}
-          onChange={(v) => updateDraft({ startDate: v })}
-          label="Start date"
-          required
+        <WorkspaceDatePicker
+          startDate={editorDate(draft.startDate)}
+          dueDate={editorDate(draft.dueDate)}
+          defaultField="start"
+          onStartDateChange={(date) => updateDraft({ startDate: storedDate(date) })}
+          onDueDateChange={(date) => updateDraft({ dueDate: storedDate(date) })}
+          className="h-7 bg-transparent px-2 text-xs hover:bg-[var(--q-sidebar-accent)]"
         />
       ),
     },
@@ -197,10 +211,13 @@ export function TaskEditor({
       icon: <CalendarDays className="h-3.5 w-3.5" />,
       label: "End date",
       value: (
-        <DueDatePicker
-          value={draft.dueDate}
-          onChange={(v) => updateDraft({ dueDate: v })}
-          label="End date"
+        <WorkspaceDatePicker
+          startDate={editorDate(draft.startDate)}
+          dueDate={editorDate(draft.dueDate)}
+          defaultField="due"
+          onStartDateChange={(date) => updateDraft({ startDate: storedDate(date) })}
+          onDueDateChange={(date) => updateDraft({ dueDate: storedDate(date) })}
+          className="h-7 bg-transparent px-2 text-xs hover:bg-[var(--q-sidebar-accent)]"
         />
       ),
     },
@@ -214,6 +231,19 @@ export function TaskEditor({
           onChange={(v) => updateDraft({ projectId: v })}
           options={projectList}
           t={t}
+        />
+      ),
+    },
+    {
+      key: "tags",
+      icon: <Tag className="h-3.5 w-3.5" />,
+      label: "Tags",
+      value: (
+        <input
+          value={draft.tags}
+          onChange={(event) => updateDraft({ tags: event.target.value })}
+          placeholder="Add tags…"
+          className="h-7 w-full rounded-md bg-transparent px-2 text-xs outline-none placeholder:text-muted-foreground hover:bg-muted/50 focus:bg-muted/50"
         />
       ),
     },
@@ -238,19 +268,19 @@ export function TaskEditor({
   return (
     <div
       className={cn(
-        "flex h-full flex-col",
-        isFullscreen ? "fixed inset-0 z-[60] w-screen h-screen bg-background" : "relative",
+        "relative flex h-full w-full flex-col bg-background",
+        isFullscreen && "rounded-none",
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-3 shrink-0">
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-border/75 bg-background px-5">
         <div className="flex items-center gap-3">
           <Button
             type="button"
             size="sm"
             onClick={saveDraft}
             disabled={Boolean(busyId) || !hasUnsavedChanges}
-            className="h-8 rounded-xl text-xs transition-all duration-200"
+            className="h-7 rounded-md px-3 text-xs transition-all duration-200"
           >
             {busyId === "patch" ? "Saving..." : t("form.saveBtn")}
           </Button>
@@ -299,7 +329,7 @@ export function TaskEditor({
       </div>
 
       {/* ── Doc editor ── */}
-      <div className="min-h-0 flex-1 overflow-y-auto p-6">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-background">
         <WorkOsDocEditor
           title={draft.title}
           body={draft.description}
@@ -320,9 +350,27 @@ export function TaskEditor({
           mentionOptions={mentionOptions}
           documentContext={context}
           compactFormatting
+          contentClassName="max-w-[980px] px-8 pb-8 pt-7 sm:px-12"
+          titleClassName="text-[1.75rem] leading-tight"
+          editorMinHeightClassName="min-h-[260px]"
+          fieldLayout="compact"
+          bodyLabel="Description"
+          editorEngine="tiptap"
+          contentHeader={
+            <div className="mb-4 flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/30 px-2 py-1 font-semibold text-foreground">
+                  <Circle className="size-3" /> Task
+                </span>
+                <span className="truncate">{projectName ?? "Personal task"}</span>
+              </div>
+              <span className="shrink-0 font-mono text-[10px] text-muted-foreground/70">{task.id.slice(-8)}</span>
+            </div>
+          }
         />
-        <div className="mx-auto mt-6 max-w-4xl border-t border-border pt-5">
-          <CustomFieldsSection recordType="task" recordId={task.id} />
+        <div className="mx-auto max-w-[980px] border-t border-border/75 px-8 pb-12 pt-5 sm:px-12">
+          <h3 className="mb-3 text-xs font-semibold text-foreground">Custom fields</h3>
+          <CustomFieldsSection recordType="task" recordId={task.id} allowCreate />
         </div>
       </div>
 

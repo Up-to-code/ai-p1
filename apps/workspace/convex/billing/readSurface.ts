@@ -16,7 +16,7 @@ export function billingSubscriptionOverview(
   latestPayment: StoredPayment | null,
 ) {
   return {
-    plan: subscription ? getBillingPlan(subscription.planId) : BILLING_PLANS.qentrah_workspace,
+    plan: subscription ? getBillingPlan(subscription.planId) : BILLING_PLANS.good_monthly,
     subscription: subscription ? presentSubscription(subscription) : null,
     latestPayment: latestPayment ? presentPayment(latestPayment) : null,
   };

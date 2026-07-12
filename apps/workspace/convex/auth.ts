@@ -1,8 +1,10 @@
 import { betterAuth } from "better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { requireRunMutationCtx } from "@convex-dev/better-auth/utils";
-import { emailOTP, jwt, organization } from "better-auth/plugins";
+import { emailOTP, jwt, lastLoginMethod, organization } from "better-auth/plugins";
 import { oauthProvider } from "@better-auth/oauth-provider";
+import { i18n } from "@better-auth/i18n";
+import { expo } from "@better-auth/expo";
 import { betterAuthClient } from "./betterAuth";
 import authConfig from "./auth.config";
 import { getAuthUser, safeGetAuthUser } from "./betterAuth";
@@ -10,7 +12,11 @@ import { getAppUrl, getTransactionalFromEmail, resend } from "./email";
 
 export const createAuth = (ctx: any) => {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
-  const mcpResource = `${appUrl.replace(/\/$/u, "")}/mcp`;
+  const appOrigin = appUrl.replace(/\/$/u, "");
+  const defaultMcpResource = new URL(appOrigin).hostname === "app.qentrah.com"
+    ? "https://mcp.qentrah.com/mcp"
+    : `${appOrigin}/mcp`;
+  const mcpResource = (process.env.MCP_RESOURCE_URL ?? defaultMcpResource).replace(/\/$/u, "");
 
   return betterAuth({
     database: betterAuthClient.adapter(ctx),
@@ -127,6 +133,23 @@ export const createAuth = (ctx: any) => {
         },
       }),
       jwt(),
+      expo(),
+      i18n({
+        defaultLocale: "en",
+        localeCookie: "NEXT_LOCALE",
+        detection: ["session", "cookie", "header"],
+        translations: {
+          ar: {
+            USER_NOT_FOUND: "تعذر العثور على المستخدم",
+            INVALID_EMAIL_OR_PASSWORD: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+            INVALID_PASSWORD: "كلمة المرور غير صحيحة",
+            CREDENTIAL_ACCOUNT_NOT_FOUND: "تعذر العثور على حساب تسجيل الدخول",
+            EMAIL_NOT_VERIFIED: "يجب التحقق من البريد الإلكتروني",
+            SESSION_EXPIRED: "انتهت جلسة تسجيل الدخول",
+          },
+        },
+      }),
+      lastLoginMethod({ storeInDatabase: true }),
       oauthProvider({
         loginPage: "/en/sign-in",
         consentPage: "/oauth/consent",
@@ -134,6 +157,16 @@ export const createAuth = (ctx: any) => {
         scopes: ["openid", "profile", "email", "offline_access", "mcp:read", "mcp:write"],
         allowDynamicClientRegistration: true,
         allowUnauthenticatedClientRegistration: true,
+        accessTokenExpiresIn: 60 * 60,
+        refreshTokenExpiresIn: 90 * 24 * 60 * 60,
+        rateLimit: {
+          token: { window: 60, max: 20 },
+          authorize: { window: 60, max: 20 },
+          introspect: { window: 60, max: 60 },
+          revoke: { window: 60, max: 20 },
+          register: { window: 60, max: 5 },
+          userinfo: { window: 60, max: 30 },
+        },
         silenceWarnings: { oauthAuthServerConfig: true },
         clientRegistrationDefaultScopes: ["openid", "profile", "email", "mcp:read"],
         clientRegistrationAllowedScopes: ["offline_access", "mcp:write"],
@@ -158,7 +191,7 @@ export const createAuth = (ctx: any) => {
     ],
 
     baseURL: process.env.NEXT_PUBLIC_APP_URL!,
-    trustedOrigins: [process.env.NEXT_PUBLIC_APP_URL!],
+    trustedOrigins: [process.env.NEXT_PUBLIC_APP_URL!, "qentrah://", "qentrah://*"],
     trustedProxyHeaders: true,
     advanced: {
       database: {

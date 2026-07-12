@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useReducedMotion, motion, AnimatePresence, type Variants } from "framer-motion";
 import { ArrowDown, Building2, CalendarClock, CheckCircle2, Search } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
 import AiComposer, { type ComposerMode } from "./ai-composer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEveChat, saveThread, generateThreadId } from "@/domains/eve";
@@ -252,30 +253,30 @@ export function EveDashboardChat({
   };
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-background text-foreground">
-      <AmbientWave />
+    <div className="relative flex h-full flex-col overflow-hidden bg-[var(--q-ai-canvas)] text-foreground">
+      <AmbientWave hidden={messages.length > 0} />
       {showSkeleton ? (
         <>
           <ThreadMessagesSkeleton />
           <ComposerBar inputValue={inputValue} setInputValue={setInputValue} onSend={handleSend} onStop={stop} isSending={isStreaming} mode={composerMode} onModeChange={setComposerMode} />
         </>
       ) : messages.length === 0 ? (
-        <div className="relative flex flex-1 flex-col items-center justify-center px-4 pb-36 pt-12 md:pb-40">
+        <div className="relative flex flex-1 flex-col items-center justify-center px-4 pb-32 pt-12 md:pb-36">
           <motion.div
-            className="w-full max-w-[60rem] space-y-8 text-center"
+            className="w-full max-w-[52rem] space-y-7 text-center"
             initial={reduceMotion ? false : "hidden"}
             animate="show"
             variants={aiEmptyStateVariants}
           >
-            <motion.div className="space-y-4" variants={aiEmptyItemVariants}>
-              <h2 className="text-3xl font-black leading-none tracking-tight text-foreground sm:text-5xl">
+            <motion.div className="space-y-3" variants={aiEmptyItemVariants}>
+              <h2 className="text-3xl font-semibold leading-tight tracking-[-0.035em] text-foreground sm:text-[42px]">
                 <WordWave text={t("welcome")} disabled={reduceMotion} />
               </h2>
-              <motion.p className="mx-auto max-w-xl text-base font-medium leading-relaxed text-muted-foreground" variants={aiCopyVariants}>
+              <motion.p className="mx-auto max-w-xl text-sm leading-6 text-muted-foreground sm:text-base" variants={aiCopyVariants}>
                 {t("inputPlaceholder")}
               </motion.p>
             </motion.div>
-            <motion.div className="relative group pt-4" variants={aiComposerVariants}>
+            <motion.div className="relative pt-3" variants={aiComposerVariants}>
               <AiComposer
                 value={inputValue}
                 onChange={setInputValue}
@@ -298,10 +299,9 @@ export function EveDashboardChat({
                 <motion.button
                   key={pill.label}
                   onClick={() => setInputValue(pill.label)}
-                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-[11px] font-semibold tracking-wide text-muted-foreground shadow-xs transition-all hover:border-primary/30 hover:bg-accent hover:text-accent-foreground active:scale-[0.97]"
+                  className="flex min-h-10 items-center justify-center gap-2 rounded-md border border-border bg-[var(--q-ai-composer)] px-3 py-2 text-[11px] font-medium text-muted-foreground shadow-none transition-colors hover:border-foreground/25 hover:bg-muted/60 hover:text-foreground"
                   variants={aiSuggestionVariants}
-                  whileHover={reduceMotion ? undefined : { y: -1 }}
-                  whileTap={reduceMotion ? undefined : { scale: 0.97 }}
+                  whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 >
                   <pill.icon className="h-3.5 w-3.5 opacity-70" />
                   {pill.label}
@@ -468,21 +468,18 @@ function WordWave({ text, disabled }: { text: string; disabled: boolean | null }
   );
 }
 
-function AmbientWave() {
+function AmbientWave({ hidden = false }: { hidden?: boolean }) {
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div
+      aria-hidden="true"
+      className={cn(
+        "pointer-events-none absolute inset-0 overflow-hidden transition-opacity duration-500",
+        hidden ? "opacity-0" : "opacity-100",
+      )}
+    >
       <div
-        className="absolute -inset-x-[22%] -top-[20vh] h-[68vh] opacity-95 blur-[2px]"
-        style={{
-          background: `radial-gradient(ellipse 48% 46% at 26% 18%, rgba(12, 125, 243, 0.24), transparent 68%),
-                       radial-gradient(ellipse 40% 38% at 44% 20%, rgba(223, 63, 221, 0.18), transparent 62%),
-                       radial-gradient(ellipse 38% 36% at 62% 18%, rgba(52, 70, 236, 0.16), transparent 64%),
-                       radial-gradient(ellipse 28% 26% at 74% 22%, rgba(249, 114, 79, 0.14), transparent 60%),
-                       radial-gradient(ellipse 30% 28% at 38% 44%, rgba(242, 72, 139, 0.12), transparent 60%),
-                       radial-gradient(ellipse 28% 26% at 55% 48%, rgba(131, 77, 241, 0.12), transparent 60%),
-                       radial-gradient(ellipse 24% 22% at 68% 46%, rgba(69, 197, 249, 0.1), transparent 58%),
-                       radial-gradient(ellipse 22% 20% at 48% 58%, rgba(235, 167, 231, 0.09), transparent 56%)`,
-        }}
+        className="absolute inset-x-0 top-0 h-[42vh] opacity-90"
+        style={{ background: "var(--q-ai-canvas-wash)" }}
       />
     </div>
   );

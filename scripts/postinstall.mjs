@@ -10,7 +10,7 @@ const mobilePatchDir = join("apps", "mobile", "patches");
 const rootPatchDir = "patches";
 const patchPackageBin = join(repoRoot, "node_modules", ".bin", "patch-package");
 
-// Apply root-level patches (Clerk ESM fix, etc)
+// Apply root-level dependency patches when present.
 {
   const rootPatches = join(repoRoot, rootPatchDir);
   if (existsSync(rootPatches)) {

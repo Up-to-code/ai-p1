@@ -1,16 +1,11 @@
-import { Hono } from "hono";
-import {
-  handleCreateMcpConnection,
-  handleListMcpConnections,
-  handleRevokeMcpConnection,
-  handleRotateMcpConnection,
-  handleUpdateMcpConnection,
-} from "@/server/domains/mcpConnections/handlers/mcp-connections";
-
+import { Hono, type Context } from "hono";
 export const mcpSubRouter = new Hono();
 
-mcpSubRouter.get("/:organizationId/mcp-connections", handleListMcpConnections);
-mcpSubRouter.post("/:organizationId/mcp-connections", handleCreateMcpConnection);
-mcpSubRouter.patch("/:organizationId/mcp-connections/:connectionId", handleUpdateMcpConnection);
-mcpSubRouter.delete("/:organizationId/mcp-connections/:connectionId", handleRevokeMcpConnection);
-mcpSubRouter.post("/:organizationId/mcp-connections/:connectionId/rotate", handleRotateMcpConnection);
+const retiredMcpConnections = (c: Context) => c.json({
+  error: "legacy_mcp_connections_retired",
+  message: "Manage OAuth MCP grants from the MCP settings screen.",
+  mcpUrl: process.env.MCP_RESOURCE_URL ?? "https://mcp.qentrah.com/mcp",
+}, 410);
+
+mcpSubRouter.all("/:organizationId/mcp-connections", retiredMcpConnections);
+mcpSubRouter.all("/:organizationId/mcp-connections/*", retiredMcpConnections);

@@ -3,8 +3,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const editorSpy = vi.hoisted(() => vi.fn(() => null));
+const yooptaEditorSpy = vi.hoisted(() => vi.fn(() => null));
+vi.mock("@/components/shared/tiptap-document-editor", () => ({
+  TiptapDocumentEditor: editorSpy,
+}));
 vi.mock("@/components/shared/yoopta-rich-text-editor", () => ({
-  YooptaRichTextEditor: editorSpy,
+  YooptaRichTextEditor: yooptaEditorSpy,
 }));
 
 vi.mock("@/lib/uploadthing", () => ({
@@ -16,6 +20,7 @@ import { WorkOsDocEditor, shouldUseCompactFormatting } from "./work-os-doc-edito
 describe("shouldUseCompactFormatting", () => {
   beforeEach(() => {
     editorSpy.mockClear();
+    yooptaEditorSpy.mockClear();
   });
 
   it("enables compact controls for task document contexts", () => {
@@ -38,13 +43,14 @@ describe("shouldUseCompactFormatting", () => {
     ).toBe(false);
   });
 
-  it("propagates task compact mode to the shared rich-text editor", () => {
+  it("renders task content through the chrome-free document editor", () => {
     renderToStaticMarkup(
       createElement(WorkOsDocEditor, {
         title: "Task title",
         body: "<p>Task body</p>",
         fields: [],
         compactFormatting: true,
+        editorEngine: "tiptap",
         documentContext: {
           scope: "project",
           organizationId: "org_1",
@@ -54,7 +60,10 @@ describe("shouldUseCompactFormatting", () => {
     );
 
     expect(editorSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ compactFormatting: true }),
+      expect.objectContaining({
+        value: "<p>Task body</p>",
+        variant: "document",
+      }),
       undefined,
     );
   });
@@ -69,7 +78,7 @@ describe("shouldUseCompactFormatting", () => {
       }),
     );
 
-    expect(editorSpy).toHaveBeenCalledWith(
+    expect(yooptaEditorSpy).toHaveBeenCalledWith(
       expect.objectContaining({ onUploadImage: undefined }),
       undefined,
     );

@@ -160,7 +160,6 @@ const config: ExpoConfig = {
       projectId: "514606c6-a5f7-4512-a73d-4916d051eb6b",
     },
     authUrl: mobileEnvironment.authUrl,
-    clerkPublishableKey: mobileEnvironment.clerkPublishableKey,
     workspaceApiUrl: mobileEnvironment.workspaceApiUrl,
     mobileEnvironment: mobileEnvironment.environment,
     supportedLocales: ["en", "ar", "fr"],

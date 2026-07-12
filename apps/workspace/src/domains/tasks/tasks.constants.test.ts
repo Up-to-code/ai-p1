@@ -62,13 +62,20 @@ describe("tasks.constants", () => {
     it("returns red for past dates", () => {
       const past = new Date();
       past.setDate(past.getDate() - 1);
-      expect(getDueDateColor(past.toISOString().slice(0, 10))).toBe("text-red-500");
+      expect(getDueDateColor(past.toISOString().slice(0, 10))).toBe(
+        "text-red-500",
+      );
     });
 
     it("returns amber for today", () => {
       const now = new Date();
       const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
       expect(getDueDateColor(todayStr)).toBe("text-amber-500");
+    });
+
+    it("returns amber when the deadline is within two days", () => {
+      const now = new Date("2026-07-12T12:00:00");
+      expect(getDueDateColor("2026-07-14", now)).toBe("text-amber-500");
     });
 
     it("returns muted for future dates", () => {

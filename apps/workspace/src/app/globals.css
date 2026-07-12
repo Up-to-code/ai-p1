@@ -22,11 +22,11 @@
   --q-card-hover: #F5F5F5;
 
   /* ── Sidebar ── */
-  --q-sidebar: #F5F5F5;
+  --q-sidebar: #F9F9F9;
   --q-sidebar-foreground: #111111;
   --q-sidebar-primary: #111111;
   --q-sidebar-primary-foreground: #FFFFFF;
-  --q-sidebar-accent: #E8E8E8;
+  --q-sidebar-accent: #E6E6E6;
   --q-sidebar-accent-foreground: #111111;
   --q-sidebar-border: #E0E0E0;
   --q-sidebar-ring: #111111;
@@ -81,6 +81,14 @@
 
   /* ── User Message Bubble ── */
   --q-user-bubble: #111111;
+
+  /* ── AI Canvas ── */
+  --q-ai-canvas: #FFFFFF;
+  --q-ai-composer: rgba(255, 255, 255, 0.92);
+  --q-ai-composer-border: #DADDE3;
+  --q-ai-composer-border-gradient: linear-gradient(110deg, rgba(255, 184, 150, 0.56), rgba(255, 160, 207, 0.48), rgba(141, 198, 255, 0.56));
+  --q-entry-canvas-wash: radial-gradient(ellipse at 10% -30%, rgba(255, 184, 150, 0.55), transparent 43%), radial-gradient(ellipse at 43% -25%, rgba(255, 160, 207, 0.48), transparent 42%), radial-gradient(ellipse at 86% -20%, rgba(141, 198, 255, 0.50), transparent 45%);
+  --q-ai-canvas-wash: var(--q-entry-canvas-wash);
 
   /* ── Status ── */
   --q-success: #5F7768;
@@ -195,11 +203,11 @@
   --q-card-hover: #18181A;
 
   /* ── Sidebar ── */
-  --q-sidebar: #070707;
+  --q-sidebar: #101010;
   --q-sidebar-foreground: #E0E0E0;
   --q-sidebar-primary: #E0E0E0;
   --q-sidebar-primary-foreground: #080808;
-  --q-sidebar-accent: #18181A;
+  --q-sidebar-accent: #292929;
   --q-sidebar-accent-foreground: #E0E0E0;
   --q-sidebar-border: #222326;
   --q-sidebar-ring: #E0E0E0;
@@ -231,6 +239,14 @@
 
   /* ── User Message Bubble ── */
   --q-user-bubble: #E0E0E0;
+
+  /* ── AI Canvas ── */
+  --q-ai-canvas: #070707;
+  --q-ai-composer: rgba(17, 17, 19, 0.92);
+  --q-ai-composer-border: #2A2B2F;
+  --q-ai-composer-border-gradient: linear-gradient(110deg, rgba(249, 114, 79, 0.36), rgba(242, 72, 139, 0.32), rgba(79, 128, 255, 0.36));
+  --q-entry-canvas-wash: radial-gradient(ellipse at 10% -30%, rgba(249, 114, 79, 0.18), transparent 43%), radial-gradient(ellipse at 43% -25%, rgba(242, 72, 139, 0.16), transparent 42%), radial-gradient(ellipse at 86% -20%, rgba(79, 128, 255, 0.18), transparent 45%);
+  --q-ai-canvas-wash: var(--q-entry-canvas-wash);
 
   /* ── Status ── */
   --q-success: #7F9987;
@@ -856,4 +872,45 @@
   padding: 6px 10px;
   color: hsl(var(--yoopta-ui-muted-foreground));
   font-size: 11px;
+}
+
+@property --q-ai-chip-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.q-ai-panel-chip {
+  --q-ai-chip-angle: 0deg;
+  background:
+    linear-gradient(var(--q-sidebar), var(--q-sidebar)) padding-box,
+    linear-gradient(transparent, transparent) border-box;
+}
+
+.q-ai-panel-chip:hover,
+.q-ai-panel-chip[data-active="true"] {
+  background:
+    linear-gradient(var(--q-sidebar), var(--q-sidebar)) padding-box,
+    conic-gradient(
+      from var(--q-ai-chip-angle),
+      #0c7df3,
+      #834df1,
+      #f2488b,
+      #f9724f,
+      #0c7df3
+    ) border-box;
+  animation: q-ai-chip-border-spin 2.8s linear infinite;
+}
+
+@keyframes q-ai-chip-border-spin {
+  to {
+    --q-ai-chip-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .q-ai-panel-chip:hover,
+  .q-ai-panel-chip[data-active="true"] {
+    animation: none;
+  }
 }

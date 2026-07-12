@@ -7,10 +7,11 @@ import sharp from "sharp";
 const appRoot = process.cwd();
 const buildDir = path.join(appRoot, "build");
 const iconsetDir = path.join(buildDir, "icon.iconset");
-const sourceIconSvg = path.join(appRoot, "public", "logo-dark-mood.svg");
+const sourceAppIcon = path.resolve(appRoot, "..", "..", "Branding", "qwntrah-logo-app.png");
 const sourceIcon1024 = path.join(appRoot, "public", "app-icon-1024.png");
 const sourceIcon512 = path.join(appRoot, "public", "app-icon-512.png");
-const sourceIcon = existsSync(sourceIconSvg) ? sourceIconSvg : (existsSync(sourceIcon1024) ? sourceIcon1024 : sourceIcon512);
+const sourceIconSvg = path.join(appRoot, "public", "logo-dark-mood.svg");
+const sourceIcon = existsSync(sourceAppIcon) ? sourceAppIcon : (existsSync(sourceIcon1024) ? sourceIcon1024 : (existsSync(sourceIcon512) ? sourceIcon512 : sourceIconSvg));
 const dmgBackgroundSvg = path.join(buildDir, "dmg-background.svg");
 const dmgBackgroundPng = path.join(buildDir, "dmg-background.png");
 

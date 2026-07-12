@@ -1,10 +1,10 @@
-export type ClerkEmailSignInAdapter = {
+export type EmailSignInAdapter = {
   password?: (input: { emailAddress: string; password: string }) => Promise<{ error?: unknown } | undefined>;
   finalize?: () => Promise<unknown>;
   status?: string | null;
 };
 
-export type ClerkEmailSignUpAdapter = {
+export type EmailSignUpAdapter = {
   password?: (input: {
     emailAddress: string;
     firstName?: string;
@@ -26,9 +26,9 @@ export type EmailAuthResult =
   | { status: "needs_verification" }
   | { status: "missing_details"; kind: EmailAuthMissingDetails };
 
-const CLERK_EMAIL_AUTH_TIMEOUT_MS = 12000;
+const EMAIL_AUTH_TIMEOUT_MS = 12000;
 
-export function clerkEmailAuthErrorMessage(error: unknown, fallback: string) {
+export function emailAuthErrorMessage(error: unknown, fallback: string) {
   if (!error || typeof error !== "object") return fallback;
   const record = error as {
     message?: unknown;
@@ -55,7 +55,7 @@ async function withEmailAuthTimeout<T>(promise: Promise<T> | undefined, phase: s
     return await Promise.race([
       promise,
       new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => reject(new Error(emailAuthTimeoutMessage(phase))), CLERK_EMAIL_AUTH_TIMEOUT_MS);
+        timeoutId = setTimeout(() => reject(new Error(emailAuthTimeoutMessage(phase))), EMAIL_AUTH_TIMEOUT_MS);
       }),
     ]);
   } finally {
@@ -66,7 +66,7 @@ async function withEmailAuthTimeout<T>(promise: Promise<T> | undefined, phase: s
 export async function signInWithEmailPassword(input: {
   emailAddress: string;
   password: string;
-  signIn: ClerkEmailSignInAdapter | null | undefined;
+  signIn: EmailSignInAdapter | null | undefined;
 }): Promise<EmailAuthResult> {
   const emailAddress = input.emailAddress.trim();
   if (!emailAddress || !input.password) {
@@ -90,7 +90,7 @@ export async function signUpWithEmailPassword(input: {
   fullName: string;
   needsVerification: boolean;
   password: string;
-  signUp: ClerkEmailSignUpAdapter | null | undefined;
+  signUp: EmailSignUpAdapter | null | undefined;
   verificationCode: string;
 }): Promise<EmailAuthResult> {
   const emailAddress = input.emailAddress.trim();
@@ -126,6 +126,10 @@ export async function signUpWithEmailPassword(input: {
     "creating your account",
   );
   if (result?.error) throw result.error;
+  if (input.signUp?.status === "complete") {
+    await withEmailAuthTimeout(input.signUp.finalize?.(), "opening your session");
+    return { status: "authenticated" };
+  }
   await withEmailAuthTimeout(
     input.signUp?.verifications?.sendEmailCode?.(),
     "sending your email code",
@@ -134,7 +138,7 @@ export async function signUpWithEmailPassword(input: {
 }
 
 export async function sendSignUpEmailVerificationCode(input: {
-  signUp: ClerkEmailSignUpAdapter | null | undefined;
+  signUp: EmailSignUpAdapter | null | undefined;
 }) {
   await withEmailAuthTimeout(
     input.signUp?.verifications?.sendEmailCode?.(),

@@ -56,7 +56,7 @@ export function FollowUpSuggestions({
       <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {isPlanMode ? "Next steps" : "Suggested actions"}
       </p>
-      <div className="flex flex-wrap gap-2">
+      <div className="grid w-full max-w-md gap-2">
         {actions.map((action, index) => {
           const Icon = getActionIcon(action);
           return (
@@ -72,7 +72,7 @@ export function FollowUpSuggestions({
                 ease: [0.22, 1, 0.36, 1] 
               }}
               className={cn(
-                "group flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium transition-all active:scale-[0.97]",
+                "group flex w-full items-center gap-3 rounded-xl border px-3.5 py-3 text-left text-sm font-medium transition-all active:scale-[0.99]",
                 isPlanMode
                   ? "border-destructive/30 bg-destructive/5 text-destructive hover:border-destructive/50 hover:bg-destructive/10"
                   : "border-border bg-background text-foreground hover:border-primary/40 hover:bg-accent hover:text-accent-foreground"
@@ -82,7 +82,8 @@ export function FollowUpSuggestions({
                 "h-4 w-4 transition-transform group-hover:scale-110",
                 isPlanMode ? "text-destructive" : "text-muted-foreground group-hover:text-accent-foreground"
               )} />
-              <span>{action.label}</span>
+              <span className="flex-1">{action.label}</span>
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5" />
             </motion.button>
           );
         })}

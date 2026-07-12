@@ -363,6 +363,26 @@
       "notes": "Composed with AddTokenModal for the add flow."
     },
     {
+      "name": "TiptapDocumentEditor",
+      "path": "apps/workspace/src/components/shared/tiptap-document-editor.tsx",
+      "kind": "shared-ui",
+      "summary": "Chrome-free Tiptap HTML editor with a caret-anchored slash palette, active-line plus control, selection formatting, and durable image paste/drop uploads.",
+      "usedIn": [
+        "components/shared/work-os-doc-editor"
+      ],
+      "props": [
+        "value",
+        "onChange",
+        "placeholder",
+        "onUploadImage",
+        "onBlurHtml",
+        "minHeightClassName",
+        "variant"
+      ],
+      "createdAt": "2026-07-12",
+      "notes": "Used by task workspaces through WorkOsDocEditor's editorEngine option while preserving the existing HTML persistence contract. No permanent block handles or insertion chrome."
+    },
+    {
       "name": "YooptaRichTextEditor",
       "path": "apps/workspace/src/components/shared/yoopta-rich-text-editor.tsx",
       "kind": "shared-ui",
@@ -539,6 +559,21 @@
       ],
       "createdAt": "2026-03-01",
       "notes": "Flexible toolbar for page-level actions."
+    },
+    {
+      "name": "InlineCustomFieldCreator",
+      "path": "apps/workspace/src/components/shared/custom-fields/inline-custom-field-creator.tsx",
+      "kind": "shared-ui",
+      "summary": "Inline record-aware custom field definition dialog with type, options, requirement, and view visibility configuration.",
+      "usedIn": [
+        "components/shared/custom-fields/custom-fields-section"
+      ],
+      "props": [
+        "recordType",
+        "compact"
+      ],
+      "createdAt": "2026-07-12",
+      "notes": "Creates reusable field definitions at the record editor without redirecting to organization settings. Values remain record-specific through CustomFieldRenderer."
     },
     {
       "name": "InfiniteScrollSentinel",
@@ -1169,11 +1204,12 @@
         "stages",
         "onCardMove",
         "onTaskCreate",
+        "memberOptions",
         "className"
       ],
       "createdAt": "2026-07-07",
       "updatedAt": "2026-07-08",
-      "notes": "Native ClickUp-style task board with compact status columns, controlled drag/drop, inline add-task forms, and optional group-aware create callback. Replaced the SVAR render because exact board UX required local layout control."
+      "notes": "Native task board with compact status columns, controlled drag/drop, inline creation using real member options and the shared date picker, reusable task tags, persistent group colors, and functional column quick actions. Replaced the SVAR render because exact board UX required local layout control."
     },
     {
       "name": "Table",
@@ -1285,6 +1321,67 @@
       ],
       "createdAt": "2026-07-10",
       "notes": "Keeps creation UI reusable while canonical Task and Document writes remain owned by their domain callers. Additional resource tabs can be added without introducing a second data layer."
+    },
+    {
+      "name": "ResourceWorkspaceLayout",
+      "path": "apps/workspace/src/components/shared/resource-workspace/resource-workspace-layout.tsx",
+      "kind": "shared-ui",
+      "summary": "Route-oriented resource workspace shell with persistent header, count, linked view tabs, configurable actions, toolbar placement, and an optional docked view extension panel.",
+      "usedIn": [
+        "components/shared/resource-workspace",
+        "domains/tasks/components/task-resource-layout",
+        "app/[locale]/(app)/tasks/layout"
+      ],
+      "props": [
+        "config",
+        "toolbar",
+        "extensionPanel",
+        "extensionPanelOpen",
+        "onExtensionPanelOpenChange",
+        "children"
+      ],
+      "createdAt": "2026-07-12",
+      "notes": "Owns placement only. Domain route layouts provide configuration and view pages provide domain Adapters. Pathname transitions are scoped inside the body seam so the persistent header and tabs never remount or fade. The exported useResourceWorkspaceExtension hook lets the active view dock view-owned UI without moving that logic into the shell. Does not import domain mutations or schemas."
+    },
+    {
+      "name": "ResourceViewMenu",
+      "path": "apps/workspace/src/components/shared/resource-workspace/resource-view-menu.tsx",
+      "kind": "shared-ui",
+      "summary": "Searchable categorized Add View menu driven entirely by a domain-supplied view catalog and callback.",
+      "usedIn": [
+        "components/shared/resource-workspace/resource-workspace-layout"
+      ],
+      "props": [
+        "catalog",
+        "onAddView"
+      ],
+      "createdAt": "2026-07-12",
+      "notes": "Supports popular, more, and embed sections. It does not decide which views a domain permits or how a view is persisted."
+    },
+    {
+      "name": "WorkspaceDatePicker",
+      "path": "apps/workspace/src/components/shared/workspace-date-picker/workspace-date-picker.tsx",
+      "kind": "shared-ui",
+      "summary": "Reusable Qentrah start/due date popover with quick presets, month navigation, single-date selection, and optional recurrence action.",
+      "usedIn": [
+        "components/shared",
+        "domains/tasks/components/views/task-list-view",
+        "domains/tasks/components/task-editor"
+      ],
+      "props": [
+        "startDate",
+        "dueDate",
+        "onStartDateChange",
+        "onDueDateChange",
+        "fields",
+        "defaultField",
+        "triggerLabel",
+        "includeTime",
+        "onSetRecurring",
+        "disabled"
+      ],
+      "createdAt": "2026-07-12",
+      "notes": "Caller owns date and recurrence state. Built on the registered Calendar and Popover primitives so tasks, projects, forms, and editors can reuse one date interaction without duplicating domain writes."
     },
     {
       "name": "Calendar",

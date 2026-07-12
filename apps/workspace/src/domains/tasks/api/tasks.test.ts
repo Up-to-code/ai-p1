@@ -241,8 +241,27 @@ describe("tasks API", () => {
         };
 
         const result = taskPayloadFromForm(formValues);
-        expect(result.visibility).toBe(visibility);
+        expect(result.visibility).toBe(
+          visibility === "team" ? "private" : visibility,
+        );
       }
+    });
+
+    it("preserves team visibility when the task has a valid scope", () => {
+      const result = taskPayloadFromForm({
+        title: "Scoped task",
+        status: "todo",
+        priority: "normal",
+        visibility: "team",
+        assigneeUserId: "",
+        clientId: "",
+        projectId: "project_1",
+        dueDate: "",
+        description: "",
+        tags: "",
+      });
+
+      expect(result.visibility).toBe("team");
     });
 
     it("should handle numeric string pipelineOrder", () => {

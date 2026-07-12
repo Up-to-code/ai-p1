@@ -9,7 +9,12 @@ import type {
   OrganizationMemberForPolicy,
   OrganizationRoleForPolicy,
 } from "./access-policy";
-import { callBetterAuthOrganization, getCurrentBetterAuthOrganizationRole } from "./better-auth-organization-service";
+import {
+  getCurrentBetterAuthOrganizationRole,
+  listInvitationsBA,
+  listOrganizationMembersBA,
+  listOrganizationRolesBA,
+} from "./better-auth-organization-service";
 
 type MemberListResponse = { members?: OrganizationMemberForPolicy[] } | OrganizationMemberForPolicy[];
 type InvitationListResponse = OrganizationInvitationForPolicy[];
@@ -91,26 +96,17 @@ function unwrapMembers(data: MemberListResponse) {
 }
 
 export async function listMembersForOrganizationAction(c: Context, organizationId: string) {
-  const data = await callBetterAuthOrganization<MemberListResponse>(c, "/organization/list-members", {
-    query: { organizationId, limit: 100, offset: 0 },
-    fallback: "Members could not be loaded.",
-  });
+  const data: MemberListResponse = await listOrganizationMembersBA(c, organizationId);
 
   return unwrapMembers(data);
 }
 
 export async function listInvitationsForOrganizationAction(c: Context, organizationId: string) {
-  return callBetterAuthOrganization<InvitationListResponse>(c, "/organization/list-invitations", {
-    query: { organizationId },
-    fallback: "Invitations could not be loaded.",
-  });
+  return listInvitationsBA(c, organizationId) as Promise<InvitationListResponse>;
 }
 
 export async function listRolesForOrganizationAction(c: Context, organizationId: string) {
-  return callBetterAuthOrganization<RoleListResponse>(c, "/organization/list-roles", {
-    query: { organizationId },
-    fallback: "Work roles could not be loaded.",
-  });
+  return listOrganizationRolesBA(c, organizationId) as Promise<RoleListResponse>;
 }
 
 export async function runOrganizationActionWorkflow<T>(

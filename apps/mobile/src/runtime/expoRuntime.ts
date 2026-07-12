@@ -8,7 +8,6 @@ export const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.
 
 type ExpoExtra = {
   authUrl?: string;
-  clerkPublishableKey?: string;
   workspaceApiUrl?: string;
   mobileEnvironment?: string;
 };
@@ -53,9 +52,4 @@ export function getWorkspaceApiUrl() {
     getAuthUrl() ||
     productionWorkspaceUrl,
   );
-}
-
-export function getClerkPublishableKey() {
-  return normalizeUrlEnvValue(getExpoExtra().clerkPublishableKey)
-    || "";
 }

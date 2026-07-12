@@ -1,6 +1,5 @@
-import type { LucideIcon } from "lucide-react";
+import { createElement, type ComponentType } from "react";
 import {
-  Bot,
   BriefcaseBusiness,
   Building2,
   CalendarDays,
@@ -14,11 +13,21 @@ import {
 
 export const globalSearchPageSize = 5;
 
+type SearchIcon = ComponentType<{ className?: string }>;
+
+function QentrahAiIcon({ className }: { className?: string }) {
+  return createElement("img", {
+    src: "/ai/logo.png",
+    alt: "",
+    className,
+  });
+}
+
 export type GlobalSearchNavigationAction = {
   id: string;
   label: string;
   href: string;
-  icon: LucideIcon;
+  icon: SearchIcon;
 };
 
 export type GlobalSearchResult = {
@@ -27,7 +36,7 @@ export type GlobalSearchResult = {
   title: string;
   description: string;
   href: string;
-  icon: LucideIcon;
+  icon: SearchIcon;
 };
 
 type SidebarLabels = {
@@ -46,7 +55,7 @@ type SidebarLabels = {
 export function buildGlobalSearchNavigationActions(labels: SidebarLabels): GlobalSearchNavigationAction[] {
   return [
     { id: "workspace", label: "Workspace", href: "/ws", icon: Building2 },
-    { id: "ai", label: "AI", href: "/ai", icon: Bot },
+    { id: "ai", label: "AI", href: "/ai", icon: QentrahAiIcon },
     { id: "clients", label: labels.clients, href: "/clients", icon: UserRound },
     { id: "deals", label: labels.deals, href: "/deals", icon: BadgeDollarSign },
     { id: "projects", label: labels.projects, href: "/projects", icon: BriefcaseBusiness },

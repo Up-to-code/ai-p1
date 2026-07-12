@@ -6,11 +6,8 @@ import { useToast } from "@/components/ui/toast";
 import {
   createOrganizationInvitation,
   createOrganizationInviteLink,
-  createOrganizationMcpConnection,
   type OrganizationCapabilities,
 } from "@/domains/organization/api";
-import { expiryTimestamp } from "@/lib/utils/expiry-timestamp";
-import { shareMcpDefaultExpiry } from "../config/share.config";
 import { buildMcpPermissionsForShareAccess } from "../lib/share-mcp-permissions";
 import { sharePermissionToOrganizationRole } from "../lib/share-role";
 
@@ -83,12 +80,8 @@ export function useTopbarShareMutations(
         throw new Error(t("mcpNoPermissions"));
       }
 
-      return createOrganizationMcpConnection(organizationId ?? "", {
-        name: t("mcpConnectionName"),
-        instructions: t("mcpConnectionInstructions"),
-        principalType: "user",
-        permissions,
-        expiresAt: expiryTimestamp(shareMcpDefaultExpiry),
+      return Promise.resolve({
+        agentLink: process.env.NEXT_PUBLIC_MCP_RESOURCE_URL ?? "https://mcp.qentrah.com/mcp",
       });
     },
     onSuccess: async (result) => {

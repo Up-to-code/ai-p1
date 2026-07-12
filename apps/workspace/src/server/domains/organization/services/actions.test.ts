@@ -23,13 +23,14 @@ vi.mock("@/server/utils/organization/access-checker", () => ({
 }));
 
 vi.mock("./better-auth-organization-service", () => ({
-  callBetterAuthOrganization: vi.fn(),
   getBetterAuthSession: vi.fn(),
+  listOrganizationMembersBA: vi.fn(),
+  removeMemberBA: vi.fn(),
 }));
 
 import { fetchAuthMutation } from "@/server/auth/convex-auth";
 import { assertCanUseOrganizationResource } from "@/server/utils/organization/access-checker";
-import { callBetterAuthOrganization, getBetterAuthSession } from "./better-auth-organization-service";
+import { getBetterAuthSession, listOrganizationMembersBA, removeMemberBA } from "./better-auth-organization-service";
 import { removeOrganizationMember } from "./actions";
 
 const context = {} as never;
@@ -47,20 +48,11 @@ describe("organization actions", () => {
     });
     vi.mocked(assertCanUseOrganizationResource).mockResolvedValue(undefined);
     vi.mocked(fetchAuthMutation).mockResolvedValue(undefined);
-    vi.mocked(callBetterAuthOrganization).mockImplementation(async (_c, path) => {
-      if (path === "/organization/list-members") {
-        return [
-          { id: "member_owner", userId: "user_owner", role: "owner", user: { email: "owner@example.com" } },
-          { id: "member_target", userId: "user_target", role: "member", user: { email: "target@example.com" } },
-        ];
-      }
-
-      if (path === "/organization/remove-member") {
-        return { id: "member_target" };
-      }
-
-      throw new Error(`Unexpected dev identity path: ${path}`);
-    });
+    vi.mocked(listOrganizationMembersBA).mockResolvedValue([
+      { id: "member_owner", userId: "user_owner", role: "owner", user: { email: "owner@example.com" } },
+      { id: "member_target", userId: "user_target", role: "member", user: { email: "target@example.com" } },
+    ]);
+    vi.mocked(removeMemberBA).mockResolvedValue({ id: "member_target" } as never);
   });
 
   it("removes members through organization permission, not platform admin allowlist", async () => {
@@ -69,13 +61,7 @@ describe("organization actions", () => {
     });
 
     expect(assertCanUseOrganizationResource).toHaveBeenCalledWith("org_1", "member", "delete");
-    expect(callBetterAuthOrganization).toHaveBeenCalledWith(
-      context,
-      "/organization/remove-member",
-      expect.objectContaining({
-        body: { organizationId: "org_1", memberIdOrEmail: "member_target" },
-      }),
-    );
+    expect(removeMemberBA).toHaveBeenCalledWith(context, "org_1", "member_target");
     expect(fetchAuthMutation).toHaveBeenCalledWith(
       "organizations.audit.write.recordFromHono",
       expect.objectContaining({

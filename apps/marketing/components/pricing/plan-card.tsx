@@ -192,15 +192,22 @@ export function PlanCard({
     price === null
       ? null
       : `$${price}`;
+  const originalPrice = billing === "monthly" && plan.originalMonthlyPrice
+    ? `$${plan.originalMonthlyPrice}`
+    : null;
   const perUnit =
     price !== null && price > 0
       ? billing === "monthly"
-        ? isAr ? "لكل مستخدم/شهر" : "Per user/month, billed yearly"
-        : isAr ? "لكل مستخدم/سنة، يُفوتر سنوياً" : "Per user/month, billed yearly"
+        ? isAr ? "لكل مستخدم / شهر" : "Per user / month"
+        : isAr ? "لكل مستخدم / سنة، يُفوتر سنوياً" : "Per user / year, billed yearly"
       : null;
+  const ctaHref = ["good", "better"].includes(plan.id)
+    ? `/billing?plan=${plan.id}_${billing === "annually" ? "yearly" : "monthly"}`
+    : plan.ctaHref;
 
   const featureData = (isAr ? FEATURES_AR : FEATURES)[plan.id];
   const isHighlight = plan.highlight;
+  const featurePreview = featureData?.items.slice(0, 6) ?? [];
 
   return (
     <div
@@ -217,10 +224,14 @@ export function PlanCard({
             <span className="cu-plan-badge">{plan.label}</span>
           )}
         </div>
+        <p className="cu-plan-description">{plan.description}</p>
 
         {displayPrice !== null ? (
           <>
-            <div className="cu-plan-price">{displayPrice}</div>
+            <div className="cu-plan-price-row">
+              {originalPrice && <span className="cu-plan-original-price">{originalPrice}</span>}
+              <div className="cu-plan-price">{displayPrice}</div>
+            </div>
             {perUnit && <p className="cu-plan-per">{perUnit}</p>}
           </>
         ) : (
@@ -232,7 +243,8 @@ export function PlanCard({
 
       {/* CTA */}
       <a
-        href={plan.ctaHref}
+        key={ctaHref}
+        href={ctaHref}
         className={cn(
           "cu-plan-cta",
           isHighlight ? "cu-plan-cta--primary" : "cu-plan-cta--outline",
@@ -248,16 +260,14 @@ export function PlanCard({
             <p className="cu-plan-features-header">{featureData.sectionHeader}</p>
           )}
           <ul className="cu-plan-features-list" role="list">
-            {featureData.items.map((item) => (
+            {featurePreview.map((item) => (
               <li key={item} className="cu-plan-feature-item">
                 {isHighlight ? <CheckGreen /> : <CheckGray />}
                 <span>{item}</span>
               </li>
             ))}
           </ul>
-          {featureData.moreLabel && (
-            <p className="cu-plan-more">{featureData.moreLabel}</p>
-          )}
+          {featureData.items.length > featurePreview.length && <p className="cu-plan-more">{isAr ? "قارن جميع المزايا أدناه" : "Compare all features below"}</p>}
         </div>
       )}
 
@@ -266,18 +276,15 @@ export function PlanCard({
           display: flex;
           flex-direction: column;
           border: 1px solid var(--q-border);
-          border-radius: 12px;
-          padding: 32px 24px 36px;
+          border-radius: 16px;
+          padding: 28px 24px 30px;
           background: var(--q-card);
-          transition: box-shadow 0.2s;
           min-width: 0;
-        }
-        .cu-plan-card:hover {
-          box-shadow: 0 8px 32px -8px rgba(0,0,0,0.08);
         }
         .cu-plan-card--highlight {
           background: var(--q-text-primary);
           border-color: var(--q-text-primary);
+          transform: translateY(-8px);
         }
         .cu-plan-card--highlight .cu-plan-name,
         .cu-plan-card--highlight .cu-plan-price,
@@ -289,7 +296,11 @@ export function PlanCard({
           color: var(--q-bg);
         }
 
-        .cu-plan-header { margin-bottom: 20px; }
+        .cu-plan-header {
+          /* Keep each CTA aligned even when a plan has a shorter price label. */
+          min-height: 176px;
+          margin-bottom: 22px;
+        }
         .cu-plan-name-row {
           display: flex;
           align-items: center;
@@ -297,10 +308,18 @@ export function PlanCard({
           margin-bottom: 4px;
         }
         .cu-plan-name {
-          font-size: 20px;
+          font-size: 21px;
           font-weight: 700;
           color: var(--q-text-primary);
         }
+        .cu-plan-description {
+          min-height: 40px;
+          margin: 8px 0 22px;
+          font-size: 14px;
+          line-height: 1.45;
+          color: var(--q-text-secondary);
+        }
+        .cu-plan-card--highlight .cu-plan-description { color: rgba(255,255,255,0.7); }
         .cu-plan-badge {
           font-size: 10px;
           font-weight: 700;
@@ -315,16 +334,28 @@ export function PlanCard({
           background: rgba(255,255,255,0.2);
           color: var(--q-bg);
         }
+        .cu-plan-price-row {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+        }
+        .cu-plan-original-price {
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--q-text-muted);
+          text-decoration: line-through;
+          text-decoration-thickness: 1.5px;
+        }
         .cu-plan-price {
           font-size: 36px;
           font-weight: 800;
           letter-spacing: -0.03em;
           color: var(--q-text-primary);
           line-height: 1.1;
-          margin-bottom: 2px;
+          margin-bottom: 8px;
         }
         .cu-plan-per {
-          font-size: 12px;
+          font-size: 13px;
           color: var(--q-text-muted);
           line-height: 1.4;
         }
@@ -339,9 +370,10 @@ export function PlanCard({
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 8px;
+          border-radius: 999px;
+          min-height: 48px;
           padding: 12px 20px;
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 600;
           text-decoration: none;
           margin-bottom: 28px;
@@ -352,6 +384,7 @@ export function PlanCard({
           background: var(--q-bg);
           color: var(--q-text-primary);
         }
+        .cu-plan-cta--primary:hover { opacity: 1; background: var(--q-bg-secondary); }
         .cu-plan-cta--outline {
           border: 1px solid var(--q-border-strong, var(--q-border));
           color: var(--q-text-primary);
@@ -377,14 +410,14 @@ export function PlanCard({
           padding: 0;
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 11px;
         }
         .cu-plan-feature-item {
           display: flex;
           align-items: flex-start;
           gap: 10px;
-          font-size: 13px;
-          line-height: 1.5;
+          font-size: 14px;
+          line-height: 1.55;
           color: var(--q-text-secondary);
         }
         .cu-card-check {
@@ -393,13 +426,16 @@ export function PlanCard({
         }
         .cu-card-check--gray { color: var(--q-text-muted); }
         .cu-plan-more {
-          margin-top: 14px;
+          margin-top: 18px;
           font-size: 13px;
-          font-style: italic;
+          font-style: normal;
           color: var(--q-text-muted);
         }
         .cu-plan-card--highlight .cu-plan-more {
           color: rgba(255,255,255,0.5);
+        }
+        @media (max-width: 900px) {
+          .cu-plan-card--highlight { transform: none; }
         }
       `}</style>
     </div>

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,13 +11,11 @@ const sharp = require("sharp");
 const root = fileURLToPath(new URL("..", import.meta.url));
 const sourceDir = path.join(root, "packages", "brand-identity", "assets", "source");
 const source = {
-  mobileIcon: path.join(sourceDir, "app-icon-mobile.png"),
-  brandMarkPng: path.join(sourceDir, "brand-mark.png"),
+  appIcon: path.join(root, "Branding", "qwntrah-logo-app.png"),
+  webIcon: path.join(root, "Branding", "qentrahlogo.png"),
   brandMarkSvg: path.join(sourceDir, "brand-mark.svg"),
   brandLogoSvg: path.join(sourceDir, "brand-logo.svg"),
   brandLogoWhiteSvg: path.join(sourceDir, "brand-logo-white.svg"),
-  mobileSplashLight: path.join(sourceDir, "mobile-splash-light.png"),
-  mobileSplashDark: path.join(sourceDir, "mobile-splash-dark.png"),
 };
 
 const webApps = ["admin", "marketing", "partners", "workspace"];
@@ -36,11 +34,23 @@ async function copyAsset(from, to) {
 }
 
 async function syncFaviconIco(appName) {
-  const icoSource = path.join(root, "Branding", "logo.ico");
   const icoDest = appName === "mobile"
     ? appPath("mobile", "assets", "brand", "logo.ico")
     : appPath(appName, "public", "logo.ico");
-  await copyAsset(icoSource, icoDest);
+  await renderIco(appName === "mobile" ? source.appIcon : source.webIcon, icoDest);
+}
+
+async function renderIco(input, output) {
+  const png = await sharp(input).resize(256, 256, { fit: "contain" }).png().toBuffer();
+  const header = Buffer.alloc(22);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(1, 4);
+  header.writeUInt16LE(1, 10);
+  header.writeUInt16LE(32, 12);
+  header.writeUInt32LE(png.length, 14);
+  header.writeUInt32LE(22, 18);
+  await ensureParent(output);
+  await writeFile(output, Buffer.concat([header, png]));
 }
 
 async function renderPng(input, output, width, height = width) {
@@ -49,38 +59,19 @@ async function renderPng(input, output, width, height = width) {
 }
 
 async function renderDesktopSafeIcon(output, size) {
-  const masterSize = 1024;
-  const insetSize = 840;
-  const offset = Math.round((masterSize - insetSize) / 2);
-  const inner = await sharp(source.mobileIcon).resize(insetSize, insetSize, { fit: "contain" }).png().toBuffer();
-
-  const master = await sharp({
-    create: {
-      width: masterSize,
-      height: masterSize,
-      channels: 4,
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
-    },
-  })
-    .composite([{ input: inner, left: offset, top: offset }])
-    .png()
-    .toBuffer();
-
   await ensureParent(output);
-  await sharp(master)
+  await sharp(source.webIcon)
     .resize(size, size, { fit: "contain" })
     .png()
     .toFile(output);
 }
 
 async function renderFaviconSvg(output) {
-  const brandLogo = await readFile(source.brandLogoSvg, "utf8");
-  const pathMatch = brandLogo.match(/<path\s[^>]*d="([^"]+)"/);
-  const pathData = pathMatch ? pathMatch[1] : "";
+  const appIcon = await sharp(source.webIcon).resize(512, 512, { fit: "contain" }).png().toBuffer();
   await ensureParent(output);
   await writeFile(
     output,
-    `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">\n  <rect width="512" height="512" rx="96" fill="white"/>\n  <g transform="translate(256,256) scale(0.38) translate(-450.5,-516.5)">\n    <path fill="black" fill-rule="evenodd" clip-rule="evenodd" d="${pathData}"/>\n  </g>\n</svg>\n`,
+    `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">\n  <image width="512" height="512" href="data:image/png;base64,${appIcon.toString("base64")}"/>\n</svg>\n`,
   );
 }
 
@@ -100,20 +91,20 @@ function run(command, args, cwd) {
 async function syncMobile() {
   const mobile = appPath("mobile", "assets");
   await syncFaviconIco("mobile");
-  await copyAsset(source.mobileIcon, path.join(mobile, "brand", "qentrah-mobile-icon.png"));
-  await copyAsset(source.mobileIcon, path.join(mobile, "brand", "qentrah-adaptive-icon.png"));
-  await copyAsset(source.brandMarkPng, path.join(mobile, "brand", "qentrah-logo.png"));
+  await renderPng(source.appIcon, path.join(mobile, "brand", "qentrah-mobile-icon.png"), 1024);
+  await renderPng(source.appIcon, path.join(mobile, "brand", "qentrah-adaptive-icon.png"), 1024);
+  await renderPng(source.appIcon, path.join(mobile, "brand", "qentrah-logo.png"), 512);
   await copyAsset(source.brandMarkSvg, path.join(mobile, "brand", "qentrah-logo.svg"));
-  await copyAsset(source.mobileSplashLight, path.join(mobile, "brand", "qentrah-splash-icon.png"));
-  await copyAsset(source.mobileSplashDark, path.join(mobile, "brand", "qentrah-splash-icon-dark.png"));
+  await renderPng(source.appIcon, path.join(mobile, "brand", "qentrah-splash-icon.png"), 160);
+  await renderPng(source.appIcon, path.join(mobile, "brand", "qentrah-splash-icon-dark.png"), 160);
 
-  await renderPng(source.mobileIcon, path.join(mobile, "brand", "qentrah-favicon.png"), 512);
-  await renderPng(source.mobileIcon, path.join(mobile, "icon.png"), 512);
-  await renderPng(source.mobileIcon, path.join(mobile, "adaptive-icon.png"), 512);
-  await renderPng(source.mobileIcon, path.join(mobile, "favicon.png"), 48);
-  await renderPng(source.mobileSplashLight, path.join(mobile, "splash-icon.png"), 48);
-  await renderPng(source.mobileSplashLight, path.join(mobile, "brand", "qentrah-splash-icon@2x.png"), 320, 352);
-  await renderPng(source.mobileSplashLight, path.join(mobile, "brand", "qentrah-splash-icon@3x.png"), 480, 528);
+  await renderPng(source.appIcon, path.join(mobile, "brand", "qentrah-favicon.png"), 512);
+  await renderPng(source.appIcon, path.join(mobile, "icon.png"), 512);
+  await renderPng(source.appIcon, path.join(mobile, "adaptive-icon.png"), 512);
+  await renderPng(source.appIcon, path.join(mobile, "favicon.png"), 48);
+  await renderPng(source.appIcon, path.join(mobile, "splash-icon.png"), 48);
+  await renderPng(source.appIcon, path.join(mobile, "brand", "qentrah-splash-icon@2x.png"), 320, 352);
+  await renderPng(source.appIcon, path.join(mobile, "brand", "qentrah-splash-icon@3x.png"), 480, 528);
 }
 
 async function syncWebApp(appName) {
@@ -137,10 +128,13 @@ async function syncLogos() {
     await copyAsset(source.brandLogoWhiteSvg, path.join(publicDir, "brand-logo-white.svg"));
   }
 
+  await renderPng(source.appIcon, appPath("workspace", "public", "qwntrah-logo-app.png"), 512);
+
   await renderFaviconSvg(appPath("demo-partner-app", "public", "favicon.svg"));
 }
 
 async function main() {
+  await renderIco(source.webIcon, path.join(root, "Branding", "logo.ico"));
   await syncMobile();
   await Promise.all(webApps.map(syncWebApp));
   await syncLogos();
@@ -148,7 +142,7 @@ async function main() {
   await rm(appPath("workspace", "build", "icon.iconset"), { recursive: true, force: true });
   await run("npm", ["--workspace", "@qentrah/workspace", "run", "desktop:assets"], root);
 
-  console.log("Brand assets synced from packages/brand-identity/assets/source.");
+  console.log("App icons synced from Branding/qwntrah-logo-app.png; website icons synced from Branding/qentrahlogo.png.");
 }
 
 main().catch((error) => {

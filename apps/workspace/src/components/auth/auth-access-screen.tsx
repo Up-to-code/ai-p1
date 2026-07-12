@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, ArrowLeft, ArrowRight, ChevronLeft, KeyRound, Loader2, Mail, UserRound } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, KeyRound, Loader2, Mail, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { FormEvent, useState } from "react";
 import { brandDomainUrl } from "@qentrah/brand-identity";
@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "@/i18n/routing";
 import type { AuthFlowPhase, SocialProvider } from "@/domains/auth/hooks";
-import { AnimatedSphere } from "@/components/auth";
 
 type AuthAccessScreenProps = {
   mode: "sign-in" | "sign-up";
@@ -164,49 +163,31 @@ export function AuthAccessScreen({
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[oklch(97.5%_0.006_255)] text-foreground dark:bg-[oklch(8.5%_0.012_255)]">
-      {/* Animated Sphere Background */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] lg:w-[800px] lg:h-[800px] opacity-30 pointer-events-none dark-invert-canvas">
-        <AnimatedSphere />
-      </div>
+    <main className="relative min-h-[100dvh] overflow-hidden bg-white text-foreground dark:bg-[oklch(10%_0.008_260)]">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(ellipse_at_10%_-30%,rgba(255,184,150,0.55),transparent_43%),radial-gradient(ellipse_at_43%_-25%,rgba(255,160,207,0.48),transparent_42%),radial-gradient(ellipse_at_86%_-20%,rgba(141,198,255,0.5),transparent_45%)] dark:opacity-40"
+      />
 
-      {/* Grid Lines Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-        {[...Array(8)].map((_, i) => (
-          <div
-            key={`h-${i}`}
-            className="absolute h-px bg-foreground/10"
-            style={{ top: `${12.5 * (i + 1)}%`, left: 0, right: 0 }}
-          />
-        ))}
-        {[...Array(12)].map((_, i) => (
-          <div
-            key={`v-${i}`}
-            className="absolute w-px bg-foreground/10"
-            style={{ left: `${8.33 * (i + 1)}%`, top: 0, bottom: 0 }}
-          />
-        ))}
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10 flex min-h-screen flex-col px-4 py-5 sm:px-8">
-        <div className="flex items-center justify-between gap-4">
-          <AuthBrandLockup />
+      <div className="relative flex min-h-[100dvh] flex-col px-5 py-6 sm:px-8">
+        <header className="flex items-center justify-between">
+          <AuthBrandLockup className="[&>img]:h-6 [&>img]:w-6 [&>span]:text-sm" />
           <Link
             href="/"
-            className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-surface px-4 text-[10px] font-black uppercase tracking-[0.08em] text-text-secondary transition hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="text-xs font-medium text-text-secondary transition hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
           >
-            <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
             {t("backToHome")}
           </Link>
-        </div>
+        </header>
 
-        <div className="flex flex-1 items-center justify-center py-10">
-          <div className="w-full max-w-[min(420px,calc(100vw-2rem))] min-w-0 text-start">
-            <AuthBrandLockup className="mb-8 lg:hidden [&>img]:h-8 [&>img]:w-8 [&>span]:text-2xl" />
+        <div className="flex flex-1 items-center justify-center py-12 sm:py-16">
+          <div className="w-full max-w-[368px] min-w-0 text-start">
+            <div className="mb-6 flex justify-center">
+              <BrandMark className="h-9 w-9" priority />
+            </div>
 
-            <div className="space-y-3">
-              <h1 className="text-[32px] font-semibold leading-tight tracking-0 text-foreground sm:text-4xl rtl:leading-[1.25]">
+            <div className="space-y-1.5 text-center">
+              <h1 className="text-2xl font-semibold leading-tight tracking-[-0.025em] text-foreground sm:text-[26px] rtl:leading-[1.3]">
                 {phase === "forgot-password"
                   ? t("forgotPasswordTitle")
                   : phase === "reset-code"
@@ -217,7 +198,7 @@ export function AuthAccessScreen({
                   ? t("createAccount")
                   : t("title")}
               </h1>
-              <p className="max-w-sm text-sm font-medium leading-6 text-text-secondary">
+              <p className="text-sm leading-6 text-text-secondary">
                 {phase === "forgot-password"
                   ? t("forgotPasswordHelp")
                   : phase === "reset-code"
@@ -233,9 +214,9 @@ export function AuthAccessScreen({
             {/* Social sign-in buttons — hidden during forgot password flow */}
             {!isForgotFlow ? (
               <>
-                <div className={`mt-8 grid gap-3 ${isAppleAuthEnabled ? "sm:grid-cols-2" : ""}`}>
+                <div className={`mt-7 grid gap-2.5 ${isAppleAuthEnabled ? "sm:grid-cols-2" : ""}`}>
                   <Button
-                    className="h-12 rounded-2xl border-border bg-white text-sm font-bold text-foreground hover:bg-muted/50 dark:border-white/10 dark:bg-white/5"
+                    className="h-11 rounded-md border-border bg-white text-sm font-medium text-foreground hover:bg-muted/50 dark:border-white/10 dark:bg-white/5"
                     disabled={isPending}
                     onClick={() => onSocialSignIn("google")}
                     type="button"
@@ -248,7 +229,7 @@ export function AuthAccessScreen({
                   </Button>
                   {isAppleAuthEnabled ? (
                     <Button
-                      className="h-12 rounded-2xl border-border bg-white text-sm font-bold text-foreground hover:bg-muted/50 dark:border-white/10 dark:bg-white/5"
+                      className="h-11 rounded-md border-border bg-white text-sm font-medium text-foreground hover:bg-muted/50 dark:border-white/10 dark:bg-white/5"
                       disabled={isPending}
                       onClick={() => onSocialSignIn("apple")}
                       type="button"
@@ -262,9 +243,9 @@ export function AuthAccessScreen({
                   ) : null}
                 </div>
 
-                <div className="my-6 flex items-center gap-3">
+                <div className="my-5 flex items-center gap-3">
                   <span className="h-px flex-1 bg-border" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.08em] text-text-secondary">
+                  <span className="text-xs text-text-secondary">
                     {t("or")}
                   </span>
                   <span className="h-px flex-1 bg-border" />
@@ -276,18 +257,18 @@ export function AuthAccessScreen({
 
             {/* ── Credentials form (initial / credentials / sso phases) ── */}
             {(phase === "initial" || phase === "credentials" || phase === "sso") ? (
-              <form className="space-y-4" onSubmit={handleCredentialsSubmit}>
+              <form className="space-y-3" onSubmit={handleCredentialsSubmit}>
                 {isSignUp ? (
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="auth-first-name" className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="auth-first-name" className="text-xs font-medium text-text-secondary">
                         {t("firstNameLabel")}
                       </Label>
                       <div className="relative">
                         <UserRound className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
                         <Input
                           autoComplete="given-name"
-                          className="h-12 rounded-2xl ps-11 text-start"
+                          className="h-11 rounded-md ps-11 text-start"
                           id="auth-first-name"
                           onChange={(event) => setFirstName(event.target.value)}
                           placeholder={t("firstNamePlaceholder")}
@@ -297,15 +278,15 @@ export function AuthAccessScreen({
                         />
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="auth-last-name" className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="auth-last-name" className="text-xs font-medium text-text-secondary">
                         {t("lastNameLabel")}
                       </Label>
                       <div className="relative">
                         <UserRound className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
                         <Input
                           autoComplete="family-name"
-                          className="h-12 rounded-2xl ps-11 text-start"
+                          className="h-11 rounded-md ps-11 text-start"
                           id="auth-last-name"
                           onChange={(event) => setLastName(event.target.value)}
                           placeholder={t("lastNamePlaceholder")}
@@ -318,15 +299,15 @@ export function AuthAccessScreen({
                   </div>
                 ) : null}
 
-                <div className="space-y-2">
-                  <Label htmlFor="auth-email" className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary">
+                <div className="space-y-1.5">
+                  <Label htmlFor="auth-email" className="text-xs font-medium text-text-secondary">
                     {t("emailLabel")}
                   </Label>
                   <div className="relative">
                     <Mail className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
                     <Input
                       autoComplete="email"
-                      className="h-12 rounded-2xl ps-11 text-start"
+                      className="h-11 rounded-md ps-11 text-start"
                       id="auth-email"
                       inputMode="email"
                       onChange={(event) => setEmailAddress(event.target.value)}
@@ -338,9 +319,9 @@ export function AuthAccessScreen({
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="auth-password" className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary">
+                    <Label htmlFor="auth-password" className="text-xs font-medium text-text-secondary">
                       {t("passwordLabel")}
                     </Label>
                     {!isSignUp ? (
@@ -360,7 +341,7 @@ export function AuthAccessScreen({
                     <KeyRound className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
                     <Input
                       autoComplete={isSignUp ? "new-password" : "current-password"}
-                      className="h-12 rounded-2xl ps-11 text-start"
+                      className="h-11 rounded-md ps-11 text-start"
                       id="auth-password"
                       minLength={8}
                       onChange={(event) => setPassword(event.target.value)}
@@ -377,7 +358,7 @@ export function AuthAccessScreen({
                 {/* Required by Better Auth on sign-up flows */}
                 <div id="auth-captcha" />
 
-                <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={isPending} type="submit">
+                <Button className="h-11 w-full rounded-md bg-foreground text-sm font-semibold text-background hover:bg-foreground/90" disabled={isPending} type="submit">
                   {isEmailPending ? (
                     <>
                       <PendingSpinner />
@@ -555,7 +536,7 @@ export function AuthAccessScreen({
             {!isForgotFlow ? (
               <>
                 <LegalAgreement isAr={isAr} />
-                <p className="mt-5 text-center text-sm font-semibold text-text-secondary">
+                <p className="mt-4 text-center text-sm text-text-secondary">
                   {isSignUp ? t("hasAccount") : t("noAccount")}{" "}
                   <Link className="text-primary hover:underline" href={isSignUp ? "/sign-in" : "/sign-up"}>
                     {isSignUp ? t("signInLink") : t("signUpLink")}
@@ -565,6 +546,12 @@ export function AuthAccessScreen({
             ) : null}
           </div>
         </div>
+
+        <p className="text-center text-xs text-text-secondary">
+          <a className="transition hover:text-foreground hover:underline" href="mailto:support@qentrah.com">
+            {t("needHelp")}
+          </a>
+        </p>
       </div>
     </main>
   );

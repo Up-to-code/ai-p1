@@ -57,7 +57,7 @@ export function DashboardScreen() {
 
   if (restoredThread === "loading" || restoredThread === "not-found") {
     return (
-      <div className="flex h-full flex-col gap-4 p-6">
+      <div className="flex h-full flex-col gap-4 bg-[var(--q-ai-canvas)] p-6">
         <Skeleton className="h-4 w-1/3 rounded-full" />
         <Skeleton className="flex-1 rounded-xl" />
         <Skeleton className="h-12 w-full rounded-xl" />

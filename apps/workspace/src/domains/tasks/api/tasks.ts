@@ -7,6 +7,7 @@ import { workspaceMutation } from "@/domains/resources/workspace-resource-reques
 import { createResourceApi } from "@/domains/resources/resource-api-factory";
 import type { TaskFormValues, TaskRecord, TaskStats } from "../tasks.types";
 import { normalizeTaskStatus } from "../tasks.constants";
+import { defaultTaskVisibility } from "../task-visibility";
 
 export type GroupBy = "none" | "status" | "priority" | "assignee" | "dueDate"
 
@@ -143,7 +144,11 @@ export function taskPayloadFromForm(values: TaskFormValues) {
     status: values.status,
     pipelineOrder: typeof values.pipelineOrder === "number" && Number.isFinite(values.pipelineOrder) ? values.pipelineOrder : undefined,
     priority: values.priority,
-    visibility: values.visibility,
+    visibility: defaultTaskVisibility(
+      values.visibility,
+      values.projectId,
+      values.spaceId,
+    ),
     assigneeUserId: values.assigneeUserId || undefined,
     assigneeUserIds: values.assigneeUserIds?.length ? values.assigneeUserIds : undefined,
     clientId: values.clientId || undefined,

@@ -4,6 +4,7 @@ import { defaultTaskVisibility } from "./task-visibility";
 describe("defaultTaskVisibility", () => {
   it("creates unscoped tasks as private", () => {
     expect(defaultTaskVisibility(undefined, "", "")).toBe("private");
+    expect(defaultTaskVisibility("team", "", "")).toBe("private");
   });
 
   it("creates scoped tasks as team-visible", () => {

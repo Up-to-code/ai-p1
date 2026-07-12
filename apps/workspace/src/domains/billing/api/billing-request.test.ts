@@ -20,10 +20,10 @@ describe("billing request wrappers", () => {
     vi.setSystemTime(new Date("2026-05-28T00:00:00.000Z"));
 
     expect(fallbackBillingOverview("org_1")).toMatchObject({
-      plan: { id: "qentrah_workspace" },
+      plan: { id: "good_monthly" },
       subscription: {
         organizationId: "org_1",
-        planId: "qentrah_workspace",
+        planId: "good_monthly",
         status: "inactive",
         createdAt: Date.parse("2026-05-28T00:00:00.000Z"),
         updatedAt: Date.parse("2026-05-28T00:00:00.000Z"),
@@ -36,7 +36,7 @@ describe("billing request wrappers", () => {
 
   it("builds zero-safe fallback usage data", () => {
     expect(fallbackBillingUsage("org_1")).toMatchObject({
-      overview: { plan: { id: "qentrah_workspace" } },
+      overview: { plan: { id: "good_monthly" } },
       credits: {
         subscriptionCreditsGranted: 0,
         subscriptionCreditsUsed: 0,
@@ -51,16 +51,16 @@ describe("billing request wrappers", () => {
 
   it("uses shared encoded organization paths for billing requests", async () => {
     const fetcher = vi.fn(async (url: string) => {
-      if (url.includes("/usage")) return okResponse({ overview: { plan: { id: "qentrah_workspace" }, subscription: null, latestPayment: null }, credits: {}, payments: [] });
+      if (url.includes("/usage")) return okResponse({ overview: { plan: { id: "good_monthly" }, subscription: null, latestPayment: null }, credits: {}, payments: [] });
       if (url.includes("/checkout")) return okResponse({ checkoutUrl: "https://pay.example", orderId: "order_1" });
       if (url.includes("/payments/")) return okResponse({ payment: null });
-      return okResponse({ plan: { id: "qentrah_workspace" }, subscription: null, latestPayment: null });
+      return okResponse({ plan: { id: "good_monthly" }, subscription: null, latestPayment: null });
     });
     vi.stubGlobal("fetch", fetcher);
 
     await getBillingOverviewRequest("org 1");
     await getBillingUsageRequest("org 1");
-    await createCheckoutRequest({ organizationId: "org 1", seats: 1, returnUrl: "https://example.com/billing" });
+    await createCheckoutRequest({ organizationId: "org 1", planId: "better_monthly", seats: 1, returnUrl: "https://example.com/billing" });
     await getPaymentStatusRequest({ organizationId: "org 1", orderId: "order/1" });
 
     expect(fetcher).toHaveBeenNthCalledWith(1, "/api/v1/organizations/org%201/billing/subscription", {
@@ -76,7 +76,7 @@ describe("billing request wrappers", () => {
     expect(fetcher).toHaveBeenNthCalledWith(3, "/api/v1/organizations/org%201/billing/checkout", {
       method: "POST",
       headers: expect.objectContaining({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ planId: "qentrah_workspace", seats: 1, returnUrl: "https://example.com/billing" }),
+      body: JSON.stringify({ planId: "better_monthly", seats: 1, returnUrl: "https://example.com/billing" }),
     });
     expect(fetcher).toHaveBeenNthCalledWith(4, "/api/v1/organizations/org%201/billing/payments/order%2F1", {
       method: "GET",

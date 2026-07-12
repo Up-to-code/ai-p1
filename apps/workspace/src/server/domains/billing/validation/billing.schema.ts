@@ -1,8 +1,12 @@
 import { z } from "zod";
 
 export const billingCheckoutSchema = z.object({
-  // Single plan — always "qentrah_workspace"
-  planId: z.literal("qentrah_workspace").default("qentrah_workspace"),
+  planId: z.enum([
+    "good_monthly",
+    "good_yearly",
+    "better_monthly",
+    "better_yearly",
+  ]).default("good_monthly"),
   // Number of seats (users) to bill for; defaults to 1, minimum 1
   seats: z.number().int().min(1).default(1),
   locale: z.enum(["en", "ar"]).default("en"),

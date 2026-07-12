@@ -27,7 +27,7 @@ The dev script starts Next.js and Convex together. Use
 
 - Authenticated Workspace product pages.
 - Public localized pages and legal pages.
-- Clerk integration and organization-aware session handling.
+- Better Auth integration and organization-aware session handling.
 - OAuth authorization code + PKCE provider for partner apps.
 - Partner resource APIs under `/api/v1/partner`.
 - Internal service APIs used by Partners and Admin Review.
@@ -73,9 +73,9 @@ Common Workspace variables include:
 
 - `NEXT_PUBLIC_SITE_URL`
 - `SITE_URL`
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-- `CLERK_SECRET_KEY`
-- `CLERK_FRONTEND_API_URL`
+- `BETTER_AUTH_SECRET`
+- `NEXT_PUBLIC_APP_URL`
+- `MCP_RESOURCE_URL`
 - `CONVEX_DEPLOYMENT`
 - `NEXT_PUBLIC_CONVEX_URL`
 - `CONVEX_URL`

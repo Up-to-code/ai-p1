@@ -23,7 +23,13 @@ export {
 } from "./yoopta-rich-text-editor";
 export { InfiniteScrollSentinel } from "./infinite-scroll-sentinel";
 export { BadgeSelect, type BadgeSelectOption } from "./badge-select";
-export { ReviewInput, StarRatingPicker, type ReviewInputProps, type ReviewInputSubmission, type ReviewInputUser } from "./review-input";
+export {
+  ReviewInput,
+  StarRatingPicker,
+  type ReviewInputProps,
+  type ReviewInputSubmission,
+  type ReviewInputUser,
+} from "./review-input";
 export type {
   AppDataTableColumn,
   AppStatItem,
@@ -52,7 +58,10 @@ export type { ParsedSuggestions } from "./message-suggestions/parse-suggestions"
 export { FollowUpSuggestions } from "./message-suggestions";
 export type { FollowUpSuggestionsProps } from "./message-suggestions";
 export { parseFollowUpActions } from "./message-suggestions/parse-follow-up-actions";
-export type { FollowUpAction, ParsedFollowUpActions } from "./message-suggestions/parse-follow-up-actions";
+export type {
+  FollowUpAction,
+  ParsedFollowUpActions,
+} from "./message-suggestions/parse-follow-up-actions";
 export { PlanCard } from "./plan-card";
 export type { PlanCardProps } from "./plan-card";
 export {
@@ -60,3 +69,19 @@ export {
   type AiConversationMessage,
   type AiConversationThreadProps,
 } from "./ai-chat";
+export {
+  WorkspaceDatePicker,
+  type WorkspaceDateField,
+  type WorkspaceDatePickerProps,
+} from "./workspace-date-picker";
+export {
+  ResourceWorkspaceLayout,
+  ResourceViewMenu,
+  useResourceWorkspaceExtension,
+  type ResourceWorkspaceLayoutProps,
+  type ResourceViewCatalogItem,
+  type ResourceViewCatalogSection,
+  type ResourceWorkspaceAction,
+  type ResourceWorkspaceConfig,
+  type ResourceWorkspaceView,
+} from "./resource-workspace";

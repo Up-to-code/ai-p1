@@ -2,18 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { AnimatedHomeHero } from "@/components/landing/animated-home-hero";
-import { AISection } from "@/components/landing/ai-section";
-import { ClientsSection } from "@/components/landing/clients-section";
-import { CommunicationSection } from "@/components/landing/communication-section";
+import { AiOutcomesSections } from "@/components/landing/ai-outcomes-sections";
 import { CtaSection } from "@/components/landing/cta-section";
-import { DocSection } from "@/components/landing/doc-section";
 import { Faq02 } from "@/components/landing/faq-02";
-import { FeatureTabSwitcher } from "@/components/landing/feature-tab-switcher";
+import { PlatformStorySections } from "@/components/landing/platform-story-sections";
 import LogoCloud from "@/components/logo-cloud";
-import { ProblemSection } from "@/components/landing/problem-section";
-import { SolutionSection } from "@/components/landing/solution-section";
-import { TaskSection } from "@/components/landing/task-section";
-import { VisionSection } from "@/components/landing/vision-section";
 import { isLocale, type Locale } from "@/lib/content";
 import { pageMetadata } from "@/lib/page-metadata";
 
@@ -42,23 +35,9 @@ export default async function LocaleHomePage({ params }: Props) {
 
       <LogoCloud />
 
-      <ProblemSection locale={locale} />
+      <PlatformStorySections locale={locale} />
 
-      <SolutionSection locale={locale} />
-
-      <AISection locale={locale} />
-
-      <TaskSection locale={locale} />
-
-      <DocSection locale={locale} />
-
-      <ClientsSection locale={locale} />
-
-      <FeatureTabSwitcher locale={locale} />
-
-      <CommunicationSection locale={locale} />
-
-      <VisionSection locale={locale} />
+      <AiOutcomesSections locale={locale} />
 
       <Faq02 />
 

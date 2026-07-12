@@ -1,6 +1,6 @@
 import { workspaceFetch } from "@/domains/resources/workspace-resource-request";
 import { requestOrganizationAction, organizationApiPath } from "@/domains/organization/api/organization-request";
-import { QENTRAH_PLAN_ID, type BillingOverview, OrganizationBillingUsage, Payment } from "../config/plans.config";
+import { QENTRAH_PLAN_ID, type BillingOverview, type BillingPlanId, OrganizationBillingUsage, Payment } from "../config/plans.config";
 
 export function getBillingOverviewRequest(organizationId: string) {
   return requestOrganizationAction<BillingOverview>(
@@ -22,6 +22,7 @@ export function getBillingUsageRequest(organizationId: string) {
 
 export async function createCheckoutRequest(input: {
   organizationId: string;
+  planId?: BillingPlanId;
   seats: number;
   returnUrl: string;
 }) {
@@ -29,7 +30,7 @@ export async function createCheckoutRequest(input: {
     organizationApiPath(input.organizationId, "billing", "checkout"),
     "POST",
     {
-      planId: QENTRAH_PLAN_ID,
+      planId: input.planId ?? QENTRAH_PLAN_ID,
       seats: input.seats,
       returnUrl: input.returnUrl,
     },

@@ -100,8 +100,8 @@ export type MarketingFooterContent = {
 
 const marketingHero: Record<Locale, MarketingHeroContent> = {
   en: {
-    eyebrow: "ONE WORKSPACE. FULL CONTEXT.",
-    tagline: "Run your agency",
+    eyebrow: "ONE WORKSPACE. EVERY TEAM.",
+    tagline: "Run your work",
     description:
       "Plan work, manage clients, create documents, and put AI to work — without losing the context between them.",
     cta: "Start free",
@@ -109,7 +109,7 @@ const marketingHero: Record<Locale, MarketingHeroContent> = {
     words: ["together", "clearly", "with AI", "from one place"],
   },
   ar: {
-    eyebrow: "مساحة واحدة. سياق كامل.",
+    eyebrow: "مساحة واحدة. لكل فريق.",
     tagline: "أدر أعمالك",
     description:
       "خطط للعمل، وأدر العملاء، وأنشئ المستندات، واستفد من الذكاء الاصطناعي من دون أن تفقد السياق بينها.",
@@ -118,8 +118,8 @@ const marketingHero: Record<Locale, MarketingHeroContent> = {
     words: ["معاً", "بوضوح", "بذكاء", "من مكان واحد"],
   },
   fr: {
-    eyebrow: "UN ESPACE. TOUT LE CONTEXTE.",
-    tagline: "Pilotez votre agence",
+    eyebrow: "UN ESPACE. TOUTES LES ÉQUIPES.",
+    tagline: "Pilotez votre travail",
     description:
       "Planifiez le travail, gérez vos clients, créez vos documents et mettez l’IA à contribution sans perdre le contexte.",
     cta: "Commencer gratuitement",
@@ -279,7 +279,7 @@ const marketingFooter: Record<Locale, MarketingFooterContent> = {
   en: {
     tagline: "AI-FIRST WORK OS",
     description:
-      "One intelligent workspace for projects, clients, AI agents, and your entire team.",
+      "One intelligent workspace for spaces, projects, tasks, documents, AI agents, and your entire team.",
     platform: "Platform",
     workspace: "Workspace",
     legal: "Legal",
@@ -292,7 +292,7 @@ const marketingFooter: Record<Locale, MarketingFooterContent> = {
   ar: {
     tagline: "منصة تشغيل ذكية",
     description:
-      "مساحة عمل ذكية واحدة للمشاريع والعملاء والوكلاء الذكيين وفريقك بالكامل.",
+      "مساحة عمل ذكية واحدة للمساحات والمشاريع والمهام والمستندات والوكلاء الذكيين وفريقك بالكامل.",
     platform: "المنصة",
     workspace: "مساحة العمل",
     legal: "قانوني",
@@ -305,7 +305,7 @@ const marketingFooter: Record<Locale, MarketingFooterContent> = {
   fr: {
     tagline: "WORK OS PILOTÉ PAR L'IA",
     description:
-      "Un espace de travail intelligent pour vos projets, clients, agents IA et toute votre équipe.",
+      "Un espace intelligent pour les espaces, projets, tâches, documents, agents IA et toute votre équipe.",
     platform: "Plateforme",
     workspace: "Espace de travail",
     legal: "Mentions légales",

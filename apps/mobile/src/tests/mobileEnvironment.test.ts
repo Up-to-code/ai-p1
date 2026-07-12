@@ -29,7 +29,6 @@ test("mobile development config prefers local API overrides for real-device test
     environment: "development",
     workspaceApiUrl: "http://192.168.1.20:3000",
     authUrl: "http://192.168.1.20:3000",
-    clerkPublishableKey: "",
   });
 });
 
@@ -42,7 +41,6 @@ test("mobile development config defaults to the Workspace production API", () =>
     environment: "development",
     workspaceApiUrl: "https://app.qentrah.com",
     authUrl: "https://app.qentrah.com",
-    clerkPublishableKey: "",
   });
 });
 
@@ -70,7 +68,7 @@ test("mobile production config ignores legacy generic workspace URLs", () => {
 
   assert.equal(config.workspaceApiUrl, "https://app.qentrah.com");
   assert.equal(config.authUrl, "https://app.qentrah.com");
-  assert.deepEqual(getMobileEnvironmentIssues({ ...config, clerkPublishableKey: "pk_live_test" }), []);
+  assert.deepEqual(getMobileEnvironmentIssues(config), []);
 });
 
 test("mobile production config rejects local release URLs", () => {
@@ -83,7 +81,6 @@ test("mobile production config rejects local release URLs", () => {
   assert.deepEqual(getMobileEnvironmentIssues(config), [
     "Production mobile builds require an HTTPS Workspace API URL.",
     "Production mobile builds require an HTTPS auth URL.",
-    "Production mobile builds require a valid EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY.",
     "Production mobile builds cannot use a local Workspace API URL.",
     "Production mobile builds cannot use a local auth URL.",
   ]);
@@ -99,27 +96,5 @@ test("mobile production config rejects non-HTTPS remote auth and API URLs", () =
   assert.deepEqual(getMobileEnvironmentIssues(config), [
     "Production mobile builds require an HTTPS Workspace API URL.",
     "Production mobile builds require an HTTPS auth URL.",
-    "Production mobile builds require a valid EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY.",
   ]);
-});
-
-test("mobile production config rejects placeholder Clerk publishable keys", () => {
-  const config = resolveMobileEnvironmentConfig({
-    QENTRAH_MOBILE_ENV: "production",
-    EXPO_PUBLIC_PRODUCTION_CLERK_PUBLISHABLE_KEY: "set-in-eas-environment",
-  });
-
-  assert.deepEqual(getMobileEnvironmentIssues(config), [
-    "Production mobile builds require a valid EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY.",
-  ]);
-});
-
-test("mobile config carries Clerk publishable key for native auth", () => {
-  const config = resolveMobileEnvironmentConfig({
-    QENTRAH_MOBILE_ENV: "production",
-    EXPO_PUBLIC_PRODUCTION_CLERK_PUBLISHABLE_KEY: "pk_live_123",
-  });
-
-  assert.equal(config.clerkPublishableKey, "pk_live_123");
-  assert.deepEqual(getMobileEnvironmentIssues(config), []);
 });

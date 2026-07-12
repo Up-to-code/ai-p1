@@ -1,13 +1,7 @@
-# MCP OAuth Migration
+# MCP OAuth Cutover
 
-Replace the custom API-key-based MCP authentication (`publicId` + `secret` in URL) with standard OAuth MCP authentication.
+Qentrah MCP uses OAuth 2.1 authorization code with PKCE. The public MCP resource is owned by the standalone Hono gateway at `https://mcp.qentrah.com/mcp`; the workspace remains the Better Auth issuer and consent host.
 
-**Owner app:** `@qentrah/workspace`
+Durable grants bind a Better Auth user, organization, OAuth client, organization/space/project scope, exact resource actions, and an expiry. Convex revalidates the grant and current membership before every tool call.
 
-**Entrypoints:**
-- `src/app/mcp/[transport]/route.ts` — new OAuth MCP handler
-- `src/app/.well-known/oauth-authorization-server/api/auth/route.ts` — issuer-scoped OAuth metadata proxy
-- `src/app/.well-known/oauth-protected-resource/mcp/route.ts` — OAuth metadata
-- `convex/mcp/toolsOAuth.ts` — OAuth-authenticated Convex tool dispatch
-
-**Current status:** In migration — the secret-based agent-link endpoint is the supported connection path. The unscoped `/.well-known/oauth-authorization-server` route was removed because it advertised a dynamic registration endpoint that does not exist and caused MCP clients to start a failing OAuth flow for agent links. OAuth metadata must remain issuer-scoped at `/.well-known/oauth-authorization-server/api/auth` until the authorized MCP flow is completed.
+Secret-bearing agent links are retired. The legacy route exists only as a sanitized `410 Gone` migration tombstone and never reads the embedded secret.

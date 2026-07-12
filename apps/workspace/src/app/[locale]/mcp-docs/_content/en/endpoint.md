@@ -1,14 +1,13 @@
 ---
-title: "The MCP link is a controlled doorway"
-label: "Agent link"
-description: "The link is the address the agent uses to ask Qentrah for approved tools and approved data."
+title: "OAuth-protected MCP endpoint"
+label: "Endpoint"
+description: "The Qentrah MCP gateway accepts resource-bound OAuth bearer tokens only."
 ---
 
-The MCP server URL is the controlled doorway. You copy it from Organization settings and paste it into the agent platform.
+- **Server URL:** `https://mcp.qentrah.com/mcp`
+- **Transport:** Streamable HTTP
+- **Authentication:** OAuth 2.1 authorization code with PKCE
+- **Authorization server:** `https://app.qentrah.com/api/auth`
+- **Discovery:** `https://mcp.qentrah.com/.well-known/oauth-protected-resource/mcp`
 
-Anyone holding the full URL can try to connect, so treat it like a password. Share the docs freely, but share the real link only with trusted agent configuration.
-
-### Technical details
-
-* **Server URL Format**: `https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET`
-* **Secret Protection**: The `SECRET` part inside the URL guarantees that only authorized agents can attempt a connection.
+Requests without a valid resource-bound bearer token receive a `401` challenge pointing to protected-resource metadata.

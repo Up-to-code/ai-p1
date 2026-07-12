@@ -4,6 +4,7 @@ import {
   billingPriceLabel,
   subscriptionTone,
 } from "./lib/billing-formatters";
+import { GOOD_YEARLY_PLAN } from "./config/plans.config";
 
 describe("billing formatters", () => {
   it("formats subscription dates, prices, and status tones", () => {
@@ -12,13 +13,9 @@ describe("billing formatters", () => {
     expect(
       billingPriceLabel(
         {
-          id: "qentrah_workspace",
-          dodoProductId: "pdt_test",
+          ...GOOD_YEARLY_PLAN,
           name: "Yearly",
           amount: 70,
-          currency: "USD",
-          periodDays: 365,
-          checkoutMode: "provider",
         },
         "en",
       ),

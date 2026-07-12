@@ -243,8 +243,9 @@ function StreamingInlineMarkdown({
   selectable?: boolean;
   direction?: "rtl" | "ltr";
 }) {
+  const { colors } = useTheme();
   const textDirection = direction ?? detectTextBlockDirection(text);
-  const parsedFullText = parseInlineMarkdown(text);
+  const parsedFullText = parseInlineMarkdown(text, colors.accent);
 
   return (
     <Text tone="secondary" selectable={selectable} style={style}>
@@ -439,7 +440,7 @@ function StreamingMarkdownText({
 /**
  * Simplified inline markdown parser for streaming text only.
  */
-function parseInlineMarkdown(text: string) {
+function parseInlineMarkdown(text: string, accentColor: string) {
   // Regex: Bold (** or __), Italic (* or _), Link [t](u), Hashtag #w
   const regex = /(\*\*.*?\*\*|__.*?__|\*[^*]+\*|_[^_]+_|\[.*?\]\(.*?\)|#\w+)/g;
   const parts = text.split(regex);
@@ -471,7 +472,7 @@ function parseInlineMarkdown(text: string) {
       return (
         <Text
           key={i}
-          style={{ color: colors.accent, textDecorationLine: "underline", fontFamily: "Manrope_600SemiBold" }}
+          style={{ color: accentColor, textDecorationLine: "underline", fontFamily: "Manrope_600SemiBold" }}
           onPress={() => Linking.openURL(url).catch(() => {})}
         >
           {label}
@@ -481,7 +482,7 @@ function parseInlineMarkdown(text: string) {
     // Hashtag: #word
     if (part.startsWith("#") && part.length > 1 && !part.includes(" ")) {
       return (
-        <Text key={i} style={{ color: colors.accent, fontFamily: "Manrope_700Bold" }}>
+        <Text key={i} style={{ color: accentColor, fontFamily: "Manrope_700Bold" }}>
           {part}
         </Text>
       );

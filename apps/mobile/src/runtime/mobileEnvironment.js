@@ -58,11 +58,7 @@ function resolveMobileEnvironmentConfig(env = process.env) {
       workspaceApiUrl,
       PRODUCTION_WORKSPACE_URL,
     );
-    const clerkPublishableKey = firstValue(
-      env.EXPO_PUBLIC_PRODUCTION_CLERK_PUBLISHABLE_KEY,
-      env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY,
-    );
-    return { environment, workspaceApiUrl, authUrl, clerkPublishableKey };
+    return { environment, workspaceApiUrl, authUrl };
   }
 
   const workspaceApiUrl = firstValue(
@@ -73,11 +69,7 @@ function resolveMobileEnvironmentConfig(env = process.env) {
     env.EXPO_PUBLIC_DEV_AUTH_URL,
     workspaceApiUrl,
   );
-  const clerkPublishableKey = firstValue(
-    env.EXPO_PUBLIC_DEV_CLERK_PUBLISHABLE_KEY,
-  );
-
-  return { environment, workspaceApiUrl, authUrl, clerkPublishableKey };
+  return { environment, workspaceApiUrl, authUrl };
 }
 
 function isLocalUrl(value) {
@@ -124,10 +116,6 @@ function isHttpsUrl(value) {
   }
 }
 
-function isClerkPublishableKey(value) {
-  return /^pk_(test|live)_[A-Za-z0-9_-]+$/.test(value || "");
-}
-
 function getMobileEnvironmentIssues(config) {
   const issues = [];
 
@@ -140,9 +128,6 @@ function getMobileEnvironmentIssues(config) {
   }
   if (!isHttpsUrl(config.authUrl)) {
     issues.push("Production mobile builds require an HTTPS auth URL.");
-  }
-  if (!isClerkPublishableKey(config.clerkPublishableKey)) {
-    issues.push("Production mobile builds require a valid EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY.");
   }
   if (isLocalUrl(config.workspaceApiUrl)) {
     issues.push("Production mobile builds cannot use a local Workspace API URL.");

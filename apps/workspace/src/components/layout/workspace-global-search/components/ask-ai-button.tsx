@@ -9,9 +9,11 @@ const AI_GRADIENT =
 export function AskAiButton({
   onClick,
   disabled,
+  active = false,
 }: {
   onClick: () => void;
   disabled?: boolean;
+  active?: boolean;
 }) {
   const elRef = useRef<HTMLButtonElement>(null);
   const ctxRef = useRef<gsap.Context | null>(null);
@@ -38,12 +40,14 @@ export function AskAiButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
+      aria-pressed={active}
       onMouseEnter={start}
       onMouseLeave={stop}
-      className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-bold transition-opacity disabled:pointer-events-none disabled:opacity-35"
+      className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-bold transition-all disabled:pointer-events-none disabled:opacity-35"
       style={{
-        background: `linear-gradient(var(--card),var(--card)) padding-box,${AI_GRADIENT}`,
-        border: "1.5px solid transparent",
+        background: `${active ? "linear-gradient(color-mix(in srgb,var(--card) 84%,#f3e8ff),color-mix(in srgb,var(--card) 84%,#e0f2fe))" : "linear-gradient(var(--card),var(--card))"} padding-box,${AI_GRADIENT}`,
+        border: active ? "2px solid transparent" : "1.5px solid transparent",
+        boxShadow: active ? "0 0 0 3px color-mix(in srgb,#834DF1 10%,transparent)" : "none",
       }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}

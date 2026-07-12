@@ -4,24 +4,14 @@ import Link from "next/link";
 import { useLocale } from "next-intl";
 
 export const BrandMark = ({ className = "h-5 w-5", priority = false }: { className?: string; priority?: boolean }) => (
-  <>
-    <Image
-      src="/brand-logo.svg"
-      alt="Qentrah"
-      width={24}
-      height={28}
-      className={`${className} h-auto dark:hidden`}
-      priority={priority}
-    />
-    <Image
-      src="/brand-logo-white.svg"
-      alt="Qentrah"
-      width={24}
-      height={28}
-      className={`${className} h-auto hidden dark:block`}
-      priority={priority}
-    />
-  </>
+  <Image
+    src="/qwntrah-logo-app.png"
+    alt="Qentrah"
+    width={192}
+    height={192}
+    className={`${className} rounded-[22%] object-contain`}
+    priority={priority}
+  />
 );
 
 export const Logo = () => {

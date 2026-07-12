@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import gsap from "gsap";
 import AIMotionLogo from "@/components/ui/ai-motion/ai-motion-logo";
+import { logger } from "@/lib/logger";
 import { AiAttachmentChips, type PendingAttachment } from "./ai-attachment-chips";
 import {
   DropdownMenu,
@@ -31,17 +32,6 @@ type AiComposerProps = {
 };
 
 export type ComposerMode = "ai" | "work" | "plan";
-
-function modeBorderGradient(mode: ComposerMode): string {
-  switch (mode) {
-    case "plan":
-      return "conic-gradient(from var(--angle, 0deg), #F9724F 0deg, #EF4444 60deg, #F59E0B 120deg, #F97316 180deg, #EF4444 240deg, #F9724F 300deg, #F9724F 360deg) border-box";
-    case "work":
-      return "conic-gradient(from var(--angle, 0deg), #0C7DF3 0deg, #45C5F9 60deg, #F2488B 120deg, #F9724F 180deg, #EF4444 220deg, #834DF1 280deg, #0C7DF3 360deg) border-box";
-    default:
-      return "conic-gradient(from var(--angle, 0deg), #0C7DF3 0deg, #45C5F9 48deg, #3446EC 95deg, #834DF1 145deg, #DF3FDD 190deg, #F2488B 238deg, #F9724F 292deg, #EBA7E7 330deg, #0C7DF3 360deg) border-box";
-  }
-}
 
 const modeClassNames: Record<ComposerMode, string> = {
   ai: "border-blue-500/40 bg-blue-500/10 text-blue-500 dark:text-[#45C5F9] hover:bg-blue-500/15",
@@ -118,22 +108,17 @@ export default function AiComposer({
     return () => observer.disconnect();
   }, [resizeTextarea]);
 
-  // GSAP border spin when sending
+  // Keep a restrained activity pulse while sending.
   useEffect(() => {
     const el = borderRef.current;
     if (!el) return;
     if (isSending) {
       const ctx = gsap.context(() => {
-        gsap.to(el, {
-          "--angle": "360deg",
-          duration: 3.2,
-          ease: "none",
-          repeat: -1,
-        });
+        gsap.to(el, { opacity: 0.82, duration: 0.8, ease: "sine.inOut", repeat: -1, yoyo: true });
       });
       return () => ctx.revert();
     }
-    gsap.set(el, { "--angle": "0deg" });
+    gsap.set(el, { opacity: 1 });
   }, [isSending]);
 
   const handleFileSelect = (files: FileList | File[]) => {
@@ -174,7 +159,9 @@ export default function AiComposer({
     try {
       await onSend(trimmedText, files);
     } catch (error) {
-      // Log but don't restore UI
+      logger.warn("AI composer send failed after clearing the local draft.", {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   };
 
@@ -191,7 +178,7 @@ export default function AiComposer({
     <div
       className={cn(
         "w-full transition-all",
-        layout === "landing" ? "mx-auto max-w-[64rem]" : "",
+        layout === "landing" ? "mx-auto max-w-[52rem]" : "",
       )}
       onDragEnter={(e) => { e.preventDefault(); setIsDraggingFiles(true); }}
       onDragOver={(e) => { e.preventDefault(); }}
@@ -205,14 +192,12 @@ export default function AiComposer({
       <div
         ref={borderRef}
         className={cn(
-          "relative flex flex-col overflow-hidden rounded-[22px] border border-transparent bg-background/92 shadow-[0_18px_60px_rgba(12,18,35,0.14)] backdrop-blur-xl transition-all duration-300",
-          "text-foreground dark:bg-background/88",
+          "relative flex flex-col overflow-hidden rounded-xl border border-transparent text-foreground backdrop-blur-md transition-colors duration-200",
           isDraggingFiles && "bg-accent",
-          "focus-within:ring-2 focus-within:ring-[#0C7DF3]/10",
+          "focus-within:ring-1 focus-within:ring-ring/5",
         )}
         style={{
-          background:
-            `linear-gradient(var(--background), var(--background)) padding-box, ${modeBorderGradient(selectedMode)}`,
+          background: "linear-gradient(var(--q-ai-composer), var(--q-ai-composer)) padding-box, var(--q-ai-composer-border-gradient) border-box",
         }}
       >
 
@@ -255,7 +240,7 @@ export default function AiComposer({
             disabled={isSending}
             placeholder={placeholder || t("placeholderDefault")}
             className={cn(
-              "w-full resize-none appearance-none overflow-hidden border-0 bg-transparent px-5 py-4 text-[15px] font-medium leading-relaxed outline-none ring-0 sm:px-6",
+              "w-full resize-none appearance-none overflow-hidden border-0 bg-transparent px-5 py-4 text-[15px] font-normal leading-relaxed outline-none ring-0 sm:px-6",
               isRtl ? "text-right" : "text-left",
               "text-foreground placeholder:text-muted-foreground",
             )}
@@ -264,7 +249,7 @@ export default function AiComposer({
             rows={1}
           />
 
-          <div className="flex items-center justify-between gap-3 border-t border-border/70 px-3 pb-3 pt-3" dir={isRtl ? "rtl" : "ltr"}>
+          <div className="flex items-center justify-between gap-3 border-t border-border/40 px-3 py-3" dir={isRtl ? "rtl" : "ltr"}>
             <div className="flex min-w-0 items-center gap-1.5">
               <button
                 type="button"
@@ -355,11 +340,11 @@ export default function AiComposer({
                 disabled={!isSending && !isTyping}
                 aria-label={isSending ? "Stop response" : t("placeholderDefault")}
                 className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 active:scale-90",
+                  "flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-200 active:scale-95",
                   isSending
                     ? "bg-foreground text-background hover:opacity-90"
                     : isTyping
-                    ? "bg-[var(--q-user-bubble)] text-[var(--q-bg)] hover:opacity-90 shadow-sm"
+                    ? "bg-[var(--q-user-bubble)] text-[var(--q-bg)] hover:opacity-90"
                     : "border border-border bg-muted text-muted-foreground",
                 )}
               >

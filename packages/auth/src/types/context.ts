@@ -6,6 +6,7 @@ export type AuthContext = {
   audience?: string | string[];
   subject: string;
   userId: string;
+  clientId?: string | null;
   email?: string | null;
   name?: string | null;
   image?: string | null;

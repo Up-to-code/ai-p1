@@ -6,7 +6,7 @@ export default {
     },
     {
       domain: `${process.env.NEXT_PUBLIC_APP_URL!}/api/auth`,
-      applicationID: `${process.env.NEXT_PUBLIC_APP_URL!}/mcp`,
+      applicationID: "https://mcp.qentrah.com/mcp",
     },
   ],
 };

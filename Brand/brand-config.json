@@ -24,6 +24,14 @@
       "cornerRadius": 230
     }
   },
+  "appIcon": {
+    "source": "Branding/qwntrah-logo-app.png",
+    "use": "Mobile and desktop application icons, splash screens, and workspace app identity."
+  },
+  "websiteIcon": {
+    "source": "Branding/qentrahlogo.png",
+    "use": "Website favicons, web manifests, and browser home-screen icons."
+  },
   "favicon": {
     "ico": "Branding/logo.ico",
     "svg": {

@@ -11,7 +11,6 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { logger } from "@/lib/logger";
 import {
   fetchAuthAction,
   fetchAuthMutation,
@@ -33,7 +32,6 @@ import type {
   OrganizationInvitationForPolicy,
   OrganizationRoleForPolicy,
 } from "./access-policy";
-import { OrganizationActionError } from "../errors/action-error";
 
 // ---------------------------------------------------------------------------
 // Session helpers
@@ -391,171 +389,11 @@ export async function getBetterAuthSessionUserId(): Promise<string | null> {
   return getSessionUserId();
 }
 
-// ---------------------------------------------------------------------------
-// Provider-neutral organization command router used by action-workflow.ts and
-// actions.ts while the Hono layer keeps path-shaped command dispatch.
-// ---------------------------------------------------------------------------
-
-export const callBetterAuthOrganization = async <T>(
-  c: Context,
-  path: string,
-  input: {
-    method?: "GET" | "POST" | "PATCH";
-    query?: Record<string, string | number | boolean | undefined>;
-    body?: unknown;
-    fallback: string;
-  },
-): Promise<T> => {
-  const organizationId = String(
-    input.query?.organizationId ?? c.req.param("organizationId") ?? "",
-  );
-
-  const body = input.body as Record<string, unknown> | undefined;
-
-  try {
-    if (path.endsWith("/list-members")) {
-      const data = await listOrganizationMembersBA(c, organizationId);
-      return { members: data } as unknown as T;
-    }
-
-    if (path.endsWith("/list-invitations")) {
-      const data = await listInvitationsBA(c, organizationId);
-      return data as unknown as T;
-    }
-
-    if (path.endsWith("/list-roles")) {
-      const data = await listOrganizationRolesBA(c, organizationId);
-      return data as unknown as T;
-    }
-
-    if (path.endsWith("/update")) {
-      return updateOrganizationIdentityBA(
-        c,
-        (body?.organizationId as string) ?? organizationId,
-        (body?.data as Record<string, unknown>) ?? {},
-      ) as unknown as T;
-    }
-
-    if (path.endsWith("/invite-member")) {
-      return inviteMemberBA(
-        c,
-        (body?.organizationId as string) ?? organizationId,
-        body?.email as string,
-        body?.role as string,
-      ) as unknown as T;
-    }
-
-    if (path.endsWith("/cancel-invitation")) {
-      return cancelInvitationBA(
-        c,
-        body?.invitationId as string,
-      ) as unknown as T;
-    }
-
-    if (path.endsWith("/update-member-role")) {
-      return updateMemberRoleBA(
-        c,
-        (body?.organizationId as string) ?? organizationId,
-        body?.memberId as string,
-        body?.role as string,
-      ) as unknown as T;
-    }
-
-    if (path.endsWith("/remove-member")) {
-      return removeMemberBA(
-        c,
-        (body?.organizationId as string) ?? organizationId,
-        body?.memberIdOrEmail as string,
-      ) as unknown as T;
-    }
-
-    if (path.endsWith("/create-role")) {
-      return createOrganizationRoleBA(
-        c,
-        organizationId,
-        body?.role as string,
-        body?.permission as Record<string, string[]>,
-      ) as unknown as T;
-    }
-
-    if (path.endsWith("/update-role")) {
-      return updateOrganizationRoleBA(
-        c,
-        organizationId,
-        body?.roleId as string,
-        body?.data as {
-          roleName?: string;
-          permission?: Record<string, string[]>;
-        },
-      ) as unknown as T;
-    }
-
-    if (path.endsWith("/delete-role")) {
-      return deleteOrganizationRoleBA(
-        c,
-        organizationId,
-        body?.roleId as string,
-      ) as unknown as T;
-    }
-
-    if (path.endsWith("/accept-invitation")) {
-      return acceptInvitationBA(
-        c,
-        body?.invitationId as string,
-      ) as unknown as T;
-    }
-
-    logger.warn("Unknown Better Auth organization command path", {
-      module: "better-auth-organization-service",
-      path,
-      organizationId,
-    });
-    return (input.body ?? { organizationId }) as unknown as T;
-  } catch (error) {
-    logger.error("Better Auth organization command failed", {
-      module: "better-auth-organization-service",
-      path,
-      organizationId,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    throw normalizeBetterAuthOrganizationError(error);
-  }
-};
-
 export type { OrganizationMember as BetterAuthOrganization };
-
-function normalizeBetterAuthOrganizationError(error: unknown) {
-  if (typeof error === "object" && error !== null && "status" in error)
-    return error;
-
-  const message = error instanceof Error ? error.message : String(error);
-  const parsed = parseBetterAuthErrorBody(message);
-  if (parsed) {
-    return new OrganizationActionError(parsed.message, 400);
-  }
-
-  return error;
-}
 
 function isAlreadyInvitedError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   return /already invited|USER_IS_ALREADY_INVITED_TO_THIS_ORGANIZATION/i.test(
     message,
   );
-}
-
-function parseBetterAuthErrorBody(message: string) {
-  try {
-    const parsed = JSON.parse(message) as { message?: unknown; code?: unknown };
-    if (typeof parsed.message === "string") {
-      return {
-        message: parsed.message,
-        code: typeof parsed.code === "string" ? parsed.code : undefined,
-      };
-    }
-  } catch {
-    return null;
-  }
-
-  return null;
 }

@@ -18,6 +18,7 @@ type OrganizationPermissionResource =
   | "member"
   | "role"
   | "client"
+  | "deal"
   | "task"
   | "project"
   | "asset"
@@ -138,6 +139,7 @@ export const canUseResourceAction = query({
       v.literal("member"),
       v.literal("role"),
       v.literal("client"),
+      v.literal("deal"),
       v.literal("task"),
       v.literal("project"),
       v.literal("asset"),

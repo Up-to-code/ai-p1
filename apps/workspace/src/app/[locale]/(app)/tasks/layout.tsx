@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
+import { TaskResourceLayout } from "@/domains/tasks/components/task-resource-layout";
+import { TaskWorkspaceProvider } from "@/domains/tasks/components/task-workspace-provider";
 
 export default function TasksLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex h-full min-h-0 min-w-0 max-w-full flex-col overflow-hidden bg-background px-6">
-      {children}
-    </div>
+    <TaskWorkspaceProvider>
+      <TaskResourceLayout>{children}</TaskResourceLayout>
+    </TaskWorkspaceProvider>
   );
 }

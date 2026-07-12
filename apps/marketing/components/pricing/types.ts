@@ -5,6 +5,7 @@ export type Plan = {
   name: string;
   description: string;
   monthlyPrice: number | null;
+  originalMonthlyPrice?: number | null;
   annuallyPrice: number | null;
   label: string | null;
   cta: string;

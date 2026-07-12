@@ -8,19 +8,16 @@ export function BillingToggle({
   onChange,
   monthlyLabel = "Monthly",
   annuallyLabel = "Yearly",
-  saveLabel = "Save up to 30% with yearly",
 }: {
   value: BillingCycle;
   onChange: (cycle: BillingCycle) => void;
   monthlyLabel?: string;
   annuallyLabel?: string;
-  saveLabel?: string;
 }) {
   return (
-    <div className="cu-toggle-wrapper">
-      <div className="cu-toggle-right">
-        <span className="cu-toggle-save-text">{saveLabel}</span>
-        <div className="cu-toggle-pill">
+      <div className="cu-toggle-wrapper">
+        <div className="cu-toggle-right">
+          <div className="cu-toggle-pill">
           <button
             type="button"
             onClick={() => onChange("monthly")}
@@ -51,21 +48,10 @@ export function BillingToggle({
           justify-content: flex-end;
           width: 100%;
         }
-        .cu-toggle-right {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-          gap: 10px;
-        }
+        .cu-toggle-right { display: flex; align-items: center; }
         @media (max-width: 640px) {
           .cu-toggle-wrapper { justify-content: center; }
           .cu-toggle-right { align-items: center; }
-        }
-        .cu-toggle-save-text {
-          font-size: 13px;
-          font-weight: 600;
-          color: var(--q-human-green, #2BB673);
-          letter-spacing: 0.01em;
         }
         .cu-toggle-pill {
           display: inline-flex;

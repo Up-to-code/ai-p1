@@ -155,6 +155,47 @@ export const organizationTables = {
     .index("by_token_hash", ["tokenHash"])
     .index("by_status_updated", ["status", "updatedAt"]),
 
+  mcpOAuthGrants: defineTable({
+    organizationId: v.string(),
+    userId: v.string(),
+    oauthClientId: v.string(),
+    clientName: v.string(),
+    permissions: v.array(v.object({
+      resource: v.union(
+        v.literal("organization"), v.literal("client"), v.literal("project"),
+        v.literal("deal"), v.literal("calendar"), v.literal("task"),
+        v.literal("media"), v.literal("space"),
+      ),
+      actions: v.array(v.union(
+        v.literal("read"), v.literal("create"), v.literal("update"), v.literal("delete"),
+      )),
+    })),
+    scope: v.object({
+      type: v.union(v.literal("organization"), v.literal("space"), v.literal("project")),
+      spaceIds: v.optional(v.array(v.id("spaces"))),
+      projectIds: v.optional(v.array(v.id("projects"))),
+    }),
+    status: v.union(v.literal("active"), v.literal("revoked")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    expiresAt: v.number(),
+    lastUsedAt: v.optional(v.number()),
+    revokedAt: v.optional(v.number()),
+    usageCount: v.number(),
+  })
+    .index("by_user_organization", ["userId", "organizationId"])
+    .index("by_user_organization_client", ["userId", "organizationId", "oauthClientId"])
+    .index("by_organization", ["organizationId"]),
+
+  mcpRateLimits: defineTable({
+    key: v.string(),
+    windowStartedAt: v.number(),
+    count: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_key", ["key"])
+    .index("by_expiry", ["expiresAt"]),
+
   organizationApiKeys: defineTable({
     organizationId: v.string(),
     keyId: v.string(),

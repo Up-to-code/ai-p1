@@ -2,14 +2,14 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
-  clerkEmailAuthErrorMessage,
+  emailAuthErrorMessage,
   sendSignUpEmailVerificationCode,
   signInWithEmailPassword,
   signUpWithEmailPassword,
 } from "../auth/emailPasswordAuth";
 
 describe("emailPasswordAuth", () => {
-  it("returns missing login details before calling Clerk", async () => {
+  it("returns missing login details before calling the auth server", async () => {
     let called = false;
     const result = await signInWithEmailPassword({
       emailAddress: "",
@@ -74,7 +74,7 @@ describe("emailPasswordAuth", () => {
     assert.deepEqual(result, { status: "needs_verification" });
   });
 
-  it("returns missing signup details before calling Clerk without a full name", async () => {
+  it("returns missing signup details before calling the auth server without a full name", async () => {
     let called = false;
     const result = await signUpWithEmailPassword({
       emailAddress: "new@example.com",
@@ -146,8 +146,8 @@ describe("emailPasswordAuth", () => {
     assert.equal(called, false);
   });
 
-  it("projects Clerk long error messages", () => {
-    const message = clerkEmailAuthErrorMessage(
+  it("projects structured auth error messages", () => {
+    const message = emailAuthErrorMessage(
       { errors: [{ longMessage: "Invalid password." }] },
       "Fallback",
     );

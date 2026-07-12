@@ -4,7 +4,6 @@ export type MobileEnvironmentConfig = {
   environment: MobileEnvironmentName;
   workspaceApiUrl: string;
   authUrl: string;
-  clerkPublishableKey: string;
 };
 
 type Env = Record<string, string | undefined>;

@@ -7,6 +7,9 @@ import { CheckCircle2, Loader2, LogIn, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { writeAuthHandoff } from "@/domains/auth";
+import { BrandMark } from "@/components/logo";
+import { Link } from "@/i18n/routing";
+import { logger } from "@/lib/logger";
 import {
   acceptOrganizationInvitation,
   acceptOrganizationInviteLink,
@@ -86,10 +89,9 @@ export function AcceptInviteScreen() {
             try {
               await authClient.organization.setActive({ organizationId });
             } catch (setActiveError) {
-              console.warn(
-                "[accept-invite] setActive failed, falling back to hard reload:",
-                setActiveError,
-              );
+              logger.warn("Could not set the active organization after accepting an invite.", {
+                error: setActiveError instanceof Error ? setActiveError.message : String(setActiveError),
+              });
             }
             writeAuthHandoff(organizationId);
           }
@@ -118,14 +120,24 @@ export function AcceptInviteScreen() {
   const currentInvitePath = `/${locale}/accept-invite?${inviteToken ? `inviteToken=${encodeURIComponent(inviteToken)}` : `invitationId=${encodeURIComponent(invitationId ?? "")}`}`;
 
   return (
-    <main className="min-h-screen bg-background px-5 py-6 text-foreground sm:px-8">
-      <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-5xl flex-col">
-        <header className="flex items-center gap-2 border-b border-border pb-5">
-          <span className="text-sm font-semibold tracking-tight">qentrah</span>
+    <main className="relative min-h-[100dvh] overflow-hidden bg-white px-5 py-6 text-foreground dark:bg-[oklch(10%_0.008_260)] sm:px-8">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(ellipse_at_10%_-30%,rgba(255,184,150,0.55),transparent_43%),radial-gradient(ellipse_at_43%_-25%,rgba(255,160,207,0.48),transparent_42%),radial-gradient(ellipse_at_86%_-20%,rgba(141,198,255,0.5),transparent_45%)] dark:opacity-40"
+      />
+      <div className="relative mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-5xl flex-col">
+        <header className="flex items-center">
+          <Link href="/" className="flex items-center gap-2">
+            <BrandMark className="h-6 w-6" priority />
+            <span className="text-sm font-semibold tracking-tight">qentrah</span>
+          </Link>
         </header>
-        <section className="flex flex-1 items-start justify-center py-16">
-          <div className="w-full max-w-md border-y border-border bg-surface p-8 text-center">
-            <div className="mx-auto flex h-10 w-10 items-center justify-center border border-border bg-background text-muted-foreground">
+        <section className="flex flex-1 items-center justify-center py-12 sm:py-16">
+          <div className="w-full max-w-[368px] text-center">
+            <div className="mb-6 flex justify-center">
+              <BrandMark className="h-9 w-9" priority />
+            </div>
+            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-md border border-border bg-background text-muted-foreground">
               {status === "accepted" ? (
                 <CheckCircle2 className="h-6 w-6 text-primary" />
               ) : status === "error" || isMissingInvite ? (
@@ -134,7 +146,7 @@ export function AcceptInviteScreen() {
                 <Loader2 className="h-6 w-6 animate-spin" />
               )}
             </div>
-            <h1 className="mt-6 text-2xl font-semibold tracking-tight text-foreground">
+            <h1 className="mt-5 text-2xl font-semibold tracking-[-0.025em] text-foreground">
               {isMissingInvite
                 ? t("missingTitle")
                 : !stabilized
@@ -147,7 +159,7 @@ export function AcceptInviteScreen() {
                         ? t("errorTitle")
                         : t("loadingTitle")}
             </h1>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
               {isMissingInvite
                 ? t("missingDesc")
                 : !stabilized
@@ -162,7 +174,7 @@ export function AcceptInviteScreen() {
             </p>
             {isSignedOut && (
               <Button
-                className="mt-6 h-9 rounded-md px-4 text-xs"
+                className="mt-6 h-11 w-full rounded-md bg-foreground text-sm font-semibold text-background hover:bg-foreground/90"
                 onClick={() =>
                   router.push(
                     `/${locale}/sign-in?callbackURL=${encodeURIComponent(currentInvitePath)}`,
@@ -176,7 +188,7 @@ export function AcceptInviteScreen() {
             {(status === "error" || isMissingInvite) && (
               <Button
                 variant="outline"
-                className="mt-6 h-9 rounded-md px-4 text-xs"
+                className="mt-6 h-11 w-full rounded-md text-sm font-semibold"
                 onClick={() => router.push(`/${locale}/ws`)}
               >
                 {t("dashboardButton")}

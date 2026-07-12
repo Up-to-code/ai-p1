@@ -29,7 +29,7 @@ export function SidebarRail() {
   return (
     <aside
       className={cn(
-        "relative z-40 flex h-screen w-12 shrink-0 flex-col overflow-hidden border-r border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-bg)]",
+        "relative z-40 hidden h-screen w-12 shrink-0 flex-col overflow-hidden border-r border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-sidebar)] md:flex",
         isRtl && "font-cairo",
       )}
     >

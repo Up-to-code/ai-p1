@@ -410,7 +410,7 @@ const QENTRAH_TABLE_CSS = `
     --q-row-hover: color-mix(in srgb, var(--q-bg-tertiary) 42%, transparent);
     --q-cell-focus-ring: transparent;
     --q-task-table-surface: var(--q-bg);
-    --q-task-table-header: var(--q-bg);
+    --q-task-table-header: var(--q-bg-secondary);
     --q-task-table-cell-focus: color-mix(in srgb, var(--q-text-secondary) 22%, transparent);
   }
   .qentrah-table-wrapper.qentrah-task-table .ag-root-wrapper {
@@ -421,10 +421,10 @@ const QENTRAH_TABLE_CSS = `
   .qentrah-table-wrapper.qentrah-task-table .ag-header,
   .qentrah-table-wrapper.qentrah-task-table .ag-header-row {
     background: var(--q-task-table-header);
-    min-height: 30px !important;
+    min-height: 28px !important;
   }
   .qentrah-table-wrapper.qentrah-task-table .ag-header-cell-label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     letter-spacing: 0;
     text-transform: none;
@@ -436,20 +436,20 @@ const QENTRAH_TABLE_CSS = `
     padding-right: 10px;
   }
   .qentrah-table-wrapper.qentrah-task-table .ag-cell {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
     color: var(--q-text-primary) !important;
   }
   .qentrah-table-wrapper.qentrah-task-table [data-qentrah-status-pill] {
-    min-height: 22px;
-    padding: 3px 8px;
-    font-size: 12px;
+    min-height: 18px;
+    padding: 2px 6px;
+    font-size: 10px;
     line-height: 1;
   }
   .qentrah-table-wrapper.qentrah-task-table [data-qentrah-status-pill] svg,
   .qentrah-table-wrapper.qentrah-task-table [data-qentrah-priority-flag] svg {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
   }
   .qentrah-table-wrapper.qentrah-task-table [data-qentrah-status-pill] span[class*="rounded-full"] {
     width: 8px;
@@ -458,7 +458,7 @@ const QENTRAH_TABLE_CSS = `
   .qentrah-table-wrapper.qentrah-task-table [data-qentrah-priority-flag] {
     padding-left: 0;
     padding-right: 0;
-    font-size: 13px;
+    font-size: 11px;
   }
   .qentrah-table-wrapper.qentrah-task-table .ag-cell [class*="text-muted-foreground"] {
     color: var(--q-text-muted);

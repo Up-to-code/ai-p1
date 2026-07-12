@@ -6,7 +6,14 @@ import Sortable from "sortablejs";
 export interface UseSortableBoardOptions {
   stages: Array<{ key: string }>;
   draggable: boolean;
-  onCardMove?: (itemId: string, fromStage: string, toStage: string, targetIndex: number) => void;
+  onCardMove?: (
+    itemId: string,
+    fromStage: string,
+    toStage: string,
+    targetIndex: number,
+  ) => void;
+  itemSelector?: string;
+  handleSelector?: string;
 }
 
 export interface UseSortableBoardResult {
@@ -22,16 +29,28 @@ const SORTABLE_CSS = `
   .sortable-chosen { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 `;
 
-export function useSortableBoard({ stages, draggable, onCardMove }: UseSortableBoardOptions): UseSortableBoardResult {
+export function useSortableBoard({
+  stages,
+  draggable,
+  onCardMove,
+  itemSelector = "[data-card-id]",
+  handleSelector,
+}: UseSortableBoardOptions): UseSortableBoardResult {
   const columnRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const onCardMoveRef = useRef(onCardMove);
   onCardMoveRef.current = onCardMove;
-  const draggableRef = useRef(draggable);
-  draggableRef.current = draggable;
+  // Consumers commonly derive `stages` during render. Depending on that array
+  // identity tears down Sortable while it is finishing `_onDrop`, leaving its
+  // internal element null and causing `removeEventListener` to throw. Only the
+  // ordered keys determine which Sortable instances need to exist.
+  const stageKeys = stages.map((stage) => stage.key).join("\u0000");
 
-  const getColumnRef = useCallback((key: string) => (el: HTMLDivElement | null) => {
-    columnRefs.current.set(key, el);
-  }, []);
+  const getColumnRef = useCallback(
+    (key: string) => (el: HTMLDivElement | null) => {
+      columnRefs.current.set(key, el);
+    },
+    [],
+  );
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -39,11 +58,12 @@ export function useSortableBoard({ stages, draggable, onCardMove }: UseSortableB
     style.textContent = SORTABLE_CSS;
     document.head.appendChild(style);
 
-    if (!draggableRef.current) return () => style.remove();
+    if (!draggable) return () => style.remove();
     const sortables: Sortable[] = [];
 
-    stages.forEach((stage) => {
-      const el = columnRefs.current.get(stage.key);
+    const keys = stageKeys ? stageKeys.split("\u0000") : [];
+    keys.forEach((stageKey) => {
+      const el = columnRefs.current.get(stageKey);
       if (!el) return;
 
       const sortable = Sortable.create(el, {
@@ -54,6 +74,10 @@ export function useSortableBoard({ stages, draggable, onCardMove }: UseSortableB
         dragClass: "sortable-drag",
         chosenClass: "sortable-chosen",
         dataIdAttr: "data-card-id",
+        draggable: itemSelector,
+        handle: handleSelector,
+        filter: "button,input,textarea,select,[data-board-property]",
+        preventOnFilter: false,
         onEnd: (evt) => {
           const itemId = evt.item.getAttribute("data-card-id");
           if (!itemId) return;
@@ -79,8 +103,15 @@ export function useSortableBoard({ stages, draggable, onCardMove }: UseSortableB
             parent.insertBefore(evt.item, refNode);
           }
 
-          if (fromStage && toStage && fromStage !== toStage) {
-            onCardMoveRef.current?.(itemId, fromStage, toStage, evt.newIndex ?? 0);
+          if (fromStage && toStage) {
+            queueMicrotask(() => {
+              onCardMoveRef.current?.(
+                itemId,
+                fromStage,
+                toStage,
+                evt.newIndex ?? 0,
+              );
+            });
           }
         },
       });
@@ -92,7 +123,7 @@ export function useSortableBoard({ stages, draggable, onCardMove }: UseSortableB
       sortables.forEach((s) => s.destroy());
       style.remove();
     };
-  }, [stages]);
+  }, [draggable, handleSelector, itemSelector, stageKeys]);
 
   return { getColumnRef, columnRefs };
 }

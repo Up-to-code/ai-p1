@@ -6,8 +6,8 @@ import { useQuery as useConvexQuery } from "convex/react";
 import { api as convexApi } from "@convex/_generated/api";
 
 import { type Client } from "../../../store/clients.types";
-import { useOpportunitiesQuery, updateOpportunityRequest, createOpportunityRequest, deleteOpportunityRequest } from "@/domains/opportunities/api/opportunities";
-import { type Opportunity, type OpportunityStage, type OpportunityPriority, type OpportunityFormValues } from "@/domains/opportunities/opportunities.types";
+import { useDealsQuery, updateDealRequest, createDealRequest, deleteDealRequest } from "@/domains/deals/api/deals";
+import { type Deal, type DealStage, type DealPriority, type DealFormValues } from "@/domains/deals/store/deals.types";
 import { EditableText } from "@/components/ui/editable-text";
 import { EditableSelect } from "@/components/ui/editable-select";
 import { type NotionColorKey } from "@/lib/color-utils";
@@ -24,32 +24,32 @@ interface DealsTabProps {
   organizationId: string;
 }
 
-const STAGE_OPTIONS: { label: string; value: OpportunityStage }[] = [
-  { label: "New", value: "new" as const },
+const STAGE_OPTIONS: { label: string; value: DealStage }[] = [
+  { label: "Lead", value: "lead" },
   { label: "Qualified", value: "qualified" as const },
-  { label: "Proposal", value: "proposal" as const },
-  { label: "Negotiation", value: "negotiation" as const },
+  { label: "Proposal sent", value: "proposal_sent" },
+  { label: "Contract sent", value: "contract_sent" },
   { label: "Won", value: "won" as const },
   { label: "Lost", value: "lost" as const },
 ];
 
-const PRIORITY_OPTIONS: { label: string; value: OpportunityPriority }[] = [
+const PRIORITY_OPTIONS: { label: string; value: DealPriority }[] = [
   { label: "Low", value: "low" as const },
   { label: "Normal", value: "normal" as const },
   { label: "High", value: "high" as const },
   { label: "Urgent", value: "urgent" as const },
 ];
 
-const defaultStageColors: Record<OpportunityStage, NotionColorKey> = {
-  new: "blue",
+const defaultStageColors: Record<DealStage, NotionColorKey> = {
+  lead: "blue",
   qualified: "yellow",
-  proposal: "purple",
-  negotiation: "orange",
+  proposal_sent: "purple",
+  contract_sent: "orange",
   won: "green",
   lost: "red",
 };
 
-const defaultPriorityColors: Record<OpportunityPriority, NotionColorKey> = {
+const defaultPriorityColors: Record<DealPriority, NotionColorKey> = {
   low: "gray",
   normal: "blue",
   high: "orange",
@@ -103,10 +103,10 @@ function ProjectSelectModal({ value, onChange, projects }: { value: string, onCh
 
 export function DealsTab({ client, organizationId }: DealsTabProps) {
   const queryClient = useQueryClient();
-  const opportunitiesQuery = useOpportunitiesQuery(organizationId, { stage: "all" });
-  const opportunities = useMemo(() => {
-    return (opportunitiesQuery ?? []).filter((opp: Opportunity) => opp.clientId === client.id);
-  }, [opportunitiesQuery, client.id]);
+  const dealsQuery = useDealsQuery(organizationId, { stage: "all" });
+  const deals = useMemo(() => {
+    return (dealsQuery ?? []).filter((deal: Deal) => deal.clientId === client.id);
+  }, [dealsQuery, client.id]);
 
   const projects = useConvexQuery(
     convexApi.projects.read.list,
@@ -116,18 +116,18 @@ export function DealsTab({ client, organizationId }: DealsTabProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newValue, setNewValue] = useState("");
-  const [newStage, setNewStage] = useState<OpportunityStage>("new");
-  const [newPriority, setNewPriority] = useState<OpportunityPriority>("normal");
+  const [newStage, setNewStage] = useState<DealStage>("lead");
+  const [newPriority, setNewPriority] = useState<DealPriority>("normal");
   const [newProjectId, setNewProjectId] = useState("");
 
   const operation = useOperationState({ errorMessage: "Failed to update deal." });
   const createOperation = useOperationState({ errorMessage: "Failed to create deal." });
 
   const totalPipelineValue = useMemo(() => {
-    return opportunities.reduce((sum: number, opp: Opportunity) => sum + (opp.value ?? 0), 0);
-  }, [opportunities]);
+    return deals.reduce((sum: number, deal: Deal) => sum + (deal.value ?? 0), 0);
+  }, [deals]);
 
-  if (opportunitiesQuery === undefined) {
+  if (dealsQuery === undefined) {
     return (
       <div className="space-y-6 text-start">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -151,39 +151,41 @@ export function DealsTab({ client, organizationId }: DealsTabProps) {
     );
   }
 
-  const handleUpdateField = async (opp: Opportunity, fields: Partial<OpportunityFormValues>) => {
-    const values: OpportunityFormValues = {
-      title: opp.title,
-      stage: opp.stage,
-      status: opp.status,
-      priority: opp.priority,
-      value: String(opp.value ?? ""),
-      currency: opp.currency || "USD",
-      source: opp.source || "",
-      closeDate: opp.closeDate || "",
-      nextStep: opp.nextStep || "",
-      clientId: opp.clientId || "",
-      projectId: opp.projectId || "",
-      tags: opp.tags?.join(", ") || "",
+  const handleUpdateField = async (deal: Deal, fields: Partial<DealFormValues>) => {
+    const values: DealFormValues = {
+      title: deal.title,
+      stage: deal.stage,
+      status: deal.status,
+      priority: deal.priority,
+      value: String(deal.value ?? ""),
+      currency: deal.currency || "USD",
+      dealThinking: deal.dealThinking || "",
+      source: deal.source || "",
+      closeDate: deal.closeDate || "",
+      nextStep: deal.nextStep || "",
+      clientId: deal.clientId || "",
+      projectId: deal.projectId || "",
+      tags: deal.tags?.join(", ") || "",
       ...fields,
     };
 
     await operation.run(async () => {
-      await updateOpportunityRequest(organizationId, opp.id, values);
-      queryClient.invalidateQueries({ queryKey: ["opportunities"] });
+      await updateDealRequest(organizationId, deal.id, values);
+      queryClient.invalidateQueries({ queryKey: ["deals"] });
     });
   };
 
   const handleCreate = async () => {
     if (!newTitle.trim()) return;
 
-    const values: OpportunityFormValues = {
+    const values: DealFormValues = {
       title: newTitle.trim(),
       stage: newStage,
       status: newStage === "won" ? "won" : newStage === "lost" ? "lost" : "open",
       priority: newPriority,
       value: newValue.trim(),
       currency: "USD",
+      dealThinking: "",
       source: "",
       closeDate: "",
       nextStep: "",
@@ -193,22 +195,22 @@ export function DealsTab({ client, organizationId }: DealsTabProps) {
     };
 
     await createOperation.run(async () => {
-      await createOpportunityRequest(organizationId, values);
+      await createDealRequest(organizationId, values);
       setNewTitle("");
       setNewValue("");
-      setNewStage("new");
+      setNewStage("lead");
       setNewPriority("normal");
       setNewProjectId("");
       setIsAdding(false);
-      queryClient.invalidateQueries({ queryKey: ["opportunities"] });
+      queryClient.invalidateQueries({ queryKey: ["deals"] });
     });
   };
 
   const handleDelete = async (oppId: string) => {
     if (!window.confirm("Are you sure you want to delete this deal?")) return;
     await operation.run(async () => {
-      await deleteOpportunityRequest(organizationId, oppId);
-      queryClient.invalidateQueries({ queryKey: ["opportunities"] });
+      await deleteDealRequest(organizationId, oppId);
+      queryClient.invalidateQueries({ queryKey: ["deals"] });
     });
   };
 
@@ -231,7 +233,7 @@ export function DealsTab({ client, organizationId }: DealsTabProps) {
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Active Deals</p>
             <p className="text-xl font-black text-foreground">
-              {opportunities.filter((o: Opportunity) => o.status === "open").length}
+              {deals.filter((deal: Deal) => deal.status === "open").length}
             </p>
           </div>
         </div>
@@ -242,9 +244,9 @@ export function DealsTab({ client, organizationId }: DealsTabProps) {
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Conversion Rate</p>
             <p className="text-xl font-black text-foreground">
-              {opportunities.length > 0
+              {deals.length > 0
                 ? `${Math.round(
-                    (opportunities.filter((o: Opportunity) => o.status === "won").length / opportunities.length) * 100
+                    (deals.filter((deal: Deal) => deal.status === "won").length / deals.length) * 100
                   )}%`
                 : "0%"}
             </p>
@@ -263,13 +265,13 @@ export function DealsTab({ client, organizationId }: DealsTabProps) {
         </div>
 
         <div className="divide-y divide-border">
-          {opportunities.length === 0 && !isAdding && (
+          {deals.length === 0 && !isAdding && (
             <div className="px-4 py-8 text-center text-sm text-muted-foreground">
               No deals linked to this client yet.
             </div>
           )}
 
-          {opportunities.map((opp: Opportunity) => (
+          {deals.map((opp: Deal) => (
             <div
               key={opp.id}
               className="grid grid-cols-[1fr_100px_130px_120px_130px_40px] items-center gap-4 px-4 py-3 hover:bg-muted/30 transition-colors group"
@@ -402,7 +404,7 @@ export function DealsTab({ client, organizationId }: DealsTabProps) {
           className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground font-semibold px-2 py-1 transition-colors"
         >
           <Plus className="h-3.5 w-3.5" />
-          Add Opportunity
+          Add Deal
         </button>
       )}
 

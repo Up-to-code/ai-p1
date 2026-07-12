@@ -16,6 +16,11 @@ const MAX_SCOPE_LINKS = 5_000;
 
 type ScopeCtx = Pick<QueryCtx, "auth" | "db" | "runQuery">;
 type ScopedTargetTable = "projects" | "spaces" | "clients" | "deals" | "tasks" | "calendarEvents";
+type StoredMcpScope = {
+  type: "organization" | "space" | "project";
+  spaceIds?: Id<"spaces">[];
+  projectIds?: Id<"projects">[];
+};
 
 export type EffectiveScopePolicy = Readonly<{
   organizationId: string;
@@ -50,7 +55,7 @@ function unique<T extends string>(values: readonly T[]): T[] {
 }
 
 export function normalizeMcpScope(
-  scope: Doc<"organizationMcpConnections">["scope"] | undefined,
+  scope: StoredMcpScope | undefined,
 ): McpScope {
   if (!scope) {
     return { type: "organization" };
@@ -161,7 +166,7 @@ export async function resolveScopePolicy(
   input: {
     organizationId: string;
     actorUserId: string;
-    scope: Doc<"organizationMcpConnections">["scope"] | undefined;
+    scope: StoredMcpScope | undefined;
   },
 ): Promise<EffectiveScopePolicy> {
   const scope = normalizeMcpScope(input.scope);
@@ -228,7 +233,11 @@ export async function canActorUseMcpPermission(
   resource: McpResource,
   action: McpAction,
 ) {
-  if (policy.scope.type === "organization" || resource === "organization" || resource === "client") {
+  if (policy.scope.type === "organization" || resource === "organization") {
+    return canPerformOrganizationAction(ctx, policy.organizationId, policy.actorUserId, resource, action);
+  }
+  if (resource === "client") {
+    if (policy.clientIds.length === 0) return false;
     return canPerformOrganizationAction(ctx, policy.organizationId, policy.actorUserId, resource, action);
   }
   if (
@@ -236,6 +245,12 @@ export async function canActorUseMcpPermission(
     !(await canPerformOrganizationAction(ctx, policy.organizationId, policy.actorUserId, resource, action))
   ) {
     return false;
+  }
+  if (resource === "deal" || resource === "task" || resource === "calendar" || resource === "media") {
+    if (policy.projectIds.length === 0) return false;
+    return (await Promise.all(policy.projectIds.map((id) =>
+      canUseSelectedProjectAction(ctx, policy.organizationId, id, policy.actorUserId, action),
+    ))).every(Boolean);
   }
   if (resource === "space") {
     if (policy.spaceIds.length === 0) return false;
@@ -260,7 +275,7 @@ export async function canActorUseMcpPermission(
       canUseSelectedProjectAction(ctx, policy.organizationId, id, policy.actorUserId, action),
     ))).every(Boolean);
   }
-  return true;
+  return false;
 }
 
 function inNarrowScope(policy: EffectiveScopePolicy, value: { projectId?: unknown; spaceId?: unknown }) {
