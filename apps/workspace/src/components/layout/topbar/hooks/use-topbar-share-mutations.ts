@@ -8,7 +8,12 @@ import {
   createOrganizationInviteLink,
   type OrganizationCapabilities,
 } from "@/domains/organization/api";
-import { buildMcpPermissionsForShareAccess } from "../lib/share-mcp-permissions";
+import {
+  buildMcpSetupPrompt,
+  defaultMcpEndpoint,
+  type McpPromptPreset,
+} from "@/domains/mcp";
+import { buildMcpPermissionsForPreset } from "../lib/share-mcp-permissions";
 import { sharePermissionToOrganizationRole } from "../lib/share-role";
 
 type ShareToastKey =
@@ -74,18 +79,25 @@ export function useTopbarShareMutations(
   });
 
   const mcpLinkMutation = useMutation({
-    mutationFn: (permission: string) => {
-      const permissions = buildMcpPermissionsForShareAccess(capabilities, permission);
+    mutationFn: ({ name, permission }: { name: string; permission: string }) => {
+      const preset = permission as McpPromptPreset;
+      const permissions = buildMcpPermissionsForPreset(capabilities, preset);
       if (permissions.length === 0) {
         throw new Error(t("mcpNoPermissions"));
       }
 
+      const endpoint = defaultMcpEndpoint;
       return Promise.resolve({
-        agentLink: process.env.NEXT_PUBLIC_MCP_RESOURCE_URL ?? "https://mcp.qentrah.com/mcp",
+        agentLink: endpoint,
+        agentPrompt: buildMcpSetupPrompt({
+          agentName: name,
+          endpoint,
+          preset,
+        }),
       });
     },
     onSuccess: async (result) => {
-      await navigator.clipboard?.writeText(result.agentLink).catch(() => undefined);
+      await navigator.clipboard?.writeText(result.agentPrompt).catch(() => undefined);
       shareToast.success("mcpLinkCreated");
       return result;
     },

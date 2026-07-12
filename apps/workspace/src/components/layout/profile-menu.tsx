@@ -2,7 +2,7 @@
 
 import { useTransition, useState } from "react";
 import { Link, useRouter, usePathname } from "@/i18n/routing";
-import { Bot, LogOut, User, Settings, Moon, Sun, Globe } from "lucide-react";
+import { Bot, LogOut, User, Moon, Sun, Globe } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useTheme } from "@/components/providers/theme-provider";
 import {
@@ -95,12 +95,6 @@ export function ProfileMenu() {
           <DropdownMenuItem render={<Link href="/profile" />} className="py-2 rounded-lg">
             <User className="h-4 w-4 me-2" />
             <span>Profile</span>
-          </DropdownMenuItem>
-
-          {/* Personal settings */}
-          <DropdownMenuItem render={<Link href="/settings/mcp" />} className="py-2 rounded-lg">
-            <Settings className="h-4 w-4 me-2" />
-            <span>Settings</span>
           </DropdownMenuItem>
 
           {/* Personal MCP connection */}

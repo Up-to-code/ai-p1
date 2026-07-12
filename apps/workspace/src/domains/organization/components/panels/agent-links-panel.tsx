@@ -32,7 +32,7 @@ export function AgentLinksPanel({
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">Secret agent links have been retired. Each agent now requires browser sign-in, organization selection, an explicit permission matrix, and an expiry.</p>
           </div>
         </div>
-        <Button render={<Link href="/mcp" />}>Manage OAuth agents</Button>
+        <Button render={<Link href="/mcp?create=1" />}>Create MCP link</Button>
       </div>
     </section>
   );

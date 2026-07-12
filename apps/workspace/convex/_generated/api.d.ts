@@ -68,6 +68,7 @@ import type * as inbox_read from "../inbox/read.js";
 import type * as inbox_validators from "../inbox/validators.js";
 import type * as inbox_write from "../inbox/write.js";
 import type * as mcp_connectionPermissions from "../mcp/connectionPermissions.js";
+import type * as mcp_connectionProfiles from "../mcp/connectionProfiles.js";
 import type * as mcp_handlers_calendar from "../mcp/handlers/calendar.js";
 import type * as mcp_handlers_clients from "../mcp/handlers/clients.js";
 import type * as mcp_handlers_deals from "../mcp/handlers/deals.js";
@@ -270,6 +271,7 @@ declare const fullApi: ApiFromModules<{
   "inbox/validators": typeof inbox_validators;
   "inbox/write": typeof inbox_write;
   "mcp/connectionPermissions": typeof mcp_connectionPermissions;
+  "mcp/connectionProfiles": typeof mcp_connectionProfiles;
   "mcp/handlers/calendar": typeof mcp_handlers_calendar;
   "mcp/handlers/clients": typeof mcp_handlers_clients;
   "mcp/handlers/deals": typeof mcp_handlers_deals;

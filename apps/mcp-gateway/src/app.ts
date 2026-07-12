@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { cors } from "hono/cors";
 import { secureHeaders } from "hono/secure-headers";
 import { bodyLimit } from "hono/body-limit";
@@ -11,7 +11,8 @@ import { handleMcpRequest } from "./mcp.js";
 import { hasDistributedPreAuthLimit, preAuthLimit } from "./rate-limit.js";
 
 const config = gatewayConfig();
-const app = new Hono<{ Variables: { requestId: string } }>();
+type AppEnv = { Variables: { requestId: string } };
+const app = new Hono<AppEnv>();
 
 app.use("*", async (c, next) => {
   const requestId = c.req.header("x-request-id")?.slice(0, 128) || randomUUID();
@@ -29,6 +30,11 @@ app.use("*", cors({
 }));
 app.use("/mcp", bodyLimit({ maxSize: 1_000_000 }));
 app.use("/mcp", timeout(30_000));
+
+app.get("/", (c) => c.html(`<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Qentrah MCP</title><style>body{margin:0;background:#0b0b0c;color:#f4f4f5;font:16px/1.5 system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}main{max-width:560px;padding:32px}h1{font-size:28px;margin:0 0 8px}p{color:#a1a1aa;margin:0 0 20px}code{background:#18181b;border:1px solid #27272a;border-radius:6px;padding:4px 8px}a{color:#f4f4f5}</style></head>
+<body><main><h1>Qentrah MCP</h1><p>Authorized remote access to your Qentrah workspace. MCP clients connect with OAuth and you approve access in your browser.</p><code>https://mcp.qentrah.com/mcp</code></main></body></html>`));
 
 app.get("/health/live", (c) => c.json({ status: "ok" }));
 app.get("/health/ready", (c) => {
@@ -59,7 +65,7 @@ app.get("/.well-known/oauth-authorization-server", async (c) => {
   });
 });
 
-app.post("/mcp", async (c) => {
+async function authorizedMcpRequest(c: Context<AppEnv>) {
   const forwarded = c.req.header("x-forwarded-for")?.split(",")[0]?.trim();
   const limit = await preAuthLimit(forwarded || "unknown");
   if (!limit.allowed) {
@@ -84,7 +90,10 @@ app.post("/mcp", async (c) => {
     }
     return c.json({ error: "access_denied", requestId: c.get("requestId") }, 403);
   }
-});
+}
+
+app.get("/mcp", authorizedMcpRequest);
+app.post("/mcp", authorizedMcpRequest);
 
 app.onError((_error, c) => c.json({
   error: "internal_error",

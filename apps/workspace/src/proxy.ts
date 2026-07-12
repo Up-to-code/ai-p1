@@ -10,7 +10,7 @@ const DEFAULT_LOCALE = "en";
 
 // Routes that require authentication
 const PROTECTED_PATTERNS = [
-  /^\/(ar|en)\/(ai|inbox|dashboard|projects|tasks|calendar|clients|docs|settings|organization|ws)(\/|$)/,
+  /^\/(ar|en)\/(ai|inbox|dashboard|projects|tasks|calendar|clients|docs|mcp|settings|organization|ws)(\/|$)/,
 ];
 
 // Routes accessible without authentication

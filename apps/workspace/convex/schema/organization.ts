@@ -155,6 +155,33 @@ export const organizationTables = {
     .index("by_token_hash", ["tokenHash"])
     .index("by_status_updated", ["status", "updatedAt"]),
 
+  mcpConnectionProfiles: defineTable({
+    organizationId: v.string(),
+    publicId: v.string(),
+    name: v.string(),
+    description: v.optional(v.string()),
+    permissions: v.array(v.object({
+      resource: v.union(
+        v.literal("organization"), v.literal("client"), v.literal("project"),
+        v.literal("deal"), v.literal("calendar"), v.literal("task"),
+        v.literal("media"), v.literal("space"),
+      ),
+      actions: v.array(v.union(
+        v.literal("read"), v.literal("create"), v.literal("update"), v.literal("delete"),
+      )),
+    })),
+    scope: v.object({
+      type: v.union(v.literal("organization"), v.literal("space"), v.literal("project")),
+      spaceIds: v.optional(v.array(v.id("spaces"))),
+      projectIds: v.optional(v.array(v.id("projects"))),
+    }),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_organization", ["createdByUserId", "organizationId"])
+    .index("by_public_id", ["publicId"]),
+
   mcpOAuthGrants: defineTable({
     organizationId: v.string(),
     userId: v.string(),

@@ -233,7 +233,7 @@ export function TopbarEssential() {
       ? { label: "People", icon: UsersRound, href: `/${locale}/organization?tab=members` }
       : null,
     canManageOrganization
-      ? { label: "Workspace settings", icon: SlidersHorizontal, href: `/${locale}/settings/mcp` }
+      ? { label: "Workspace settings", icon: SlidersHorizontal, href: `/${locale}/mcp?create=1` }
       : null,
     canManageOrganization
       ? { label: "Billing", icon: CreditCard, href: `/${locale}/organization?tab=billing` }

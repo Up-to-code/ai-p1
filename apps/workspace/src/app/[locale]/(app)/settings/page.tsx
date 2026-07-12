@@ -6,5 +6,5 @@ export default async function SettingsIndexPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  redirect(`/${locale}/settings/mcp`);
+  redirect(`/${locale}/mcp?create=1`);
 }

@@ -7,6 +7,15 @@ beforeEach(() => {
 });
 
 describe("MCP gateway", () => {
+  it("serves a small public landing page at the deployment root", async () => {
+    vi.resetModules();
+    const { app } = await import("./app.js");
+    const response = await app.request("/");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/html");
+    expect(await response.text()).toContain("Authorized remote access");
+  });
+
   it("publishes protected resource metadata", async () => {
     vi.resetModules();
     const { app } = await import("./app.js");
@@ -25,6 +34,29 @@ describe("MCP gateway", () => {
     expect(response.status).toBe(401);
     expect(response.headers.get("www-authenticate")).toContain("oauth-protected-resource/mcp");
     expect(await response.text()).not.toContain("stack");
+  });
+
+  it.each(["GET", "POST"])("requires OAuth for %s MCP transport", async (method) => {
+    vi.resetModules();
+    const { app } = await import("./app.js");
+    const response = await app.request("/mcp?profile=test-profile", { method });
+    expect(response.status).toBe(401);
+    expect(response.headers.get("www-authenticate")).toContain("oauth-protected-resource/mcp");
+  });
+
+  it("allows configured browser preflight without credentials", async () => {
+    vi.resetModules();
+    const { app } = await import("./app.js");
+    const response = await app.request("/mcp", {
+      method: "OPTIONS",
+      headers: {
+        origin: "https://app.qentrah.com",
+        "access-control-request-method": "POST",
+        "access-control-request-headers": "authorization,content-type,mcp-protocol-version",
+      },
+    });
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-origin")).toBe("https://app.qentrah.com");
   });
 
   it("proxies issuer-scoped Better Auth discovery", async () => {

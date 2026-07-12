@@ -7,7 +7,7 @@ export default async function SettingsSectionPage({
   params: Promise<{ locale: string; section: string }>;
 }) {
   const { locale, section } = await params;
-  if (!isSettingsSection(section)) redirect(`/${locale}/settings/mcp`);
+  if (!isSettingsSection(section)) redirect(`/${locale}/mcp?create=1`);
 
-  return <WorkspaceSettingsScreen section={section} />;
+  redirect(`/${locale}/mcp?create=1`);
 }

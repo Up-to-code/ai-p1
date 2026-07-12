@@ -48,8 +48,8 @@ export function TopbarShareSection({ organizationId }: TopbarShareSectionProps) 
           }
         });
       }}
-      onCreateMcp={({ permission }) => {
-        void mcpLinkMutation.mutateAsync(permission).then((result) => {
+      onCreateMcp={({ name, permission }) => {
+        void mcpLinkMutation.mutateAsync({ name, permission }).then((result) => {
           if (result?.agentLink) {
             setShareUrl(result.agentLink);
             setShareAccess("link");
