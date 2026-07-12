@@ -1,6 +1,6 @@
 import type { SessionContext } from "@qentrah/platform-core/session";
-import { normalizeScopes } from "../scopes/catalog";
-import type { QentrahOidcClaims, AuthContext } from "../types";
+import { normalizeScopes } from "../scopes/catalog.js";
+import type { QentrahOidcClaims, AuthContext } from "../types/index.js";
 
 function readString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim().length > 0 ? value : undefined;

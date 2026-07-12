@@ -1,4 +1,4 @@
-import { readAuthEnv, type AuthRuntimeEnv } from "./env";
+import { readAuthEnv, type AuthRuntimeEnv } from "./env.js";
 import { brandProductName } from "@qentrah/brand-identity";
 
 export type TrustedOidcClient = {

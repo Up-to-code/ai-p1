@@ -1,4 +1,4 @@
-import type { QentrahAuthorizationErrorCode } from "./types";
+import type { QentrahAuthorizationErrorCode } from "./types.js";
 
 export class QentrahAuthorizationError extends Error {
   readonly code: QentrahAuthorizationErrorCode;

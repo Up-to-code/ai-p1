@@ -3,6 +3,8 @@ node_modules
 .git
 .next
 **/.next
+**/.eve
+**/.vercel
 coverage
 **/coverage
 apps/mobile/ios

@@ -1,6 +1,6 @@
-import { requireScopes } from "../server/guards";
-import type { AuthContext } from "../types";
-import { verifyAccessToken, type VerifyAccessTokenOptions } from "./verify-access-token";
+import { requireScopes } from "../server/guards.js";
+import type { AuthContext } from "../types/index.js";
+import { verifyAccessToken, type VerifyAccessTokenOptions } from "./verify-access-token.js";
 
 export async function verifyAccessTokenScopes(
   token: string,

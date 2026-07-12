@@ -1,3 +1,3 @@
-export * from "./clients";
-export * from "./env";
-export * from "./issuer";
+export * from "./clients.js";
+export * from "./env.js";
+export * from "./issuer.js";

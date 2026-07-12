@@ -1,4 +1,4 @@
-import type { QentrahAuthorizationEvent, QentrahAuthorizeCodeResult, QentrahTokenExchangeInput, QentrahRefreshTokenInput, QentrahRevokeTokenInput, QentrahTokenSet } from "../authorization/types";
+import type { QentrahAuthorizationEvent, QentrahAuthorizeCodeResult, QentrahTokenExchangeInput, QentrahRefreshTokenInput, QentrahRevokeTokenInput, QentrahTokenSet } from "../authorization/types.js";
 
 export type FlowContext = {
   emit?: (event: QentrahAuthorizationEvent) => void;

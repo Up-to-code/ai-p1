@@ -1,7 +1,7 @@
-import { normalizeIssuer } from "../config/issuer";
-import { formatScopeString } from "../scopes/catalog";
-import { createPkcePair, createRandomString } from "./pkce";
-import type { TokenSet } from "./token-storage";
+import { normalizeIssuer } from "../config/issuer.js";
+import { formatScopeString } from "../scopes/catalog.js";
+import { createPkcePair, createRandomString } from "./pkce.js";
+import type { TokenSet } from "./token-storage.js";
 
 export type OidcClientOptions = {
   issuer: string;

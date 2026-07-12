@@ -1,4 +1,4 @@
-import type { QentrahOidcClaims } from "./claims";
+import type { QentrahOidcClaims } from "./claims.js";
 
 export type AuthContext = {
   token?: string;

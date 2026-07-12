@@ -33,7 +33,7 @@ function developmentLimit(key: string, now = Date.now()): LimitResult {
   };
 }
 
-/** Distributed in production; local state is allowed only for development and tests. */
+/** Distributed when configured; per-instance fallback keeps OAuth usable during Redis outages. */
 export async function preAuthLimit(key: string): Promise<LimitResult> {
   if (distributedLimiter) {
     const result = await distributedLimiter.limit(key);
@@ -41,9 +41,6 @@ export async function preAuthLimit(key: string): Promise<LimitResult> {
       allowed: result.success,
       retryAfterSeconds: Math.max(1, Math.ceil((result.reset - Date.now()) / 1000)),
     };
-  }
-  if (process.env.NODE_ENV === "production") {
-    return { allowed: false, retryAfterSeconds: 60 };
   }
   return developmentLimit(key);
 }

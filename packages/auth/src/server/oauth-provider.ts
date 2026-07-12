@@ -1,7 +1,7 @@
 import { oidcProvider } from "better-auth/plugins";
 import type { BetterAuthPlugin } from "better-auth";
-import { OAUTH_SCOPE_IDS } from "../scopes/catalog";
-import { resolveTrustedOidcClients, type TrustedOidcClient } from "../config/clients";
+import { OAUTH_SCOPE_IDS } from "../scopes/catalog.js";
+import { resolveTrustedOidcClients, type TrustedOidcClient } from "../config/clients.js";
 
 export type QentrahOidcProviderOptions = {
   loginPage: string;

@@ -406,7 +406,7 @@ function ConnectDialog({ profile, onOpenChange, onCopy }: {
   const summary = permissionText(profile.permissions);
   const prompt = buildMcpSetupPrompt({ agentName: profile.name, endpoint: url, permissionSummary: summary });
   const values: Record<ClientId, string> = {
-    codex: `codex mcp add qentrah --url ${url}\ncodex mcp login qentrah`,
+    codex: `codex mcp add qentrah --url '${url}'\ncodex mcp login qentrah`,
     claude: `Name: ${profile.name}\nRemote MCP URL: ${url}\n\n${prompt}`,
     chatgpt: `Connector name: ${profile.name}\nConnector URL: ${url}\n\nUse OAuth when prompted.`,
     grok: `Add a remote MCP server named ${profile.name}.\nURL: ${url}\nAuthentication: OAuth`,

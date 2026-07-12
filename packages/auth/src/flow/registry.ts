@@ -1,6 +1,6 @@
-import type { QentrahTokenExchangeInput, QentrahRefreshTokenInput, QentrahRevokeTokenInput, QentrahTokenSet } from "../authorization/types";
-import { exchangeCode as defaultExchangeCode, refreshToken as defaultRefreshToken, revokeToken as defaultRevokeToken } from "../authorization/token";
-import type { AuthFlow, FlowRegistry } from "./types";
+import type { QentrahTokenExchangeInput, QentrahRefreshTokenInput, QentrahRevokeTokenInput, QentrahTokenSet } from "../authorization/types.js";
+import { exchangeCode as defaultExchangeCode, refreshToken as defaultRefreshToken, revokeToken as defaultRevokeToken } from "../authorization/token.js";
+import type { AuthFlow, FlowRegistry } from "./types.js";
 
 export function createFlowRegistry(defaults?: {
   exchangeCode?: (input: QentrahTokenExchangeInput) => Promise<QentrahTokenSet>;

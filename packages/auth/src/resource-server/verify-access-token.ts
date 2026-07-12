@@ -1,7 +1,7 @@
 import { verifyAccessToken as verifyBetterAuthAccessToken } from "better-auth/oauth2";
-import { authContextFromClaims } from "../server/claims";
-import { AuthError, type AuthContext } from "../types";
-import { resolveJwksUrl } from "./jwks";
+import { authContextFromClaims } from "../server/claims.js";
+import { AuthError, type AuthContext } from "../types/index.js";
+import { resolveJwksUrl } from "./jwks.js";
 
 export type VerifyAccessTokenOptions = {
   issuer: string;

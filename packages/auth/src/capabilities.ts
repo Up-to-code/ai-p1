@@ -2,7 +2,7 @@ import {
   organizationAccessControl,
   organizationRoles,
   type OrganizationPermissionStatement,
-} from "./permissions";
+} from "./permissions.js";
 
 const organizationCapabilityChecks = {
   canReadOrganization: { resource: "organization", action: "read" },

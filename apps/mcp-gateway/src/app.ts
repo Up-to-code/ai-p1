@@ -103,3 +103,4 @@ app.onError((_error, c) => c.json({
 app.notFound((c) => c.json({ error: "not_found" }, 404));
 
 export { app, config };
+export default app;

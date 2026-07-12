@@ -1,4 +1,4 @@
-import type { QentrahAuthorizeUrlInput } from "./types";
+import type { QentrahAuthorizeUrlInput } from "./types.js";
 
 export function normalizeIssuer(issuer: string) {
   return issuer.replace(/\/+$/u, "");

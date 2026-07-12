@@ -2,8 +2,8 @@
 
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { brandLabel } from "@qentrah/brand-identity";
-import { createQentrahAuthorizationClient } from "../authorization/client";
-import type { QentrahAuthorizationClientOptions, QentrahAuthorizeCodeResult, QentrahAuthorizeOptions } from "../authorization/types";
+import { createQentrahAuthorizationClient } from "../authorization/client.js";
+import type { QentrahAuthorizationClientOptions, QentrahAuthorizeCodeResult, QentrahAuthorizeOptions } from "../authorization/types.js";
 
 const AuthorizationContext = createContext<ReturnType<typeof createQentrahAuthorizationClient> | null>(null);
 

@@ -1,3 +1,3 @@
-export * from "./oidc-client";
-export * from "./pkce";
-export * from "./token-storage";
+export * from "./oidc-client.js";
+export * from "./pkce.js";
+export * from "./token-storage.js";

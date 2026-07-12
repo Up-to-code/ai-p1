@@ -1,7 +1,7 @@
 "use client";
 
-import { hasEntitlement, hasScope } from "../server/guards";
-import { useAuthProviderValue } from "./AuthProvider";
+import { hasEntitlement, hasScope } from "../server/guards.js";
+import { useAuthProviderValue } from "./AuthProvider.js";
 
 export function useAuthorization() {
   const { context } = useAuthProviderValue();

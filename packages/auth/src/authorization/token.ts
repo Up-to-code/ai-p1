@@ -1,14 +1,14 @@
 import { brandLabel } from "@qentrah/brand-identity";
 
-import { QentrahAuthorizationError } from "./errors";
+import { QentrahAuthorizationError } from "./errors.js";
 import type {
   QentrahAuthorizationServerMetadata,
   QentrahRefreshTokenInput,
   QentrahRevokeTokenInput,
   QentrahTokenExchangeInput,
   QentrahTokenSet,
-} from "./types";
-import { normalizeIssuer } from "./url";
+} from "./types.js";
+import { normalizeIssuer } from "./url.js";
 
 function appendClientAuth(params: URLSearchParams, headers: Headers, clientId: string, clientSecret?: string) {
   if (!clientSecret) {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { brandLabel, brandProductName } from "@qentrah/brand-identity";
 import { cookies, headers } from "next/headers";
 import { resolveOAuthLocale } from "./oauth-locale";
+import { BackendProviders } from "@/components/providers/backend-providers";
 
 export const metadata: Metadata = {
   title: `Secure authorization | ${brandProductName("platform", "en")}`,
@@ -22,12 +23,14 @@ export default async function OAuthLayout({
   const isArabic = locale === "ar";
 
   return (
-    <div
-      lang={locale}
-      dir={isArabic ? "rtl" : "ltr"}
-      className={`h-full bg-background text-text-primary ${isArabic ? "font-cairo" : ""}`}
-    >
-      {children}
-    </div>
+    <BackendProviders>
+      <div
+        lang={locale}
+        dir={isArabic ? "rtl" : "ltr"}
+        className={`h-full bg-background text-text-primary ${isArabic ? "font-cairo" : ""}`}
+      >
+        {children}
+      </div>
+    </BackendProviders>
   );
 }

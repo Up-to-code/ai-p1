@@ -1,4 +1,4 @@
-import { readAuthEnv, type AuthRuntimeEnv } from "./env";
+import { readAuthEnv, type AuthRuntimeEnv } from "./env.js";
 
 function trimTrailingSlash(value: string) {
   return value.replace(/\/+$/u, "");

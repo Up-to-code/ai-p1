@@ -1,3 +1,3 @@
-export * from "./claims";
-export * from "./context";
-export * from "./errors";
+export * from "./claims.js";
+export * from "./context.js";
+export * from "./errors.js";

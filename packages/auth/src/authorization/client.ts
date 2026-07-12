@@ -1,14 +1,14 @@
 import { brandLabel } from "@qentrah/brand-identity";
 
-import { QentrahAuthorizationError } from "./errors";
-import { createPkcePair, createRandomString } from "../client/pkce";
+import { QentrahAuthorizationError } from "./errors.js";
+import { createPkcePair, createRandomString } from "../client/pkce.js";
 import type {
   QentrahAuthorizationClientOptions,
   QentrahAuthorizeOptions,
   QentrahAuthorizeCodeResult,
   QentrahAuthorizeResult,
-} from "./types";
-import { buildAuthorizeUrl, normalizeIssuer } from "./url";
+} from "./types.js";
+import { buildAuthorizeUrl, normalizeIssuer } from "./url.js";
 
 type PendingAuthorization = {
   state: string;

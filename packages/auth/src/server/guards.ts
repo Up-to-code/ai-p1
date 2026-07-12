@@ -1,4 +1,4 @@
-import { AuthError, type AuthContext, type ResourceOwner } from "../types";
+import { AuthError, type AuthContext, type ResourceOwner } from "../types/index.js";
 
 export function requireScopes(context: AuthContext, requiredScopes: readonly string[]): AuthContext {
   const granted = new Set(context.scopes);

@@ -1,7 +1,7 @@
 import { createNextAuthBridge } from "@qentrah/platform-core/auth-next";
 import type { SessionContext } from "@qentrah/platform-core/session";
-import { AuthError, type AuthContext } from "../types";
-import { authContextFromSessionContext } from "./claims";
+import { AuthError, type AuthContext } from "../types/index.js";
+import { authContextFromSessionContext } from "./claims.js";
 
 export { resolveAuthBridgeConfig } from "@qentrah/platform-core/auth-next";
 

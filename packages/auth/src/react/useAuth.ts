@@ -1,7 +1,7 @@
 "use client";
 
-import { AuthError } from "../types";
-import { useAuthProviderValue } from "./AuthProvider";
+import { AuthError } from "../types/index.js";
+import { useAuthProviderValue } from "./AuthProvider.js";
 
 export function useAuth() {
   return useAuthProviderValue();

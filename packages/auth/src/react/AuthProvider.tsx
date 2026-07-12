@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, type ReactElement, type ReactNode } from "react";
-import type { AuthContext } from "../types";
+import type { AuthContext } from "../types/index.js";
 
 export type AuthProviderValue = {
   context: AuthContext | null;

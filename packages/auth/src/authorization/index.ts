@@ -12,9 +12,9 @@ export type {
   QentrahRevokeTokenInput,
   QentrahAuthorizationServerMetadata,
   QentrahAuthorizationEvent,
-} from "./types";
-export { QENTRAH_OAUTH_SCOPES } from "./types";
-export { QentrahAuthorizationError, normalizeAuthorizationError } from "./errors";
-export { createQentrahAuthorizationClient } from "./client";
-export { exchangeCode, refreshToken, revokeToken, getMetadata } from "./token";
-export { createPkcePair, createRandomString } from "../client/pkce";
+} from "./types.js";
+export { QENTRAH_OAUTH_SCOPES } from "./types.js";
+export { QentrahAuthorizationError, normalizeAuthorizationError } from "./errors.js";
+export { createQentrahAuthorizationClient } from "./client.js";
+export { exchangeCode, refreshToken, revokeToken, getMetadata } from "./token.js";
+export { createPkcePair, createRandomString } from "../client/pkce.js";

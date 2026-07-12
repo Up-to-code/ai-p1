@@ -1,2 +1,2 @@
-export * from "./catalog";
-export * from "./permissions";
+export * from "./catalog.js";
+export * from "./permissions.js";

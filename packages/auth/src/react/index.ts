@@ -1,3 +1,3 @@
-export * from "./AuthProvider";
-export * from "./useAuth";
-export * from "./useAuthorization";
+export * from "./AuthProvider.js";
+export * from "./useAuth.js";
+export * from "./useAuthorization.js";
