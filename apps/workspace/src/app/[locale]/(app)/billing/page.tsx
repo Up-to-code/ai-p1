@@ -6,5 +6,5 @@ export default async function BillingPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  redirect(`/${locale}/settings/billing`);
+  redirect(`/${locale}/organization?tab=billing`);
 }

@@ -116,7 +116,7 @@ export const sidebarComingSoonNav: SidebarNavItem[] = [
 /** Workspace settings navigation. */
 export const sidebarWorkspaceNav: SidebarNavItem[] = [
   { name: "organization", href: "/organization", icon: Building2 },
-  { name: "workspaceSettings", href: "/settings/general", icon: SettingsIcon },
+  { name: "workspaceSettings", href: "/settings/mcp", icon: SettingsIcon },
 ];
 
 export const sidebarVisibleThreadLimit = 3;

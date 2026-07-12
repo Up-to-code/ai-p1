@@ -56,7 +56,7 @@ export function UsageOverviewPanel({
             >
               {status === "active" ? t("active") : t("inactive")}
             </span>
-            <Link href="/settings/billing">
+            <Link href="/organization?tab=billing">
               <Button
                 variant="outline"
                 size="sm"
@@ -89,7 +89,7 @@ export function UsageOverviewPanel({
         </div>
       </div>
 
-      <Link href="/settings/billing">
+      <Link href="/organization?tab=billing">
         <Button
           variant="outline"
           size="sm"

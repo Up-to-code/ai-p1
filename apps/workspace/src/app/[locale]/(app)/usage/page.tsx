@@ -6,5 +6,5 @@ export default async function UsagePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  redirect(`/${locale}/settings/ai-usage`);
+  redirect(`/${locale}/organization?tab=billing`);
 }

@@ -113,7 +113,7 @@ export function OrganizationBillingPanel({
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             <StatusPill label={status} tone={subscriptionTone(status)} />
             {planAction ?? (
-              <LocaleLink href="/settings/billing">
+              <LocaleLink href="/organization?tab=billing">
                 <Button
                   variant="outline"
                   size="sm"
@@ -166,7 +166,7 @@ export function OrganizationBillingPanel({
 
       {/* ── Payment history ────────────────────────────── */}
       {usageAction ?? (
-        <LocaleLink href="/settings/ai-usage">
+        <LocaleLink href="/organization?tab=billing">
           <Button
             variant="outline"
             size="sm"

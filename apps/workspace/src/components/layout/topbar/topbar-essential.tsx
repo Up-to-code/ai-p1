@@ -233,10 +233,10 @@ export function TopbarEssential() {
       ? { label: "People", icon: UsersRound, href: `/${locale}/organization?tab=members` }
       : null,
     canManageOrganization
-      ? { label: "Workspace settings", icon: SlidersHorizontal, href: `/${locale}/settings/general` }
+      ? { label: "Workspace settings", icon: SlidersHorizontal, href: `/${locale}/settings/mcp` }
       : null,
     canManageOrganization
-      ? { label: "Billing", icon: CreditCard, href: `/${locale}/settings/billing` }
+      ? { label: "Billing", icon: CreditCard, href: `/${locale}/organization?tab=billing` }
       : null,
   ].filter((item): item is NonNullable<typeof item> => item !== null);
 

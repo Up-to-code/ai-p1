@@ -546,7 +546,7 @@ export function OrganizationScreen() {
               actions={(
                 <div className="flex flex-wrap gap-2 sm:justify-end">
                   {atMemberLimit ? (
-                    <LocaleLink href="/settings/billing">
+                    <LocaleLink href="/organization?tab=billing">
                       <Button className="h-9.5 rounded-lg bg-amber-500 text-sm font-medium text-white hover:bg-amber-600">
                         <CreditCard className="mr-1.5 h-4 w-4" />
                         {t("invites.open")}
