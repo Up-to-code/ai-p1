@@ -1,7 +1,3 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "npm install --force",
-  "ignoreCommand": "node scripts/vercel-ignore.mjs --workspace @qentrah/workspace",
-  "buildCommand": "npm --workspace @qentrah/workspace --include-workspace-root=false run build",
-  "outputDirectory": "apps/workspace/.next"
+  "$schema": "https://openapi.vercel.sh/vercel.json"
 }
