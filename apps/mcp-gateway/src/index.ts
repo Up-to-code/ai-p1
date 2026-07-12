@@ -1,4 +1,3 @@
-import { serve } from "@hono/node-server";
-import { app, config } from "./app.js";
+import { app } from "./app.js";
 
-serve({ fetch: app.fetch, port: config.port });
+export default app;
