@@ -185,8 +185,8 @@ export function PlatformStorySections({ locale }: { locale: string }) {
             <h2>{current.agentTitle}</h2>
             <p className="qps-agents__body">{current.agentBody}</p>
             <div className="qps-agents__actions">
-              <Link href="/mcp-docs" className="qps-button qps-button--primary">{current.buildAgent} <ArrowRight /></Link>
-              <Link href="/mcp-docs" className="qps-button qps-button--secondary">{current.learn}</Link>
+              <Link href="/docs" className="qps-button qps-button--primary">{current.buildAgent} <ArrowRight /></Link>
+              <Link href="/docs" className="qps-button qps-button--secondary">{current.learn}</Link>
             </div>
           </div>
           <div className="qps-agent-grid">

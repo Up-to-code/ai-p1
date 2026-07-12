@@ -66,8 +66,8 @@ export const publicSeoLinks = [
   },
   {
     id: "docs",
-    href: "/mcp-docs",
-    externalUrl: `${rootUrl}/mcp-docs`,
+    href: "/docs",
+    externalUrl: `${rootUrl}/docs`,
     navKey: "docs",
     labels: {
       en: "Docs",

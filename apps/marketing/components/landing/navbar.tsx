@@ -7,7 +7,7 @@ import { Logo } from "@/components/logo";
 import { Link } from "@/i18n/routing";
 import { Bot, CalendarDays, CheckSquare2, ChevronDown, FileText, FolderKanban, Inbox, Menu, Sparkles, Users, X } from "lucide-react";
 import { getLocalizedWorkspaceUrl } from "@/lib/workspace-links";
-import { marketingNav, isLocale } from "@/lib/content";
+import { marketingNav, isLocale, productUrls } from "@/lib/content";
 
 export function Navbar() {
   const localeRaw = useLocale();
@@ -33,6 +33,15 @@ export function Navbar() {
     { title: labels.intelligence, items: [{ label: "Scoped AI agents", description: "Delegate work within permissions", href: "#scoped-agents", icon: Bot }, { label: "Automations", description: "Run repeatable workflows", href: "#ai-solutions", icon: Sparkles }, { label: "Permissions", description: "Control access at every level", href: "#operational-outcomes", icon: Users }] },
   ];
 
+  const mobileNavItems = [
+    { label: labels.platform, href: "#connected-platform", kind: "anchor" },
+    { label: labels.ai, href: "#scoped-agents", kind: "anchor" },
+    { label: labels.solutions, href: "#ai-solutions", kind: "anchor" },
+    { label: labels.resources, href: "/docs", kind: "route" },
+    { label: labels.pricing, href: "/pricing", kind: "route" },
+    { label: labels.enterprise, href: productUrls.contact, kind: "external" },
+  ] as const;
+
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 48);
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -53,13 +62,13 @@ export function Navbar() {
           </button>
           <a href="#scoped-agents" className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{labels.ai}</a>
           <a href="#ai-solutions" className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{labels.solutions}</a>
-          <Link href="/mcp-docs" className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{labels.resources}</Link>
+          <Link href="/docs" className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{labels.resources}</Link>
           <Link href="/pricing" className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{labels.pricing}</Link>
-          <Link href="/contact" className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{labels.enterprise}</Link>
+          <a href={productUrls.contact} className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{labels.enterprise}</a>
         </nav>
 
         <div className="ms-auto flex items-center gap-2">
-          <Link href="/contact" className="hidden h-10 items-center px-3 text-[13px] font-semibold text-[#4d4d4d] transition-colors hover:text-[#202020] md:inline-flex">{salesLabel}</Link>
+          <a href={productUrls.contact} className="hidden h-10 items-center px-3 text-[13px] font-semibold text-[#4d4d4d] transition-colors hover:text-[#202020] md:inline-flex">{salesLabel}</a>
           <a href={signInUrl} className="hidden h-10 items-center rounded-lg bg-[#F6F7F8] px-4 text-[13px] font-semibold text-[#202020] no-underline transition hover:bg-[#eceeef] md:inline-flex">{nav.signIn}</a>
           <a href={signUpUrl} className="hidden h-10 items-center rounded-lg bg-[#202020] px-4 text-[13px] font-semibold text-white no-underline transition hover:bg-[#333] active:scale-[0.98] md:inline-flex">{signUpLabel}</a>
           <button type="button" aria-expanded={isMenuOpen} aria-label={isMenuOpen ? nav.closeMenu : nav.openMenu} onClick={() => setIsMenuOpen((open) => !open)} className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-[#F6F7F8] text-[#202020] lg:hidden">
@@ -91,9 +100,22 @@ export function Navbar() {
       {isMenuOpen && (
         <div className="border-t border-[#ececec] bg-white px-5 py-5 shadow-[0_20px_30px_rgba(0,0,0,.08)] lg:hidden">
           <nav className="grid gap-1">
-            {[{ label: labels.platform, href: "#connected-platform" }, { label: labels.ai, href: "#scoped-agents" }, { label: labels.solutions, href: "#ai-solutions" }, { label: labels.resources, href: "/mcp-docs" }, { label: labels.pricing, href: "/pricing" }].map((item) => (
-              <a key={item.label} href={item.href} onClick={() => setIsMenuOpen(false)} className="rounded-lg px-3 py-3 text-sm font-semibold text-[#202020] no-underline hover:bg-[#F6F7F8]">{item.label}</a>
-            ))}
+            {mobileNavItems.map((item) => {
+              const className = "rounded-lg px-3 py-3 text-sm font-semibold text-[#202020] no-underline hover:bg-[#F6F7F8]";
+              if (item.kind === "route") {
+                return (
+                  <Link key={item.label} href={item.href} onClick={() => setIsMenuOpen(false)} className={className}>
+                    {item.label}
+                  </Link>
+                );
+              }
+
+              return (
+                <a key={item.label} href={item.href} onClick={() => setIsMenuOpen(false)} className={className}>
+                  {item.label}
+                </a>
+              );
+            })}
           </nav>
           <div className="mt-4 grid grid-cols-2 gap-2">
             <a href={signInUrl} className="flex h-11 items-center justify-center rounded-lg bg-[#F6F7F8] text-sm font-semibold text-[#202020] no-underline">{nav.signIn}</a>

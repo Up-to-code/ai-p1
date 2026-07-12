@@ -11,8 +11,15 @@ export type ToolPermission = {
   action: McpAction;
 };
 
-export function toolsForMcpAdapter() {
-  return toolsForAdapter("mcp");
+export type McpAdapterTool = ToolPermission & {
+  name: string;
+  title: string;
+  description: string;
+  destructive?: boolean;
+};
+
+export function toolsForMcpAdapter(): McpAdapterTool[] {
+  return toolsForAdapter("mcp") as McpAdapterTool[];
 }
 
 export const mcpToolPermissionMap = permissionMapForAdapter("mcp") as Record<string, ToolPermission>;
