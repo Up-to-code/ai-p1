@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -541,56 +542,87 @@ function AiUsageSettingsSection({ organizationId }: { organizationId?: string | 
   const usagePercent = grantedCredits > 0 ? Math.round((usedCredits / grantedCredits) * 100) : 0;
 
   return (
-    <div className="max-w-5xl space-y-6">
-      <SettingsSection title="AI Super Credits" eyebrow="For agents, AI cards, fields, task assistance, and image generation. Credits are shared by the organization.">
-        <div className="flex items-start justify-between gap-4 border-b border-border p-4 dark:border-[#222326]">
-          <div>
-            <div className="text-sm font-semibold text-foreground">Credits usage</div>
-            <div className="mt-3 text-3xl font-black text-foreground">{usagePercent}%</div>
-            <div className="mt-1 text-xs text-muted-foreground">
-              {usedCredits.toLocaleString()} used out of {grantedCredits.toLocaleString()}
-            </div>
+    <div className="max-w-5xl space-y-8">
+      <PlainSettingsSection title="AI Super Credits" eyebrow="For agents, AI cards, fields, task assistance, and image generation. Credits are shared by the organization.">
+        <div className="min-w-0">
+          <div className="text-sm font-semibold text-foreground">Credits usage</div>
+          <div className="mt-3 text-3xl font-black text-foreground">{usagePercent}%</div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {usedCredits.toLocaleString()} used out of {grantedCredits.toLocaleString()}
           </div>
-          <Button variant="outline" size="sm" className={cn("h-9 rounded-xl text-[10px] font-black uppercase tracking-widest", linearButtonClass)}>
-            Add credits
-          </Button>
-        </div>
-        {usage.status === "loading" && <div className="grid gap-4 p-4 md:grid-cols-2"><Skeleton className="h-24 rounded-lg dark:bg-[#222326]" /><Skeleton className="h-24 rounded-lg dark:bg-[#222326]" /></div>}
-        {usage.status === "error" && <div className="p-4 text-xs text-destructive">Billing usage could not be loaded: {usage.error.message}</div>}
-        {credits && (
-          <>
-            <div className="grid gap-5 p-4">
+          {credits && (
+            <div className="mt-5 grid gap-5">
               <CreditProgress label="Organization credits" value={credits.subscriptionCreditsUsed} total={credits.subscriptionCreditsGranted} toneClassName="bg-primary" locale={locale} />
               {credits.addOnCreditsGranted > 0 && (
                 <CreditProgress label="Add-on credits" value={credits.addOnCreditsUsed} total={credits.addOnCreditsGranted} toneClassName="bg-emerald-500" locale={locale} />
               )}
             </div>
-            <div className="grid gap-3 border-t border-border p-3 dark:border-[#222326] sm:grid-cols-3">
-              <InfoCard title="Credits left" value={(credits.subscriptionCreditsRemaining + credits.addOnCreditsRemaining).toLocaleString()} description="Available to the organization" />
-              <InfoCard title="Plan limit" value={plan.access.aiCreditLimit.toLocaleString()} description={`${plan.name} included credits`} />
-              <InfoCard title="Default member limit" value="Unlimited" description="Members share organization credits" />
-            </div>
-          </>
+          )}
+        </div>
+        {usage.status === "loading" && <div className="mt-5 grid gap-4 md:grid-cols-2"><Skeleton className="h-24 rounded-lg dark:bg-[#222326]" /><Skeleton className="h-24 rounded-lg dark:bg-[#222326]" /></div>}
+        {usage.status === "error" && <div className="mt-5 text-xs text-destructive">Billing usage could not be loaded: {usage.error.message}</div>}
+        {credits && (
+          <div className="mt-6 grid gap-4 border-t border-border pt-5 dark:border-[#222326] sm:grid-cols-3">
+            <SimpleMetric title="Credits left" value={(credits.subscriptionCreditsRemaining + credits.addOnCreditsRemaining).toLocaleString()} description="Available to the organization" />
+            <SimpleMetric title="Plan limit" value={plan.access.aiCreditLimit.toLocaleString()} description={`${plan.name} included credits`} />
+            <SimpleMetric title="Default member limit" value="Unlimited" description="Members share organization credits" />
+          </div>
         )}
-      </SettingsSection>
+      </PlainSettingsSection>
 
       {credits && (
-        <SettingsSection title="Credit ledger" eyebrow="Backed by the current organization billing balance.">
-          <div className="grid gap-3 p-3 md:grid-cols-3">
-            <InfoCard title="Subscription used" value={credits.subscriptionCreditsUsed.toLocaleString()} description={`${credits.subscriptionCreditsRemaining.toLocaleString()} remaining`} />
-            <InfoCard title="Subscription granted" value={credits.subscriptionCreditsGranted.toLocaleString()} description={plan.name} />
-            <InfoCard title="Add-on balance" value={credits.addOnCreditsRemaining.toLocaleString()} description={`${credits.addOnCreditsUsed.toLocaleString()} used of ${credits.addOnCreditsGranted.toLocaleString()}`} />
+        <PlainSettingsSection title="Credit ledger" eyebrow="Backed by the current organization billing balance.">
+          <div className="grid gap-4 md:grid-cols-3">
+            <SimpleMetric title="Subscription used" value={credits.subscriptionCreditsUsed.toLocaleString()} description={`${credits.subscriptionCreditsRemaining.toLocaleString()} remaining`} />
+            <SimpleMetric title="Subscription granted" value={credits.subscriptionCreditsGranted.toLocaleString()} description={plan.name} />
+            <SimpleMetric title="Add-on balance" value={credits.addOnCreditsRemaining.toLocaleString()} description={`${credits.addOnCreditsUsed.toLocaleString()} used of ${credits.addOnCreditsGranted.toLocaleString()}`} />
           </div>
-        </SettingsSection>
+        </PlainSettingsSection>
       )}
 
       {usage.status === "ready" && (
-        <SettingsSection title="Payment history">
-          <div className="p-3">
-            <PaymentsLedger locale={locale} payments={usage.data.payments} />
-          </div>
-        </SettingsSection>
+        <PlainSettingsSection title="Payment history">
+          <PaymentsLedger locale={locale} payments={usage.data.payments} />
+        </PlainSettingsSection>
       )}
+    </div>
+  );
+}
+
+function PlainSettingsSection({
+  title,
+  eyebrow,
+  children,
+}: {
+  title: string;
+  eyebrow?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-4">
+      <div className="space-y-1">
+        <h2 className="text-sm font-semibold text-foreground dark:text-[#F4F5F8]">{title}</h2>
+        {eyebrow && <p className="text-xs leading-5 text-muted-foreground dark:text-[#9b9ba1]">{eyebrow}</p>}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function SimpleMetric({
+  title,
+  value,
+  description,
+}: {
+  title: string;
+  value: string;
+  description?: string;
+}) {
+  return (
+    <div className="min-w-0">
+      <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground dark:text-[#85858c]">{title}</div>
+      <div className="mt-2 text-lg font-semibold text-foreground dark:text-[#F4F5F8]">{value}</div>
+      {description && <div className="mt-1 text-[11px] leading-4 text-muted-foreground dark:text-[#909098]">{description}</div>}
     </div>
   );
 }
