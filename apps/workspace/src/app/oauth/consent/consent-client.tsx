@@ -308,49 +308,72 @@ export function OAuthConsentClient({
           </div>
         </div>
 
-        <div className="grid gap-6 px-6 py-6 sm:px-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.45fr)] lg:gap-8">
-          <div>
+        <div
+          className={
+            isMcpAuthorization
+              ? "space-y-6 px-6 py-6 sm:px-8"
+              : "grid gap-6 px-6 py-6 sm:px-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.45fr)] lg:gap-8"
+          }
+        >
+          <div
+            className={
+              isMcpAuthorization
+                ? "rounded-xl border border-border bg-muted/20 p-4"
+                : undefined
+            }
+          >
             <h2 className="text-sm font-bold text-foreground">
               {permissionIntro}
             </h2>
 
-            <div className="mt-4 space-y-4">
-            {displayScopes.map((scope) => {
-              const meta = permissionMeta[scope];
-              return (
-                <div key={scope} className="flex items-start gap-3">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-primary text-primary">
-                    <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold leading-5 text-foreground">
+            <div
+              className={
+                isMcpAuthorization
+                  ? "mt-3 grid gap-3 sm:grid-cols-3"
+                  : "mt-4 space-y-4"
+              }
+            >
+              {displayScopes.map((scope) => {
+                const meta = permissionMeta[scope];
+                return (
+                  <div key={scope} className="flex items-start gap-3">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-primary text-primary">
+                      <CheckCircle2
+                        className="h-3.5 w-3.5"
+                        aria-hidden="true"
+                      />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-semibold leading-5 text-foreground">
+                          {meta
+                            ? isArabic
+                              ? meta.ar
+                              : meta.en
+                            : fallbackScopeLabel(scope)}
+                        </p>
+                        <code className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+                          {scope}
+                        </code>
+                      </div>
+                      <p className="mt-0.5 text-xs font-medium leading-5 text-muted-foreground">
                         {meta
                           ? isArabic
-                            ? meta.ar
-                            : meta.en
-                          : fallbackScopeLabel(scope)}
+                            ? meta.detailAr
+                            : meta.detailEn
+                          : scope}
                       </p>
-                      <code className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
-                        {scope}
-                      </code>
                     </div>
-                    <p className="mt-0.5 text-xs font-medium leading-5 text-muted-foreground">
-                      {meta
-                        ? isArabic
-                          ? meta.detailAr
-                          : meta.detailEn
-                        : scope}
-                    </p>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
             </div>
           </div>
 
           <div className="min-w-0">
-            {isMcpAuthorization ? <McpGrantFields controller={mcpGrant} /> : null}
+            {isMcpAuthorization ? (
+              <McpGrantFields controller={mcpGrant} />
+            ) : null}
 
             {error ? (
               <p className="mt-4 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm font-semibold text-destructive">
@@ -377,7 +400,9 @@ export function OAuthConsentClient({
               type="button"
               onClick={() => submitConsent(true)}
               disabled={
-                busy || !organization?.id || resourceScopes.length === 0 ||
+                busy ||
+                !organization?.id ||
+                resourceScopes.length === 0 ||
                 (isMcpAuthorization && !mcpGrant.canApprove)
               }
               className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-bold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
