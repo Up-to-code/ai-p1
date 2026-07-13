@@ -5,7 +5,7 @@
 - **Organization** — top-level tenant. All data belongs to an organization.
 - **Space** — a first-class organization-level grouping entity with its own name, slug, color, visibility settings, and members. Owned by the `domains/spaces/` module. Linked to projects via the many-to-many `projectSpaces` junction table. The deepened module provides `useActiveSpace()`, `useWorkspaceSpacesQuery()`, CRUD requests, and UI components (SpaceList, SpaceCreateForm, SpaceSettings, SpaceSwitcher) through a single barrel at `domains/spaces/`.
 - **Project** — a container for tasks, docs, calendar events, and team collaboration.
-- **Task** — a unit of work with status, priority, assignee, pipeline order, tags, and custom fields.
+- **Task** — a unit of work with status, priority, assignee, pipeline order, tags, and custom fields. Unscoped Tasks are visible and editable across their Organization by default. Explicit private Tasks remain limited to their creator and assignees; Space/Project Tasks inherit their team scope unless visibility is explicitly narrowed.
 - **Client** — a CRM entity tracked through pipeline stages (new, contacted, qualified, proposal, negotiation, closedWon, closedLost).
 - **SalesOpportunity** — the canonical sales aggregate for prospective revenue, linked to a Client and optionally a delivery Project. The product displays this aggregate as a **Deal**.
 - **Deal** — customer-facing copy for a SalesOpportunity. Deals and opportunities must never be exposed as separate writable product modules.
@@ -14,6 +14,7 @@
 - **Resource Workspace** — the route-level UI shell for a domain resource such as Tasks or Clients. It owns the persistent resource header, count, view navigation, shared actions, and placement seams for view-owned toolbars and extension panels. A Resource Workspace never owns domain mutations or switches between view implementations in memory; each bookmarkable view is a real route page backed by a domain Adapter.
 - **Organization API Key** — an organization-owned secret credential with explicit permissions, expiry, quota, rotation, revocation, and last-use tracking. Secret material is owned by the Convex API-key Adapter; Qentrah stores only lifecycle metadata.
 - **Push Notification** — a user-targeted mobile delivery request. Device-token registration and provider delivery are owned by the Convex Expo Push Adapter; Qentrah owns schedules, retry state, and audit metadata.
+- **Platform Administration** — cross-Organization operational access granted only to identities on the configured email allowlist. It is distinct from Organization ownership and fails closed for missing or non-allowlisted identities.
 
 ## Deepened Modules
 
@@ -24,6 +25,7 @@
 - **Document Draft** — `domains/docs/hooks/use-document-draft.ts`. Single seam for Document draft reconciliation, IndexedDB recovery, debounced local persistence, scheduled server autosave, save-version ordering, and recovery after failed writes. Pure conflict and restore rules live in `domains/docs/document-draft.ts`; the Document editor remains a UI adapter.
 - **Organization API Key** — `convex/organizationApiKeyLifecycle.ts` with the concrete Adapter in `convex/apiKeys.ts`. The lifecycle seam owns creation, validation, rotation, revocation, expiry, quota reservation, and metadata reconciliation across frontend, Hono, and Convex callers.
 - **Push Notification** — `convex/notifications/` with the concrete Adapter in `convex/notifications/push.ts`. The notification seam owns device registration, scheduled dispatch, retry state, provider delivery, and token removal for mobile and workspace callers.
+- **Platform Administration** — pure allowlist policy in `@qentrah/auth` (`packages/auth/src/platform-admin.ts`) with Next.js configuration and Convex access Adapters. The policy normalizes configured identities once; adapters resolve the authenticated identity and deny by default. Organization roles never imply Platform Administration.
 
 ## Architecture Decisions
 

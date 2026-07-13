@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
-import { fetchAuthAction, fetchAuthMutation, fetchAuthQuery } from "@/server/auth/convex-auth";
+import { fetchAuthAction, fetchAuthMutation, fetchAuthQuery } from "@/server/auth/auth-request";
 import { getOrganizationCapabilities } from "@/server/utils/organization/access-checker";
 import type { OrganizationPermissionStatement } from "@/packages/authz";
 import { OrganizationActionError } from "../errors/action-error";

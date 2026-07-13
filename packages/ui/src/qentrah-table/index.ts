@@ -3,6 +3,7 @@ export type {
   QentrahTableProps,
   QentrahTableRef,
   QentrahTableDensity,
+  QentrahTableColumnState,
   QentrahCellRendererParams,
   QentrahValueFormatterParams,
   QentrahColumnDef,

@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { authUser } from "../auth";
+import { getAuthUser } from "../auth";
 import {
   ensureSavedView,
   ensureSurface,
@@ -173,7 +173,7 @@ export const seedWorkspaceDefaults = mutation({
   args: { organizationId: v.string() },
   returns: seedWorkspaceDefaultsResultValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     if (!user) throw new Error("Authentication required to seed workspace defaults.");
 
     const now = Date.now();

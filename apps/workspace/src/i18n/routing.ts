@@ -1,10 +1,10 @@
 import {defineRouting} from 'next-intl/routing';
 import {createNavigation} from 'next-intl/navigation';
+import {DEFAULT_LOCALE, SUPPORTED_LOCALES} from '@/i18n/locale-registry';
 
 export const routing = defineRouting({
-  locales: ['en', 'ar'],
-
-  defaultLocale: 'en'
+  locales: SUPPORTED_LOCALES,
+  defaultLocale: DEFAULT_LOCALE
 });
 
 export const {Link, usePathname, useRouter} =

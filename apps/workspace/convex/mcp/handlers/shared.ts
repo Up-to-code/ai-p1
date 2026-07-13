@@ -3,11 +3,13 @@ import { writeMcpWorkspaceAudit } from "../../workspace/businessData";
 import { mcpCalendarEventPage } from "../readSurface";
 import type { ToolPermission } from "../toolRegistry";
 import { listCursor, listLimit, type Input } from "../toolInputs";
+import type { ScopePolicyContext } from "../scopePolicy";
 
 export interface ReadToolArgs {
   organizationId: string;
   connectionId: string;
   input: Record<string, unknown>;
+  scopePolicy: ScopePolicyContext;
   appBaseUrl?: string;
   permissions: unknown[];
   instructions?: string;
@@ -18,6 +20,7 @@ export interface WriteToolArgs {
   organizationId: string;
   connectionId: string;
   input: Record<string, unknown>;
+  scopePolicy: ScopePolicyContext;
   appBaseUrl?: string;
   permissions: unknown[];
   instructions?: string;
@@ -148,4 +151,3 @@ export async function listEvents(
   const page = await query.paginate({ numItems: limit, cursor });
   return mcpCalendarEventPage(page);
 }
-

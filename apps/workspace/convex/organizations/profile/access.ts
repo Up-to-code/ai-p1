@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
 import { query } from "../../_generated/server";
-import { authUser } from "../../auth";
+import { getAuthUser, safeGetAuthUser } from "../../auth";
 import {
   assertCanPerformOrganizationAction,
   assertCanAccessSpace,
@@ -23,6 +23,7 @@ type OrganizationPermissionResource =
   | "project"
   | "asset"
   | "calendar"
+  | "document"
   | "media"
   | "visibility"
   | "integration"
@@ -83,7 +84,7 @@ export async function assertOrganizationResourcePermission(
   resource: OrganizationPermissionResource,
   action: string,
 ) {
-  const user = await authUser.getAuthUser(ctx);
+  const user = await getAuthUser(ctx);
   await assertCanPerformOrganizationAction(
     ctx,
     organizationId,
@@ -101,7 +102,7 @@ export async function canUseOrganizationResourceAction(
 ) {
   // Use the permission check but catch errors to return boolean
   try {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertCanPerformOrganizationAction(
       ctx,
       organizationId,
@@ -144,6 +145,7 @@ export const canUseResourceAction = query({
       v.literal("project"),
       v.literal("asset"),
       v.literal("calendar"),
+      v.literal("document"),
       v.literal("media"),
       v.literal("visibility"),
       v.literal("integration"),
@@ -170,7 +172,7 @@ export const getCapabilities = query({
   args: { organizationId: v.string() },
   returns: capabilitiesReturnValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.safeGetAuthUser(ctx);
+    const user = await safeGetAuthUser(ctx);
     if (!user) {
       return {
         canReadOrganization: false,

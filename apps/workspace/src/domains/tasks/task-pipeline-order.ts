@@ -1,4 +1,5 @@
 import type { TaskFormValues, TaskRecord, TaskStatus } from "./tasks.types";
+import { defaultTaskVisibility } from "./task-visibility";
 
 export const taskBoardStatuses = [
   "todo",
@@ -64,7 +65,11 @@ export function taskFormValuesForPipeline(
     status,
     pipelineOrder,
     priority: task.priority,
-    visibility: task.visibility ?? "team",
+    visibility: defaultTaskVisibility(
+      task.visibility,
+      task.projectId,
+      task.spaceId,
+    ),
     assigneeUserId: task.assigneeUserId ?? "",
     assigneeUserIds:
       task.assigneeUserIds ??

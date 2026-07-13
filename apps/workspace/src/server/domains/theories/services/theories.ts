@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { fetchAuthMutation } from "@/server/auth/convex-auth";
+import { fetchAuthMutation } from "@/server/auth/auth-request";
 import type { TheoryPayload } from "../validation/theory.schema";
 
 function toConvexInput(input: TheoryPayload) {

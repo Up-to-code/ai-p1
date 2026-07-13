@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
-import { useTaskMutations } from "../hooks/use-task-mutations";
 import type { TaskPriority } from "../tasks.types";
+import type { TaskQuickCreateCommand } from "../workspace/task-quick-create";
 
 interface TaskCreateModalProps {
   organizationId?: string;
@@ -16,7 +16,7 @@ interface TaskCreateModalProps {
   spaceId?: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: (taskId: string) => void;
+  onCreate: TaskQuickCreateCommand;
 }
 
 export function TaskCreateModal({
@@ -25,13 +25,13 @@ export function TaskCreateModal({
   spaceId,
   open,
   onOpenChange,
-  onCreated,
+  onCreate,
 }: TaskCreateModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("normal");
   const [selectedProjectId, setSelectedProjectId] = useState(projectId ?? "");
-  const { createTask, createTaskMutation } = useTaskMutations(organizationId ?? "");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const projectOptions = useProjectOptionsQueryResult(organizationId, { limit: 200 });
   const projects = useMemo(() => projectOptions.data ?? [], [projectOptions.data]);
 
@@ -48,24 +48,23 @@ export function TaskCreateModal({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const normalizedTitle = title.trim();
-    if (!organizationId || !normalizedTitle || createTaskMutation.isPending) return;
+    if (!organizationId || !normalizedTitle || isSubmitting) return;
 
+    setIsSubmitting(true);
     try {
-      const activeProjectId = projects.some((project) => project.id === selectedProjectId)
-        ? selectedProjectId
-        : "";
-      const result = await createTask({
+      await onCreate({
         title: normalizedTitle,
         description: description.trim(),
         priority,
-        projectId: activeProjectId,
-        spaceId: spaceId ?? "",
+        projectId: selectedProjectId || null,
+        spaceId: selectedProjectId ? spaceId : null,
       });
       onOpenChange(false);
-      onCreated(result.task.id);
     } catch {
       // The mutation owns user-facing feedback. Handling the rejection keeps
       // authorization failures out of Next's runtime overlay.
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -111,7 +110,7 @@ export function TaskCreateModal({
                 <Select value={selectedProjectId || "unscoped"} onValueChange={(value: string | null) => setSelectedProjectId(value === "unscoped" ? "" : (value ?? ""))}>
                   <SelectTrigger aria-label="Task project"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unscoped">No project (private)</SelectItem>
+                    <SelectItem value="unscoped">No project (organization-wide)</SelectItem>
                     {projects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
                     ))}
@@ -122,8 +121,8 @@ export function TaskCreateModal({
           </div>
           <DialogFooter className="m-0 border-t border-border px-6 py-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={!organizationId || !title.trim() || createTaskMutation.isPending}>
-              {createTaskMutation.isPending ? "Creating…" : "Create task"}
+            <Button type="submit" disabled={!organizationId || !title.trim() || isSubmitting}>
+              {isSubmitting ? "Creating…" : "Create task"}
             </Button>
           </DialogFooter>
         </form>

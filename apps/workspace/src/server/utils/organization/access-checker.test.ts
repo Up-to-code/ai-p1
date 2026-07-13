@@ -17,7 +17,7 @@ vi.mock("@convex/_generated/api", () => ({
   },
 }));
 
-vi.mock("@/server/auth/convex-auth", () => ({
+vi.mock("@/server/auth/auth-request", () => ({
   fetchAuthQuery: vi.fn(),
 }));
 
@@ -25,7 +25,7 @@ vi.mock("@/server/domains/organization/services/better-auth-organization-service
   getCurrentBetterAuthOrganizationRole: vi.fn(),
 }));
 
-import { fetchAuthQuery } from "@/server/auth/convex-auth";
+import { fetchAuthQuery } from "@/server/auth/auth-request";
 import { getCurrentBetterAuthOrganizationRole } from "@/server/domains/organization/services/better-auth-organization-service";
 import {
   assertCanUseOrganizationResource,

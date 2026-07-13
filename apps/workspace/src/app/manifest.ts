@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { brandLabel, brandProductName } from "@qentrah/brand-identity";
+import { workspaceAssets } from "@/lib/assets/workspace-assets";
 
 export default function manifest(): MetadataRoute.Manifest {
   const name = brandProductName("workspace", "en");
@@ -15,24 +16,24 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#121212",
     icons: [
       {
-        src: "/logo.ico",
+        src: workspaceAssets.brand.icon,
         sizes: "any",
         type: "image/x-icon",
       },
       {
-        src: "/app-icon-192.png",
+        src: workspaceAssets.application.icon192,
         sizes: "192x192",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/app-icon-512.png",
+        src: workspaceAssets.application.icon512,
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/app-icon-512.png",
+        src: workspaceAssets.application.icon512,
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation } from "@/server/auth/convex-auth";
+import { fetchAuthMutation } from "@/server/auth/auth-request";
 import type { UpdateProfileInput } from "../validation/update-profile.schema";
 
 export function updateCurrentUserProfile(input: UpdateProfileInput) {

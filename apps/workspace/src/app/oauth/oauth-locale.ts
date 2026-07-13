@@ -1,17 +1,14 @@
-const oauthLocales = ["en", "ar"] as const;
+import {
+  DEFAULT_LOCALE,
+  normalizeLocale,
+  type Locale,
+} from "@/i18n/locale-registry";
 
-export type OAuthLocale = (typeof oauthLocales)[number];
-
-const localeSet = new Set<string>(oauthLocales);
-
-function isOAuthLocale(locale: string): locale is OAuthLocale {
-  return localeSet.has(locale);
-}
+export type OAuthLocale = Locale;
 
 export function normalizeOAuthLocale(value?: string | null): OAuthLocale | null {
   if (!value) return null;
-  const normalized = value.trim().toLowerCase().split(/[-_]/)[0];
-  return isOAuthLocale(normalized) ? normalized : null;
+  return normalizeLocale(value);
 }
 
 export function resolveOAuthLocale(input: {
@@ -23,6 +20,6 @@ export function resolveOAuthLocale(input: {
     normalizeOAuthLocale(input.cookieLocale) ??
     normalizeOAuthLocale(input.acceptLanguage?.split(",")[0]) ??
     input.fallback ??
-    "en"
+    DEFAULT_LOCALE
   );
 }

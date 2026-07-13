@@ -2,11 +2,9 @@ import { ConvexError } from "convex/values";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../auth", () => ({
-  authUser: {
-    safeGetAuthUser: vi.fn(async (ctx: { actorUserId?: string }) =>
+  safeGetAuthUser: vi.fn(async (ctx: { actorUserId?: string }) =>
       ctx.actorUserId ? { _id: ctx.actorUserId } : null,
     ),
-  },
 }));
 
 import { resolveDocumentAccess } from "./document";
@@ -57,7 +55,10 @@ function fakeCtx(input: {
         withIndex: vi.fn(
           (_name: string, build: (q: typeof chain) => unknown) => {
             build(chain);
-            return { take: vi.fn(async () => rows[table]) };
+            return {
+              collect: vi.fn(async () => rows[table]),
+              take: vi.fn(async () => rows[table]),
+            };
           },
         ),
       })),

@@ -1,10 +1,7 @@
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import { query } from "../_generated/server";
-import type { Doc } from "../_generated/dataModel";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
-import { revealClientPii } from "../security/clientPii";
-import { isoDate } from "../shared/present";
 import {
   activeUpdatedWorkspaceRows,
   activeWorkspaceRows,
@@ -12,66 +9,12 @@ import {
   presentActiveWorkspacePage,
 } from "../workspace/readSurface";
 import { clientStats } from "../workspace/readStats";
-import { clientTypeValidator, clientValidator, resolveClientPipelineStage } from "./validators";
+import { clientTypeValidator, clientValidator } from "./validators";
+import { presentClient, presentClientListItem } from "./presentation";
 
 const MAX_LIST_ITEMS = 300;
 const MAX_SEARCH_SCAN_ITEMS = 500;
 const MAX_STATS_SCAN_ITEMS = 2_000;
-
-function withoutPrivateClientFields(client: Doc<"clients">) {
-  const safeClient = { ...client };
-  delete safeClient.deletedAt;
-  delete safeClient.encryptedEmail;
-  delete safeClient.encryptedPhone;
-  delete safeClient.piiEncryptedAt;
-  return safeClient;
-}
-
-export async function presentClient(client: Doc<"clients">) {
-  const safeClient = withoutPrivateClientFields(client);
-  const pii = await revealClientPii(client);
-  return {
-    ...safeClient,
-    ...pii,
-    id: client._id,
-    visibility: client.visibility ?? "private",
-    ownerUserId: client.ownerUserId ?? "",
-    source: client.source ?? "",
-    createdByUserId: client.createdByUserId ?? "",
-    phone: pii.phone ?? client.phone ?? "",
-    contact: client.contact ?? pii.email ?? client.email ?? client.phone ?? client.company ?? "",
-    priority: client.priority ?? "normal",
-    budget: client.budget ?? "",
-    assetInterest: client.assetInterest ?? client.notes ?? client.source ?? "",
-    pipelineStage: resolveClientPipelineStage(client),
-    pipelineOrder: client.pipelineOrder,
-    added: client.added ?? isoDate(client.createdAt),
-    lastContact: client.lastContact ?? isoDate(client.updatedAt),
-  };
-}
-
-async function presentClientListItem(client: Doc<"clients">) {
-  const safeClient = withoutPrivateClientFields(client);
-  const pii = await revealClientPii(client);
-  return {
-    ...safeClient,
-    ...pii,
-    id: client._id,
-    visibility: client.visibility ?? "private",
-    ownerUserId: client.ownerUserId ?? "",
-    source: client.source ?? "",
-    createdByUserId: client.createdByUserId ?? "",
-    phone: pii.phone ?? client.phone ?? "",
-    contact: client.contact ?? pii.email ?? client.email ?? client.phone ?? client.company ?? "",
-    priority: client.priority ?? "normal",
-    budget: client.budget ?? "",
-    assetInterest: client.assetInterest ?? client.notes ?? client.source ?? "",
-    pipelineStage: resolveClientPipelineStage(client),
-    pipelineOrder: client.pipelineOrder,
-    added: client.added ?? isoDate(client.createdAt),
-    lastContact: client.lastContact ?? isoDate(client.updatedAt),
-  };
-}
 
 export const list = query({
   args: { organizationId: v.string() },

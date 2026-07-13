@@ -1,6 +1,6 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 import { requireOrganizationAction, recordOrganizationAction } from "../../../lib/action-workflow";
 import { createOrganizationInvitation, listOrganizationRoles } from "../../../lib/better-auth-org";
 import { assertAssignableRole } from "../../../lib/access-policy";
@@ -12,7 +12,7 @@ export default defineTool({
     role: z.string().trim().min(1).max(80),
   }).passthrough(),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     await requireOrganizationAction(ctx, organizationId, "member", "create");
     const roles = await listOrganizationRoles(ctx, organizationId);
     assertAssignableRole(args.role, roles);

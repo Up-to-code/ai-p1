@@ -1,6 +1,6 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 import { requireOrganizationAction, recordOrganizationAction } from "../../../lib/action-workflow";
 import { createOrganizationRole } from "../../../lib/better-auth-org";
 import { assertRoleNameIsCustom, normalizeOrganizationRoleName, validatePermissionPayload } from "../../../lib/access-policy";
@@ -12,7 +12,7 @@ export default defineTool({
     permission: z.record(z.string(), z.array(z.string().trim().min(1)).max(20)),
   }).passthrough(),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     await requireOrganizationAction(ctx, organizationId, "role", "create");
     const normalizedRole = normalizeOrganizationRoleName(args.role);
     if (!normalizedRole) throw new Error("Work role name is required.");

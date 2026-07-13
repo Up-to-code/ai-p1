@@ -147,7 +147,28 @@ Route-transition invariant: pathname transitions are scoped to the Resource Work
 
 ### Packet 2: Task route layout and provider
 
-Current behavior: `TasksPageRedesigned` owns querying, count, modal state, view state, and rendering.
+Current behavior: the canonical Task provider owns the reactive Convex read,
+optimistic command overlay, scope, filtering, pagination, and modal lifecycle.
+Pagination is cursor-owned by `clientTasks.read.listPage`; the Workspace loads
+additional authorized pages instead of slicing a bounded 500-record snapshot.
+`domains/tasks/workspace/task-workspace-view-state.ts` is the canonical URL and
+saved-view codec. It owns Task filter, grouping, sort, density, and search
+normalization. Board, list, and table retain layout behavior but consume the
+same selected record set; route switches preserve the complete serialized
+state. Saved-view reads subscribe directly to Convex and do not introduce a
+TanStack copy of server-owned configuration.
+`QentrahTableColumnState` is the shared grid boundary for order, widths, and
+visibility. The grid publishes completed interactions and accepts controlled
+state, while domain adapters decide whether and where that state is persisted.
+`TaskQuickCreateCommand` is the single capture interface used by Task table,
+list, board, the creation dialog, and embedded Project Task views. It
+normalizes one draft, performs one Hono-owned write, and opens the returned
+URL-addressable `/tasks/{id}` identity. Convex subscriptions deliver the new
+record; no TanStack invalidation mirrors the read model.
+Filesystem pages are server adapters that render board, list, or table client
+islands. Route state distinguishes authentication, query loading/failure, true
+empty, filtered empty, and populated results. The former
+`TasksPageRedesigned` duplicate was removed.
 
 Structural improvement: move shared Task query/mutation context into a Task route provider composed by `/tasks/layout.tsx`. The layout configures the shared Resource Workspace.
 

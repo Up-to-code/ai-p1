@@ -15,11 +15,26 @@ export const clientStatusValidator = v.union(
 );
 
 export const clientPriorityValidator = v.union(
+  v.literal("normal"),
+  v.literal("high"),
+  v.literal("urgent"),
+);
+
+/** Stored legacy values remain readable until the priority backfill completes. */
+export const storedClientPriorityValidator = v.union(
   v.literal("low"),
   v.literal("normal"),
   v.literal("high"),
   v.literal("urgent"),
 );
+
+export type ClientPriority = "normal" | "high" | "urgent";
+
+export function normalizeClientPriority(
+  priority: "low" | ClientPriority | undefined,
+): ClientPriority {
+  return priority === "low" || priority === undefined ? "normal" : priority;
+}
 
 export const visibilityValidator = v.union(v.literal("private"), v.literal("team"), v.literal("workspace"));
 
@@ -59,6 +74,30 @@ export const clientInputValidator = v.object({
   tags: v.optional(v.array(v.string())),
 });
 
+export const clientPatchValidator = v.object({
+  name: v.optional(v.string()),
+  type: v.optional(clientTypeValidator),
+  ownerUserId: v.optional(v.string()),
+  status: v.optional(clientStatusValidator),
+  pipelineStage: v.optional(clientPipelineStageValidator),
+  pipelineOrder: v.optional(v.number()),
+  source: v.optional(v.string()),
+  contact: v.optional(v.string()),
+  priority: v.optional(clientPriorityValidator),
+  budget: v.optional(v.string()),
+  assetInterest: v.optional(v.string()),
+  added: v.optional(v.string()),
+  lastContact: v.optional(v.string()),
+  visibility: v.optional(visibilityValidator),
+  company: v.optional(v.string()),
+  contactName: v.optional(v.string()),
+  email: v.optional(v.string()),
+  phone: v.optional(v.string()),
+  website: v.optional(v.string()),
+  notes: v.optional(v.string()),
+  tags: v.optional(v.array(v.string())),
+});
+
 export const clientValidator = v.object({
   _id: v.id("clients"),
   _creationTime: v.number(),
@@ -77,7 +116,7 @@ export const clientValidator = v.object({
   phone: v.optional(v.string()),
   website: v.optional(v.string()),
   notes: v.optional(v.string()),
-  priority: v.optional(clientPriorityValidator),
+  priority: clientPriorityValidator,
   budget: v.optional(v.string()),
   assetInterest: v.optional(v.string()),
   pipelineStage: clientPipelineStageValidator,

@@ -45,7 +45,7 @@ export const mediaAttachUrl: WriteHandler = async (ctx: MutationCtx, args: Write
     sortOrder: existing.length,
     shareVisibility: "private",
     isCover: false,
-    createdByUserId: scopeActorUserId(args.input),
+    createdByUserId: scopeActorUserId(args.scopePolicy),
     createdAt: args.now,
     updatedAt: args.now,
   });

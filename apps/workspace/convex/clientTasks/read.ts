@@ -1,15 +1,17 @@
 import { v } from "convex/values";
+import {
+  paginationOptsValidator,
+  paginationResultValidator,
+} from "convex/server";
 import { query } from "../_generated/server";
 import { resolveTaskAccess } from "../access/task";
 import { activeDueWorkspaceRows, activeWorkspaceRows, boundedWorkspaceReadLimit } from "../workspace/readSurface";
 import { clientTaskValidator } from "./validators";
+import { presentTask } from "./presentation";
+import { taskAssigneeIds } from "./assignments";
 
 const MAX_LIST_TASKS = 500;
 const MAX_GROUPED_TASKS = 2000;
-
-function presentTask<TTask extends { _id: string; visibility?: "private" | "team" | "workspace" }>(task: TTask) {
-  return { ...task, id: task._id, visibility: task.visibility ?? "private" };
-}
 
 function isActiveOrganizationRecord(
   record: { organizationId: string; deletedAt?: number; recordState?: string } | null,
@@ -89,6 +91,127 @@ export const list = query({
           .take(MAX_LIST_TASKS);
 
     return (await access.filterReadable(activeDueWorkspaceRows(tasks))).map(presentTask);
+  },
+});
+
+/**
+ * Cursor-paginated TaskWorkspace read. Scope is selected through a matching
+ * index before record-level authorization is applied; inaccessible records
+ * never enter the public page.
+ */
+export const listPage = query({
+  args: {
+    organizationId: v.string(),
+    projectId: v.optional(v.string()),
+    spaceId: v.optional(v.string()),
+    ownership: v.optional(v.union(
+      v.literal("all"),
+      v.literal("assignedToMe"),
+      v.literal("sentByMe"),
+    )),
+    paginationOpts: paginationOptsValidator,
+  },
+  returns: paginationResultValidator(clientTaskValidator),
+  handler: async (ctx, args) => {
+    const access = await resolveTaskAccess(ctx, args.organizationId);
+    const projectId = args.projectId
+      ? ctx.db.normalizeId("projects", args.projectId)
+      : null;
+    const spaceId = args.spaceId
+      ? ctx.db.normalizeId("spaces", args.spaceId)
+      : null;
+    if ((args.projectId && !projectId) || (args.spaceId && !spaceId)) {
+      return { page: [], isDone: true, continueCursor: "" };
+    }
+
+    if (projectId) {
+      const project = await ctx.db.get(projectId);
+      if (!isActiveOrganizationRecord(project, args.organizationId)) {
+        return { page: [], isDone: true, continueCursor: "" };
+      }
+    }
+    if (spaceId) {
+      if (!projectId) return { page: [], isDone: true, continueCursor: "" };
+      const [space, link] = await Promise.all([
+        ctx.db.get(spaceId),
+        ctx.db
+          .query("projectSpaces")
+          .withIndex("by_project_space", (q) =>
+            q.eq("organizationId", args.organizationId).eq("projectId", projectId).eq("spaceId", spaceId),
+          )
+          .first(),
+      ]);
+      if (
+        !isActiveOrganizationRecord(space, args.organizationId) ||
+        !isActiveOrganizationRecord(link, args.organizationId)
+      ) {
+        return { page: [], isDone: true, continueCursor: "" };
+      }
+    }
+
+    const ownership = args.ownership ?? "all";
+    if (ownership === "assignedToMe") {
+      const assignmentPage = await ctx.db
+        .query("taskAssignments")
+        .withIndex("by_organization_user_task", (q) =>
+          q.eq("organizationId", args.organizationId).eq("userId", access.actor.userId),
+        )
+        .order("desc")
+        .paginate(args.paginationOpts);
+      const candidates = (await Promise.all(
+        assignmentPage.page.map((assignment) => ctx.db.get(assignment.taskId)),
+      )).flatMap((task) => task &&
+          (!projectId || task.projectId === projectId) &&
+          (!spaceId || task.spaceId === spaceId)
+        ? [task]
+        : []);
+      const readable = await access.filterReadable(activeDueWorkspaceRows(candidates));
+      return { ...assignmentPage, page: readable.map(presentTask) };
+    }
+
+    if (ownership === "sentByMe") {
+      const sentPage = await ctx.db
+        .query("tasks")
+        .withIndex("by_organization_creator_updated", (q) =>
+          q.eq("organizationId", args.organizationId).eq("createdByUserId", access.actor.userId),
+        )
+        .order("desc")
+        .paginate(args.paginationOpts);
+      const candidates = activeDueWorkspaceRows(sentPage.page).filter((task) =>
+        (!projectId || task.projectId === projectId) &&
+        (!spaceId || task.spaceId === spaceId) &&
+        !taskAssigneeIds(task).includes(access.actor.userId),
+      );
+      const readable = await access.filterReadable(candidates);
+      return { ...sentPage, page: readable.map(presentTask) };
+    }
+
+    const rawPage = spaceId && projectId
+      ? await ctx.db
+          .query("tasks")
+          .withIndex("by_organization_project_space", (q) =>
+            q.eq("organizationId", args.organizationId).eq("projectId", projectId).eq("spaceId", spaceId),
+          )
+          .order("desc")
+          .paginate(args.paginationOpts)
+      : projectId
+        ? await ctx.db
+            .query("tasks")
+            .withIndex("by_organization_project", (q) =>
+              q.eq("organizationId", args.organizationId).eq("projectId", projectId),
+            )
+            .order("desc")
+            .paginate(args.paginationOpts)
+        : await ctx.db
+            .query("tasks")
+            .withIndex("by_organization_updated", (q) =>
+              q.eq("organizationId", args.organizationId),
+            )
+            .order("desc")
+            .paginate(args.paginationOpts);
+
+    const readable = await access.filterReadable(activeDueWorkspaceRows(rawPage.page));
+    return { ...rawPage, page: readable.map(presentTask) };
   },
 });
 

@@ -1,5 +1,7 @@
 import type { Doc } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
+import { taskAssigneeIds } from "../clientTasks/assignments";
+export { taskAssigneeIds } from "../clientTasks/assignments";
 
 type EventKind = "task_assigned" | "mentioned";
 type ResourceType = "task" | "message" | "document" | "project" | "client" | "deal" | "file";
@@ -19,13 +21,6 @@ type NotificationEventInput = {
 };
 
 type TaskAssignees = Pick<Doc<"tasks">, "assigneeUserId" | "assigneeUserIds">;
-
-export function taskAssigneeIds(task: TaskAssignees): string[] {
-  return [...new Set([
-    ...(task.assigneeUserId ? [task.assigneeUserId] : []),
-    ...(task.assigneeUserIds ?? []),
-  ])];
-}
 
 export function newlyAssignedUserIds(
   previous: TaskAssignees | null,

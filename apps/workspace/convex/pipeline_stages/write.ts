@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
-import { authUser } from "../auth";
+import { getAuthUser } from "../auth";
 
 const DEFAULT_CLIENT_STAGES = [
   { key: "blank", name: "Blank", color: "#B4B2A9", order: 0, category: "not_started" as const },
@@ -154,7 +154,7 @@ export const seedDefaults = mutation({
 });
 
 async function requireUser(ctx: MutationCtx) {
-  const user = await authUser.getAuthUser(ctx);
+  const user = await getAuthUser(ctx);
   if (!user) throw new Error("Authentication required to manage pipeline stages.");
   return user;
 }

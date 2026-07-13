@@ -1,7 +1,6 @@
 import type { ToolContext } from "eve/tools";
 import { api } from "@convex/_generated/api";
 import { fetchAuthMutation, fetchAuthQuery } from "./convex";
-import { requireOrgId } from "./org-context";
 import type {
   OrganizationInvitationForPolicy,
   OrganizationMemberForPolicy,

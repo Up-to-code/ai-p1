@@ -3,13 +3,13 @@ import type { Id } from "../../_generated/dataModel";
 import { internal } from "../../_generated/api";
 import { presentWorkspaceRecord } from "../../shared/present";
 import { assertActiveWorkspaceRecord, assertPublicWorkspaceRecord } from "../../workspace/businessData";
-import { taskInput, taskUpdateInput, listLimit, listCursor, requiredString, searchTerm, optionalString, assertTaskLinks } from "../toolInputs";
+import { taskInput, taskPatchInput, listLimit, listCursor, requiredString, searchTerm, optionalString } from "../toolInputs";
 import { mcpPublicWorkspacePage, mcpPublicWorkspaceSearchResult } from "../readSurface";
 import {
   type ReadHandler, type WriteHandler, type ReadToolArgs, type WriteToolArgs,
   TOOL_SCAN_LIMIT, hasInputKey, scopedProjectId, scopedClientId, taskSearchValues, audit,
 } from "./shared";
-import { isScopedResourceLink, scopeActorUserId, scopePolicyFromInput } from "../scopePolicy";
+import { isScopedResourceLink, scopeActorUserId } from "../scopePolicy";
 
 export const tasksList: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
   const limit = listLimit(args.input);
@@ -17,7 +17,7 @@ export const tasksList: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) 
   const projectId = scopedProjectId(args.input);
   const clientId = scopedClientId(args.input);
   const spaceId = optionalString(args.input, "spaceId");
-  const scope = scopePolicyFromInput(args.input);
+  const scope = args.scopePolicy;
   if (scope.scopeType !== "organization") {
     const tasks = await ctx.db
       .query("tasks")
@@ -82,7 +82,7 @@ export const tasksList: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) 
 
 export const tasksGet: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
   const task = await ctx.db.get(requiredString(args.input, "taskId") as Id<"tasks">);
-  const scope = scopePolicyFromInput(args.input);
+  const scope = args.scopePolicy;
   if (task && (!isScopedResourceLink(scope, task) || task.recordState === "deleted")) {
     throw new Error("Task was not found.");
   }
@@ -91,11 +91,13 @@ export const tasksGet: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) =
 
 export const tasksCreate: WriteHandler = async (ctx: MutationCtx, args: WriteToolArgs) => {
   const task = taskInput(args.input);
-  await assertTaskLinks(ctx, args.organizationId, task);
+  if (!isScopedResourceLink(args.scopePolicy, task)) {
+    throw new Error("Task is outside the granted scope.");
+  }
   const result = await ctx.runMutation(internal.clientTasks.write.createInternal, {
     organizationId: args.organizationId,
     input: { ...task, visibility: "workspace" },
-    actorUserId: scopeActorUserId(args.input),
+    actorUserId: scopeActorUserId(args.scopePolicy),
   });
   await audit(ctx, args.organizationId, args.connectionId, "client.task.create", result.id, `Created task ${task.title}.`);
   return presentWorkspaceRecord(result);
@@ -104,13 +106,16 @@ export const tasksCreate: WriteHandler = async (ctx: MutationCtx, args: WriteToo
 export const tasksUpdate: WriteHandler = async (ctx: MutationCtx, args: WriteToolArgs) => {
   const taskId = requiredString(args.input, "taskId") as Id<"tasks">;
   const existing = assertActiveWorkspaceRecord(await ctx.db.get(taskId), args.organizationId, "Task");
-  const patch = taskUpdateInput(args.input, existing);
-  await assertTaskLinks(ctx, args.organizationId, patch);
+  if (!isScopedResourceLink(args.scopePolicy, existing)) throw new Error("Task was not found.");
+  const patch = taskPatchInput(args.input);
+  if (!isScopedResourceLink(args.scopePolicy, { ...existing, ...patch })) {
+    throw new Error("Task is outside the granted scope.");
+  }
   const result = await ctx.runMutation(internal.clientTasks.write.updateInternal, {
     organizationId: args.organizationId,
     taskId,
     input: patch,
-    actorUserId: scopeActorUserId(args.input),
+    actorUserId: scopeActorUserId(args.scopePolicy),
   });
   await audit(ctx, args.organizationId, args.connectionId, "client.task.update", taskId, `Updated task ${existing.title}.`);
   return presentWorkspaceRecord(result);
@@ -119,23 +124,15 @@ export const tasksUpdate: WriteHandler = async (ctx: MutationCtx, args: WriteToo
 export const tasksComplete: WriteHandler = async (ctx: MutationCtx, args: WriteToolArgs) => {
   const taskId = requiredString(args.input, "taskId") as Id<"tasks">;
   const existing = assertActiveWorkspaceRecord(await ctx.db.get(taskId), args.organizationId, "Task");
+  if (!isScopedResourceLink(args.scopePolicy, existing)) throw new Error("Task was not found.");
   if (existing.status === "done") {
     return presentWorkspaceRecord(existing);
   }
   const result = await ctx.runMutation(internal.clientTasks.write.updateInternal, {
     organizationId: args.organizationId,
     taskId,
-    input: {
-      title: existing.title ?? "",
-      status: "done",
-      priority: (existing.priority ?? "normal") as "low" | "normal" | "high" | "urgent",
-      ...(existing.clientId ? { clientId: existing.clientId } : {}),
-      ...(existing.projectId ? { projectId: existing.projectId } : {}),
-      ...(existing.spaceId ? { spaceId: existing.spaceId } : {}),
-      ...(existing.dueDate ? { dueDate: existing.dueDate } : {}),
-      visibility: existing.visibility ?? "workspace",
-    },
-    actorUserId: scopeActorUserId(args.input),
+    input: { status: "done" },
+    actorUserId: scopeActorUserId(args.scopePolicy),
   });
   await audit(ctx, args.organizationId, args.connectionId, "client.task.update", taskId, `Completed task ${existing.title}.`);
   return presentWorkspaceRecord(result);
@@ -143,10 +140,12 @@ export const tasksComplete: WriteHandler = async (ctx: MutationCtx, args: WriteT
 
 export const tasksDelete: WriteHandler = async (ctx: MutationCtx, args: WriteToolArgs) => {
   const taskId = requiredString(args.input, "taskId") as Id<"tasks">;
+  const existing = assertActiveWorkspaceRecord(await ctx.db.get(taskId), args.organizationId, "Task");
+  if (!isScopedResourceLink(args.scopePolicy, existing)) throw new Error("Task was not found.");
   const result = await ctx.runMutation(internal.clientTasks.write.deleteInternal, {
     organizationId: args.organizationId,
     taskId,
-    actorUserId: scopeActorUserId(args.input),
+    actorUserId: scopeActorUserId(args.scopePolicy),
   });
   await audit(ctx, args.organizationId, args.connectionId, "client.task.delete", taskId, `Deleted task.`);
   return result;

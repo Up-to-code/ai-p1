@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import type { z } from "zod";
 import type { FunctionReference } from "convex/server";
-import { fetchAuthMutation } from "@/server/auth/convex-auth";
+import { fetchAuthMutation } from "@/server/auth/auth-request";
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { actionErrorJson } from "@/server/utils/response/action-error";
 

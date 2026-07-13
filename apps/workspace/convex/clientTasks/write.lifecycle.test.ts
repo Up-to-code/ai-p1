@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { taskCompletionPatch } from "./write";
+import { taskCompletionPatch } from "./lifecycle";
 
 describe("client task completion lifecycle", () => {
   it("sets completedAt when entering done", () => {

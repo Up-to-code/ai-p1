@@ -6,7 +6,7 @@ import { activeWorkspaceRows } from "../../workspace/readSurface";
 import { stripDeletedFields } from "../../shared/present";
 import { requiredString, optionalString } from "../toolInputs";
 import type { ReadHandler, WriteHandler } from "./shared";
-import { isScopedSpace, scopeActorUserId, scopePolicyFromInput } from "../scopePolicy";
+import { isScopedSpace, scopeActorUserId } from "../scopePolicy";
 
 const MAX_ORG_SPACES = 500;
 
@@ -22,7 +22,7 @@ function presentSpace(space: any) {
 
 export const spaces_list: ReadHandler = async (ctx, args) => {
   const { organizationId } = args;
-  const scope = scopePolicyFromInput(args.input);
+  const scope = args.scopePolicy;
   const spaces = await ctx.db
     .query("spaces")
     .withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId))
@@ -38,7 +38,7 @@ export const spaces_get: ReadHandler = async (ctx, args) => {
   const { organizationId, input } = args;
   const spaceId = input.spaceId as Id<"spaces">;
   const space = await ctx.db.get(spaceId);
-  if (!space || space.organizationId !== organizationId || space.deletedAt || space.recordState === "deleted" || !isScopedSpace(scopePolicyFromInput(input), spaceId)) {
+  if (!space || space.organizationId !== organizationId || space.deletedAt || space.recordState === "deleted" || !isScopedSpace(args.scopePolicy, spaceId)) {
     return null;
   }
   return { ...space, id: space._id };
@@ -46,7 +46,7 @@ export const spaces_get: ReadHandler = async (ctx, args) => {
 
 export const spaces_create: WriteHandler = async (ctx, args) => {
   const { organizationId, input, now } = args;
-  const actorId = scopeActorUserId(input);
+  const actorId = scopeActorUserId(args.scopePolicy);
 
   const existing = await ctx.db
     .query("spaces")
@@ -101,7 +101,7 @@ export const spaces_create: WriteHandler = async (ctx, args) => {
 
 export const spaces_update: WriteHandler = async (ctx, args) => {
   const { organizationId, input, now } = args;
-  const actorId = scopeActorUserId(input);
+  const actorId = scopeActorUserId(args.scopePolicy);
   const spaceId = input.spaceId as Id<"spaces">;
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "update");
 
@@ -157,7 +157,7 @@ export const spaces_update: WriteHandler = async (ctx, args) => {
 
 export const spaces_delete: WriteHandler = async (ctx, args) => {
   const { organizationId, input, now } = args;
-  const actorId = scopeActorUserId(input);
+  const actorId = scopeActorUserId(args.scopePolicy);
   const spaceId = input.spaceId as Id<"spaces">;
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "delete");
 
@@ -216,7 +216,7 @@ export const spaces_delete: WriteHandler = async (ctx, args) => {
 export const space_members_list: ReadHandler = async (ctx, args) => {
   const { organizationId, input } = args;
   const spaceId = input.spaceId as Id<"spaces">;
-  const actorId = scopeActorUserId(input);
+  const actorId = scopeActorUserId(args.scopePolicy);
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "read");
   const members = await ctx.db
     .query("spaceMembers")
@@ -233,7 +233,7 @@ export const space_members_list: ReadHandler = async (ctx, args) => {
 
 export const space_members_add: WriteHandler = async (ctx, args) => {
   const { organizationId, input, now } = args;
-  const actorId = scopeActorUserId(input);
+  const actorId = scopeActorUserId(args.scopePolicy);
   const spaceId = input.spaceId as Id<"spaces">;
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "update");
 
@@ -282,7 +282,7 @@ export const space_members_add: WriteHandler = async (ctx, args) => {
 
 export const space_members_remove: WriteHandler = async (ctx, args) => {
   const { organizationId, input, now } = args;
-  const actorId = scopeActorUserId(input);
+  const actorId = scopeActorUserId(args.scopePolicy);
   const spaceId = input.spaceId as Id<"spaces">;
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "update");
 
@@ -340,7 +340,7 @@ export const space_members_remove: WriteHandler = async (ctx, args) => {
 
 export const space_members_update_role: WriteHandler = async (ctx, args) => {
   const { organizationId, input, now } = args;
-  const actorId = scopeActorUserId(input);
+  const actorId = scopeActorUserId(args.scopePolicy);
   const spaceId = input.spaceId as Id<"spaces">;
   await assertCanPerformSpaceAction(ctx, organizationId, spaceId, actorId, "update");
 

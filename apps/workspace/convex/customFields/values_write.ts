@@ -1,21 +1,15 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { authUser } from "../auth";
-import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import { getAuthUser } from "../auth";
+import { workOsRecordResourceValidator } from "../schema/validators";
+import { assertCustomFieldTargetPermission } from "./access";
 
 export const upsertFromHono = mutation({
   args: {
     organizationId: v.string(),
     fieldDefinitionId: v.id("customFieldDefinitions"),
     fieldKey: v.string(),
-    recordType: v.union(
-      v.literal("client"),
-      v.literal("deal"),
-      v.literal("opportunity"),
-      v.literal("project"),
-      v.literal("task"),
-      v.literal("calendarEvent"),
-    ),
+    recordType: workOsRecordResourceValidator,
     recordId: v.string(),
     type: v.union(
       v.literal("text"),
@@ -42,10 +36,10 @@ export const upsertFromHono = mutation({
     urlValue: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
 
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
+    await assertCustomFieldTargetPermission(ctx, args.organizationId, [args.recordType], "update");
 
     // Check if value already exists
     const existing = await ctx.db
@@ -106,15 +100,14 @@ export const deleteFromHono = mutation({
     valueId: v.id("customFieldValues"),
   },
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
-
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
 
     const existing = await ctx.db.get(args.valueId);
     if (!existing || existing.organizationId !== args.organizationId) {
       throw new Error("Value not found");
     }
+    await assertCustomFieldTargetPermission(ctx, args.organizationId, [existing.recordType], "update");
 
     await ctx.db.patch(args.valueId, {
       deletedAt: Date.now(),

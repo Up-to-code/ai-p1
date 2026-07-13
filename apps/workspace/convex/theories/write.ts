@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { authUser } from "../auth";
+import { getAuthUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { theoryInputValidator, theoryValidator } from "./validators";
 
@@ -12,7 +12,7 @@ export const createFromHono = mutation({
   args: { organizationId: v.string(), input: theoryInputValidator },
   returns: theoryValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
 
     const now = Date.now();
@@ -47,7 +47,7 @@ export const updateFromHono = mutation({
   },
   returns: theoryValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.theoryId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
@@ -79,7 +79,7 @@ export const deleteFromHono = mutation({
   args: { organizationId: v.string(), theoryId: v.id("theories") },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.theoryId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {

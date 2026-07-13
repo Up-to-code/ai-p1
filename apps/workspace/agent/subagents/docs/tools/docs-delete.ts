@@ -3,7 +3,7 @@ import { z } from "zod";
 import { always } from "eve/tools/approval";
 import { api } from "@convex/_generated/api";
 import { fetchAuthQuery, fetchAuthMutation } from "../../../lib/convex";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 import { runOrganizationActionWorkflow } from "../../../lib/action-workflow";
 
 export default defineTool({
@@ -14,7 +14,7 @@ export default defineTool({
   }),
   approval: always(),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     // Fetch title first so we can show it in the audit log and confirmation
     const existing = await fetchAuthQuery(ctx, api.clientDocs.read.get, {
       organizationId,

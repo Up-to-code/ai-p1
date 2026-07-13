@@ -10,7 +10,7 @@ function readSource(path: string) {
 }
 
 describe("task pipeline source", () => {
-  const workspaceSource = readSource("src/domains/tasks/components/TasksPageRedesigned.tsx");
+  const workspaceSource = readSource("src/domains/tasks/components/task-workspace-provider.tsx");
   const mutationsSource = readSource("src/domains/tasks/hooks/use-task-mutations.ts");
   const hooksSource = readSource("src/domains/tasks/hooks/use-task-mention-options.ts");
   const constantsSource = readSource("src/domains/tasks/tasks.constants.ts");
@@ -29,7 +29,7 @@ describe("task pipeline source", () => {
   });
 
   it("persists drag/drop with Convex real-time updates", () => {
-    expect(workspaceSource).toContain("moveTaskFromHook");
+    expect(workspaceSource).toContain("mutations.moveTask");
     expect(mutationsSource).toContain("moveTaskMutation");
     expect(mutationsSource).toContain("nextTaskPipelineOrder(stageTasks, task.id, targetIndex)");
     expect(mutationsSource).toContain("taskFormValuesForPipeline(task, toStage, pipelineOrder)");
@@ -39,6 +39,9 @@ describe("task pipeline source", () => {
   it("keeps the task board rendered from the query cache instead of a second local task store", () => {
     expect(workspaceSource).not.toContain("setOptimisticTasks");
     expect(workspaceSource).toContain("applyOptimistic(rawTasks)");
+    expect(workspaceSource).toContain("useTaskWorkspaceQuery");
+    expect(workspaceSource).not.toContain("useProjectOptionsQueryResult");
+    expect(workspaceSource).not.toContain("tasks.slice(");
   });
 
   it("loads workspace members for board display before a drawer opens", () => {
@@ -50,7 +53,9 @@ describe("task pipeline source", () => {
     const filterSource = readSource("src/domains/tasks/lib/task-sidebar-filter.ts");
     expect(filterSource).toContain("task.assigneeUserId === currentUserId");
     expect(filterSource).toContain("task.createdByUserId === currentUserId");
-    expect(workspaceSource).toContain("filterTasksForSidebar");
+    expect(workspaceSource).toContain("selectTaskWorkspaceRecords");
+    expect(workspaceSource).toContain('viewState.filter === "my"');
+    expect(workspaceSource).toContain('"assignedToMe"');
   });
 
   it("accepts pipeline order across UI payload and Convex schema", () => {

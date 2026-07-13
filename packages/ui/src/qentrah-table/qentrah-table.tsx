@@ -17,6 +17,12 @@ import { ensureAgGridModules, qentrahQuartz } from "./theme"
 
 export type QentrahTableDensity = "compact" | "normal"
 
+export interface QentrahTableColumnState {
+  order: string[]
+  widths: Record<string, number>
+  visibility: Record<string, boolean>
+}
+
 export interface QentrahTableRef<TRow> {
   api: GridApi<TRow> | null
   /**
@@ -56,6 +62,8 @@ export interface QentrahTableProps<TRow> {
   onRowClicked?: GridOptions<TRow>["onRowClicked"]
   onSelectionChanged?: GridOptions<TRow>["onSelectionChanged"]
   onGridReady?: (event: GridReadyEvent<TRow>) => void
+  columnState?: QentrahTableColumnState
+  onColumnStateChange?: (state: QentrahTableColumnState) => void
   emptyMessage?: string
   rowClass?: (params: RowClassParams<TRow>) => string | string[] | undefined
   rowSelection?: GridOptions<TRow>["rowSelection"]
@@ -103,6 +111,8 @@ const QentrahTableInner = <TRow extends { id: string }>(
     onRowClicked,
     onSelectionChanged,
     onGridReady,
+    columnState,
+    onColumnStateChange,
     emptyMessage = "No rows to show",
     rowClass,
     rowSelection,
@@ -117,6 +127,35 @@ const QentrahTableInner = <TRow extends { id: string }>(
 
   const apiRef = useRef<GridApi<TRow> | null>(null)
   const [isReady, setIsReady] = useState(false)
+  const applyingColumnState = useRef(false)
+
+  const emitColumnState = () => {
+    if (applyingColumnState.current || !onColumnStateChange) return
+    const state = apiRef.current?.getColumnState() ?? []
+    onColumnStateChange({
+      order: state.map((column) => column.colId),
+      widths: Object.fromEntries(state.flatMap((column) =>
+        column.width === undefined ? [] : [[column.colId, column.width]],
+      )),
+      visibility: Object.fromEntries(state.map((column) => [column.colId, !column.hide])),
+    })
+  }
+
+  // AG Grid owns the interactive column model. Reconcile only when a caller
+  // applies a saved/URL state; ordinary grid events flow in the other direction.
+  useEffect(() => {
+    if (!isReady || !columnState || !apiRef.current) return
+    applyingColumnState.current = true
+    apiRef.current.applyColumnState({
+      state: columnState.order.map((colId) => ({
+        colId,
+        width: columnState.widths[colId],
+        hide: columnState.visibility[colId] === false,
+      })),
+      applyOrder: true,
+    })
+    applyingColumnState.current = false
+  }, [columnState, isReady])
 
   useImperativeHandle(
     ref,
@@ -256,6 +295,15 @@ const QentrahTableInner = <TRow extends { id: string }>(
         onCellValueChanged={onCellValueChanged}
         onRowClicked={onRowClicked}
         onSelectionChanged={onSelectionChanged}
+        onColumnMoved={(event) => {
+          if (event.finished && event.source !== "api") emitColumnState()
+        }}
+        onColumnResized={(event) => {
+          if (event.finished && event.source !== "api") emitColumnState()
+        }}
+        onColumnVisible={(event) => {
+          if (event.source !== "api") emitColumnState()
+        }}
         onGridReady={(event) => {
           apiRef.current = event.api
           setIsReady(true)
@@ -412,6 +460,11 @@ const QENTRAH_TABLE_CSS = `
     --q-task-table-surface: var(--q-bg);
     --q-task-table-header: var(--q-bg-secondary);
     --q-task-table-cell-focus: color-mix(in srgb, var(--q-text-secondary) 22%, transparent);
+  }
+  .qentrah-table-wrapper.qentrah-task-table[data-ag-theme-mode="dark"] {
+    --q-cell-divider: color-mix(in srgb, var(--q-border) 55%, transparent);
+    --q-header-divider: color-mix(in srgb, var(--q-border) 82%, transparent);
+    --q-task-table-cell-focus: color-mix(in srgb, var(--q-text-secondary) 38%, transparent);
   }
   .qentrah-table-wrapper.qentrah-task-table .ag-root-wrapper {
     border: 0 !important;

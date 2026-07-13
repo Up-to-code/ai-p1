@@ -4,13 +4,10 @@ import type { ActionCtx } from "../_generated/server";
 import { internal } from "../_generated/api";
 import { mcpActor } from "../workspace/businessData";
 import { readHandlers, writeHandlers } from "./handlers/registry";
-import { registerAllHandlers } from "./handlers";
 import { inputObject } from "./toolInputs";
 import { mcpReadToolNames as readTools } from "./toolRegistry";
-import { attachScopePolicyInput } from "./scopePolicy";
+import { scopePolicyContext } from "./scopePolicy";
 import { assertOAuthToolPermission, authorizedTools } from "./oauthGrants";
-
-registerAllHandlers();
 
 function identityContext(identity: Record<string, unknown> | null) {
   if (!identity) throw new Error("Authentication required.");
@@ -81,7 +78,8 @@ export const callToolOAuth = action({
       organizationId: auth.organizationId,
       connectionId: resolved.grant._id,
       tool: args.tool,
-      input: attachScopePolicyInput(inputObject(args.input), resolved.policy),
+      input: inputObject(args.input),
+      scopePolicy: scopePolicyContext(resolved.policy),
       appBaseUrl: undefined as string | undefined,
       permissions: resolved.permissions,
       instructions: undefined as string | undefined,
@@ -106,6 +104,11 @@ export const callToolOAuth = action({
 export const readToolOAuth = internalQuery({
   args: {
     organizationId: v.string(), connectionId: v.string(), tool: v.string(), input: v.any(),
+    scopePolicy: v.object({
+      organizationId: v.string(), actorUserId: v.string(),
+      scopeType: v.union(v.literal("organization"), v.literal("space"), v.literal("project")),
+      spaceIds: v.array(v.string()), projectIds: v.array(v.string()), clientIds: v.array(v.string()),
+    }),
     appBaseUrl: v.optional(v.string()), permissions: v.array(v.any()),
     instructions: v.optional(v.string()), connectionName: v.optional(v.string()),
   },
@@ -120,6 +123,11 @@ export const readToolOAuth = internalQuery({
 export const writeToolOAuth = internalMutation({
   args: {
     organizationId: v.string(), connectionId: v.string(), tool: v.string(), input: v.any(),
+    scopePolicy: v.object({
+      organizationId: v.string(), actorUserId: v.string(),
+      scopeType: v.union(v.literal("organization"), v.literal("space"), v.literal("project")),
+      spaceIds: v.array(v.string()), projectIds: v.array(v.string()), clientIds: v.array(v.string()),
+    }),
     appBaseUrl: v.optional(v.string()), permissions: v.array(v.any()),
     instructions: v.optional(v.string()), connectionName: v.optional(v.string()),
     now: v.number(), actorId: v.string(),

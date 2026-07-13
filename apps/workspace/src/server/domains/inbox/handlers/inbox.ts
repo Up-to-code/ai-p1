@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation } from "@/server/auth/convex-auth";
+import { fetchAuthMutation } from "@/server/auth/auth-request";
 import { createDomainRouter } from "@/server/utils/create-domain-router";
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { actionErrorJson } from "@/server/utils/response/action-error";

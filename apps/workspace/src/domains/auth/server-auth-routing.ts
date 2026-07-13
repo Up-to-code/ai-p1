@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { isAuthenticated } from "@/server/auth/auth-context";
+import { isAuthenticated } from "@/server/auth/auth-request";
 import { resolveAuthEntryCallbackUrl } from "./utils/auth-callback-url";
 
 function localizedPath(locale: string, path: string) {

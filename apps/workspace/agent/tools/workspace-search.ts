@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "../lib/convex";
-import { requireOrgId } from "../lib/org-context";
+import { requireWorkspaceActor } from "../lib/workspace-actor";
 import { compact } from "../lib/helpers";
 
 const SEARCH_TYPES = ["task", "project", "client", "calendar", "deal", "doc"] as const;
@@ -85,7 +85,7 @@ export default defineTool({
       .describe("Max total results to return across all types. Default 20."),
   }),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     const types: SearchType[] = args.types ?? [...SEARCH_TYPES];
     const maxTotal = Math.max(1, Math.min(args.limit ?? 20, 50));
     const perType = Math.ceil(maxTotal / types.length);

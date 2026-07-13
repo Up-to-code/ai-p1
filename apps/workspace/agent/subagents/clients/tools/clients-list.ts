@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "../../../lib/convex";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 
 export default defineTool({
   description: "List clients with optional search and pagination.",
@@ -12,7 +12,7 @@ export default defineTool({
     cursor: z.string().nullable().optional(),
   }).passthrough(),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     return fetchAuthQuery(ctx, api.clients.read.listPaged, {
       organizationId,
       paginationOpts: { numItems: Math.max(1, Math.min(args.limit ?? 25, 50)), cursor: args.cursor ?? null },

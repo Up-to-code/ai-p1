@@ -14,6 +14,8 @@ describe("organization capability source", () => {
     const convexSource = readSource("convex/platform/access.ts");
     const accessCheckerSource = readSource("src/server/utils/organization/access-checker.ts");
 
+    expect(convexSource).toContain('from "../../../../packages/auth/src/platform-admin"');
+    expect(convexSource).not.toContain('from "@qentrah/auth"');
     expect(convexSource).toContain("return { allowed: isPlatformAdminEmail(user.email) }");
     expect(convexSource).not.toContain("await assertPlatformAdmin(ctx);\n    return { allowed: true };");
     expect(accessCheckerSource).toContain(".then((result) => result.allowed)");

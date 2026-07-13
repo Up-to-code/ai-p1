@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { logger } from "@/lib/logger";
+import { workspaceAssets } from "@/lib/assets/workspace-assets";
 import { useAuthSession } from "@/domains/auth";
 import { useIndexedDbConfig } from "@/domains/storage";
 import {
@@ -105,7 +106,13 @@ export function SidebarPanelModeSwitch() {
         )}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/ai/logo.png" alt="" className="h-3.5 w-3.5 object-contain" />
+        <img
+          src={workspaceAssets.ai.logo}
+          alt=""
+          width={14}
+          height={14}
+          className="h-3.5 w-3.5 object-contain"
+        />
         AI agent
       </button>
     </div>

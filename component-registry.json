@@ -75,18 +75,22 @@
       "notes": "Uses one atlas asset with CSS background positioning; decorative artwork is hidden from accessibility APIs."
     },
     {
-      "name": "WorkspaceShellSkeleton",
-      "path": "apps/workspace/src/components/loading/workspace-shell-skeleton.tsx",
+      "name": "PageLoading",
+      "path": "apps/workspace/src/components/shared/loading/ViewLoading.tsx",
       "kind": "shared-ui",
-      "summary": "Reusable workspace loading shell with sidebar and topbar skeletons; composes route-specific loading content through children.",
+      "summary": "Theme-aware full-page background loader with localized accessible status and optional branding.",
       "usedIn": [
-        "components/loading/workspace-route-loading/session-check-loading"
+        "components/loading/workspace-route-loading/session-check-loading",
+        "app/[locale]/(app)/ws/loading",
+        "domains/workspace/components/workspace-command-center"
       ],
       "props": [
-        "children"
+        "message",
+        "showMessage",
+        "showLogo"
       ],
-      "createdAt": "2026-07-10",
-      "notes": "Extracted from SessionCheckLoading while preserving the screenshot-matched loading layout."
+      "createdAt": "2026-07-13",
+      "notes": "Replaces the authenticated shell skeleton, duplicate Workspace route spinner, and command-center Convex-auth skeleton with one shared loading boundary."
     },
     {
       "name": "PipelineBoard",
@@ -454,7 +458,7 @@
     },
     {
       "name": "EntityHeader",
-      "path": "apps/workspace/src/components/shared/entity-header/index.tsx",
+      "path": "apps/workspace/src/components/shared/entity-header/index.ts",
       "kind": "shared-ui",
       "summary": "Entity header bar with back button, title, description, and action buttons.",
       "usedIn": [
@@ -695,53 +699,6 @@
       "notes": "Includes StarRatingPicker sub-component."
     },
     {
-      "name": "CRUDPageShell",
-      "path": "apps/workspace/src/components/shared/crud-ui/crud-page-shell.tsx",
-      "kind": "shared-ui",
-      "summary": "CRUD page shell with list/detail layout for admin-style interfaces.",
-      "usedIn": [
-        "domains/organization/members",
-        "domains/custom-fields/settings"
-      ],
-      "props": [
-        "list",
-        "detail",
-        "loading"
-      ],
-      "createdAt": "2026-03-01",
-      "notes": "Split-panel CRUD layout."
-    },
-    {
-      "name": "CRUDLoading",
-      "path": "apps/workspace/src/components/shared/crud-ui/crud-loading.tsx",
-      "kind": "shared-ui",
-      "summary": "Consistent loading skeleton for CRUD operations.",
-      "usedIn": [
-        "domains/organization/members",
-        "domains/custom-fields/settings",
-        "domains/integrations"
-      ],
-      "props": [],
-      "createdAt": "2026-03-01",
-      "notes": "Simple skeleton placeholder."
-    },
-    {
-      "name": "CRUDStatus",
-      "path": "apps/workspace/src/components/shared/crud-ui/crud-status.tsx",
-      "kind": "shared-ui",
-      "summary": "Status indicator badge for CRUD entities (active/inactive/archived).",
-      "usedIn": [
-        "domains/organization/members",
-        "domains/integrations"
-      ],
-      "props": [
-        "status",
-        "label"
-      ],
-      "createdAt": "2026-03-01",
-      "notes": "Color-coded status badge."
-    },
-    {
       "name": "WorkOsDocEditor",
       "path": "apps/workspace/src/components/shared/work-os-doc-editor.tsx",
       "kind": "domain-shared",
@@ -929,22 +886,6 @@
       ],
       "createdAt": "2026-01-01",
       "notes": "Used for loading states."
-    },
-    {
-      "name": "ErrorBoundary",
-      "path": "apps/workspace/src/components/shared/errors.ts",
-      "kind": "shared-ui",
-      "summary": "Error boundary component and default error fallback UI.",
-      "usedIn": [
-        "app/(app)/error",
-        "domains"
-      ],
-      "props": [
-        "fallback",
-        "children"
-      ],
-      "createdAt": "2026-03-01",
-      "notes": "Catches render-phase errors."
     },
     {
       "name": "ColorDot",
@@ -1187,8 +1128,8 @@
         "onTaskMove"
       ],
       "createdAt": "2026-07-07",
-      "updatedAt": "2026-07-08",
-      "notes": "Uses @qentrah/ui/qentrah-table renderers/editors and the qentrah-task-table skin. Supports flat mode plus ClickUp-style grouped status/priority sections with collapse, group sort, drag between groups, and group-aware add-task rows."
+      "updatedAt": "2026-07-13",
+      "notes": "Uses @qentrah/ui/qentrah-table renderers/editors and the qentrah-task-table skin. Quick cell editors are anchored non-modal popovers, and the skin keeps semantic row/column separators visible in dark mode. Supports flat mode plus grouped status/priority sections. The canonical TaskWorkspace URL/saved-view codec controls grouping, sorting, density, and AG Grid column order/width/visibility through QentrahTableColumnState."
     },
     {
       "name": "TaskBoardView",

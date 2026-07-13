@@ -1,5 +1,5 @@
 import { makeFunctionReference } from "convex/server";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/convex-auth";
+import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/auth-request";
 import { convexCalls } from "@/server/convex/http-client";
 import type { BillingCheckoutPayload, DodoWebhookPayload } from "../validation/billing.schema";
 

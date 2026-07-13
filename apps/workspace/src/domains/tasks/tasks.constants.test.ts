@@ -188,8 +188,8 @@ describe("tasks.constants", () => {
       expect(DEFAULT_FORM_VALUES.title).toBe("");
     });
 
-    it("has team visibility", () => {
-      expect(DEFAULT_FORM_VALUES.visibility).toBe("team");
+    it("has organization-wide visibility", () => {
+      expect(DEFAULT_FORM_VALUES.visibility).toBe("workspace");
     });
   });
 });

@@ -18,11 +18,6 @@ export interface CellPopoverProps {
  * Self-contained popover for table cells. Renders the trigger inline
  * and portals the content to document.body, anchored to the cell rect.
  *
- * A click-anywhere-else scrim is rendered while the popover is open
- * so the rest of the table (and the next row's status pill) is
- * visually masked — prevents the "extra burger sticking out"
- * effect where adjacent row content peeks under the popover.
- *
  * Uses `pointerdown` (not `mousedown`) for outside-click detection so
  * the handler fires before `click` on the option buttons. The content
  * ref check ensures clicks inside the popover never close it.
@@ -126,40 +121,24 @@ export function CellPopover({
       </div>
       {mounted && open && position
         ? createPortal(
-            <>
-              {/* Scrim behind the popover — masks the rest of the
-                  table (especially the next row's status pill) so
-                  no adjacent content peeks under the popover. */}
-              <div
-                data-qentrah-cell-popover-scrim
-                onClick={() => onOpenChange(false)}
-                style={{
-                  position: "fixed",
-                  inset: 0,
-                  zIndex: 9998,
-                  background: "color-mix(in srgb, var(--q-bg) 30%, transparent)",
-                  animation: "qentrah-cell-popover-scrim-in 120ms ease-out",
-                }}
-              />
-              <div
-                ref={contentRef}
-                data-qentrah-cell-popover
-                style={{
-                  position: "fixed",
-                  top: position.top,
-                  left: position.left,
-                  minWidth: position.minWidth,
-                  maxHeight: position.maxHeight,
-                  zIndex: 9999,
-                }}
-                className={cn(
-                  "rounded-lg border border-[var(--q-border)] bg-[var(--q-card)] text-foreground overflow-hidden shadow-xl",
-                  className
-                )}
-              >
-                {children}
-              </div>
-            </>,
+            <div
+              ref={contentRef}
+              data-qentrah-cell-popover
+              style={{
+                position: "fixed",
+                top: position.top,
+                left: position.left,
+                minWidth: position.minWidth,
+                maxHeight: position.maxHeight,
+                zIndex: 9999,
+              }}
+              className={cn(
+                "overflow-hidden rounded-lg border border-[var(--q-border-strong)] bg-[var(--q-card)] text-foreground shadow-xl",
+                className
+              )}
+            >
+              {children}
+            </div>,
             document.body
           )
         : null}

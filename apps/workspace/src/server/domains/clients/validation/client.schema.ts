@@ -1,29 +1,16 @@
-import { z } from "zod";
+import type { z } from "zod";
+import {
+  clientInputSchema,
+  clientPatchSchema,
+  clientStatusSchema,
+  clientTypeSchema,
+} from "@qentrah/domain-contracts";
 
-const optionalTrimmedText = z.string().trim().optional().transform((value) => value || undefined);
-
-export const clientPayloadSchema = z.object({
-  name: z.string().trim().min(1),
-  type: z.enum(["person", "organization"]).default("person"),
-  email: optionalTrimmedText,
-  phone: optionalTrimmedText,
-  contact: optionalTrimmedText,
-  status: z.enum(["new", "active", "nurture", "inactive", "archived"]).default("new"),
-  pipelineStage: z.enum(["new", "qualified", "review", "negotiation", "closed"]).optional(),
-  pipelineOrder: z.number().finite().optional(),
-  visibility: z.enum(["private", "team", "workspace"]).optional(),
-  source: z.string().trim().default("manual"),
-  priority: z.enum(["low", "normal", "high", "urgent"]).optional(),
-  budget: optionalTrimmedText,
-  assetInterest: optionalTrimmedText,
-  added: optionalTrimmedText,
-  lastContact: optionalTrimmedText,
-  company: optionalTrimmedText,
-  contactName: optionalTrimmedText,
-  website: optionalTrimmedText,
-  notes: optionalTrimmedText,
-  tags: z.array(z.string().trim()).optional(),
-  customFields: z.array(z.object({ key: z.string(), value: z.unknown() })).optional(),
+export const clientPayloadSchema = clientInputSchema.extend({
+  type: clientTypeSchema.default("person"),
+  status: clientStatusSchema.default("new"),
+  source: clientInputSchema.shape.source.default("manual"),
 });
+export const clientUpdatePayloadSchema = clientPatchSchema;
 
 export type ClientPayload = z.infer<typeof clientPayloadSchema>;

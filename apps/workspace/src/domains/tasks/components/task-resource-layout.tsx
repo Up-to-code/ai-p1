@@ -94,15 +94,14 @@ export function TaskResourceLayout({
   const searchParams = useSearchParams();
   const workspace = useTaskWorkspace();
   const activeViewId = activeTaskView(pathname);
-  const filter = searchParams.get("filter");
-  const withFilter = (href: string) =>
-    filter ? `${href}?filter=${encodeURIComponent(filter)}` : href;
+  const query = searchParams.toString();
+  const withViewState = (href: string) => query ? `${href}?${query}` : href;
   const config: ResourceWorkspaceConfig = {
     resourceId: "tasks",
     title: "Tasks",
     count: `${workspace.tasks.length} task${workspace.tasks.length === 1 ? "" : "s"}`,
     activeViewId,
-    views: TASK_VIEWS.map((view) => ({ ...view, href: withFilter(view.href) })),
+    views: TASK_VIEWS.map((view) => ({ ...view, href: withViewState(view.href) })),
     actions: [
       {
         id: "new-task",
@@ -115,7 +114,7 @@ export function TaskResourceLayout({
     viewCatalog: TASK_VIEW_CATALOG,
     onAddView: (view) => {
       if (view.id === "table" || view.id === "board" || view.id === "list")
-        router.push(withFilter(`/tasks/${view.id}`));
+        router.push(withViewState(`/tasks/${view.id}`));
     },
   };
 

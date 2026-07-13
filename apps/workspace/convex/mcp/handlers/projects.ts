@@ -9,13 +9,13 @@ import {
   type ReadHandler, type WriteHandler, type ReadToolArgs, type WriteToolArgs,
   TOOL_SCAN_LIMIT, projectSearchValues, audit,
 } from "./shared";
-import { isScopedProject, projectVisibilityForMcpCreate, scopeActorUserId, scopePolicyFromInput } from "../scopePolicy";
+import { isScopedProject, projectVisibilityForMcpCreate, scopeActorUserId } from "../scopePolicy";
 
 export const projectsList: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
   const limit = listLimit(args.input);
   const search = searchTerm(args.input);
   
-  const scope = scopePolicyFromInput(args.input);
+  const scope = args.scopePolicy;
 
   if (!search) {
     let page;
@@ -67,7 +67,7 @@ export const projectsGet: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs
   const project = await ctx.db.get(projectId);
   
   if (
-    !isScopedProject(scopePolicyFromInput(args.input), projectId) ||
+    !isScopedProject(args.scopePolicy, projectId) ||
     project?.recordState === "deleted"
   ) throw new Error("Project was not found.");
   
@@ -76,8 +76,8 @@ export const projectsGet: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs
 
 export const projectsCreate: WriteHandler = async (ctx: MutationCtx, args: WriteToolArgs) => {
   const project = projectInput(args.input);
-  const actorUserId = scopeActorUserId(args.input);
-  const scope = scopePolicyFromInput(args.input);
+  const actorUserId = scopeActorUserId(args.scopePolicy);
+  const scope = args.scopePolicy;
   const selectedSpace = scope.scopeType === "space"
     ? await ctx.db.get(requiredString(args.input, "spaceId") as Id<"spaces">)
     : null;
@@ -115,7 +115,7 @@ export const projectsUpdate: WriteHandler = async (ctx: MutationCtx, args: Write
     organizationId: args.organizationId,
     projectId,
     input: patch,
-    actorUserId: scopeActorUserId(args.input),
+    actorUserId: scopeActorUserId(args.scopePolicy),
   });
   await audit(ctx, args.organizationId, args.connectionId, "project.update", projectId, `Updated project.`);
   return presentWorkspaceRecord(result);
@@ -126,7 +126,7 @@ export const projectsDelete: WriteHandler = async (ctx: MutationCtx, args: Write
   const result = await ctx.runMutation(internal.projects.write.deleteInternal, {
     organizationId: args.organizationId,
     projectId,
-    actorUserId: scopeActorUserId(args.input),
+    actorUserId: scopeActorUserId(args.scopePolicy),
   });
   await audit(ctx, args.organizationId, args.connectionId, "project.delete", projectId, `Deleted project.`);
   return result;

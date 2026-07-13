@@ -2,21 +2,18 @@ import createMiddleware from "next-intl/middleware";
 import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 import { routing } from "./i18n/routing";
+import {
+  buildSignInPath,
+  classifyWorkspaceRoute,
+  getSubdomainLabel,
+  isLocalizedWorkspaceRoot,
+  localizedEvePath,
+  splitLocalizedPath,
+} from "./domains/navigation/workspace-route-policy";
+import { resolveWorkspaceAuthEntry } from "./domains/auth/utils/workspace-auth-entry";
 import { resolveSubdomainPath } from "./lib/subdomain-routing";
 
 const intlMiddleware = createMiddleware(routing);
-const SUPPORTED_LOCALES = new Set(["ar", "en"]);
-const DEFAULT_LOCALE = "en";
-
-// Routes that require authentication
-const PROTECTED_PATTERNS = [
-  /^\/(ar|en)\/(ai|inbox|dashboard|projects|tasks|calendar|clients|docs|mcp|settings|organization|ws)(\/|$)/,
-];
-
-// Routes accessible without authentication
-const AUTH_PATTERNS = [
-  /^\/(ar|en)\/(sign-in|sign-up|sso-callback|choose-org|verify-email|accept-invite|onboarding)(\/|$)/,
-];
 
 /** Read the Better Auth session cookie from the request (edge-safe, no next/headers). */
 function hasSessionCookie(request: NextRequest): boolean {
@@ -29,44 +26,11 @@ function hasSessionCookie(request: NextRequest): boolean {
   );
 }
 
-function isProtected(pathname: string): boolean {
-  return PROTECTED_PATTERNS.some((p) => p.test(pathname));
-}
-
-function isPublicAuth(pathname: string): boolean {
-  return AUTH_PATTERNS.some((p) => p.test(pathname));
-}
-
-function getSubdomainLabel(hostname: string): string | null {
-  const host = hostname.split(":")[0] ?? "";
-  const parts = host.split(".").filter(Boolean);
-
-  if (host.endsWith(".localhost") && parts.length > 1) return parts[0] ?? null;
-  if (parts.length < 3) return null;
-
-  const label = parts[0];
-  return label === "www" ? null : label;
-}
-
-function stripLocale(pathname: string) {
-  const segments = pathname.split("/");
-  const maybeLocale = segments[1];
-
-  if (SUPPORTED_LOCALES.has(maybeLocale)) {
-    return {
-      locale: maybeLocale,
-      pathname: `/${segments.slice(2).join("/")}`.replace(/\/$/, "") || "/",
-    };
-  }
-
-  return { locale: DEFAULT_LOCALE, pathname };
-}
-
 function resolveSubdomainRewrite(request: NextRequest): URL | null {
   const label = getSubdomainLabel(
     request.headers.get("host") ?? request.nextUrl.hostname,
   );
-  const { locale, pathname } = stripLocale(request.nextUrl.pathname);
+  const { locale, pathname } = splitLocalizedPath(request.nextUrl.pathname);
   const targetPath = resolveSubdomainPath(label, locale, pathname);
   if (!targetPath) return null;
 
@@ -78,47 +42,37 @@ function resolveSubdomainRewrite(request: NextRequest): URL | null {
 export default function middleware(request: NextRequest) {
   const startedAt = Date.now();
   const route = request.nextUrl.pathname;
+  const routeClass = classifyWorkspaceRoute(route);
 
   try {
-    // Eve agent routes, MCP, and .well-known pass through without auth
-    if (
-      route.startsWith("/eve/") ||
-      route.startsWith("/_eve_internal/") ||
-      route === "/mcp" ||
-      route.startsWith("/mcp/") ||
-      route.startsWith("/oauth/") ||
-      route.startsWith("/.well-known/")
-    ) {
-      return NextResponse.next();
-    }
+    if (routeClass === "bypass") return NextResponse.next();
 
-    // API routes — pass through without i18n so Hono can serve them
-    if (route.startsWith("/api/")) {
-      return NextResponse.next();
+    // Resolve the localized app root before React renders. A route whose only
+    // job is throwing a Server Component redirect produces invalid Turbopack
+    // component performance marks during development.
+    if (isLocalizedWorkspaceRoot(route)) {
+      const { locale } = splitLocalizedPath(route);
+      const target = resolveWorkspaceAuthEntry(locale, hasSessionCookie(request));
+      return NextResponse.redirect(new URL(target, request.url));
     }
 
     // Auth entry routes must be handled before a subdomain rewrite. Otherwise,
     // `app.qentrah.com/en/sign-in` becomes `/en/ws/sign-in`, which is protected
     // and redirects back to sign-in with an increasingly nested callback URL.
-    if (isPublicAuth(route)) {
+    if (routeClass === "public-auth") {
       return intlMiddleware(request);
     }
 
     const subdomainRewrite = resolveSubdomainRewrite(request);
     if (subdomainRewrite) {
       if (
-        isProtected(subdomainRewrite.pathname) &&
+        classifyWorkspaceRoute(subdomainRewrite.pathname) === "protected" &&
         !hasSessionCookie(request)
       ) {
-        const localeMatch = subdomainRewrite.pathname.match(/^\/(ar|en)\//);
-        const locale = localeMatch ? localeMatch[1] : DEFAULT_LOCALE;
-        const callbackURL = encodeURIComponent(
-          `${subdomainRewrite.pathname}${request.nextUrl.search}`,
-        );
-        const signInUrl = new URL(
-          `/${locale}/sign-in?callbackURL=${callbackURL}`,
-          request.url,
-        );
+        const signInUrl = new URL(buildSignInPath(
+          subdomainRewrite.pathname,
+          request.nextUrl.search,
+        ), request.url);
         return NextResponse.redirect(signInUrl);
       }
 
@@ -126,25 +80,17 @@ export default function middleware(request: NextRequest) {
     }
 
     // Localized Eve routes rewrite to the non-localized path
-    const localizedEveMatch = route.match(
-      /^\/(ar|en)(\/(?:eve|_eve_internal)\/.*)$/,
-    );
-    if (localizedEveMatch) {
+    const evePath = localizedEvePath(route);
+    if (evePath) {
       const url = request.nextUrl.clone();
-      url.pathname = localizedEveMatch[2];
+      url.pathname = evePath;
       return NextResponse.rewrite(url);
     }
 
     // Protected routes — check for a session cookie
-    if (isProtected(route) && !hasSessionCookie(request)) {
-      // Derive the locale from the path (default to "en")
-      const localeMatch = route.match(/^\/(ar|en)\//);
-      const locale = localeMatch ? localeMatch[1] : "en";
-      const callbackURL = encodeURIComponent(
-        `${route}${request.nextUrl.search}`,
-      );
+    if (routeClass === "protected" && !hasSessionCookie(request)) {
       const signInUrl = new URL(
-        `/${locale}/sign-in?callbackURL=${callbackURL}`,
+        buildSignInPath(route, request.nextUrl.search),
         request.url,
       );
       return NextResponse.redirect(signInUrl);

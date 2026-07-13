@@ -242,7 +242,7 @@ describe("tasks API", () => {
 
         const result = taskPayloadFromForm(formValues);
         expect(result.visibility).toBe(
-          visibility === "team" ? "private" : visibility,
+          visibility === "team" ? "workspace" : visibility,
         );
       }
     });

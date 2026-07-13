@@ -56,6 +56,11 @@ Give workspace users a ClickUp-style:
 - Custom field values are written via
   `customFieldValues.upsertFromHono`; reads via
   `customFieldValues.listByOrganization`.
+- Definition and value access derives its permission resource from the real
+  Custom Field target (`task`, `client`, `project`, `deal`, `calendar`,
+  `document`, `media`, or `space`) instead of assuming Client access.
+- Field deletion uses the shared in-app `DeleteRecordDialog`; native browser
+  confirmation dialogs are not part of the flow.
 
 ## Known follow-ups
 

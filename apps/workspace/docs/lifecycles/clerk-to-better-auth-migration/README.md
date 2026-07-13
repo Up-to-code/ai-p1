@@ -4,17 +4,18 @@
 
 **Owner app:** `apps/workspace`
 
-**Current status:** In progress (Wave 0/8)
+**Current status:** Runtime migration complete; production credential flows still require environment-level smoke testing.
 
 **Entrypoints:**
 - `src/proxy.ts` — Next.js middleware (Clerk → Better Auth session cookie)
 - `src/lib/auth-client.ts` — Client-side auth interface (Clerk → Better Auth client)
-- `src/server/auth/clerk-convex.ts` — Server-side Convex token threading (deleted)
-- `src/server/domains/organization/services/clerk-organization-proxy.ts` — Clerk SDK proxy (deleted)
+- `src/server/auth/auth-request.ts` — sole request-aware server identity, token-forwarding, and Better Auth HTTP Interface
+- `src/server/auth/nextjs-auth-adapter.ts` — private framework Adapter used by the server Interface
+- `src/server/domains/organization/services/better-auth-organization-service.ts` — organization membership and role operations
 - `convex/auth.ts` — Convex identity extraction (rewritten)
-- `agent/auth/clerk-auth.ts` — Eve agent auth handler (rewritten)
-- `src/app/mcp/[transport]/route.ts` — MCP auth verification (rewritten)
+- `agent/lib/better-auth-channel.ts` — Eve request authentication
+- `convex/mcp/oauthGrants.ts` — MCP grant authentication and revocation
 
 **Actor/System flow:** Next.js middleware → Better Auth server (session cookie) → Convex (`@convex-dev/better-auth` component) for auth identity in queries/mutations. Includes org management, invitations, email/password, social OAuth.
 
-**Execution order:** Wave 0 → Wave 1 → Wave 2 → test sign-in works → Wave 3 → test full auth flow → Wave 4 → test org creation + invite → Wave 5 → test route protection → Wave 6 → test MCP authorized access → Wave 7 → test Eve agent chat → Wave 8 → cleanup + verify 0 Clerk imports
+Clerk names and imports are forbidden in runtime source. Historical migration documentation may retain the provider name when describing the transition.

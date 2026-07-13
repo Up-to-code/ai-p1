@@ -15,7 +15,7 @@ describe("client validation", () => {
       notes: "",
     });
 
-    expect(parsed.email).toBe("abdullah@example.com");
+    expect(parsed.email).toBe("ahmed@example.com");
     expect(parsed.pipelineStage).toBe("qualified");
     expect(parsed.pipelineOrder).toBe(20);
     expect(parsed.notes).toBeUndefined();

@@ -24,6 +24,8 @@
      open a popover with the field's options.
   8. Switch to `Add existing` tab → toggle visibility for an existing
      field → column appears / disappears.
+  9. Delete a field → the in-app confirmation modal appears. Confirm → the
+     field disappears without opening a native browser alert or confirmation.
 - **Commands**:
   - `npm --workspace @qentrah/ui run build` (0 errors)
   - `npm --workspace @qentrah/ui run test` (existing 7 + new editor

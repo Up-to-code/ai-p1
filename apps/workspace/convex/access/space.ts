@@ -9,8 +9,6 @@ import {
 } from "../permissions";
 import { requireServerActor, type ServerActor } from "./actor";
 
-const MAX_ACTOR_SPACE_MEMBERSHIPS = 500;
-
 type SpaceAccessCtx = Pick<QueryCtx, "auth" | "db" | "runQuery">;
 type Space = Doc<"spaces">;
 
@@ -83,7 +81,7 @@ export async function resolveSpaceAccess(
     .withIndex("by_user_id", (q) =>
       q.eq("organizationId", organizationId).eq("userId", actor.userId),
     )
-    .take(MAX_ACTOR_SPACE_MEMBERSHIPS);
+    .collect();
   const spaceRoles = new Map(
     memberships
       .filter(

@@ -10,7 +10,6 @@ import {
   Link,
   Search,
   Plus,
-  Sparkles,
   Plug,
   ChevronRight,
 } from "lucide-react";
@@ -29,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import { workspaceAssets } from "@/lib/assets/workspace-assets";
 
 function formatTime(ts: number): string {
   const diff = Date.now() - ts;
@@ -133,7 +133,6 @@ export function SidebarChatPanel() {
     <SidebarPanelLayout
       title="AI"
       bodyClassName="p-0"
-      showModeSwitch={false}
       header={
         <div className="px-2.5 py-3">
           <button
@@ -285,7 +284,16 @@ export function SidebarChatPanel() {
             </div>
           ) : (
             <div className="mx-2 mt-2 flex flex-col items-start rounded-xl bg-[var(--q-sidebar-accent)] p-4 text-left">
-              <span className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-background text-foreground"><Sparkles className="h-4 w-4" /></span>
+              <span className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-background">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={workspaceAssets.ai.logo}
+                  alt=""
+                  width={22}
+                  height={22}
+                  className="h-[22px] w-[22px] object-contain"
+                />
+              </span>
               <p className="text-xs font-semibold text-foreground">Start with Qentrah AI</p>
               <p className="mt-1 text-[11px] leading-4 text-muted-foreground">Ask about your workspace, plan work, or take action with context.</p>
               <button type="button" onClick={handleNewChat} className="mt-3 text-[11px] font-semibold text-foreground hover:underline">Start conversation →</button>

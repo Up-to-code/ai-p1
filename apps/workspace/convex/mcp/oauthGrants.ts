@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, mutation, query } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
-import { authUser } from "../auth";
+import { getAuthUser } from "../auth";
 import {
   mcpPermissionValidator,
   mcpScopeValidator,
@@ -63,7 +63,7 @@ export const upsert = mutation({
     lifetimeDays: grantLifetimeDaysValidator,
   },
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     const clientName = args.clientName.trim().slice(0, 120);
     if (!clientName || !args.oauthClientId.trim()) throw new Error("OAuth client is required.");
     const { permissions } = await livePermissions(ctx, args.organizationId, user._id, args.scope, args.permissions);
@@ -116,7 +116,7 @@ export const upsert = mutation({
 export const listMine = query({
   args: { organizationId: v.string() },
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     const grants = await ctx.db
       .query("mcpOAuthGrants")
       .withIndex("by_user_organization", (q) => q.eq("userId", user._id).eq("organizationId", args.organizationId))
@@ -128,7 +128,7 @@ export const listMine = query({
 export const revoke = mutation({
   args: { grantId: v.id("mcpOAuthGrants") },
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     const grant = await ctx.db.get(args.grantId);
     if (!grant || grant.userId !== user._id) throw new Error("OAuth MCP grant was not found.");
     const now = Date.now();

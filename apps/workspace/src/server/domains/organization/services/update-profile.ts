@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation } from "@/server/auth/convex-auth";
+import { fetchAuthMutation } from "@/server/auth/auth-request";
 import { assertCanUpdateOrganizationProfile } from "@/server/utils/organization/access-checker";
 import { OrganizationProfileUpdateError } from "../errors/update-profile-error";
 import type { UpdateOrganizationProfileInput } from "../validation/update-profile.schema";

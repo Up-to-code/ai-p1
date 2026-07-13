@@ -71,7 +71,7 @@ export const DEFAULT_FORM_VALUES = {
   title: "",
   status: "todo" as const,
   priority: "normal" as const,
-  visibility: "team" as const,
+  visibility: "workspace" as const,
   assigneeUserId: "",
   clientId: "",
   projectId: "",

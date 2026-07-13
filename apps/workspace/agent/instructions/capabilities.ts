@@ -3,6 +3,7 @@ import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "../lib/convex";
 import { capabilitiesToPermissions, hasPermission, subagentToResource } from "../lib/capabilities";
 import type { AgentOrganizationCapabilities } from "../lib/capabilities";
+import { getWorkspaceActor } from "../lib/workspace-actor";
 
 const deniedCapabilities: AgentOrganizationCapabilities = {
   canReadOrganization: false,
@@ -39,9 +40,8 @@ const deniedCapabilities: AgentOrganizationCapabilities = {
 export default defineDynamic({
   events: {
     "session.started": async (_event, ctx) => {
-      const organizationId = ctx.session.auth.current?.attributes?.organizationId;
-
-      if (!organizationId || typeof organizationId !== "string") return null;
+      const organizationId = getWorkspaceActor(ctx)?.organizationId;
+      if (!organizationId) return null;
 
       let capabilities: AgentOrganizationCapabilities;
       try {

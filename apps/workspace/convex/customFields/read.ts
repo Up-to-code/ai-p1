@@ -1,14 +1,20 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import { workOsRecordResourceValidator } from "../schema/validators";
+import { assertCustomFieldTargetPermission } from "./access";
 
 export const listByOrganization = query({
   args: {
     organizationId: v.string(),
-    recordType: v.optional(v.string()),
+    recordType: v.optional(workOsRecordResourceValidator),
   },
   handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
+    if (args.recordType) {
+      await assertCustomFieldTargetPermission(ctx, args.organizationId, [args.recordType], "read");
+    } else {
+      await assertOrganizationResourcePermission(ctx, args.organizationId, "organization", "read");
+    }
 
     let q = ctx.db
       .query("customFieldDefinitions")
@@ -20,6 +26,14 @@ export const listByOrganization = query({
     }
 
     const definitions = await q.collect();
+    if (!args.recordType && definitions.some((definition) => definition.appliesTo.length > 0)) {
+      await assertCustomFieldTargetPermission(
+        ctx,
+        args.organizationId,
+        definitions.flatMap((definition) => definition.appliesTo),
+        "read",
+      );
+    }
 
     return definitions
       .filter((d) => !d.archivedAt && !d.deletedAt)
@@ -54,10 +68,10 @@ export const listByOrganization = query({
 export const listByOrganizationForTable = query({
   args: {
     organizationId: v.string(),
-    recordType: v.string(),
+    recordType: workOsRecordResourceValidator,
   },
   handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
+    await assertCustomFieldTargetPermission(ctx, args.organizationId, [args.recordType], "read");
 
     const definitions = await ctx.db
       .query("customFieldDefinitions")
@@ -69,7 +83,7 @@ export const listByOrganizationForTable = query({
         (d) =>
           !d.archivedAt &&
           !d.deletedAt &&
-          d.appliesTo.includes(args.recordType as any),
+          d.appliesTo.includes(args.recordType),
       )
       .sort((a, b) => a.order - b.order)
       .map((d) => ({

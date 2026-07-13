@@ -1,7 +1,8 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { authUser } from "../auth";
-import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import { getAuthUser } from "../auth";
+import { workOsRecordResourceValidator } from "../schema/validators";
+import { assertCustomFieldTargetPermission } from "./access";
 
 export const createFromHono = mutation({
   args: {
@@ -34,16 +35,7 @@ export const createFromHono = mutation({
         }),
       ),
     ),
-    appliesTo: v.array(
-      v.union(
-        v.literal("client"),
-        v.literal("deal"),
-        v.literal("opportunity"),
-        v.literal("project"),
-        v.literal("task"),
-        v.literal("calendarEvent"),
-      ),
-    ),
+    appliesTo: v.array(workOsRecordResourceValidator),
     defaultValue: v.optional(v.any()),
     display: v.optional(
       v.object({
@@ -57,10 +49,10 @@ export const createFromHono = mutation({
     order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
 
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
+    await assertCustomFieldTargetPermission(ctx, args.organizationId, args.appliesTo, "update");
 
     // Determine order
     const existing = await ctx.db
@@ -112,18 +104,7 @@ export const updateFromHono = mutation({
         }),
       ),
     ),
-    appliesTo: v.optional(
-      v.array(
-        v.union(
-          v.literal("client"),
-          v.literal("deal"),
-          v.literal("opportunity"),
-          v.literal("project"),
-          v.literal("task"),
-          v.literal("calendarEvent"),
-        ),
-      ),
-    ),
+    appliesTo: v.optional(v.array(workOsRecordResourceValidator)),
     display: v.optional(
       v.object({
         formSection: v.optional(v.string()),
@@ -136,15 +117,19 @@ export const updateFromHono = mutation({
     order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
-
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
 
     const existing = await ctx.db.get(args.fieldId);
     if (!existing || existing.organizationId !== args.organizationId) {
       throw new Error("Field not found");
     }
+    await assertCustomFieldTargetPermission(
+      ctx,
+      args.organizationId,
+      [...existing.appliesTo, ...(args.appliesTo ?? [])],
+      "update",
+    );
 
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
     if (args.label !== undefined) patch.label = args.label;
@@ -166,15 +151,14 @@ export const deleteFromHono = mutation({
     fieldId: v.id("customFieldDefinitions"),
   },
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
-
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
 
     const existing = await ctx.db.get(args.fieldId);
     if (!existing || existing.organizationId !== args.organizationId) {
       throw new Error("Field not found");
     }
+    await assertCustomFieldTargetPermission(ctx, args.organizationId, existing.appliesTo, "update");
 
     // Soft delete the definition
     await ctx.db.patch(args.fieldId, {
@@ -211,14 +195,13 @@ export const reorderFromHono = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
-
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
 
     for (const item of args.fieldOrders) {
       const existing = await ctx.db.get(item.fieldId);
       if (existing && existing.organizationId === args.organizationId) {
+        await assertCustomFieldTargetPermission(ctx, args.organizationId, existing.appliesTo, "update");
         await ctx.db.patch(item.fieldId, { order: item.order, updatedAt: Date.now() });
       }
     }

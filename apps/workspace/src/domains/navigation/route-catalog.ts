@@ -1,3 +1,5 @@
+import { isLocale } from "@/i18n/locale-registry";
+
 export type RailItemId =
   | "home"
   | "ws"
@@ -55,13 +57,11 @@ export const ROUTE_CATALOG: readonly RouteCatalogEntry[] = [
   { id: "organization", path: "/organization", persistentParams: [], railItem: null },
 ];
 
-const locales = new Set(["en", "ar"]);
-
 function normalizePath(pathname: string): string | null {
   if (!pathname || pathname.startsWith("//") || /^[a-z][a-z\d+.-]*:/i.test(pathname)) return null;
   const path = pathname.split("?", 1)[0].split("#", 1)[0];
   const segments = path.split("/").filter(Boolean);
-  if (segments.length > 0 && locales.has(segments[0])) segments.shift();
+  if (segments.length > 0 && isLocale(segments[0] ?? "")) segments.shift();
   return `/${segments.join("/")}` || "/";
 }
 

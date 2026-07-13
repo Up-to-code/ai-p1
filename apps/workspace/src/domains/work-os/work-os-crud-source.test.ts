@@ -17,7 +17,7 @@ describe("Work OS CRUD modules", () => {
 
     expect(opportunitiesPage).toContain('buildCanonicalRedirectPath(locale, "/deals"');
     expect(opportunityDetailPage).toContain("OpportunityDetailScreen");
-    expect(tasksPage).toContain("TaskWorkspace");
+    expect(tasksPage).toContain('buildCanonicalRedirectPath(locale, "/tasks/table"');
     expect(taskDetailPage).toContain("TaskDetailScreen");
     expect(opportunitiesPage).not.toContain("WorkOsModuleScreen");
     expect(tasksPage).not.toContain("WorkOsModuleScreen");
@@ -43,14 +43,14 @@ describe("Work OS CRUD modules", () => {
   });
 
   it("wires tasks through list, create, update, and delete paths", () => {
-    const workspace = readSource("src/domains/tasks/components/TasksPageRedesigned.tsx");
+    const workspace = readSource("src/domains/tasks/components/task-workspace-provider.tsx");
     const mutations = readSource("src/domains/tasks/hooks/use-task-mutations.ts");
     const api = readSource("src/domains/tasks/api/tasks.ts");
     const router = readSource("src/server/domains/organization/routing/domains/crud.ts");
 
-    expect(workspace).toContain("useTasksQuery");
+    expect(workspace).toContain("useTaskWorkspaceQuery");
     expect(workspace).toContain("useTaskMutations");
-    expect(workspace).toContain("TaskViewFrame");
+    expect(workspace).toContain("resolveTaskWorkspaceState");
     expect(mutations).toContain("createTaskRequest");
     expect(mutations).toContain("updateTaskRequest");
     expect(mutations).toContain("deleteTaskRequest");

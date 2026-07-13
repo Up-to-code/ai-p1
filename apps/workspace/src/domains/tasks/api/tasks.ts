@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import { useQuery } from "convex/react";
+import { usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import { createResourceApi } from "@/domains/resources/resource-api-factory";
 import type { TaskFormValues, TaskRecord, TaskStats } from "../tasks.types";
 import { normalizeTaskStatus } from "../tasks.constants";
 import { defaultTaskVisibility } from "../task-visibility";
+import type { TaskBulkAction, TaskBulkResult } from "../workspace/task-bulk";
 
 export type GroupBy = "none" | "status" | "priority" | "assignee" | "dueDate"
 
@@ -74,6 +75,29 @@ export function useTasksQuery(organizationId?: string, options?: { status?: Task
   }, [tasks, status, search]);
 
   return { data: filtered, isLoading: tasks === undefined, isError: false, error: undefined as string | undefined, refetch: () => {} };
+}
+
+/** Reactive, cursor-owned read for the canonical TaskWorkspace. */
+export function useTaskWorkspaceQuery(
+  organizationId?: string,
+  options?: {
+    projectId?: string | null;
+    spaceId?: string | null;
+    ownership?: "all" | "assignedToMe" | "sentByMe";
+  },
+) {
+  return usePaginatedQuery(
+    api.clientTasks.read.listPage,
+    organizationId
+      ? {
+          organizationId,
+          projectId: options?.projectId ?? undefined,
+          spaceId: options?.spaceId ?? undefined,
+          ownership: options?.ownership ?? "all",
+        }
+      : "skip",
+    { initialNumItems: 50 },
+  );
 }
 
 export function useTasksGroupedQuery(
@@ -176,7 +200,11 @@ export function taskFormValuesFromRecord(
     status: merged.status,
     pipelineOrder: merged.pipelineOrder,
     priority: merged.priority,
-    visibility: merged.visibility ?? "team",
+    visibility: defaultTaskVisibility(
+      merged.visibility,
+      merged.projectId,
+      merged.spaceId,
+    ),
     assigneeUserId: merged.assigneeUserId ?? "",
     assigneeUserIds: merged.assigneeUserIds ?? (merged.assigneeUserId ? [merged.assigneeUserId] : []),
     clientId: merged.clientId ?? "",
@@ -208,5 +236,17 @@ export async function assignTasksToProjectRequest(
     method: "POST",
     body: { taskIds, projectId },
     fallbackMessage: "Failed to assign tasks to project.",
+  });
+}
+
+export function bulkTasksRequest(
+  organizationId: string,
+  action: TaskBulkAction,
+  taskIds: string[],
+) {
+  return workspaceMutation<TaskBulkResult>(organizationId, "tasks/bulk", {
+    method: "POST",
+    body: { action, taskIds },
+    fallbackMessage: "Bulk Task action failed.",
   });
 }

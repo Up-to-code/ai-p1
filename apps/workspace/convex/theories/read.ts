@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
-import { authUser } from "../auth";
+import { getAuthUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { activeWorkspaceRows } from "../workspace/readSurface";
 import { theoryValidator } from "./validators";
@@ -61,7 +61,7 @@ export const listPrivate = query({
   args: { organizationId: v.string() },
   returns: v.array(theoryValidator),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
     const theories = await ctx.db
       .query("theories")
@@ -79,7 +79,7 @@ export const listAll = query({
   args: { organizationId: v.string() },
   returns: v.array(theoryValidator),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
     const theories = await ctx.db
       .query("theories")
@@ -94,7 +94,7 @@ export const get = query({
   args: { organizationId: v.string(), theoryId: v.id("theories") },
   returns: v.union(theoryValidator, v.null()),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
     const theory = await ctx.db.get(args.theoryId);
     if (!theory || !canReadTheory(theory, args.organizationId, user._id)) return null;
@@ -106,7 +106,7 @@ export const search = query({
   args: { organizationId: v.string(), query: v.string() },
   returns: v.array(theoryValidator),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
     const needle = args.query.trim().toLowerCase();
     if (!needle) return [];

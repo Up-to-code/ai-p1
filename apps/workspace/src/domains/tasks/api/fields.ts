@@ -143,10 +143,9 @@ export async function createCustomFieldRequest(
   },
 ) {
   const key = fieldKeyFromLabel(input.label)
-  return workspaceMutation<{ fieldId: string }>(organizationId, "/api/v1/customFields", {
+  return workspaceMutation<{ fieldId: string }>(organizationId, ["custom-fields", "definitions"], {
     method: "POST",
     body: {
-      organizationId,
       key,
       label: input.label,
       type: input.type,
@@ -169,10 +168,9 @@ export async function updateCustomFieldDisplayRequest(
   fieldId: string,
   display: { tableVisible?: boolean; boardVisible?: boolean; detailVisible?: boolean; requiredOnCreate?: boolean },
 ) {
-  return workspaceMutation<{ success: boolean }>(organizationId, `/api/v1/customFields/${fieldId}`, {
+  return workspaceMutation<{ success: boolean }>(organizationId, ["custom-fields", "definitions", fieldId], {
     method: "PATCH",
     body: {
-      organizationId,
       display: {
         tableVisible: display.tableVisible ?? true,
         boardVisible: display.boardVisible ?? false,
@@ -185,9 +183,8 @@ export async function updateCustomFieldDisplayRequest(
 }
 
 export async function deleteCustomFieldRequest(organizationId: string, fieldId: string) {
-  return workspaceMutation<{ success: boolean }>(organizationId, `/api/v1/customFields/${fieldId}`, {
+  return workspaceMutation<{ success: boolean }>(organizationId, ["custom-fields", "definitions", fieldId], {
     method: "DELETE",
-    body: { organizationId },
     fallbackMessage: "Could not delete field.",
   })
 }
@@ -207,10 +204,9 @@ export async function setCustomFieldValueRequest(
     booleanValue?: boolean
   },
 ) {
-  return workspaceMutation<{ valueId: string }>(organizationId, "/api/v1/customFieldValues", {
+  return workspaceMutation<{ valueId: string }>(organizationId, ["custom-fields", "values"], {
     method: "POST",
     body: {
-      organizationId,
       fieldDefinitionId: fieldId,
       fieldKey,
       recordType: "task",

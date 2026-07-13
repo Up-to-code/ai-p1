@@ -4,6 +4,7 @@ import {
   normalizeMcpScope,
   projectVisibilityForMcpCreate,
   resolveScopePolicy,
+  scopePolicyContext,
   type EffectiveScopePolicy,
 } from "./scopePolicy";
 
@@ -37,6 +38,17 @@ describe("MCP ScopePolicy", () => {
     expect(normalizeMcpScope(undefined)).toEqual({ type: "organization" });
     expect(() => normalizeMcpScope({ type: "space", spaceIds: [] })).toThrow();
     expect(() => normalizeMcpScope({ type: "organization", projectIds: ["project_1" as never] })).toThrow();
+  });
+
+  it("creates a typed server-owned execution context", () => {
+    expect(scopePolicyContext(policy("project"))).toEqual({
+      organizationId: "org_1",
+      actorUserId: "user_1",
+      scopeType: "project",
+      spaceIds: ["space_1"],
+      projectIds: ["project_1"],
+      clientIds: ["client_1"],
+    });
   });
 
   it("never broadens a Space-scoped Project to Organization visibility", () => {

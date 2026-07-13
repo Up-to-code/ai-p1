@@ -35,6 +35,25 @@ export const calendarEventInputValidator = v.object({
   tags: v.optional(v.array(v.string())),
 });
 
+export const calendarEventPatchValidator = v.object({
+  title: v.optional(v.string()),
+  ownerUserId: v.optional(v.string()),
+  clientId: v.optional(v.string()),
+  projectId: v.optional(v.string()),
+  taskId: v.optional(v.string()),
+  documentId: v.optional(v.string()),
+  startAt: v.optional(v.number()),
+  endAt: v.optional(v.number()),
+  type: v.optional(calendarEventTypeValidator),
+  status: v.optional(calendarEventStatusValidator),
+  attendeeUserIds: v.optional(v.array(v.string())),
+  externalAttendees: v.optional(v.array(v.string())),
+  location: v.optional(v.string()),
+  meetingUrl: v.optional(v.string()),
+  notes: v.optional(v.string()),
+  tags: v.optional(v.array(v.string())),
+});
+
 export const calendarEventValidator = v.object({
   _id: v.id("calendarEvents"),
   _creationTime: v.number(),

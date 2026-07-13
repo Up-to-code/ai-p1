@@ -54,7 +54,8 @@ describe("Workspace auth route source", () => {
     expect(dashboardShell).toContain("useDashboardAuthRedirect");
     expect(dashboardRedirect).toContain("getWorkspaceAuthRedirect");
     expect(convexAuth).toContain("betterAuthClient.adapter");
-    expect(convexAuth).toContain("convex({ authConfig })");
+    expect(convexAuth).toMatch(/convex\(\{\s*authConfig,/u);
+    expect(convexAuth).not.toContain("authUser =");
   });
 
   it("keeps organization creation name-only and routes new workspaces through onboarding", () => {

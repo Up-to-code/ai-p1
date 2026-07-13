@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { EmptyWorkspace, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { CreateResourceDialog } from "@/components/shared/create-resource-dialog";
+import { PageLoading } from "@/components/shared/loading/ViewLoading";
 import { TASK_STATUS_LABEL, normalizeTaskStatus } from "@/domains/tasks/tasks.constants";
 import type { TaskRecord } from "@/domains/tasks/tasks.types";
 import { cn } from "@/lib/utils";
@@ -115,6 +116,13 @@ export function WorkspaceCommandCenter() {
     createTaskFromQuickCreate,
     createDocumentFromQuickCreate,
   } = useWorkspaceCommandCenter();
+
+  if (
+    session.workspace.status === "loadingSession" ||
+    session.workspace.status === "convexAuthLoading"
+  ) {
+    return <PageLoading showLogo={false} showMessage={false} />;
+  }
 
   if (!session.workspace.isReady) {
     return <div className="p-4 sm:p-6 lg:p-8"><WorkspaceQueryState status={session.workspace.status as Exclude<typeof session.workspace.status, "ready">} variant="dashboard" /></div>;

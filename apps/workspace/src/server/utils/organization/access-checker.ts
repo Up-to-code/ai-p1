@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { fetchAuthQuery } from "@/server/auth/convex-auth";
+import { fetchAuthQuery } from "@/server/auth/auth-request";
 import { evaluateOrganizationCapabilities, type OrganizationCapabilities } from "@/packages/authz";
 import { getCurrentBetterAuthOrganizationRole } from "@/server/domains/organization/services/better-auth-organization-service";
 

@@ -23,6 +23,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DeleteRecordDialog } from "@/components/shared/crud-ui";
 import {
   useFieldDefinitionsQuery,
   useFieldValuesQuery,
@@ -111,6 +112,7 @@ export function TaskTableFieldsPanel({
   const [pendingLabel, setPendingLabel] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<CustomFieldDefinition | null>(null);
   const { data: definitions } = useFieldDefinitionsQuery(
     open ? organizationId : undefined,
   );
@@ -181,17 +183,13 @@ export function TaskTableFieldsPanel({
     }
   };
 
-  const removeField = async (def: CustomFieldDefinition) => {
-    if (
-      !window.confirm(
-        `Delete field "${def.label}"? Existing values will be archived.`,
-      )
-    )
-      return;
+  const removeField = async () => {
+    if (!deleteTarget) return;
     setBusy(true);
     setError(null);
     try {
-      await deleteCustomFieldRequest(organizationId, def.id);
+      await deleteCustomFieldRequest(organizationId, deleteTarget.id);
+      setDeleteTarget(null);
       onFieldRemoved?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete field");
@@ -400,7 +398,7 @@ export function TaskTableFieldsPanel({
                   </button>
                   <button
                     type="button"
-                    onClick={() => removeField(def)}
+                    onClick={() => setDeleteTarget(def)}
                     className="h-6 w-6 inline-flex items-center justify-center rounded hover:bg-rose-500/20 text-muted-foreground hover:text-rose-300"
                     title="Delete field"
                   >
@@ -412,6 +410,17 @@ export function TaskTableFieldsPanel({
           </div>
         )}
       </div>
+      <DeleteRecordDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen && !busy) setDeleteTarget(null);
+        }}
+        title="Delete custom field?"
+        description={`Delete “${deleteTarget?.label ?? "this field"}”? Existing values will be archived.`}
+        onConfirm={() => void removeField()}
+        isDeleting={busy}
+        error={error}
+      />
     </aside>
   );
 }

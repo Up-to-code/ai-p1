@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/server/auth/convex-auth", () => ({
+vi.mock("@/server/auth/auth-request", () => ({
   fetchAuthQuery: vi.fn(),
 }));
 import { handleReadProjectsIndex } from "@/server/domains/projects/handlers/projects-read";

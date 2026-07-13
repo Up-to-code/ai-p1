@@ -1,6 +1,12 @@
 import { v } from "convex/values";
-import { clientPriorityValidator } from "../clients/validators";
 import { recordStateValidator } from "../schema/validators";
+
+export const opportunityPriorityValidator = v.union(
+  v.literal("low"),
+  v.literal("normal"),
+  v.literal("high"),
+  v.literal("urgent"),
+);
 
 export const opportunityStageValidator = v.union(
   v.literal("new"),
@@ -27,7 +33,7 @@ export const opportunityInputValidator = v.object({
   value: v.optional(v.number()),
   currency: v.optional(v.string()),
   source: v.optional(v.string()),
-  priority: clientPriorityValidator,
+  priority: opportunityPriorityValidator,
   closeDate: v.optional(v.string()),
   nextStep: v.optional(v.string()),
   ownerUserId: v.optional(v.string()),
@@ -47,7 +53,7 @@ export const opportunityValidator = v.object({
   value: v.optional(v.number()),
   currency: v.optional(v.string()),
   source: v.optional(v.string()),
-  priority: clientPriorityValidator,
+  priority: opportunityPriorityValidator,
   closeDate: v.optional(v.string()),
   nextStep: v.optional(v.string()),
   ownerUserId: v.string(),

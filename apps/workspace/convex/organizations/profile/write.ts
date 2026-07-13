@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { authUser } from "../../auth";
+import { getAuthUser } from "../../auth";
 import { assertOrganizationPermission } from "./access";
 import { findOrganizationProfile } from "./data";
 import {
@@ -15,7 +15,7 @@ export const updateProfileFromHono = mutation({
   },
   returns: organizationProfileValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationPermission(ctx, args.organizationId, "update");
     const now = Date.now();
     const existing = await findOrganizationProfile(ctx, args.organizationId);
@@ -58,7 +58,7 @@ export const ensureProfileFromHono = mutation({
   },
   returns: organizationProfileValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationPermission(ctx, args.organizationId, "read");
     const existing = await findOrganizationProfile(ctx, args.organizationId);
     if (existing) {

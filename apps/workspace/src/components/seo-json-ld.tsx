@@ -1,8 +1,9 @@
 import { brandDomainUrl, brandIdentity, brandLabel, brandProductName } from "@qentrah/brand-identity";
+import { workspaceAssets } from "@/lib/assets/workspace-assets";
 
 const rootUrl = brandDomainUrl("root");
 const workspaceUrl = brandDomainUrl("workspace");
-const logoUrl = `${workspaceUrl}/logo.ico`;
+const logoUrl = `${workspaceUrl}${workspaceAssets.brand.icon}`;
 const trustedKeywords = [
   "مساحة عمل تشغيلية",
   "إدارة العملاء",

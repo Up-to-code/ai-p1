@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { authUser } from "../auth";
+import { getAuthUser } from "../auth";
 
 const permissionValidator = v.record(v.string(), v.array(v.string()));
 
@@ -37,7 +37,7 @@ export const list = query({
   },
   returns: v.array(roleValidator),
   handler: async (ctx, args) => {
-    await authUser.getAuthUser(ctx);
+    await getAuthUser(ctx);
     const roles = await ctx.db
       .query("organizationWorkRoles")
       .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
@@ -57,7 +57,7 @@ export const createFromHono = mutation({
   },
   returns: roleValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     const existing = await ctx.db
       .query("organizationWorkRoles")
       .withIndex("by_organization_role", (q) =>
@@ -97,7 +97,7 @@ export const updateFromHono = mutation({
   },
   returns: roleValidator,
   handler: async (ctx, args) => {
-    await authUser.getAuthUser(ctx);
+    await getAuthUser(ctx);
     const existing = await ctx.db.get(args.roleId);
     if (!existing || existing.organizationId !== args.organizationId) {
       throw new Error("Custom work role was not found.");
@@ -137,7 +137,7 @@ export const deleteFromHono = mutation({
   },
   returns: roleValidator,
   handler: async (ctx, args) => {
-    await authUser.getAuthUser(ctx);
+    await getAuthUser(ctx);
     const existing = await ctx.db.get(args.roleId);
     if (!existing || existing.organizationId !== args.organizationId) {
       throw new Error("Custom work role was not found.");

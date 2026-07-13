@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { internalMutation, mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
-import { authUser } from "../auth";
+import { getAuthUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { dealInputValidator, dealValidator } from "./validators";
 
@@ -75,7 +75,7 @@ export const createFromHono = mutation({
   args: { organizationId: v.string(), input: dealInputValidator },
   returns: dealValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "deal", "create");
     const { presented, now } = await createDealCore(ctx, {
       organizationId: args.organizationId,
@@ -98,7 +98,7 @@ export const updateFromHono = mutation({
   args: { organizationId: v.string(), dealId: v.id("deals"), input: dealInputValidator },
   returns: dealValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "deal", "update");
     const { presented, now } = await updateDealCore(ctx, {
       organizationId: args.organizationId,
@@ -122,7 +122,7 @@ export const deleteFromHono = mutation({
   args: { organizationId: v.string(), dealId: v.id("deals") },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "deal", "delete");
     const { now, title } = await deleteDealCore(ctx, {
       organizationId: args.organizationId,

@@ -12,6 +12,7 @@ import { CUSTOM_FIELD_RECORD_TYPES, CUSTOM_FIELD_TYPES } from "../config/field-t
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { DeleteRecordDialog } from "@/components/shared/crud-ui";
 import { Plus, Trash2, GripVertical, Settings, Hash, Calendar, Tag, ToggleLeft, Link2, User, DollarSign, FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +63,7 @@ export function CustomFieldsSettings() {
   const [form, setForm] = useState<NewFieldForm>(defaultForm);
   const [optionInput, setOptionInput] = useState("");
   const [activeTab, setActiveTab] = useState<string>("client");
+  const [deleteTarget, setDeleteTarget] = useState<CustomFieldDefinition | null>(null);
 
   const filteredDefinitions = useMemo(
     () => definitions.filter((d: CustomFieldDefinition) => d.appliesTo.includes(activeTab)),
@@ -150,9 +152,11 @@ export function CustomFieldsSettings() {
     );
   }
 
-  function handleDelete(fieldId: string) {
-    if (!confirm("Are you sure you want to delete this custom field? This will also delete all values.")) return;
-    deleteMutation.mutate(fieldId);
+  function handleDelete() {
+    if (!deleteTarget) return;
+    deleteMutation.mutate(deleteTarget.id, {
+      onSuccess: () => setDeleteTarget(null),
+    });
   }
 
   function startEdit(field: CustomFieldDefinition) {
@@ -280,7 +284,7 @@ export function CustomFieldsSettings() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDelete(field.id)}
+                    onClick={() => setDeleteTarget(field)}
                     className="rounded-lg px-2 py-1.5 text-xs font-bold text-red-500 hover:bg-red-500/10 transition-colors"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -482,6 +486,17 @@ export function CustomFieldsSettings() {
           </div>
         </DialogContent>
       </Dialog>
+      <DeleteRecordDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open && !deleteMutation.isPending) setDeleteTarget(null);
+        }}
+        title="Delete custom field?"
+        description={`Delete “${deleteTarget?.label ?? "this field"}”? This will also delete its values.`}
+        onConfirm={handleDelete}
+        isDeleting={deleteMutation.isPending}
+        error={deleteMutation.error instanceof Error ? deleteMutation.error.message : null}
+      />
     </div>
   );
 }

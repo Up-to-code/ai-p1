@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
-import { authUser } from "../auth";
+import { getAuthUser } from "../auth";
 import { assertCanPerformSpaceAction } from "../permissions";
 import { activeWorkspaceRows } from "../workspace/readSurface";
 
@@ -27,7 +27,7 @@ export const list = query({
   args: { organizationId: v.string(), spaceId: v.id("spaces") },
   returns: v.array(spaceMemberValidator),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertCanPerformSpaceAction(ctx, args.organizationId, args.spaceId, user._id, "read");
     const members = await ctx.db
       .query("spaceMembers")
@@ -47,7 +47,7 @@ export const getByUser = query({
   args: { organizationId: v.string(), userId: v.string() },
   returns: v.array(spaceMemberValidator),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     // For now, allow users to see their own memberships
     const members = await ctx.db
       .query("spaceMembers")
@@ -72,7 +72,7 @@ export const add = mutation({
   },
   returns: spaceMemberValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertCanPerformSpaceAction(ctx, args.organizationId, args.spaceId, user._id, "update");
 
     const space = await ctx.db.get(args.spaceId);
@@ -128,7 +128,7 @@ export const updateRole = mutation({
   },
   returns: spaceMemberValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertCanPerformSpaceAction(ctx, args.organizationId, args.spaceId, user._id, "update");
 
     const space = await ctx.db.get(args.spaceId);
@@ -174,7 +174,7 @@ export const remove = mutation({
   },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertCanPerformSpaceAction(ctx, args.organizationId, args.spaceId, user._id, "update");
 
     const space = await ctx.db.get(args.spaceId);

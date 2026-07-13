@@ -34,6 +34,13 @@ describe("architecture cleanup source guards", () => {
     ]) {
       expect(exists(`src/components/loading/workspace-route-loading/${module}.tsx`)).toBe(true);
     }
+
+    const sessionLoading = read(
+      "src/components/loading/workspace-route-loading/session-check-loading.tsx",
+    );
+    expect(sessionLoading).toContain("PageLoading");
+    expect(sessionLoading).not.toContain("WorkspaceShellSkeleton");
+    expect(exists("src/components/loading/workspace-shell-skeleton.tsx")).toBe(false);
   });
 
   it("keeps metadata out of route-local SEO folders", () => {

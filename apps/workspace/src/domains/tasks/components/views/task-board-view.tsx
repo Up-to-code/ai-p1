@@ -69,6 +69,7 @@ import { getDueDateColor, normalizeTaskStatus } from "../../tasks.constants";
 import { useIndexedDbConfig } from "@/domains/storage/use-indexeddb-config";
 import { useSortableBoard } from "@qentrah/our-platform-components/pipeline";
 import { AssigneePicker, PriorityPicker, StatusPicker } from "../task-pickers";
+import type { TaskQuickCreateCommand } from "../../workspace/task-quick-create";
 
 interface TaskBoardViewProps {
   tasks: TaskRecord[];
@@ -80,10 +81,7 @@ interface TaskBoardViewProps {
     toStage: string,
     targetIndex: number,
   ) => void;
-  onTaskCreate?: (
-    title: string,
-    defaults?: BoardCreateDefaults,
-  ) => void | Promise<void>;
+  onTaskCreate?: TaskQuickCreateCommand;
   onTaskUpdate?: (
     task: TaskRecord,
     changes: Partial<TaskRecord>,
@@ -94,11 +92,6 @@ interface TaskBoardViewProps {
   memberOptions?: WorkOsPickerOption[];
   className?: string;
 }
-
-type BoardCreateDefaults = Pick<
-  Partial<TaskRecord>,
-  "status" | "priority" | "assigneeUserId" | "dueDate" | "tags"
->;
 
 const PRIORITY_FLAG: Record<TaskRecord["priority"], string> = {
   urgent: "text-red-400",
@@ -174,10 +167,7 @@ function BoardAddTask({
   assigneeOptions: WorkOsPickerOption[];
   existingTags: string[];
   openRequest?: number;
-  onTaskCreate?: (
-    title: string,
-    defaults?: BoardCreateDefaults,
-  ) => void | Promise<void>;
+  onTaskCreate?: TaskQuickCreateCommand;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -224,7 +214,8 @@ function BoardAddTask({
     if (!canSave) return;
     setIsSaving(true);
     try {
-      await onTaskCreate?.(title.trim(), {
+      await onTaskCreate?.({
+        title,
         status,
         priority,
         assigneeUserId: assigneeUserId.trim() || undefined,

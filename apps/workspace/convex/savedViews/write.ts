@@ -8,6 +8,7 @@ import {
   userTableViewValidator,
 } from "./validators";
 import { presentSavedView, scopeForInput } from "./data";
+import { assertOrganizationPermission } from "../organizations/profile/access";
 
 export const create = mutation({
   args: { input: createUserTableViewInputValidator },
@@ -19,7 +20,11 @@ export const create = mutation({
     const userId = identity.subject;
     const now = Date.now();
     const organizationId = args.input.organizationId ?? `personal:${userId}`;
+    if (args.input.organizationId) {
+      await assertOrganizationPermission(ctx, organizationId, "read");
+    }
     const scope = scopeForInput(args.input);
+    await assertSavedViewScope(ctx, organizationId, scope);
 
     if (args.input.isDefault) {
       await clearDefaultFlags(ctx, userId, {
@@ -66,6 +71,7 @@ export const update = mutation({
     const existing = await ctx.db.get(args.input.viewId);
     if (!existing) throw new Error("View not found");
     assertOwner(existing, userId);
+    await assertSavedViewOrganizationAccess(ctx, existing);
 
     if (args.input.isDefault) {
       await clearDefaultFlags(ctx, userId, {
@@ -98,6 +104,7 @@ export const remove = mutation({
     const existing = await ctx.db.get(args.viewId);
     if (!existing) return null;
     assertOwner(existing, identity.subject);
+    await assertSavedViewOrganizationAccess(ctx, existing);
 
     const now = Date.now();
     await ctx.db.patch(args.viewId, {
@@ -120,6 +127,7 @@ export const setDefault = mutation({
     const existing = await ctx.db.get(args.viewId);
     if (!existing) return null;
     assertOwner(existing, userId);
+    await assertSavedViewOrganizationAccess(ctx, existing);
 
     await clearDefaultFlags(ctx, userId, {
       resourceType: existing.resourceType,
@@ -134,6 +142,35 @@ export const setDefault = mutation({
 function assertOwner(view: Doc<"savedViews">, userId: string) {
   if (view.ownerUserId !== userId && view.createdByUserId !== userId) {
     throw new Error("Not authorized");
+  }
+}
+
+async function assertSavedViewOrganizationAccess(
+  ctx: MutationCtx,
+  view: Doc<"savedViews">,
+) {
+  if (!view.organizationId.startsWith("personal:")) {
+    await assertOrganizationPermission(ctx, view.organizationId, "read");
+  }
+}
+
+export async function assertSavedViewScope(
+  ctx: MutationCtx,
+  organizationId: string,
+  scope: ReturnType<typeof scopeForInput>,
+) {
+  if (!scope.scopeId || scope.scopeType === "workspace") return;
+  const table = scope.scopeType === "project" ? "projects" : "spaces";
+  const recordId = ctx.db.normalizeId(table, scope.scopeId);
+  if (!recordId) throw new Error("Saved view scope is invalid.");
+  const record = await ctx.db.get(recordId);
+  if (
+    !record ||
+    record.organizationId !== organizationId ||
+    record.deletedAt ||
+    record.recordState === "deleted"
+  ) {
+    throw new Error("Saved view scope must reference an active record in this organization.");
   }
 }
 

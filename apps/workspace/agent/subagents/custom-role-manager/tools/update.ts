@@ -1,6 +1,6 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 import { requireOrganizationAction, recordOrganizationAction } from "../../../lib/action-workflow";
 import { listOrganizationRoles, updateOrganizationRole } from "../../../lib/better-auth-org";
 import { assertRoleNameIsCustom, normalizeOrganizationRoleName, validatePermissionPayload } from "../../../lib/access-policy";
@@ -13,7 +13,7 @@ export default defineTool({
     permission: z.record(z.string(), z.array(z.string().trim().min(1)).max(20)).optional(),
   }).passthrough(),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     await requireOrganizationAction(ctx, organizationId, "role", "update");
     const currentRole = (await listOrganizationRoles(ctx, organizationId)).find((r) => r.id === args.roleId);
     if (!currentRole) throw new Error("Work role was not found.");

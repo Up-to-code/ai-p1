@@ -1,7 +1,7 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { memoryStore } from "../lib/memory-store";
-import { requireTenantCaller } from "../lib/tenant";
+import { requireWorkspaceActor } from "../lib/workspace-actor";
 
 export default defineTool({
   description: "Remember one stable fact or preference for the current user across sessions.",
@@ -14,6 +14,6 @@ export default defineTool({
     value: z.string().min(1).max(4000),
   }),
   async execute(input, ctx) {
-    return await memoryStore.put(requireTenantCaller(ctx as any), input);
+    return await memoryStore.put(requireWorkspaceActor(ctx as any), input);
   },
 });

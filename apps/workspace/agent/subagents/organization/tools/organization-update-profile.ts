@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthMutation } from "../../../lib/convex";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 import { requireOrganizationAction } from "../../../lib/action-workflow";
 
 export default defineTool({
@@ -17,7 +17,7 @@ export default defineTool({
     address: z.string().trim().max(240),
   }).passthrough(),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     await requireOrganizationAction(ctx, organizationId, "organization", "update");
     return fetchAuthMutation(ctx, api.organizations.profile.write.updateProfileFromHono, {
       organizationId,

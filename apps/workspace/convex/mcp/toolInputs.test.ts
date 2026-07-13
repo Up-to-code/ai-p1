@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { clientInput } from "./toolInputs";
+import {
+  calendarPatchInput,
+  clientInput,
+  clientPatchInput,
+  taskPatchInput,
+} from "./toolInputs";
 
 describe("MCP tool inputs", () => {
   it("creates defaulted client input with email contact only", () => {
@@ -37,5 +42,25 @@ describe("MCP tool inputs", () => {
       status: "new",
       source: "mcp",
     });
+  });
+
+  it("preserves omission semantics for Client updates", () => {
+    expect(clientPatchInput({ name: "Acme Group" })).toEqual({ name: "Acme Group" });
+    expect(clientPatchInput({ email: "" })).toEqual({ email: "" });
+    expect(clientPatchInput({ phone: "+201" })).not.toHaveProperty("name");
+  });
+
+  it("preserves omission and explicit relation clearing for Calendar updates", () => {
+    expect(calendarPatchInput({ title: "Renamed" })).toEqual({ title: "Renamed" });
+    expect(calendarPatchInput({ projectId: null })).toEqual({ projectId: undefined });
+    expect(calendarPatchInput({ startAt: 100 })).not.toHaveProperty("endAt");
+  });
+
+  it("preserves omission and explicit relation clearing for Task updates", () => {
+    expect(taskPatchInput({ status: "client-review" })).toEqual({
+      status: "client-review",
+    });
+    expect(taskPatchInput({ projectId: null })).toEqual({ projectId: undefined });
+    expect(taskPatchInput({ title: "Renamed" })).not.toHaveProperty("priority");
   });
 });

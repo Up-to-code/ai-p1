@@ -2,7 +2,10 @@ import { createHash, randomBytes } from "node:crypto";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { logger } from "@/lib/logger";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/auth-context";
+import {
+  fetchAuthenticatedMutation as fetchAuthMutation,
+  fetchAuthenticatedQuery as fetchAuthQuery,
+} from "@/server/auth/auth-request";
 import { getBetterAuthSessionUserId, addMemberToOrganizationBA } from "./better-auth-organization-service";
 import { OrganizationActionError } from "../errors/action-error";
 import type {

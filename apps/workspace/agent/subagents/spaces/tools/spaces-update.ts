@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthMutation } from "../../../lib/convex";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 import { requireOrganizationAction } from "../../../lib/action-workflow";
 
 export default defineTool({
@@ -19,7 +19,7 @@ export default defineTool({
     allowMemberProjectCreation: z.boolean().optional(),
   }).passthrough(),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     await requireOrganizationAction(ctx, organizationId, "space", "update");
     const { spaceId, ...input } = args;
     return fetchAuthMutation(ctx, api.spaces.index.update, { organizationId, spaceId: spaceId as any, input: input as never });

@@ -7,8 +7,14 @@ import { i18n } from "@better-auth/i18n";
 import { expo } from "@better-auth/expo";
 import { betterAuthClient } from "./betterAuth";
 import authConfig from "./auth.config";
-import { getAuthUser, safeGetAuthUser } from "./betterAuth";
+import { internalAction } from "./_generated/server";
+import {
+  getAuthUser as getBetterAuthUser,
+  safeGetAuthUser as safeGetBetterAuthUser,
+} from "./betterAuth";
 import { getAppUrl, getTransactionalFromEmail, resend } from "./email";
+
+const AUTH_JWT_ALGORITHM = "RS256" as const;
 
 export const createAuth = (ctx: any) => {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
@@ -132,7 +138,11 @@ export const createAuth = (ctx: any) => {
           });
         },
       }),
-      jwt(),
+      jwt({
+        jwks: {
+          keyPairConfig: { alg: AUTH_JWT_ALGORITHM },
+        },
+      }),
       expo(),
       i18n({
         defaultLocale: "en",
@@ -187,7 +197,12 @@ export const createAuth = (ctx: any) => {
         customAccessTokenClaims: ({ referenceId }) =>
           referenceId ? { org_id: referenceId } : {},
       }),
-      convex({ authConfig }),
+      convex({
+        authConfig,
+        // Production may still have an EdDSA key from the pre-RS256 setup.
+        // Rotate it once when token generation detects the incompatible key.
+        jwksRotateOnTokenGenerationError: true,
+      }),
     ],
 
     baseURL: process.env.NEXT_PUBLIC_APP_URL!,
@@ -202,23 +217,26 @@ export const createAuth = (ctx: any) => {
   });
 };
 
-export { getAuthUser, safeGetAuthUser } from "./betterAuth";
+/** Required authenticated identity for Convex domain adapters. */
+export async function getAuthUser(ctx: any) {
+  return getBetterAuthUser(ctx);
+}
+
+/** Optional authenticated identity for public or mixed-access adapters. */
+export async function safeGetAuthUser(ctx: any) {
+  return safeGetBetterAuthUser(ctx);
+}
 
 /**
- * Backward-compatible alias for Better Auth `getAuthUser`/`safeGetAuthUser`.
- * Used by 30+ Convex write/read modules. Imported as:
- *   import { authUser } from "../auth";
- *   const user = await authUser.getAuthUser(ctx);
+ * Rotate Better Auth signing keys through the Convex-owned JWT Adapter.
+ *
+ * This is intentionally internal: operators may run it during an algorithm
+ * migration, while browser and API callers cannot invalidate active tokens.
  */
-export const authUser = {
-  getAuthUser: async (ctx: any) => getAuthUser(ctx),
-  safeGetAuthUser: async (ctx: any) => safeGetAuthUser(ctx),
-  getAuth: async (_createAuth: unknown, ctx: any) => {
-    const auth = createAuth(ctx as any);
-    return { auth, headers: new Headers() };
+export const rotateKeys = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    await createAuth(ctx).api.rotateKeys();
+    return { rotated: true, algorithm: AUTH_JWT_ALGORITHM };
   },
-  clientApi: () => ({
-    getAuthUser: async (ctx: any) => getAuthUser(ctx),
-    safeGetAuthUser: async (ctx: any) => safeGetAuthUser(ctx),
-  }),
-};
+});

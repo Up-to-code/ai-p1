@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { authUser } from "../auth";
+import { getAuthUser } from "../auth";
 import {
   attachMediaToResource,
   createMediaFolderForResource,
@@ -23,7 +23,7 @@ export const attachFromHono = mutation({
   },
   returns: mediaAssetValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     return attachMediaToResource(ctx, {
       organizationId: args.organizationId,
       input: args.input,
@@ -40,7 +40,7 @@ export const updateFromHono = mutation({
   },
   returns: mediaAssetValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     return updateMediaAsset(ctx, {
       organizationId: args.organizationId,
       mediaId: args.mediaId,
@@ -57,7 +57,7 @@ export const removeFromHono = mutation({
   },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     return removeMediaAsset(ctx, {
       organizationId: args.organizationId,
       mediaId: args.mediaId,
@@ -73,7 +73,7 @@ export const createFolderFromHono = mutation({
   },
   returns: mediaFolderValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     return createMediaFolderForResource(ctx, {
       organizationId: args.organizationId,
       input: args.input,
@@ -89,7 +89,7 @@ export const deleteFolderFromHono = mutation({
   },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     return deleteMediaFolderForResource(ctx, {
       organizationId: args.organizationId,
       folderId: args.folderId,

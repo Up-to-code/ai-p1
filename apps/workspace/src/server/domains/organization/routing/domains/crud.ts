@@ -15,6 +15,7 @@ import { handleCreateDeal, handleDeleteDeal, handleUpdateDeal } from "@/server/d
 import { handleCreateClient, handleDeleteClient, handleUpdateClient } from "@/server/domains/clients/handlers/clients";
 import { handleCreateClientTask, handleDeleteClientTask, handleUpdateClientTask } from "@/server/domains/clientTasks/handlers/client-tasks";
 import { handleAssignTasksToProject } from "@/server/domains/clientTasks/handlers/assign-to-project";
+import { handleBulkTasks } from "@/server/domains/clientTasks/handlers/bulk-tasks";
 import { handleCreateFollowUp, handleDeleteFollowUp, handleMarkFollowUpComplete, handleUpdateFollowUp } from "@/server/domains/clientFollowUps/handlers/follow-ups";
 import { handleCreateInvoice, handleDeleteInvoice, handleUpdateInvoice } from "@/server/domains/clientInvoices/handlers/invoices";
 import { handleCreateCalendarEvent, handleDeleteCalendarEvent, handleUpdateCalendarEvent } from "@/server/domains/calendar/handlers/calendar";
@@ -110,6 +111,7 @@ crudSubRouter.post("/:organizationId/tasks", handleCreateClientTask);
 crudSubRouter.patch("/:organizationId/tasks/:taskId", handleUpdateClientTask);
 crudSubRouter.delete("/:organizationId/tasks/:taskId", handleDeleteClientTask);
 crudSubRouter.post("/:organizationId/tasks/assign-to-project", handleAssignTasksToProject);
+crudSubRouter.post("/:organizationId/tasks/bulk", handleBulkTasks);
 
 crudSubRouter.post("/:organizationId/client-tasks", handleCreateClientTask);
 crudSubRouter.patch("/:organizationId/client-tasks/:taskId", handleUpdateClientTask);

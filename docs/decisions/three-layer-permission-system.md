@@ -1,5 +1,11 @@
 # Three-Layer Permission System Design
 
+> Task exception: Task visibility is a record-level collaboration boundary.
+> `workspace` Tasks are available to Organization members even when linked to
+> a narrower Project or Space, without granting access to that parent.
+> `team` Tasks inherit the linked parent boundary, and `private` Tasks are
+> available only to their creator and assignees.
+
 ## Overview
 
 This document describes the redesigned permission and scoping system for Qentrah, implementing a three-layer hierarchy (Organization → Space → Project) based on project management best practices from Asana, Jira, Azure DevOps, and Plane.

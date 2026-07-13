@@ -1,22 +1,13 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
-import type { Doc } from "../_generated/dataModel";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
-import { isoDate, isoTime, presentWorkspaceRecord } from "../shared/present";
 import { activeChronologicalWorkspaceRows, boundedWorkspaceReadLimit } from "../workspace/readSurface";
 import { calendarStats } from "../workspace/readStats";
 import { calendarEventValidator } from "./validators";
+import { presentCalendarEvent } from "./presentation";
 
 const MAX_LIST_EVENTS = 500;
 const MAX_RANGE_EVENTS = 1_000;
-
-async function presentEvent(event: Doc<"calendarEvents">) {
-  return {
-    ...presentWorkspaceRecord(event),
-    date: isoDate(event.startAt),
-    time: isoTime(event.startAt),
-  };
-}
 
 export const list = query({
   args: {
@@ -31,7 +22,7 @@ export const list = query({
       .take(MAX_LIST_EVENTS);
 
     return Promise.all(
-      activeChronologicalWorkspaceRows(events).map(presentEvent),
+      activeChronologicalWorkspaceRows(events).map(presentCalendarEvent),
     );
   },
 });
@@ -51,7 +42,7 @@ export const listRange = query({
       .take(MAX_RANGE_EVENTS);
 
     return Promise.all(
-      activeChronologicalWorkspaceRows(events).map(presentEvent),
+      activeChronologicalWorkspaceRows(events).map(presentCalendarEvent),
     );
   },
 });
@@ -72,7 +63,7 @@ export const listUpcoming = query({
       .take(limit);
 
     return Promise.all(
-      activeChronologicalWorkspaceRows(events).map(presentEvent),
+      activeChronologicalWorkspaceRows(events).map(presentCalendarEvent),
     );
   },
 });
@@ -92,7 +83,7 @@ export const listByProject = query({
       .withIndex("by_organization_project", (q) => q.eq("organizationId", args.organizationId).eq("projectId", args.projectId))
       .take(limit);
 
-    return Promise.all(activeChronologicalWorkspaceRows(events).map(presentEvent));
+    return Promise.all(activeChronologicalWorkspaceRows(events).map(presentCalendarEvent));
   },
 });
 
@@ -103,7 +94,7 @@ export const get = query({
     await assertOrganizationResourcePermission(ctx, args.organizationId, "calendar", "read");
     const event = await ctx.db.get(args.eventId);
     if (!event || event.organizationId !== args.organizationId || event.deletedAt) return null;
-    return presentEvent(event);
+    return presentCalendarEvent(event);
   },
 });
 
@@ -127,7 +118,7 @@ export const listBySpace = query({
       )
       .take(limit);
 
-    return Promise.all(activeChronologicalWorkspaceRows(events).map(presentEvent));
+    return Promise.all(activeChronologicalWorkspaceRows(events).map(presentCalendarEvent));
   },
 });
 

@@ -2,6 +2,18 @@ import { z } from "zod";
 
 const optionalTrimmedText = z.string().trim().optional().transform((value) => value || undefined);
 
+export const customFieldRecordTypeSchema = z.enum([
+  "client",
+  "project",
+  "deal",
+  "task",
+  "media",
+  "space",
+  "calendarEvent",
+  "doc",
+  "opportunity",
+]);
+
 export const customFieldDefinitionSchema = z.object({
   key: z.string().trim().min(1).max(80),
   label: z.string().trim().min(1).max(120),
@@ -31,9 +43,9 @@ export const customFieldDefinitionSchema = z.object({
       }),
     )
     .optional(),
-  appliesTo: z.array(
-    z.enum(["client", "deal", "opportunity", "project", "task", "calendarEvent"]),
-  ),
+  appliesTo: z
+    .array(customFieldRecordTypeSchema)
+    .min(1),
   defaultValue: z.any().optional(),
   display: z
     .object({
@@ -50,7 +62,7 @@ export const customFieldDefinitionSchema = z.object({
 export const customFieldValueSchema = z.object({
   fieldDefinitionId: z.string().trim().min(1),
   fieldKey: z.string().trim().min(1),
-  recordType: z.enum(["client", "deal", "opportunity", "project", "task", "calendarEvent"]),
+  recordType: customFieldRecordTypeSchema,
   recordId: z.string().trim().min(1),
   type: z.enum([
     "text",
@@ -79,3 +91,4 @@ export const customFieldValueSchema = z.object({
 
 export type CustomFieldDefinitionInput = z.infer<typeof customFieldDefinitionSchema>;
 export type CustomFieldValueInput = z.infer<typeof customFieldValueSchema>;
+export type CustomFieldRecordTypeInput = z.infer<typeof customFieldRecordTypeSchema>;

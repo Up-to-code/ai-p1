@@ -3,15 +3,15 @@ import type { Id } from "../../_generated/dataModel";
 import { internal } from "../../_generated/api";
 import { presentWorkspaceRecord } from "../../shared/present";
 import { assertActiveWorkspaceRecord } from "../../workspace/businessData";
-import { calendarInput, listLimit, listCursor, requiredString, requiredNumber, optionalString, assertCalendarLinks } from "../toolInputs";
+import { calendarInput, calendarPatchInput, listLimit, listCursor, requiredString, requiredNumber, optionalString } from "../toolInputs";
 import {
   type ReadHandler, type WriteHandler, type ReadToolArgs, type WriteToolArgs,
   listEvents, audit,
 } from "./shared";
-import { isScopedResourceLink, scopeActorUserId, scopePolicyFromInput } from "../scopePolicy";
+import { isScopedResourceLink, scopeActorUserId } from "../scopePolicy";
 
 async function scopedListEvents(ctx: QueryCtx, args: ReadToolArgs, startAt: number, endAt: number) {
-  const scope = scopePolicyFromInput(args.input);
+  const scope = args.scopePolicy;
   if (scope.scopeType === "organization") {
     return listEvents(ctx, args.organizationId, startAt, endAt, listLimit(args.input), listCursor(args.input), optionalString(args.input, "spaceId"));
   }
@@ -54,18 +54,20 @@ export const calendarListMonth: ReadHandler = async (ctx: QueryCtx, args: ReadTo
 
 export const calendarGet: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
   const event = await ctx.db.get(requiredString(args.input, "eventId") as Id<"calendarEvents">);
-  const scope = scopePolicyFromInput(args.input);
+  const scope = args.scopePolicy;
   if (event && (!isScopedResourceLink(scope, event) || event.recordState === "deleted")) throw new Error("Calendar event was not found.");
   return presentWorkspaceRecord(assertActiveWorkspaceRecord(event, args.organizationId, "Calendar event"));
 };
 
 export const calendarCreate: WriteHandler = async (ctx: MutationCtx, args: WriteToolArgs) => {
   const event = calendarInput(args.input);
-  await assertCalendarLinks(ctx, args.organizationId, event);
+  if (!isScopedResourceLink(args.scopePolicy, event)) {
+    throw new Error("Calendar event is outside the granted scope.");
+  }
   const result = await ctx.runMutation(internal.calendar.write.createInternal, {
     organizationId: args.organizationId,
     input: event,
-    actorUserId: scopeActorUserId(args.input),
+    actorUserId: scopeActorUserId(args.scopePolicy),
   });
   await audit(ctx, args.organizationId, args.connectionId, "calendar.create", result.id, `Scheduled ${event.title}.`);
   return presentWorkspaceRecord(result);
@@ -73,21 +75,23 @@ export const calendarCreate: WriteHandler = async (ctx: MutationCtx, args: Write
 
 export const calendarUpdate: WriteHandler = async (ctx: MutationCtx, args: WriteToolArgs) => {
   const eventId = requiredString(args.input, "eventId") as Id<"calendarEvents">;
-  const existing = assertActiveWorkspaceRecord(await ctx.db.get(eventId), args.organizationId, "Calendar event");
-  const parsed = calendarInput(args.input);
-  const patch = {
-    ...parsed,
-    projectId: Object.prototype.hasOwnProperty.call(args.input, "projectId") ? parsed.projectId : existing.projectId as Id<"projects"> | undefined,
-    clientId: Object.prototype.hasOwnProperty.call(args.input, "clientId") ? parsed.clientId : existing.clientId as Id<"clients"> | undefined,
-    taskId: Object.prototype.hasOwnProperty.call(args.input, "taskId") ? parsed.taskId : existing.taskId as Id<"tasks"> | undefined,
-    documentId: Object.prototype.hasOwnProperty.call(args.input, "documentId") ? parsed.documentId : existing.documentId as Id<"docs"> | undefined,
-  };
-  await assertCalendarLinks(ctx, args.organizationId, patch);
+  const existing = assertActiveWorkspaceRecord(
+    await ctx.db.get(eventId),
+    args.organizationId,
+    "Calendar event",
+  );
+  if (!isScopedResourceLink(args.scopePolicy, existing)) {
+    throw new Error("Calendar event was not found.");
+  }
+  const patch = calendarPatchInput(args.input);
+  if (!isScopedResourceLink(args.scopePolicy, { ...existing, ...patch })) {
+    throw new Error("Calendar event is outside the granted scope.");
+  }
   const result = await ctx.runMutation(internal.calendar.write.updateInternal, {
     organizationId: args.organizationId,
     eventId,
     input: patch,
-    actorUserId: scopeActorUserId(args.input),
+    actorUserId: scopeActorUserId(args.scopePolicy),
   });
   await audit(ctx, args.organizationId, args.connectionId, "calendar.update", eventId, `Updated.`);
   return presentWorkspaceRecord(result);
@@ -98,7 +102,7 @@ export const calendarDelete: WriteHandler = async (ctx: MutationCtx, args: Write
   const result = await ctx.runMutation(internal.calendar.write.deleteInternal, {
     organizationId: args.organizationId,
     eventId,
-    actorUserId: scopeActorUserId(args.input),
+    actorUserId: scopeActorUserId(args.scopePolicy),
   });
   await audit(ctx, args.organizationId, args.connectionId, "calendar.delete", eventId, `Deleted.`);
   return result;

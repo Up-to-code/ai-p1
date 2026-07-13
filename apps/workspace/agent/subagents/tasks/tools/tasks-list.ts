@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "../../../lib/convex";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 
 export default defineTool({
   description: "List tasks, optionally filtered by assignee.",
@@ -12,7 +12,7 @@ export default defineTool({
     search: z.string().trim().max(160).optional(),
   }).passthrough(),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     const allTasks = await fetchAuthQuery(ctx, api.clientTasks.read.list, {
       organizationId,
       assigneeUserId: args.assigneeUserId,

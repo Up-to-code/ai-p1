@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthMutation } from "../../../lib/convex";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 
 export default defineTool({
   description: "Create a new client (person or organization).",
@@ -24,7 +24,7 @@ export default defineTool({
     }
   }),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     return fetchAuthMutation(ctx, api.clients.write.createFromHono, {
       organizationId,
       input: args as never,

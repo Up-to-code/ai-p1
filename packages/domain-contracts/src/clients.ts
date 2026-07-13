@@ -5,6 +5,7 @@ export const clientStatusSchema = z.enum(["new", "active", "nurture", "inactive"
 export const clientPrioritySchema = z.enum(["normal", "high", "urgent"]);
 export const clientPipelineStageSchema = z.string();
 export const visibilitySchema = z.enum(["private", "team", "workspace"]);
+const optionalClientText = z.string().trim().optional().transform((value) => value || undefined);
 
 export const clientInputSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
@@ -15,20 +16,27 @@ export const clientInputSchema = z.object({
   pipelineOrder: z.number().finite().optional(),
   source: z.string().optional(),
   priority: clientPrioritySchema.optional(),
-  budget: z.string().trim().optional(),
-  assetInterest: z.string().trim().optional(),
-  added: z.string().trim().optional(),
-  lastContact: z.string().trim().optional(),
-  contact: z.string().trim().optional(),
+  budget: optionalClientText,
+  assetInterest: optionalClientText,
+  added: optionalClientText,
+  lastContact: optionalClientText,
+  contact: optionalClientText,
   visibility: visibilitySchema.optional(),
-  company: z.string().trim().optional(),
-  contactName: z.string().trim().optional(),
-  email: z.string().email().optional().or(z.literal("")),
-  phone: z.string().trim().optional(),
-  website: z.string().url().optional().or(z.literal("")),
-  notes: z.string().trim().optional(),
+  company: optionalClientText,
+  contactName: optionalClientText,
+  email: z.union([z.string().email(), z.literal("")]).optional().transform((value) => value || undefined),
+  phone: optionalClientText,
+  website: z.union([z.string().url(), z.literal("")]).optional().transform((value) => value || undefined),
+  notes: optionalClientText,
   tags: z.array(z.string().trim()).optional(),
-});
+}).strict();
+
+/** Writable Client fields for update operations; identity and lifecycle fields are excluded. */
+export const clientPatchObjectSchema = clientInputSchema.partial();
+export const clientPatchSchema = clientPatchObjectSchema.refine(
+  (patch) => Object.keys(patch).length > 0,
+  "At least one client field is required",
+);
 
 export const clientRecordSchema = z.object({
   _id: z.string(),
@@ -70,6 +78,7 @@ export type ClientPriority = z.infer<typeof clientPrioritySchema>;
 export type ClientPipelineStage = z.infer<typeof clientPipelineStageSchema>;
 export type Visibility = z.infer<typeof visibilitySchema>;
 export type ClientInput = z.infer<typeof clientInputSchema>;
+export type ClientPatch = z.infer<typeof clientPatchSchema>;
 export type ClientRecord = z.infer<typeof clientRecordSchema>;
 
 export type ClientSummary = {

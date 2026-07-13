@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "../../../lib/convex";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 
 export default defineTool({
   description: "Get details of a specific space by ID or slug.",
@@ -11,7 +11,7 @@ export default defineTool({
     slug: z.string().min(1).optional(),
   }).refine((data) => data.spaceId || data.slug, { message: "Provide either spaceId or slug." }).passthrough(),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     if (args.spaceId) {
       return fetchAuthQuery(ctx, api.spaces.index.get, { organizationId, spaceId: args.spaceId as any });
     }

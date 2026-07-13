@@ -2,11 +2,9 @@ import { ConvexError } from "convex/values";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../auth", () => ({
-  authUser: {
-    safeGetAuthUser: vi.fn(async (ctx: { actorUserId?: string }) =>
+  safeGetAuthUser: vi.fn(async (ctx: { actorUserId?: string }) =>
       ctx.actorUserId ? { _id: ctx.actorUserId } : null,
     ),
-  },
 }));
 
 vi.mock("../permissions", () => ({

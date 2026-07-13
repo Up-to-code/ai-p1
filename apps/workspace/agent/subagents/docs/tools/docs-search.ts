@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "../../../lib/convex";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 
 export default defineTool({
   description:
@@ -12,7 +12,7 @@ export default defineTool({
     projectId: z.string().optional().describe("Limit search to a specific project."),
   }),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     const docs = await fetchAuthQuery(ctx, api.clientDocs.read.search, {
       organizationId,
       query: args.query,

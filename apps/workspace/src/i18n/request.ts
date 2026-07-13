@@ -1,12 +1,7 @@
 import {getRequestConfig} from 'next-intl/server';
 import { brandLabel, brandProductName } from '@qentrah/brand-identity';
 import {routing} from '@/i18n/routing';
-
-type Locale = (typeof routing.locales)[number];
-
-function isLocale(locale: string): locale is Locale {
-  return routing.locales.includes(locale as Locale);
-}
+import {isLocale, type Locale} from '@/i18n/locale-registry';
 
 function applyBrandMessages(value: unknown, locale: Locale): unknown {
   if (typeof value === "string") {

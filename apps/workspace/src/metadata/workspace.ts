@@ -4,16 +4,11 @@ import {
   brandLabel,
   brandProductName,
 } from "@qentrah/brand-identity";
-import { routing } from "@/i18n/routing";
-
-export type Locale = (typeof routing.locales)[number];
+import { workspaceAssets } from "@/lib/assets/workspace-assets";
+export { isLocale, type Locale } from "@/i18n/locale-registry";
 
 const siteUrl = brandDomainUrl("workspace");
 const brand = brandLabel("en");
-
-export function isLocale(locale: string): locale is Locale {
-  return routing.locales.includes(locale as Locale);
-}
 
 export const rootMetadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -37,13 +32,13 @@ export const rootMetadata: Metadata = {
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
-      { url: "/logo.ico", type: "image/x-icon" },
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/logo.ico", sizes: "192x192", type: "image/x-icon" },
-      { url: "/logo.ico", sizes: "512x512", type: "image/x-icon" },
+      { url: workspaceAssets.brand.icon, type: "image/x-icon" },
+      { url: workspaceAssets.brand.favicon, type: "image/svg+xml" },
+      { url: workspaceAssets.brand.icon, sizes: "192x192", type: "image/x-icon" },
+      { url: workspaceAssets.brand.icon, sizes: "512x512", type: "image/x-icon" },
     ],
-    shortcut: [{ url: "/logo.ico", type: "image/x-icon" }],
-    apple: [{ url: "/logo.ico", sizes: "180x180", type: "image/x-icon" }],
+    shortcut: [{ url: workspaceAssets.brand.icon, type: "image/x-icon" }],
+    apple: [{ url: workspaceAssets.brand.icon, sizes: "180x180", type: "image/x-icon" }],
   },
   applicationName: brand,
   creator: brand,
@@ -58,7 +53,7 @@ export const rootMetadata: Metadata = {
       "One workspace for clients, opportunities, projects, and tasks. AI that operates your business. Built for marketing, creative, design, and service agencies.",
     images: [
       {
-        url: "/logo.ico",
+        url: workspaceAssets.brand.icon,
         width: 512,
         height: 512,
         alt: "Qentrah - AI Client Operations Platform",
@@ -70,7 +65,7 @@ export const rootMetadata: Metadata = {
     title: "Qentrah: Operating System for Agencies",
     description:
       "One workspace for clients, opportunities, projects, and tasks. AI that operates your business.",
-    images: ["/logo.ico"],
+    images: [workspaceAssets.brand.icon],
   },
   robots: {
     index: false,
@@ -107,13 +102,13 @@ export const localizedWorkspaceMetadata: Metadata = {
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/logo.ico", sizes: "192x192", type: "image/x-icon" },
-      { url: "/logo.ico", sizes: "512x512", type: "image/x-icon" },
+      { url: workspaceAssets.brand.favicon, type: "image/svg+xml" },
+      { url: workspaceAssets.brand.icon, sizes: "192x192", type: "image/x-icon" },
+      { url: workspaceAssets.brand.icon, sizes: "512x512", type: "image/x-icon" },
     ],
-    shortcut: [{ url: "/logo.ico", type: "image/x-icon" }],
-    apple: [{ url: "/logo.ico", sizes: "180x180", type: "image/x-icon" }],
-    other: [{ rel: "mask-icon", url: "/mask-icon.svg", color: "#121212" }],
+    shortcut: [{ url: workspaceAssets.brand.icon, type: "image/x-icon" }],
+    apple: [{ url: workspaceAssets.brand.icon, sizes: "180x180", type: "image/x-icon" }],
+    other: [{ rel: "mask-icon", url: workspaceAssets.brand.safariMask, color: "#121212" }],
   },
   appleWebApp: {
     capable: true,
@@ -129,7 +124,7 @@ export const localizedWorkspaceMetadata: Metadata = {
       "Human-led project management where AI handles the busywork. Built for small teams and agencies.",
     images: [
       {
-        url: "/logo.ico",
+        url: workspaceAssets.brand.icon,
         width: 512,
         height: 512,
         alt: `${brand} - AI-First Project Management`,
@@ -141,7 +136,7 @@ export const localizedWorkspaceMetadata: Metadata = {
     title: "Qentrah: AI-First Project Management for Small Teams",
     description:
       "Human-led project management where AI handles the busywork. Built for small teams and agencies.",
-    images: ["/logo.ico"],
+    images: [workspaceAssets.brand.icon],
   },
   robots: {
     index: false,

@@ -1,7 +1,7 @@
 "use client"
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useConvex } from "convex/react"
+import { useCallback, useState } from "react"
+import { useMutation, useQuery } from "convex/react"
 import { api } from "@convex/_generated/api"
 import type { Id } from "@convex/_generated/dataModel"
 
@@ -31,7 +31,6 @@ export interface SavedViewConfig {
   groupBy?: string
   sortBy?: string
   sortDirection?: "asc" | "desc"
-  taskTableVersion?: number
   search?: string
   density?: "compact" | "normal"
   showFields?: boolean
@@ -70,32 +69,15 @@ export interface ListSavedViewsArgs {
   spaceId?: string
 }
 
-function listKey(args: ListSavedViewsArgs) {
-  return [
-    "saved-table-views",
-    args.resourceType ?? null,
-    args.viewType ?? null,
-    args.organizationId ?? null,
-    args.projectId ?? null,
-    args.spaceId ?? null,
-  ] as const
-}
-
 export function useSavedViewsQuery(args: ListSavedViewsArgs) {
-  const convex = useConvex()
-  return useQuery({
-    queryKey: listKey(args),
-    queryFn: async (): Promise<SavedViewRecord[]> => {
-      return (await convex.query(api.savedViews.read.list, {
-        resourceType: args.resourceType,
-        viewType: args.viewType,
-        organizationId: args.organizationId,
-        projectId: args.projectId,
-        spaceId: args.spaceId,
-      })) as SavedViewRecord[]
-    },
-    enabled: Boolean(args.resourceType && args.viewType),
-  })
+  const data = useQuery(api.savedViews.read.list, {
+    resourceType: args.resourceType,
+    viewType: args.viewType,
+    organizationId: args.organizationId,
+    projectId: args.projectId,
+    spaceId: args.spaceId,
+  }) as SavedViewRecord[] | undefined
+  return { data, isLoading: data === undefined }
 }
 
 export function useDefaultSavedViewQuery(args: {
@@ -105,14 +87,24 @@ export function useDefaultSavedViewQuery(args: {
   projectId?: string
   spaceId?: string
 }) {
-  const convex = useConvex()
-  return useQuery({
-    queryKey: ["saved-table-views-default", args],
-    queryFn: async (): Promise<SavedViewRecord | null> => {
-      return (await convex.query(api.savedViews.read.getDefault, args)) as SavedViewRecord | null
-    },
-    enabled: Boolean(args.resourceType && args.viewType),
-  })
+  const data = useQuery(api.savedViews.read.getDefault, args) as SavedViewRecord | null | undefined
+  return { data, isLoading: data === undefined }
+}
+
+function useTrackedMutation<TInput, TResult>(execute: (input: TInput) => Promise<TResult>) {
+  const [isPending, setIsPending] = useState(false)
+  const mutateAsync = useCallback(async (input: TInput) => {
+    setIsPending(true)
+    try {
+      return await execute(input)
+    } finally {
+      setIsPending(false)
+    }
+  }, [execute])
+  const mutate = useCallback((input: TInput) => {
+    void mutateAsync(input).catch(() => undefined)
+  }, [mutateAsync])
+  return { mutate, mutateAsync, isPending }
 }
 
 export interface CreateSavedViewInput {
@@ -130,16 +122,10 @@ export interface CreateSavedViewInput {
 }
 
 export function useCreateSavedViewMutation() {
-  const convex = useConvex()
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: async (input: CreateSavedViewInput): Promise<SavedViewRecord> => {
-      return (await convex.mutation(api.savedViews.write.create, { input })) as SavedViewRecord
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["saved-table-views"] })
-    },
-  })
+  const mutation = useMutation(api.savedViews.write.create)
+  return useTrackedMutation(async (input: CreateSavedViewInput) =>
+    mutation({ input }) as Promise<SavedViewRecord>,
+  )
 }
 
 export interface UpdateSavedViewInput {
@@ -151,40 +137,18 @@ export interface UpdateSavedViewInput {
 }
 
 export function useUpdateSavedViewMutation() {
-  const convex = useConvex()
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: async (input: UpdateSavedViewInput): Promise<SavedViewRecord> => {
-      return (await convex.mutation(api.savedViews.write.update, { input })) as SavedViewRecord
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["saved-table-views"] })
-    },
-  })
+  const mutation = useMutation(api.savedViews.write.update)
+  return useTrackedMutation(async (input: UpdateSavedViewInput) =>
+    mutation({ input }) as Promise<SavedViewRecord>,
+  )
 }
 
 export function useDeleteSavedViewMutation() {
-  const convex = useConvex()
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: async (viewId: Id<"savedViews">) => {
-      await convex.mutation(api.savedViews.write.remove, { viewId })
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["saved-table-views"] })
-    },
-  })
+  const mutation = useMutation(api.savedViews.write.remove)
+  return useTrackedMutation((viewId: Id<"savedViews">) => mutation({ viewId }))
 }
 
 export function useSetDefaultSavedViewMutation() {
-  const convex = useConvex()
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: async (viewId: Id<"savedViews">) => {
-      await convex.mutation(api.savedViews.write.setDefault, { viewId })
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["saved-table-views"] })
-    },
-  })
+  const mutation = useMutation(api.savedViews.write.setDefault)
+  return useTrackedMutation((viewId: Id<"savedViews">) => mutation({ viewId }))
 }

@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { authUser } from "../../auth";
+import { getAuthUser } from "../../auth";
 import { assertOrganizationPermission } from "../profile/access";
 import { recordOrganizationAuditEventInputValidator } from "./validators";
 
@@ -11,7 +11,7 @@ export const recordFromHono = mutation({
   },
   returns: v.object({ recorded: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationPermission(ctx, args.organizationId, "read");
 
     await ctx.db.insert("organizationAuditEvents", {

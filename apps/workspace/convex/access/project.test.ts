@@ -4,11 +4,9 @@ import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../auth", () => ({
-  authUser: {
-    safeGetAuthUser: vi.fn(async (ctx: { actorUserId?: string }) =>
+  safeGetAuthUser: vi.fn(async (ctx: { actorUserId?: string }) =>
       ctx.actorUserId ? { _id: ctx.actorUserId } : null,
     ),
-  },
 }));
 
 import { projectStats } from "../workspace/readStats";
@@ -62,7 +60,10 @@ function fakeCtx(input: {
         withIndex: vi.fn(
           (_name: string, build: (q: typeof chain) => unknown) => {
             build(chain);
-            return { take: vi.fn(async () => rowsByTable[table]) };
+            return {
+              collect: vi.fn(async () => rowsByTable[table]),
+              take: vi.fn(async () => rowsByTable[table]),
+            };
           },
         ),
       })),
@@ -328,6 +329,27 @@ describe("Project access Interface", () => {
         "org_1",
       ),
     ).rejects.toMatchObject({ data: { code: "AUTHENTICATION_REQUIRED" } });
+  });
+
+  it("does not silently truncate actors with more than 500 Project memberships", async () => {
+    const projectMemberships = Array.from(
+      { length: 601 },
+      (_, index) => ({ projectId: `project_${index}`, role: "viewer" as const }),
+    );
+    const access = await resolveProjectAccess(
+      fakeCtx({
+        actorUserId: "actor",
+        organizationRole: "member",
+        projectMemberships,
+      }) as never,
+      "org_1",
+    );
+
+    expect(
+      access.canRead(
+        project({ id: "project_600", visibility: "private" }) as never,
+      ),
+    ).toBe(true);
   });
 
   it("validates requested Spaces before reading Project-Space relations", () => {

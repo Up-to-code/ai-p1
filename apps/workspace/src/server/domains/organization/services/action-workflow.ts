@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
 import { logger } from "@/lib/logger";
-import { fetchAuthMutation } from "@/server/auth/convex-auth";
+import { fetchAuthMutation } from "@/server/auth/auth-request";
 import { assertCanUseOrganizationResource } from "@/server/utils/organization/access-checker";
 import { OrganizationActionError } from "../errors/action-error";
 import type {

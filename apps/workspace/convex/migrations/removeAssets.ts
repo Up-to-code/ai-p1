@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
-import { authUser } from "../auth";
+import { getAuthUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 
 const MIGRATION_KEY = "remove-assets-2026-06-agency-client-ops";
@@ -40,7 +40,7 @@ export const archiveLegacyAssets = mutation({
     patchedMediaFolders: v.number(),
   }),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "organization", "update");
 
     const limit = Math.min(Math.max(args.limit ?? 100, 1), 500);

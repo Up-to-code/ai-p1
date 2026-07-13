@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { authUser } from "../auth";
+import { getAuthUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { invoiceInputValidator, invoiceValidator } from "./validators";
 
@@ -9,7 +9,7 @@ const present = <T extends { _id: string }>(row: T) => ({ ...row, id: row._id })
 export const createFromHono = mutation({
   args: { organizationId: v.string(), input: invoiceInputValidator }, returns: invoiceValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const now = Date.now();
     const id = await ctx.db.insert("clientInvoices", { organizationId: args.organizationId, ...args.input, createdByUserId: user._id, createdAt: now, updatedAt: now });
@@ -21,7 +21,7 @@ export const createFromHono = mutation({
 export const updateFromHono = mutation({
   args: { organizationId: v.string(), invoiceId: v.id("clientInvoices"), input: invoiceInputValidator }, returns: invoiceValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.invoiceId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Invoice was not found.");
@@ -34,7 +34,7 @@ export const updateFromHono = mutation({
 export const deleteFromHono = mutation({
   args: { organizationId: v.string(), invoiceId: v.id("clientInvoices") }, returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.invoiceId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Invoice was not found.");

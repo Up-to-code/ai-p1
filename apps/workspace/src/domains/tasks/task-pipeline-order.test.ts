@@ -167,10 +167,10 @@ describe("task-pipeline-order", () => {
       expect(values.tags).toBe("");
     });
 
-    it("defaults visibility to team when undefined", () => {
+    it("defaults an unscoped Task to organization visibility when undefined", () => {
       const task = makeTask({ id: "t1", visibility: undefined });
       const values = taskFormValuesForPipeline(task, "todo", 1);
-      expect(values.visibility).toBe("team");
+      expect(values.visibility).toBe("workspace");
     });
   });
 });

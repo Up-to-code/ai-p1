@@ -1,18 +1,20 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/toast";
 import { useNavigation } from "@/domains/navigation";
 import {
   createTaskRequest,
   updateTaskRequest,
   deleteTaskRequest,
+  bulkTasksRequest,
   taskFormValuesFromRecord,
 } from "../api/tasks";
 import { nextTaskPipelineOrder, taskFormValuesForPipeline } from "../task-pipeline-order";
 import { defaultTaskVisibility } from "../task-visibility";
 import type { TaskFormValues, TaskRecord, TaskStatus, TaskPriority, TaskVisibility } from "../tasks.types";
+import type { TaskBulkAction } from "../workspace/task-bulk";
 
 export interface CreateTaskInput {
   title: string;
@@ -39,7 +41,6 @@ export function patchTaskInListData(
 }
 
 export function useTaskMutations(organizationId: string) {
-  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { projectId: navProjectId } = useNavigation();
   const { spaceId: navSpaceId } = useNavigation();
@@ -75,10 +76,6 @@ export function useTaskMutations(organizationId: string) {
     setPatchVersion((v) => v + 1);
   }, []);
 
-  const invalidate = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: ["tasks", organizationId] });
-  }, [queryClient, organizationId]);
-
   // ── Create ──────────────────────────────────────────────────────────────
 
   const createTaskMutation = useMutation({
@@ -102,7 +99,6 @@ export function useTaskMutations(organizationId: string) {
     },
     onSuccess: () => {
       toast({ title: "Task created.", type: "success" });
-      invalidate();
     },
     onError: () => {
       toast({ title: "Failed to create task", type: "error" });
@@ -135,7 +131,6 @@ export function useTaskMutations(organizationId: string) {
     },
     onSuccess: (_data, { task }) => {
       removePatch(task.id);
-      invalidate();
     },
   });
 
@@ -164,7 +159,6 @@ export function useTaskMutations(organizationId: string) {
     },
     onSuccess: (_data, { task }) => {
       removePatch(task.id);
-      invalidate();
     },
   });
 
@@ -189,13 +183,36 @@ export function useTaskMutations(organizationId: string) {
     },
     onSuccess: (_data, task) => {
       removePatch(task.id);
-      invalidate();
     },
   });
 
   const deleteTask = useCallback(
     async (task: { id: string }) => deleteTaskMutation.mutateAsync(task),
     [deleteTaskMutation],
+  );
+
+  const bulkTaskMutation = useMutation({
+    mutationFn: ({ action, taskIds }: { action: TaskBulkAction; taskIds: string[] }) =>
+      bulkTasksRequest(organizationId, action, taskIds),
+    onSuccess: (result) => {
+      const label = result.action === "complete" ? "completed" : "deleted";
+      if (result.failed === 0) {
+        toast({ title: `${result.succeeded} task(s) ${label}.`, type: "success" });
+      } else if (result.succeeded > 0) {
+        toast({ title: `${result.succeeded} ${label}; ${result.failed} skipped.`, type: "warning" });
+      } else {
+        toast({ title: `No tasks were ${label}.`, type: "error" });
+      }
+    },
+    onError: () => {
+      toast({ title: "Bulk Task action failed.", type: "error" });
+    },
+  });
+
+  const bulkTasks = useCallback(
+    (action: TaskBulkAction, taskIds: string[]) =>
+      bulkTaskMutation.mutateAsync({ action, taskIds }),
+    [bulkTaskMutation],
   );
 
   // ── Move (pipeline) ─────────────────────────────────────────────────────
@@ -227,7 +244,6 @@ export function useTaskMutations(organizationId: string) {
     },
     onSuccess: (_data, { task }) => {
       removePatch(task.id);
-      invalidate();
     },
   });
 
@@ -244,12 +260,14 @@ export function useTaskMutations(organizationId: string) {
     saveTask,
     deleteTask,
     moveTask,
+    bulkTasks,
     // TanStack mutation objects (for consumers needing isPending/isError)
     createTaskMutation,
     updateTaskMutation,
     saveTaskMutation,
     deleteTaskMutation,
     moveTaskMutation,
+    bulkTaskMutation,
     // Optimistic helpers (for Convex-based readers)
     applyOptimistic,
   };

@@ -15,7 +15,7 @@ import {
   fetchAuthAction,
   fetchAuthMutation,
   fetchAuthQuery,
-} from "@/server/auth/convex-auth";
+} from "@/server/auth/auth-request";
 import {
   callBetterAuth,
   getAuthRequestSession,

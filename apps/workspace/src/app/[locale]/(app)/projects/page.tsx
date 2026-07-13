@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 
-import { SpacesRouter } from "@/domains/projects/components/spaces-router";
 import { ProjectsPageRedesigned } from "@/domains/projects/components/ProjectsPageRedesigned";
 import { ProjectsPageSkeleton } from "@/domains/projects/components/projects-page-skeleton";
 

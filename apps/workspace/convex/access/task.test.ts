@@ -2,11 +2,9 @@ import { ConvexError } from "convex/values";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../auth", () => ({
-  authUser: {
-    safeGetAuthUser: vi.fn(async (ctx: { actorUserId?: string }) =>
+  safeGetAuthUser: vi.fn(async (ctx: { actorUserId?: string }) =>
       ctx.actorUserId ? { _id: ctx.actorUserId } : null,
     ),
-  },
 }));
 
 import { resolveTaskAccess } from "./task";
@@ -39,6 +37,7 @@ function fakeCtx(input: {
         withIndex: vi.fn((_name: string, build: (q: typeof chain) => unknown) => {
           build(chain);
           return {
+            collect: vi.fn(async () => tableRows(table)),
             take: vi.fn(async () => tableRows(table)),
             first: vi.fn(async () => tableRows(table)[0] ?? null),
           };
@@ -136,12 +135,102 @@ describe("Task access Interface", () => {
     expect(await assigneeAccess.canDelete(privateTask as never)).toBe(false);
   });
 
+  it("lets only the creator share a private Task", async () => {
+    const creatorAccess = await resolveTaskAccess(fakeCtx({
+      actorUserId: "creator",
+      organizationRole: "member",
+    }) as never, "org_1");
+    const assigneeAccess = await resolveTaskAccess(fakeCtx({
+      actorUserId: "assignee",
+      organizationRole: "member",
+    }) as never, "org_1");
+    const privateTask = task({
+      id: "private",
+      visibility: "private",
+      createdByUserId: "creator",
+      assigneeUserId: "assignee",
+    });
+
+    await expect(creatorAccess.assertCanShare(privateTask as never, "workspace")).resolves.toBeUndefined();
+    await expect(assigneeAccess.assertCanShare(privateTask as never, "private")).resolves.toBeUndefined();
+    await expect(assigneeAccess.assertCanShare(privateTask as never, "workspace")).rejects.toBeInstanceOf(ConvexError);
+  });
+
+  it("keeps organization-visible Tasks collaborative across narrower parent links", async () => {
+    const records = { private_project: project("private_project", "private") };
+    const member = await resolveTaskAccess(fakeCtx({
+      actorUserId: "member",
+      organizationRole: "member",
+      records,
+    }) as never, "org_1");
+    const workspaceTask = task({
+      id: "workspace",
+      projectId: "private_project",
+      visibility: "workspace",
+    });
+
+    expect(await member.canRead(workspaceTask as never)).toBe(true);
+    expect(await member.canUpdate(workspaceTask as never)).toBe(true);
+    await expect(member.assertCanCreate({
+      projectId: "private_project",
+      visibility: "workspace",
+    })).resolves.toBeUndefined();
+  });
+
+  it("lets a private Task assignee read its contents without parent membership", async () => {
+    const records = { private_project: project("private_project", "private") };
+    const assignee = await resolveTaskAccess(fakeCtx({
+      actorUserId: "assignee",
+      organizationRole: "member",
+      records,
+    }) as never, "org_1");
+    const privateTask = task({
+      id: "private",
+      projectId: "private_project",
+      visibility: "private",
+      createdByUserId: "creator",
+      assigneeUserId: "assignee",
+    });
+
+    expect(await assignee.canRead(privateTask as never)).toBe(true);
+    expect(await assignee.canUpdate(privateTask as never)).toBe(true);
+  });
+
   it("filters My Tasks and aggregate inputs before any caller can expose private work", async () => {
     const access = await resolveTaskAccess(fakeCtx({ actorUserId: "actor", organizationRole: "member" }) as never, "org_1");
     const visibleMine = task({ id: "mine", visibility: "private", assigneeUserId: "actor" });
     const hiddenOther = task({ id: "other", visibility: "private", assigneeUserId: "other" });
     const visibleWorkspace = task({ id: "workspace", visibility: "workspace" });
     expect((await access.filterReadable([visibleMine, hiddenOther, visibleWorkspace] as never)).map((row) => row._id)).toEqual(["mine", "workspace"]);
+  });
+
+  it("lets Organization members read, update, and assign organization-visible Tasks", async () => {
+    const member = await resolveTaskAccess(fakeCtx({
+      actorUserId: "member",
+      organizationRole: "member",
+    }) as never, "org_1");
+    const workspaceTask = task({ id: "workspace", visibility: "workspace" });
+
+    expect(await member.canRead(workspaceTask as never)).toBe(true);
+    expect(await member.canUpdate(workspaceTask as never)).toBe(true);
+  });
+
+  it("treats legacy unscoped Tasks without a valid team scope as organization-visible", async () => {
+    const member = await resolveTaskAccess(fakeCtx({
+      actorUserId: "member",
+      organizationRole: "member",
+    }) as never, "org_1");
+    const legacyTask = {
+      ...task({ id: "legacy" }),
+      visibility: undefined,
+      projectId: undefined,
+      spaceId: undefined,
+    };
+
+    expect(await member.canRead(legacyTask as never)).toBe(true);
+    expect(await member.canUpdate(legacyTask as never)).toBe(true);
+    expect(await member.canRead(task({ id: "legacy-team", visibility: "team" }) as never)).toBe(true);
+    expect(await member.canUpdate(task({ id: "legacy-team", visibility: "team" }) as never)).toBe(true);
   });
 
   it("fails closed for oversized visibility, invalid linked scope, cross-org records, and revoked membership", async () => {
@@ -153,8 +242,8 @@ describe("Task access Interface", () => {
       actorUserId: "member", organizationRole: "member",
       projectMemberships: [{ projectId: "private_project", role: "member" }], records,
     }) as never, "org_1");
-    await expect(member.assertCanCreate({ projectId: "private_project", visibility: "workspace" })).rejects.toBeInstanceOf(ConvexError);
-    expect(await member.canRead(task({ id: "oversized", projectId: "private_project", visibility: "workspace" }) as never)).toBe(false);
+    await expect(member.assertCanCreate({ projectId: "private_project", visibility: "team" })).rejects.toBeInstanceOf(ConvexError);
+    expect(await member.canRead(task({ id: "oversized", projectId: "private_project", visibility: "team" }) as never)).toBe(false);
     await expect(member.assertValidLinks({ projectId: "foreign_project" })).rejects.toBeInstanceOf(ConvexError);
     await expect(member.assertValidLinks({ projectId: "private_project", spaceId: "foreign_project" })).rejects.toBeInstanceOf(ConvexError);
     expect(await member.canRead(task({ id: "foreign", organizationId: "org_2", visibility: "workspace" }) as never)).toBe(false);

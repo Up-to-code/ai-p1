@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { authUser } from "../../auth";
+import { getAuthUser } from "../../auth";
 import { assertOrganizationResourcePermission } from "../profile/access";
 import { findInviteLinkByTokenHash, toPublicInviteLink } from "./data";
 import {
@@ -24,7 +24,7 @@ export const createInviteLinkFromHono = mutation({
   },
   returns: organizationInviteLinkValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
 
     const existing = await findInviteLinkByTokenHash(ctx, args.input.tokenHash);
@@ -75,7 +75,7 @@ export const createInviteLinkFromToken = mutation({
     }
 
     const tokenHash = await hashInviteToken(token);
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
 
     const existing = await findInviteLinkByTokenHash(ctx, tokenHash);
@@ -170,7 +170,7 @@ export const cancelInviteLinkFromHono = mutation({
   },
   returns: organizationInviteLinkValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
     const inviteLink = await ctx.db.get(args.inviteLinkId);
     const now = Date.now();

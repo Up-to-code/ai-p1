@@ -1,28 +1,10 @@
-"use client";
-
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, SearchX } from "lucide-react";
-import { useLocale } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
-export default function NotFound() {
-  const locale = useLocale();
-  const isAr = locale === "ar";
-  const labels = isAr
-    ? {
-        eyebrow: "المسار غير متاح",
-        helper: "صفحة مساحة العمل المطلوبة غير متاحة.",
-        title: "الصفحة غير موجودة",
-        description: "قد يكون الرابط قديمًا أو تم نقل الصفحة. افتح لوحة التحكم للمتابعة من مساحة العمل الرئيسية.",
-        dashboard: "فتح لوحة التحكم",
-      }
-    : {
-        eyebrow: "Route unavailable",
-        helper: "The requested workspace page is not available.",
-        title: "Page not found",
-        description: "This link may be outdated, or the workspace route may have moved. Open the dashboard to continue from the main operating view.",
-        dashboard: "Open dashboard",
-      };
+export default async function NotFound() {
+  const t = await getTranslations("NotFound");
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-text-primary">
@@ -35,8 +17,8 @@ export default function NotFound() {
             <SearchX className="h-4.5 w-4.5" aria-hidden="true" />
           </span>
           <div>
-            <p className="text-[12px] font-bold text-text-primary">{labels.eyebrow}</p>
-            <p className="text-[12px] font-medium text-text-muted">{labels.helper}</p>
+            <p className="text-[12px] font-bold text-text-primary">{t("eyebrow")}</p>
+            <p className="text-[12px] font-medium text-text-muted">{t("helper")}</p>
           </div>
         </div>
 
@@ -44,17 +26,17 @@ export default function NotFound() {
           404
         </p>
         <h1 id="not-found-title" className="mt-8 text-4xl font-semibold leading-tight tracking-0 text-text-primary sm:text-6xl">
-          {labels.title}
+          {t("title")}
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-base font-medium leading-7 text-text-secondary">
-          {labels.description}
+          {t("description")}
         </p>
 
         <div className="mt-9 flex flex-col-reverse gap-3 sm:flex-row sm:justify-center">
           <Link href="/ws">
             <Button className="h-12 w-full gap-2 rounded-full px-6 text-sm shadow-none sm:w-auto">
               <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
-              {labels.dashboard}
+              {t("dashboard")}
             </Button>
           </Link>
         </div>

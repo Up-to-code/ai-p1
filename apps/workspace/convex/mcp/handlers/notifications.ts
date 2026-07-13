@@ -5,7 +5,7 @@ import { type WriteHandler, type WriteToolArgs, audit } from "./shared";
 import { scopeActorUserId } from "../scopePolicy";
 
 export const notificationsSchedule: WriteHandler = async (ctx: MutationCtx, args: WriteToolArgs) => {
-  const actorId = scopeActorUserId(args.input);
+  const actorId = scopeActorUserId(args.scopePolicy);
   const id = await ctx.db.insert("notificationSchedules", {
     organizationId: args.organizationId,
     ownerUserId: actorId,
@@ -26,7 +26,7 @@ export const notificationsSchedule: WriteHandler = async (ctx: MutationCtx, args
 };
 
 export const notificationsUpdateSchedule: WriteHandler = async (ctx: MutationCtx, args: WriteToolArgs) => {
-  const actorId = scopeActorUserId(args.input);
+  const actorId = scopeActorUserId(args.scopePolicy);
   const scheduleId = requiredString(args.input, "scheduleId") as Id<"notificationSchedules">;
   const existing = await ctx.db.get(scheduleId);
   if (!existing || existing.organizationId !== args.organizationId || existing.ownerUserId !== actorId) {
@@ -48,7 +48,7 @@ export const notificationsUpdateSchedule: WriteHandler = async (ctx: MutationCtx
 };
 
 export const notificationsCancelSchedule: WriteHandler = async (ctx: MutationCtx, args: WriteToolArgs) => {
-  const actorId = scopeActorUserId(args.input);
+  const actorId = scopeActorUserId(args.scopePolicy);
   const scheduleId = requiredString(args.input, "scheduleId") as Id<"notificationSchedules">;
   const existing = await ctx.db.get(scheduleId);
   if (!existing || existing.organizationId !== args.organizationId || existing.ownerUserId !== actorId) {

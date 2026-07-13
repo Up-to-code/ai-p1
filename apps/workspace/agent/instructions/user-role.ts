@@ -1,9 +1,10 @@
 import { defineDynamic, defineInstructions } from "eve/instructions";
+import { getWorkspaceActor } from "../lib/workspace-actor";
 
 export default defineDynamic({
   events: {
     "session.started": async (_event, ctx) => {
-      const role = ctx.session.auth.current?.attributes?.role ?? "member";
+      const role = getWorkspaceActor(ctx)?.role ?? "member";
       return defineInstructions({
         markdown: [
           "## Your effective role",

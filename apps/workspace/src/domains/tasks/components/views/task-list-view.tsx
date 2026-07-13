@@ -31,6 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { TaskRecord, TaskStatus } from "../../tasks.types";
+import type { TaskQuickCreateCommand } from "../../workspace/task-quick-create";
 import {
   STATUSES,
   STATUS_DOT,
@@ -46,11 +47,6 @@ function plainText(value: string | undefined) {
     .trim();
 }
 
-type TaskCreateDefaults = Pick<
-  Partial<TaskRecord>,
-  "status" | "priority" | "assigneeUserId" | "dueDate" | "tags"
->;
-
 type TaskListViewProps = {
   tasks: TaskRecord[];
   statusFilter?: TaskStatus | "all";
@@ -60,10 +56,7 @@ type TaskListViewProps = {
     task: TaskRecord,
     changes: Partial<TaskRecord>,
   ) => void | Promise<void>;
-  onTaskCreate?: (
-    title: string,
-    defaults?: TaskCreateDefaults,
-  ) => void | Promise<void>;
+  onTaskCreate?: TaskQuickCreateCommand;
   onTaskMove?: (
     itemId: string,
     fromStage: string,
@@ -125,7 +118,7 @@ function AddTaskRow({
     if (!nextTitle || saving) return;
     setSaving(true);
     try {
-      await onTaskCreate?.(nextTitle, { status });
+      await onTaskCreate?.({ title: nextTitle, status });
       setTitle("");
       setEditing(false);
     } finally {

@@ -1,12 +1,12 @@
 import { defineDynamic, defineInstructions } from "eve/instructions";
 import { memoryStore } from "../lib/memory-store";
-import { requireTenantCaller } from "../lib/tenant";
+import { requireWorkspaceActor } from "../lib/workspace-actor";
 
 export default defineDynamic({
   events: {
     "turn.started": async (_event, ctx) => {
       try {
-        const scope = requireTenantCaller(ctx as any);
+        const scope = requireWorkspaceActor(ctx as any);
         const memories = await memoryStore.list(scope, { limit: 50 });
 
         if (memories.length === 0) return null;

@@ -1,6 +1,6 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 import { requireOrganizationAction, recordOrganizationAction } from "../../../lib/action-workflow";
 import { listOrganizationMembers, removeOrganizationMember } from "../../../lib/better-auth-org";
 import { assertCanRemoveMember } from "../../../lib/access-policy";
@@ -11,12 +11,11 @@ export default defineTool({
     memberIdOrEmail: z.string().min(1),
   }).passthrough(),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId, userId } = requireWorkspaceActor(ctx);
     await requireOrganizationAction(ctx, organizationId, "member", "delete");
     const members = await listOrganizationMembers(ctx, organizationId);
-    const userId = ctx.session.auth.current?.attributes?.userId;
     assertCanRemoveMember({
-      currentUserId: (typeof userId === "string" ? userId : ""),
+      currentUserId: userId,
       targetMemberIdOrEmail: args.memberIdOrEmail,
       members,
     });

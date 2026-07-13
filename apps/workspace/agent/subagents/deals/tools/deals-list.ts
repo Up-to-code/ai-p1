@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "../../../lib/convex";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 
 export default defineTool({
   description: "List deals, optionally filtered by stage.",
@@ -12,7 +12,7 @@ export default defineTool({
     limit: z.number().int().min(1).max(50).optional(),
   }).passthrough(),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     return fetchAuthQuery(ctx, api.deals.read.list, {
       organizationId,
       stage: args.stage,

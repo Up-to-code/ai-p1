@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "../../../lib/convex";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 import { compact } from "../../../lib/helpers";
 
 export default defineTool({
@@ -13,7 +13,7 @@ export default defineTool({
     limit: z.number().int().min(1).max(50).optional(),
   }),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     const docs = await fetchAuthQuery(ctx, api.clientDocs.read.list, {
       organizationId,
       projectId: args.projectId,

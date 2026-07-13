@@ -2,7 +2,7 @@ import { ConvexError, v } from "convex/values";
 import { mutation } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import { resolveSpaceAccess } from "../access/space";
-import { authUser } from "../auth";
+import { getAuthUser } from "../auth";
 import { assertCanPerformSpaceAction } from "../permissions";
 import { presentWorkspaceRecord, stripDeletedFields } from "../shared/present";
 import { spaceInputValidator, spaceValidator } from "./validators";
@@ -81,7 +81,7 @@ export const update = mutation({
   },
   returns: spaceValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertCanPerformSpaceAction(ctx, args.organizationId, args.spaceId, user._id, "update");
 
     const existing = await ctx.db.get(args.spaceId);
@@ -129,7 +129,7 @@ export const remove = mutation({
   },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertCanPerformSpaceAction(ctx, args.organizationId, args.spaceId, user._id, "delete");
 
     const existing = await ctx.db.get(args.spaceId);

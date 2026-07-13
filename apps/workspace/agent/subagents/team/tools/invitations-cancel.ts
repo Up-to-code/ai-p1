@@ -1,6 +1,6 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 import { requireOrganizationAction, recordOrganizationAction } from "../../../lib/action-workflow";
 import { revokeOrganizationInvitation } from "../../../lib/better-auth-org";
 
@@ -10,7 +10,7 @@ export default defineTool({
     invitationId: z.string().min(1),
   }).passthrough(),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     await requireOrganizationAction(ctx, organizationId, "member", "create");
     const result = await revokeOrganizationInvitation(ctx, organizationId, args.invitationId);
     await recordOrganizationAction(ctx, organizationId, {

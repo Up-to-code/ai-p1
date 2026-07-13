@@ -1,4 +1,11 @@
-/** True when the locale uses right-to-left layout. */
-export function isRtlLocale(locale: string): boolean {
-  return locale === "ar";
-}
+export {
+  DEFAULT_LOCALE,
+  SUPPORTED_LOCALES,
+  getLocaleDefinition,
+  getLocaleDirection,
+  isLocale,
+  isRtlLocale,
+  normalizeLocale,
+  type Locale,
+  type LocaleDirection,
+} from "@/i18n/locale-registry";

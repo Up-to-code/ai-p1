@@ -2,11 +2,9 @@ import { ConvexError } from "convex/values";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../auth", () => ({
-  authUser: {
-    safeGetAuthUser: vi.fn(async (ctx: { actorUserId?: string }) =>
+  safeGetAuthUser: vi.fn(async (ctx: { actorUserId?: string }) =>
       ctx.actorUserId ? { _id: ctx.actorUserId } : null,
     ),
-  },
 }));
 
 import { resolveSpaceAccess } from "./space";
@@ -20,6 +18,7 @@ function fakeCtx(input: {
 }) {
   const memberships = (input.memberSpaceIds ?? []).map((spaceId) => ({
     spaceId,
+    role: "member" as const,
     recordState: "active",
   }));
   const chain = {
@@ -36,7 +35,10 @@ function fakeCtx(input: {
       query: vi.fn(() => ({
         withIndex: vi.fn((_name: string, build: (q: typeof chain) => unknown) => {
           build(chain);
-          return { take: vi.fn(async () => memberships) };
+          return {
+            collect: vi.fn(async () => memberships),
+            take: vi.fn(async () => memberships),
+          };
         }),
       })),
     },
@@ -173,5 +175,26 @@ describe("Space access Interface", () => {
     ).rejects.toMatchObject({
       data: { code: "AUTHENTICATION_REQUIRED" },
     });
+  });
+
+  it("does not silently truncate actors with more than 500 Space memberships", async () => {
+    const memberSpaceIds = Array.from(
+      { length: 601 },
+      (_, index) => `space_${index}`,
+    );
+    const access = await resolveSpaceAccess(
+      fakeCtx({
+        actorUserId: "member_1",
+        role: "member",
+        memberSpaceIds,
+      }) as never,
+      "org_1",
+    );
+
+    expect(
+      access.canRead(
+        space({ id: "space_600", visibility: "private" }) as never,
+      ),
+    ).toBe(true);
   });
 });

@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "../../../lib/convex";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 
 export default defineTool({
   description:
@@ -14,7 +14,7 @@ export default defineTool({
     })
     .passthrough(),
   async execute(args, ctx) {
-    requireOrgId(ctx);
+    requireWorkspaceActor(ctx);
     const messages = await fetchAuthQuery(ctx, api.inbox.read.listMessages, {
       channelId: args.channelId,
       limit: args.limit ?? 50,

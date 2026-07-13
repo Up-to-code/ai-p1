@@ -1,6 +1,6 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { brandDomainUrl } from "@qentrah/brand-identity";
+import { resolveWorkspaceAuthEntry } from "@/domains/auth/utils/workspace-auth-entry";
+import { isAuthenticated } from "@/server/auth/auth-request";
 
 export default async function WorkspaceHome({
   params,
@@ -9,18 +9,6 @@ export default async function WorkspaceHome({
 }) {
   const { locale } = await params;
 
-  let isAuthenticated = false;
-
-  try {
-    const cookieStore = await cookies();
-    isAuthenticated = cookieStore.has("better-auth.session_token");
-  } catch {
-    isAuthenticated = false;
-  }
-
-  if (isAuthenticated) {
-    redirect(`/${locale}/ws`);
-  }
-
-  redirect(new URL(`/${locale}`, brandDomainUrl("root")).toString());
+  const authenticated = await isAuthenticated().catch(() => false);
+  redirect(resolveWorkspaceAuthEntry(locale, authenticated));
 }

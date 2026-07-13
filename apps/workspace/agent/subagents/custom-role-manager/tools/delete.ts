@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "../../../lib/convex";
-import { requireOrgId } from "../../../lib/org-context";
+import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 import { requireOrganizationAction, recordOrganizationAction } from "../../../lib/action-workflow";
 import { listOrganizationMembers, listOrganizationInvitations, listOrganizationRoles, deleteOrganizationRole } from "../../../lib/better-auth-org";
 import { assertCanDeleteRole } from "../../../lib/access-policy";
@@ -13,7 +13,7 @@ export default defineTool({
     roleId: z.string().min(1),
   }).passthrough(),
   async execute(args, ctx) {
-    const organizationId = requireOrgId(ctx);
+    const { organizationId } = requireWorkspaceActor(ctx);
     await requireOrganizationAction(ctx, organizationId, "role", "delete");
     const [members, invitations, roles] = await Promise.all([
       listOrganizationMembers(ctx, organizationId),

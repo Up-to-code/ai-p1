@@ -107,6 +107,7 @@
     "extend": "^3.0.0",
     "framer-motion": "^12.38.0",
     "gridstack": "^12.6.0",
+    "gsap": "^3.15.0",
     "hono": "^4.12.18",
     "idb": "^8.0.3",
     "is-plain-obj": "^4.0.0",

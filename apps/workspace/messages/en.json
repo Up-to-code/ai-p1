@@ -4516,5 +4516,14 @@
     "noProjectFound": "No project found.",
     "viewAllProjects": "View all projects",
     "createNewProject": "Create new project"
+  },
+  "NotFound": {
+    "metadataTitle": "Page not found",
+    "metadataDescription": "The requested workspace page is not available.",
+    "eyebrow": "Route unavailable",
+    "helper": "The requested workspace page is not available.",
+    "title": "Page not found",
+    "description": "This link may be outdated, or the workspace route may have moved. Open the dashboard to continue from the main operating view.",
+    "dashboard": "Open dashboard"
   }
 }

@@ -1,4 +1,5 @@
 import type { ToolContext } from "eve/tools";
+import { requireWorkspaceActorToken } from "./workspace-actor";
 
 type OrganizationRole = { id: string; role: string; key?: string };
 type OrganizationMember = { id: string; userId: string; role: string };
@@ -7,9 +8,7 @@ type OrganizationInvitation = { id: string; role: string; status?: string };
 const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 function getSessionToken(ctx: ToolContext): string {
-  const token = ctx.session.auth.current?.attributes?.sessionToken;
-  if (typeof token === "string" && token.length > 0) return token;
-  throw new Error("A Better Auth session token is required.");
+  return requireWorkspaceActorToken(ctx, "sessionToken");
 }
 
 async function betterAuthFetch<T>(

@@ -7,6 +7,8 @@ import type { WorkOsPickerOption } from "@/domains/work-os/components/work-os-re
 import { TaskTableView } from "./task-table-view";
 import { TaskBoardView } from "./task-board-view";
 import { TaskListView } from "./task-list-view";
+import type { TaskQuickCreateCommand } from "../../workspace/task-quick-create";
+import type { TaskBulkCommand } from "../../workspace/task-bulk";
 
 interface TaskViewFrameProps {
   tab: ViewItem;
@@ -21,13 +23,14 @@ interface TaskViewFrameProps {
   currentUserId?: string;
   memberOptions?: WorkOsPickerOption[];
   onTaskOpen?: (taskId: string) => void;
-  onTaskCreate?: (title: string, defaults?: Pick<Partial<TaskRecord>, "status" | "priority" | "assigneeUserId" | "dueDate" | "tags">) => void | Promise<void>;
+  onTaskCreate?: TaskQuickCreateCommand;
+  onTasksBulk?: TaskBulkCommand;
 }
 
-export function TaskViewFrame({ tab, tasks, stages, organizationId, projectId, spaceId, onCardMove, onTaskUpdate, onTaskDelete, currentUserId, memberOptions, onTaskOpen, onTaskCreate }: TaskViewFrameProps) {
+export function TaskViewFrame({ tab, tasks, stages, organizationId, projectId, spaceId, onCardMove, onTaskUpdate, onTaskDelete, currentUserId, memberOptions, onTaskOpen, onTaskCreate, onTasksBulk }: TaskViewFrameProps) {
   switch (tab.type) {
     case "table":
-      return <TaskTableView tasks={tasks} organizationId={organizationId} projectId={projectId} spaceId={spaceId} memberOptions={memberOptions} onTaskOpen={onTaskOpen} onTaskUpdate={onTaskUpdate} onTaskDelete={onTaskDelete} onTaskCreate={onTaskCreate} onTaskMove={onCardMove} />;
+      return <TaskTableView tasks={tasks} organizationId={organizationId} projectId={projectId} spaceId={spaceId} memberOptions={memberOptions} onTaskOpen={onTaskOpen} onTaskUpdate={onTaskUpdate} onTaskDelete={onTaskDelete} onTaskCreate={onTaskCreate} onTaskMove={onCardMove} onTasksBulk={onTasksBulk} />;
     case "board":
       return <TaskBoardView tasks={tasks} stages={stages} organizationId={organizationId} onCardMove={onCardMove} onTaskCreate={onTaskCreate} onTaskUpdate={onTaskUpdate} onTaskDelete={onTaskDelete} onTaskOpen={onTaskOpen} currentUserId={currentUserId} />;
     case "list":

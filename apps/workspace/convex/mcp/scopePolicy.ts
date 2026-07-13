@@ -11,7 +11,6 @@ import {
 } from "../permissions";
 import type { McpAction, McpResource, McpScope } from "./validators";
 
-const INTERNAL_POLICY_KEY = "__qentrahMcpScopePolicy";
 const MAX_SCOPE_LINKS = 5_000;
 
 type ScopeCtx = Pick<QueryCtx, "auth" | "db" | "runQuery">;
@@ -31,7 +30,7 @@ export type EffectiveScopePolicy = Readonly<{
   clientIds: Id<"clients">[];
 }>;
 
-type PolicyEnvelope = {
+export type ScopePolicyContext = {
   organizationId: string;
   actorUserId: string;
   scopeType: McpScope["type"];
@@ -357,11 +356,10 @@ export async function assertToolCallInScope(
   }
 }
 
-export function attachScopePolicyInput(
-  input: Record<string, unknown>,
+export function scopePolicyContext(
   policy: EffectiveScopePolicy,
-): Record<string, unknown> {
-  const envelope: PolicyEnvelope = {
+): ScopePolicyContext {
+  return {
     organizationId: policy.organizationId,
     actorUserId: policy.actorUserId,
     scopeType: policy.scope.type,
@@ -369,38 +367,29 @@ export function attachScopePolicyInput(
     projectIds: policy.projectIds,
     clientIds: policy.clientIds,
   };
-  return { ...input, [INTERNAL_POLICY_KEY]: envelope };
 }
 
-export function scopePolicyFromInput(input: Record<string, unknown>): PolicyEnvelope {
-  const value = input[INTERNAL_POLICY_KEY];
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return scopeError("MCP_SCOPE_REQUIRED", "The MCP scope policy was not supplied by the server.");
-  }
-  return value as PolicyEnvelope;
+export function scopeActorUserId(policy: ScopePolicyContext) {
+  return policy.actorUserId;
 }
 
-export function scopeActorUserId(input: Record<string, unknown>) {
-  return scopePolicyFromInput(input).actorUserId;
-}
-
-export function isScopedProject(policy: PolicyEnvelope, projectId: unknown) {
+export function isScopedProject(policy: ScopePolicyContext, projectId: unknown) {
   return policy.scopeType === "organization" ||
     (typeof projectId === "string" && policy.projectIds.includes(projectId));
 }
 
-export function isScopedSpace(policy: PolicyEnvelope, spaceId: unknown) {
+export function isScopedSpace(policy: ScopePolicyContext, spaceId: unknown) {
   return policy.scopeType === "organization" ||
     (typeof spaceId === "string" && policy.spaceIds.includes(spaceId));
 }
 
-export function isScopedClient(policy: PolicyEnvelope, clientId: unknown) {
+export function isScopedClient(policy: ScopePolicyContext, clientId: unknown) {
   return policy.scopeType === "organization" ||
     (typeof clientId === "string" && policy.clientIds.includes(clientId));
 }
 
 export function isScopedResourceLink(
-  policy: PolicyEnvelope,
+  policy: ScopePolicyContext,
   value: { projectId?: unknown; spaceId?: unknown },
 ) {
   if (policy.scopeType === "organization") return true;
@@ -409,7 +398,7 @@ export function isScopedResourceLink(
 }
 
 export function projectVisibilityForMcpCreate(
-  scopeType: PolicyEnvelope["scopeType"],
+  scopeType: ScopePolicyContext["scopeType"],
   defaultVisibility: "private" | "space_members" | "organization" | undefined,
 ) {
   if (scopeType === "organization") return "organization" as const;

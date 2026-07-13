@@ -12,38 +12,58 @@ import {
   upsertCustomFieldValue,
   deleteCustomFieldValue,
 } from "../services/custom-fields";
-import { customFieldDefinitionSchema, customFieldValueSchema } from "../validation/custom-field.schema";
+import {
+  customFieldDefinitionSchema,
+  customFieldRecordTypeSchema,
+  customFieldValueSchema,
+} from "../validation/custom-field.schema";
+
+function parseRecordType(c: Context) {
+  return customFieldRecordTypeSchema.safeParse(c.req.param("recordType"));
+}
 
 export async function handleListCustomFieldDefinitions(c: Context) {
   const org = requireOrganizationId(c);
   if (!org.ok) return org.response;
-  const recordType = c.req.query("recordType");
-  const definitions = await listCustomFieldDefinitions(org.organizationId, recordType);
+  const rawRecordType = c.req.query("recordType");
+  const recordType = rawRecordType
+    ? customFieldRecordTypeSchema.safeParse(rawRecordType)
+    : null;
+  if (recordType && !recordType.success) {
+    return c.json({ error: "Invalid record type" }, 400);
+  }
+  const definitions = await listCustomFieldDefinitions(
+    org.organizationId,
+    recordType?.data,
+  );
   return c.json({ definitions });
 }
 
 export async function handleListCustomFieldDefinitionsForTable(c: Context) {
   const org = requireOrganizationId(c);
   if (!org.ok) return org.response;
-  const recordType = c.req.param("recordType")!;
-  const definitions = await listCustomFieldDefinitionsForTable(org.organizationId, recordType);
+  const recordType = parseRecordType(c);
+  if (!recordType.success) return c.json({ error: "Invalid record type" }, 400);
+  const definitions = await listCustomFieldDefinitionsForTable(org.organizationId, recordType.data);
   return c.json({ definitions });
 }
 
 export async function handleListCustomFieldValues(c: Context) {
   const org = requireOrganizationId(c);
   if (!org.ok) return org.response;
-  const recordType = c.req.param("recordType")!;
+  const recordType = parseRecordType(c);
+  if (!recordType.success) return c.json({ error: "Invalid record type" }, 400);
   const recordId = c.req.param("recordId")!;
-  const values = await listCustomFieldValues(org.organizationId, recordType, recordId);
+  const values = await listCustomFieldValues(org.organizationId, recordType.data, recordId);
   return c.json({ values });
 }
 
 export async function handleListAllCustomFieldValues(c: Context) {
   const org = requireOrganizationId(c);
   if (!org.ok) return org.response;
-  const recordType = c.req.param("recordType")!;
-  const values = await listAllCustomFieldValues(org.organizationId, recordType);
+  const recordType = parseRecordType(c);
+  if (!recordType.success) return c.json({ error: "Invalid record type" }, 400);
+  const values = await listAllCustomFieldValues(org.organizationId, recordType.data);
   return c.json({ values });
 }
 

@@ -12,7 +12,7 @@ vi.mock("@convex/_generated/api", () => ({
   },
 }));
 
-vi.mock("@/server/auth/convex-auth", () => ({
+vi.mock("@/server/auth/auth-request", () => ({
   fetchAuthMutation: vi.fn(),
   fetchAuthQuery: vi.fn(),
 }));
@@ -28,7 +28,7 @@ vi.mock("./better-auth-organization-service", () => ({
   removeMemberBA: vi.fn(),
 }));
 
-import { fetchAuthMutation } from "@/server/auth/convex-auth";
+import { fetchAuthMutation } from "@/server/auth/auth-request";
 import { assertCanUseOrganizationResource } from "@/server/utils/organization/access-checker";
 import { getBetterAuthSession, listOrganizationMembersBA, removeMemberBA } from "./better-auth-organization-service";
 import { removeOrganizationMember } from "./actions";

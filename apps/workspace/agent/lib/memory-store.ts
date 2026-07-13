@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import { fetchMutation, fetchQuery } from "convex/nextjs";
-import type { TenantCaller } from "./tenant";
+import type { WorkspaceActor } from "./workspace-actor";
 
 export interface Memory {
   key: string;
@@ -9,26 +9,26 @@ export interface Memory {
 }
 
 export const memoryStore = {
-  async list(scope: TenantCaller, options: { limit: number }): Promise<Memory[]> {
+  async list(scope: WorkspaceActor, options: { limit: number }): Promise<Memory[]> {
     return fetchQuery(
       api.memory.list,
-      { organizationId: scope.orgId, userId: scope.userId },
+      { organizationId: scope.organizationId, userId: scope.userId },
       ...(scope.convexToken ? [{ token: scope.convexToken }] : []),
     ) as Promise<Memory[]>;
   },
 
-  async put(scope: TenantCaller, memory: { key: string; value: string }): Promise<Memory> {
+  async put(scope: WorkspaceActor, memory: { key: string; value: string }): Promise<Memory> {
     return fetchMutation(
       api.memory.put,
-      { organizationId: scope.orgId, userId: scope.userId, ...memory },
+      { organizationId: scope.organizationId, userId: scope.userId, ...memory },
       ...(scope.convexToken ? [{ token: scope.convexToken }] : []),
     ) as Promise<Memory>;
   },
 
-  async delete(scope: TenantCaller, key: string): Promise<boolean> {
+  async delete(scope: WorkspaceActor, key: string): Promise<boolean> {
     const result = await fetchMutation(
       api.memory.deleteMemory,
-      { organizationId: scope.orgId, userId: scope.userId, key },
+      { organizationId: scope.organizationId, userId: scope.userId, key },
       ...(scope.convexToken ? [{ token: scope.convexToken }] : []),
     ) as { deleted: boolean };
     return result.deleted;

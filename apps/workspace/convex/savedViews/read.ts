@@ -3,6 +3,7 @@ import { query } from "../_generated/server";
 import { userTableViewValidator } from "./validators";
 import { listViewsForUser, getDefaultView, presentSavedView } from "./data";
 import { viewTypeValidator, workOsRecordResourceValidator } from "../schema/validators";
+import { assertOrganizationPermission } from "../organizations/profile/access";
 
 export const list = query({
   args: {
@@ -16,6 +17,9 @@ export const list = query({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return [];
+    if (args.organizationId) {
+      await assertOrganizationPermission(ctx, args.organizationId, "read");
+    }
     const userId = identity.subject;
     return listViewsForUser(ctx, userId, args);
   },
@@ -29,6 +33,9 @@ export const get = query({
     if (!view) return null;
     const identity = await ctx.auth.getUserIdentity();
     if (!identity || (view.ownerUserId !== identity.subject && view.createdByUserId !== identity.subject)) return null;
+    if (!view.organizationId.startsWith("personal:")) {
+      await assertOrganizationPermission(ctx, view.organizationId, "read");
+    }
     return presentSavedView(view);
   },
 });
@@ -45,6 +52,9 @@ export const getDefault = query({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
+    if (args.organizationId) {
+      await assertOrganizationPermission(ctx, args.organizationId, "read");
+    }
     return getDefaultView(ctx, identity.subject, args);
   },
 });

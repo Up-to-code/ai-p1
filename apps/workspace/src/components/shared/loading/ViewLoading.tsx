@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@qentrah/platform-core/classnames';
 
 export type LoadingStyle = 'skeleton' | 'spinner' | 'calendar' | 'board' | 'table' | 'dots';
@@ -196,21 +197,35 @@ export function InlineLoading({ size = 'md', className }: InlineLoadingProps) {
  * PageLoading - Full-page loading overlay for route transitions.
  */
 export interface PageLoadingProps {
-  /** Custom message */
+  /** Custom message; defaults to the localized common loading label. */
   message?: string;
+  /** Show the loading message visually while preserving its accessible label. */
+  showMessage?: boolean;
   /** Show logo (default: true) */
   showLogo?: boolean;
 }
 
-export function PageLoading({ message = "Loading...", showLogo = true }: PageLoadingProps) {
+export function PageLoading({
+  message,
+  showMessage = true,
+  showLogo = true,
+}: PageLoadingProps) {
+  const t = useTranslations("Common");
+  const loadingMessage = message ?? t("loading");
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background">
+    <div
+      aria-label={loadingMessage}
+      aria-live="polite"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background"
+      role="status"
+    >
       {showLogo && (
         <div className="mb-8">
           <div className="w-16 h-16 bg-primary rounded-xl animate-pulse" />
         </div>
       )}
-      <SpinnerLoader message={message} />
+      <SpinnerLoader message={showMessage ? loadingMessage : undefined} />
     </div>
   );
 }

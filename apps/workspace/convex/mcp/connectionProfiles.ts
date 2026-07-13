@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
-import { authUser } from "../auth";
+import { getAuthUser } from "../auth";
 import { canActorUseMcpPermission, resolveScopePolicy } from "./scopePolicy";
 import { mcpPermissionValidator, mcpScopeValidator, type McpPermission } from "./validators";
 
@@ -61,7 +61,7 @@ export const listMine = query({
   args: { organizationId: v.string() },
   returns: v.array(profileValidator),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await resolveScopePolicy(ctx, {
       organizationId: args.organizationId,
       actorUserId: user._id,
@@ -88,7 +88,7 @@ export const create = mutation({
   },
   returns: profileValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     const name = args.name.trim().slice(0, 120);
     if (!name) profileError("MCP_PROFILE_NAME_REQUIRED", "Agent name is required.");
     const existing = await ctx.db
@@ -127,7 +127,7 @@ export const update = mutation({
   },
   returns: profileValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     const profile = await ctx.db.get(args.profileId);
     if (!profile || profile.createdByUserId !== user._id) {
       profileError("MCP_PROFILE_NOT_FOUND", "MCP profile not found.");
@@ -152,7 +152,7 @@ export const remove = mutation({
   args: { profileId: v.id("mcpConnectionProfiles") },
   returns: v.object({ ok: v.literal(true) }),
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     const profile = await ctx.db.get(args.profileId);
     if (!profile || profile.createdByUserId !== user._id) {
       profileError("MCP_PROFILE_NOT_FOUND", "MCP profile not found.");

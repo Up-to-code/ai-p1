@@ -12,11 +12,6 @@ import { normalizeProjectVisibility } from "../projects/validators";
 import { requireServerActor, type ServerActor } from "./actor";
 import { resolveSpaceAccess } from "./space";
 
-const MAX_ACTOR_PROJECT_MEMBERSHIPS = 500;
-const MAX_ACTOR_SPACE_MEMBERSHIPS = 500;
-const MAX_ORGANIZATION_PROJECT_SPACE_LINKS = 5_000;
-const MAX_REQUESTED_SPACE_IDS = 200;
-
 type ProjectAccessCtx = Pick<QueryCtx, "auth" | "db" | "runQuery">;
 type Project = Doc<"projects">;
 type ProjectRole = "admin" | "member" | "viewer";
@@ -89,26 +84,19 @@ export async function resolveProjectAccess(
     );
   }
 
-  const [projectMemberships, spaceMemberships, projectSpaceLinks] =
-    await Promise.all([
+  const [projectMemberships, spaceMemberships] = await Promise.all([
       ctx.db
         .query("projectMembers")
         .withIndex("by_user", (q) =>
           q.eq("organizationId", organizationId).eq("userId", actor.userId),
         )
-        .take(MAX_ACTOR_PROJECT_MEMBERSHIPS),
+        .collect(),
       ctx.db
         .query("spaceMembers")
         .withIndex("by_user_id", (q) =>
           q.eq("organizationId", organizationId).eq("userId", actor.userId),
         )
-        .take(MAX_ACTOR_SPACE_MEMBERSHIPS),
-      ctx.db
-        .query("projectSpaces")
-        .withIndex("by_organization_id", (q) =>
-          q.eq("organizationId", organizationId),
-        )
-        .take(MAX_ORGANIZATION_PROJECT_SPACE_LINKS),
+        .collect(),
     ]);
 
   const activeSpaces = await Promise.all(
@@ -131,6 +119,18 @@ export async function resolveProjectAccess(
       )
       .map((space) => space._id),
   );
+  const projectSpaceLinks = (
+    await Promise.all(
+      [...activeSpaceIds].map((spaceId) =>
+        ctx.db
+          .query("projectSpaces")
+          .withIndex("by_space_id", (q) =>
+            q.eq("organizationId", organizationId).eq("spaceId", spaceId),
+          )
+          .collect(),
+      ),
+    )
+  ).flat();
 
   const projectRoles = new Map<Id<"projects">, ProjectRole>();
   for (const membership of projectMemberships) {
@@ -211,9 +211,7 @@ export async function resolveProjectAccess(
     canDelete,
     filterReadable: (projects) => projects.filter(canRead),
     filterActorSpaceIds: async (spaceIds) => {
-      const requestedSpaceIds = [
-        ...new Set(spaceIds.slice(0, MAX_REQUESTED_SPACE_IDS)),
-      ];
+      const requestedSpaceIds = [...new Set(spaceIds)];
       const [spaceAccess, requestedSpaces] = await Promise.all([
         resolveSpaceAccess(ctx, organizationId),
         Promise.all(requestedSpaceIds.map((spaceId) => ctx.db.get(spaceId))),

@@ -15,6 +15,8 @@ import { TASK_STAGES, normalizeTaskStatus } from "@/domains/tasks/tasks.constant
 import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import { useTaskMutations } from "@/domains/tasks/hooks/use-task-mutations";
 import type { TaskRecord } from "@/domains/tasks/tasks.types";
+import { runTaskQuickCreate, type TaskQuickCreateCommand } from "@/domains/tasks/workspace/task-quick-create";
+import { useRouter } from "@/i18n/routing";
 
 interface ProjectDetailOverviewProps {
   projectId: string;
@@ -27,12 +29,13 @@ const DEFAULT_VIEWS: ViewItem[] = [
 ];
 
 export function ProjectDetailOverview({ projectId }: ProjectDetailOverviewProps) {
+  const router = useRouter();
   const session = useAuthSession();
   const workspaceOrganizationId = session.workspace.status === "ready" ? (session.workspace.organizationId ?? undefined) : undefined;
   const project = useProjectQuery(workspaceOrganizationId ?? undefined, projectId);
   const tasksResult = useTasksQuery(workspaceOrganizationId, { projectId });
   const tasks = tasksResult.data ?? [];
-  const { moveTask, updateTask, deleteTask, createTask } = useTaskMutations(workspaceOrganizationId ?? "");
+  const { moveTask, updateTask, deleteTask, createTask, bulkTasks } = useTaskMutations(workspaceOrganizationId ?? "");
 
   const storageKey = `project-views-${projectId}`;
   const [views, setViews] = useLocalConfig<ViewItem[]>(storageKey, DEFAULT_VIEWS);
@@ -95,15 +98,23 @@ export function ProjectDetailOverview({ projectId }: ProjectDetailOverviewProps)
     await updateTask(task, changes);
   };
 
-  const handleTaskCreate = async (title: string, defaults?: Pick<Partial<TaskRecord>, "status" | "priority" | "assigneeUserId" | "dueDate" | "tags">) => {
-    await createTask({
-      title,
-      projectId,
-      status: defaults?.status,
-      priority: defaults?.priority,
-      assigneeUserId: defaults?.assigneeUserId,
-      dueDate: defaults?.dueDate,
-      tags: defaults?.tags?.join(", "),
+  const handleTaskCreate: TaskQuickCreateCommand = async (draft) => {
+    return runTaskQuickCreate(draft, {
+      create: async (normalized) => {
+        const result = await createTask({
+          title: normalized.title,
+          projectId,
+          status: normalized.status,
+          priority: normalized.priority,
+          assigneeUserId: normalized.assigneeUserId,
+          dueDate: normalized.dueDate,
+          tags: normalized.tags?.join(", "),
+        });
+        const task = result.task;
+        if (!task) throw new Error("Task creation did not return an identity.");
+        return { taskId: task.id };
+      },
+      open: (taskId) => router.push(`/tasks/${taskId}`),
     });
   };
 
@@ -144,6 +155,7 @@ export function ProjectDetailOverview({ projectId }: ProjectDetailOverviewProps)
             onTaskDelete={(task) => deleteTask(task)}
             currentUserId={session.user.id}
             onTaskCreate={handleTaskCreate}
+            onTasksBulk={bulkTasks}
           />
         )}
         {activeType === "calendar" && <TaskCalendarView projectId={projectId} organizationId={workspaceOrganizationId ?? ""} />}

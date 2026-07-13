@@ -56,7 +56,7 @@ This document provides the detailed permission rules for the three-layer permiss
 | Projects | read (accessible) | Based on space/project membership |
 | Clients | read (accessible) | Based on space/project membership |
 | Deals | read (accessible) | Based on space/project membership |
-| Tasks | read (accessible) | Based on space/project membership |
+| Tasks | create, read, update | Organization-visible Tasks are collaborative by default even when linked to a narrower parent; explicit private Tasks are limited to their creator and assignees, while team-scoped Tasks follow their Space/Project boundary |
 | Calendar | read (accessible) | Based on space/project membership |
 | Media | read (accessible) | Based on space/project membership |
 | Docs | read (accessible) | Based on space/project membership |

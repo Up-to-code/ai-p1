@@ -4,7 +4,7 @@ import { createDomainRouter } from "@/server/utils/create-domain-router";
 import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { actionErrorJson } from "@/server/utils/response/action-error";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/convex-auth";
+import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/auth-request";
 import { hydrateUploadThingEnvFromToken } from "@/server/uploadthing/config";
 import { api } from "@convex/_generated/api";
 import {

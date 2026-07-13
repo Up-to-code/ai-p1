@@ -7,7 +7,8 @@ import {
   fetchAuthMutation as nextFetchAuthMutation,
   fetchAuthQuery as nextFetchAuthQuery,
   getToken as nextGetToken,
-} from "./auth-context";
+  isAuthenticated as nextIsAuthenticated,
+} from "./nextjs-auth-adapter";
 
 export type AuthRequestSession = {
   session?: {
@@ -30,7 +31,7 @@ type OptionalArgs<FuncRef extends FunctionReference<"query" | "mutation" | "acti
 const requestStore = new AsyncLocalStorage<Request>();
 
 const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL!;
-const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL!;
+const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 export function runWithAuthHeaders<T>(headers: Headers, operation: () => T | Promise<T>) {
   const request = new Request("https://qentrah.internal/api/auth-context", { headers });
@@ -42,6 +43,11 @@ export function getRequestHeaders(): Headers | null {
 }
 
 export const authRequestStore = requestStore;
+
+/** Resolve authentication in the current Next.js request context. */
+export async function isAuthenticated(): Promise<boolean> {
+  return nextIsAuthenticated();
+}
 
 function authHeaders() {
   const incoming = getRequestHeaders();
@@ -173,3 +179,11 @@ export async function getSessionUserId(): Promise<string | null> {
   const session = await getAuthRequestSession();
   return session.session?.userId ?? null;
 }
+
+// Concise names are part of the public server-auth Interface. The descriptive
+// implementations above keep their behavior explicit inside this Module.
+export {
+  fetchAuthenticatedAction as fetchAuthAction,
+  fetchAuthenticatedMutation as fetchAuthMutation,
+  fetchAuthenticatedQuery as fetchAuthQuery,
+};

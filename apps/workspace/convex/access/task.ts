@@ -1,4 +1,5 @@
 import { ConvexError } from "convex/values";
+import { defaultTaskVisibility } from "@qentrah/domain-contracts";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import { canPerformOrganizationAction } from "../permissions";
@@ -25,6 +26,7 @@ export interface TaskAccess {
   assertCanRead(task: Task): Promise<void>;
   assertCanUpdate(task: Task): Promise<void>;
   assertCanDelete(task: Task): Promise<void>;
+  assertCanShare(task: Task, nextVisibility: TaskVisibility | undefined): Promise<void>;
   assertCanCreate(input: TaskScopeInput): Promise<void>;
   assertValidLinks(input: TaskScopeInput): Promise<void>;
 }
@@ -117,7 +119,21 @@ export async function resolveTaskAccess(
     if (!isActiveTask(task, organizationId)) return false;
     const scope = await resolveScope(task);
     if (!scope) return false;
-    const visibility = task.visibility ?? "private";
+    const visibility = defaultTaskVisibility(task.visibility, task.projectId, task.spaceId);
+
+    // Task visibility is the record boundary. Organization-visible Tasks stay
+    // collaborative even when they are linked to a narrower Project or Space;
+    // the link does not grant access to that parent record.
+    if (visibility === "workspace") {
+      return canPerformOrganizationAction(ctx, organizationId, actor.userId, "task", action);
+    }
+
+    // Private Tasks are shared directly with their creator and assignees. A
+    // parent link must not prevent an assignee from reading the Task itself.
+    if (visibility === "private" && action !== "delete") {
+      return isParticipant(task, actor.userId);
+    }
+
     if (visibilityRank(visibility) > visibilityRank(scope.maxVisibility)) return false;
 
     if (scope.project) {
@@ -147,12 +163,6 @@ export async function resolveTaskAccess(
       return canPerformOrganizationAction(ctx, organizationId, actor.userId, "task", "delete");
     }
 
-    if (visibility === "private") {
-      return isParticipant(task, actor.userId);
-    }
-    if (visibility === "team" && !scope.project && !scope.space) {
-      return isParticipant(task, actor.userId);
-    }
     if (scope.project || scope.space) return true;
     return canPerformOrganizationAction(ctx, organizationId, actor.userId, "task", action);
   }
@@ -182,10 +192,36 @@ export async function resolveTaskAccess(
     assertCanRead: (task) => assertAllowed(task, "read"),
     assertCanUpdate: (task) => assertAllowed(task, "update"),
     assertCanDelete: (task) => assertAllowed(task, "delete"),
+    assertCanShare: async (task, nextVisibility) => {
+      const currentVisibility = defaultTaskVisibility(
+        task.visibility,
+        task.projectId,
+        task.spaceId,
+      );
+      if (
+        currentVisibility === "private" &&
+        nextVisibility !== undefined &&
+        nextVisibility !== "private" &&
+        task.createdByUserId !== actor.userId
+      ) {
+        throw accessError(
+          "TASK_ACCESS_DENIED",
+          "Only the creator can share a private task.",
+          organizationId,
+          task._id,
+        );
+      }
+    },
     assertCanCreate: async (input) => {
       const scope = await resolveScope(input);
       if (!scope) throw accessError("TASK_SCOPE_INVALID", "Task links must reference active records in this organization.", organizationId);
-      const visibility = input.visibility ?? "private";
+      const visibility = defaultTaskVisibility(input.visibility, input.projectId, input.spaceId);
+      if (visibility === "workspace") {
+        if (!(await canPerformOrganizationAction(ctx, organizationId, actor.userId, "task", "create"))) {
+          throw accessError("TASK_CREATE_DENIED", "You do not have permission to create organization-visible tasks.", organizationId);
+        }
+        return;
+      }
       if (visibilityRank(visibility) > visibilityRank(scope.maxVisibility)) {
         throw accessError("TASK_SCOPE_INVALID", "Task visibility exceeds its linked scope.", organizationId);
       }
@@ -196,12 +232,7 @@ export async function resolveTaskAccess(
         throw accessError("TASK_CREATE_DENIED", "You do not have permission to create work in this space.", organizationId);
       }
       if (!scope.project && !scope.space) {
-        if (visibility === "team") {
-          throw accessError("TASK_SCOPE_INVALID", "Team-visible tasks require a Space or Project scope.", organizationId);
-        }
-        if (visibility === "workspace" && !(await canPerformOrganizationAction(ctx, organizationId, actor.userId, "task", "create"))) {
-          throw accessError("TASK_CREATE_DENIED", "You do not have permission to create organization-visible tasks.", organizationId);
-        }
+        if (visibility === "team") throw accessError("TASK_SCOPE_INVALID", "Team-visible tasks require a Space or Project scope.", organizationId);
       }
     },
     assertValidLinks,

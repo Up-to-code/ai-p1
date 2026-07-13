@@ -1,22 +1,36 @@
 import { api } from "@convex/_generated/api";
-import { fetchAuthQuery, fetchAuthMutation } from "@/server/auth/convex-auth";
-import type { CustomFieldDefinitionInput, CustomFieldValueInput } from "../validation/custom-field.schema";
+import { fetchAuthQuery, fetchAuthMutation } from "@/server/auth/auth-request";
+import type {
+  CustomFieldDefinitionInput,
+  CustomFieldRecordTypeInput,
+  CustomFieldValueInput,
+} from "../validation/custom-field.schema";
 
-export async function listCustomFieldDefinitions(organizationId: string, recordType?: string) {
+export async function listCustomFieldDefinitions(
+  organizationId: string,
+  recordType?: CustomFieldRecordTypeInput,
+) {
   return fetchAuthQuery(api.customFields.read.listByOrganization, {
     organizationId,
     recordType,
   });
 }
 
-export async function listCustomFieldDefinitionsForTable(organizationId: string, recordType: string) {
+export async function listCustomFieldDefinitionsForTable(
+  organizationId: string,
+  recordType: CustomFieldRecordTypeInput,
+) {
   return fetchAuthQuery(api.customFields.read.listByOrganizationForTable, {
     organizationId,
     recordType,
   });
 }
 
-export async function listCustomFieldValues(organizationId: string, recordType: string, recordId: string) {
+export async function listCustomFieldValues(
+  organizationId: string,
+  recordType: CustomFieldRecordTypeInput,
+  recordId: string,
+) {
   return fetchAuthQuery(api.customFields.values_read.listByRecord, {
     organizationId,
     recordType,
@@ -24,7 +38,10 @@ export async function listCustomFieldValues(organizationId: string, recordType: 
   });
 }
 
-export async function listAllCustomFieldValues(organizationId: string, recordType: string) {
+export async function listAllCustomFieldValues(
+  organizationId: string,
+  recordType: CustomFieldRecordTypeInput,
+) {
   return fetchAuthQuery(api.customFields.values_read.listByOrganization, {
     organizationId,
     recordType,

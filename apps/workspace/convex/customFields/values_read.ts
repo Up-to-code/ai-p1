@@ -1,22 +1,23 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
-import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import { workOsRecordResourceValidator } from "../schema/validators";
+import { assertCustomFieldTargetPermission } from "./access";
 
 export const listByRecord = query({
   args: {
     organizationId: v.string(),
-    recordType: v.string(),
+    recordType: workOsRecordResourceValidator,
     recordId: v.string(),
   },
   handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
+    await assertCustomFieldTargetPermission(ctx, args.organizationId, [args.recordType], "read");
 
     const values = await ctx.db
       .query("customFieldValues")
       .withIndex("by_organization_record", (qb) =>
         qb
           .eq("organizationId", args.organizationId)
-          .eq("recordType", args.recordType as any)
+          .eq("recordType", args.recordType)
           .eq("recordId", args.recordId),
       )
       .collect();
@@ -44,17 +45,17 @@ export const listByRecord = query({
 export const listByOrganization = query({
   args: {
     organizationId: v.string(),
-    recordType: v.string(),
+    recordType: workOsRecordResourceValidator,
   },
   handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
+    await assertCustomFieldTargetPermission(ctx, args.organizationId, [args.recordType], "read");
 
     const values = await ctx.db
       .query("customFieldValues")
       .withIndex("by_organization_record", (qb) =>
         qb
           .eq("organizationId", args.organizationId)
-          .eq("recordType", args.recordType as any),
+          .eq("recordType", args.recordType),
       )
       .collect();
 

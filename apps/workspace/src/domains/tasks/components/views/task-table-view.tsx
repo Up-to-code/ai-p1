@@ -33,15 +33,24 @@ import {
   QentrahTable,
   StatusEditor,
   type QentrahColumnDef,
+  type QentrahTableColumnState,
   type QentrahTableRef,
 } from "@qentrah/ui/qentrah-table";
 import type { TaskRecord } from "../../tasks.types";
+import type { TaskQuickCreateCommand, TaskQuickCreateDraft } from "../../workspace/task-quick-create";
+import type { TaskBulkCommand } from "../../workspace/task-bulk";
 import { sortPipelineTasks } from "../../task-pipeline-order";
 import { TASK_STAGES, normalizeTaskStatus } from "../../tasks.constants";
 import {
   useCreateSavedViewMutation,
-  useDefaultSavedViewQuery,
 } from "../../api/saved-views";
+import { SavedViewsDropdown } from "../saved-views-dropdown";
+import {
+  defaultTaskWorkspaceViewState,
+  taskWorkspaceStateFromSavedView,
+  taskWorkspaceStateToSavedView,
+  type TaskWorkspaceViewState,
+} from "../../workspace/task-workspace-view-state";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -119,7 +128,7 @@ function TaskDateEditor({
   );
 }
 
-type TaskCreateDefaults = Pick<Partial<TaskRecord>, "status" | "priority">;
+type TaskCreateDefaults = Pick<TaskQuickCreateDraft, "status" | "priority">;
 type TaskGroupBy = "none" | "status" | "priority";
 type SortDirection = "ascending" | "descending";
 type DragState = { id: string; group: string } | null;
@@ -140,10 +149,7 @@ interface TaskTableViewProps {
     changes: Partial<TaskRecord>,
   ) => void | Promise<void>;
   onTaskDelete?: (task: TaskRecord) => void | Promise<void>;
-  onTaskCreate?: (
-    title: string,
-    defaults?: TaskCreateDefaults,
-  ) => void | Promise<void>;
+  onTaskCreate?: TaskQuickCreateCommand;
   onTaskMove?: (
     itemId: string,
     fromStage: string,
@@ -151,6 +157,9 @@ interface TaskTableViewProps {
     targetIndex: number,
   ) => void;
   onOpenFields?: () => void;
+  viewState?: TaskWorkspaceViewState;
+  onViewStateChange?: (patch: Partial<TaskWorkspaceViewState>) => void;
+  onTasksBulk?: TaskBulkCommand;
 }
 
 function DescriptionCell({
@@ -351,10 +360,7 @@ function AddTaskRow({
   label = "Task Name or type '/' for commands",
   trailingEmptyCells = 5,
 }: {
-  onTaskCreate?: (
-    title: string,
-    defaults?: TaskCreateDefaults,
-  ) => void | Promise<void>;
+  onTaskCreate?: TaskQuickCreateCommand;
   defaults?: TaskCreateDefaults;
   columns?: string;
   label?: string;
@@ -369,7 +375,7 @@ function AddTaskRow({
     if (!canSave) return;
     setIsSaving(true);
     try {
-      await onTaskCreate?.(title.trim(), defaults);
+      await onTaskCreate?.({ title, ...defaults });
       setTitle("");
       setIsEditing(false);
     } catch {
@@ -466,6 +472,7 @@ function TaskTableControls({
   selectedCount,
   onCompleteSelected,
   onDeleteSelected,
+  savedViews,
 }: {
   groupBy: TaskGroupBy;
   sortDirection: SortDirection;
@@ -476,12 +483,14 @@ function TaskTableControls({
   selectedCount: number;
   onCompleteSelected: () => void;
   onDeleteSelected: () => void;
+  savedViews?: React.ReactNode;
 }) {
   const groupLabel =
     groupBy === "none" ? "None" : groupBy === "status" ? "Status" : "Priority";
 
   return (
     <div className="flex h-9 shrink-0 items-center justify-between gap-3 border-b border-[color-mix(in_srgb,var(--q-border)_78%,transparent)] bg-[var(--q-bg)] px-2">
+      <div className="flex items-center gap-1">
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
@@ -530,6 +539,8 @@ function TaskTableControls({
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
+      {savedViews}
+      </div>
 
       <div className="flex items-center gap-2">
         {selectedCount > 0 ? (
@@ -633,11 +644,27 @@ export function TaskTableView({
   onTaskCreate,
   onTaskMove,
   onOpenFields,
+  viewState,
+  onViewStateChange,
+  onTasksBulk,
 }: TaskTableViewProps) {
   const tableRef = useRef<QentrahTableRef<TaskRecord>>(null);
-  const [groupBy, setGroupBy] = useState<TaskGroupBy>("none");
-  const [sortDirection, setSortDirection] =
+  const [localGroupBy, setLocalGroupBy] = useState<TaskGroupBy>("none");
+  const [localSortDirection, setLocalSortDirection] =
     useState<SortDirection>("descending");
+  const groupBy = viewState?.groupBy ?? localGroupBy;
+  const sortDirection = viewState
+    ? viewState.sortDirection === "asc" ? "ascending" : "descending"
+    : localSortDirection;
+  const setGroupBy = (value: TaskGroupBy) => {
+    if (onViewStateChange) onViewStateChange({ groupBy: value });
+    else setLocalGroupBy(value);
+  };
+  const setSortDirection = (value: SortDirection) => {
+    if (onViewStateChange) {
+      onViewStateChange({ sortDirection: value === "ascending" ? "asc" : "desc" });
+    } else setLocalSortDirection(value);
+  };
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
     () => new Set(),
   );
@@ -649,28 +676,15 @@ export function TaskTableView({
   const [selectedTasks, setSelectedTasks] = useState<TaskRecord[]>([]);
   const dragArmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const createSavedView = useCreateSavedViewMutation();
-  const defaultView = useDefaultSavedViewQuery({
-    resourceType: "task",
-    viewType: "table",
-    organizationId,
-    projectId: projectId ?? undefined,
-    spaceId: spaceId ?? undefined,
-  });
-  const savedViewGroupBy = defaultView.data?.config.groupBy ?? null;
-  const savedViewVersion = defaultView.data?.config.taskTableVersion ?? null;
-
-  useEffect(() => {
-    if (savedViewVersion !== 3) return;
-    if (
-      savedViewGroupBy === "status" ||
-      savedViewGroupBy === "priority" ||
-      savedViewGroupBy === "none"
-    ) {
-      setGroupBy(savedViewGroupBy);
-    }
-  }, [savedViewGroupBy, savedViewVersion]);
-
   const rows = useMemo(() => tasks.filter((task) => !task._deleted), [tasks]);
+  const tableColumnState = useMemo<QentrahTableColumnState | undefined>(() => {
+    if (!viewState?.columnOrder.length) return undefined;
+    return {
+      order: viewState.columnOrder,
+      widths: viewState.columnWidths,
+      visibility: viewState.columnVisibility,
+    };
+  }, [viewState]);
 
   async function updateTask(task: TaskRecord, changes: Partial<TaskRecord>) {
     const optimistic = { ...task, ...changes };
@@ -696,7 +710,11 @@ export function TaskTableView({
       organizationId,
       projectId: projectId ?? undefined,
       spaceId: spaceId ?? undefined,
-      config: { groupBy, sortBy: sortDirection, taskTableVersion: 3 },
+      config: taskWorkspaceStateToSavedView({
+        ...(viewState ?? defaultTaskWorkspaceViewState),
+        groupBy,
+        sortDirection: sortDirection === "ascending" ? "asc" : "desc",
+      }),
       isDefault: true,
     });
   }
@@ -988,18 +1006,18 @@ export function TaskTableView({
     setDragArm(null);
   }
 
-  async function completeSelected() {
-    await Promise.all(
-      selectedTasks.map((task) => updateTask(task, { status: "done" })),
+  async function runBulkAction(action: "complete" | "delete") {
+    if (!onTasksBulk || selectedTasks.length === 0) return;
+    const result = await onTasksBulk(action, selectedTasks.map((task) => task.id));
+    const failedIds = new Set(
+      result.outcomes
+        .filter((outcome) => outcome.status === "failed")
+        .map((outcome) => outcome.taskId),
     );
-    tableRef.current?.api?.deselectAll();
-    setSelectedTasks([]);
-  }
-
-  async function deleteSelected() {
-    await Promise.all(selectedTasks.map((task) => onTaskDelete?.(task)));
-    tableRef.current?.api?.deselectAll();
-    setSelectedTasks([]);
+    tableRef.current?.api?.forEachNode((node) => {
+      node.setSelected(Boolean(node.data && failedIds.has(node.data.id)));
+    });
+    setSelectedTasks((current) => current.filter((task) => failedIds.has(task.id)));
   }
 
   const flatTable = (
@@ -1008,7 +1026,13 @@ export function TaskTableView({
         ref={tableRef}
         rows={rows}
         columns={columns}
-        density="compact"
+        density={viewState?.density ?? "compact"}
+        columnState={tableColumnState}
+        onColumnStateChange={(columnState) => onViewStateChange?.({
+          columnOrder: columnState.order,
+          columnWidths: columnState.widths,
+          columnVisibility: columnState.visibility,
+        })}
         theme="auto"
         height="auto"
         domLayout="autoHeight"
@@ -1219,8 +1243,29 @@ export function TaskTableView({
         onSortChange={setSortDirection}
         onSaveView={saveView}
         selectedCount={selectedTasks.length}
-        onCompleteSelected={() => void completeSelected()}
-        onDeleteSelected={() => void deleteSelected()}
+        onCompleteSelected={() => void runBulkAction("complete")}
+        onDeleteSelected={() => void runBulkAction("delete")}
+        savedViews={organizationId ? (
+          <SavedViewsDropdown
+            resourceType="task"
+            viewType="table"
+            organizationId={organizationId}
+            projectId={projectId ?? undefined}
+            spaceId={spaceId ?? undefined}
+            currentConfig={taskWorkspaceStateToSavedView(viewState ?? defaultTaskWorkspaceViewState)}
+            onApply={(config) => {
+              const next = taskWorkspaceStateFromSavedView(
+                config,
+                viewState ?? defaultTaskWorkspaceViewState,
+              );
+              if (onViewStateChange) onViewStateChange(next);
+              else {
+                setLocalGroupBy(next.groupBy);
+                setLocalSortDirection(next.sortDirection === "asc" ? "ascending" : "descending");
+              }
+            }}
+          />
+        ) : undefined}
       />
       <div className="pt-2">
         {groupBy === "none" ? flatTable : groupedTable}

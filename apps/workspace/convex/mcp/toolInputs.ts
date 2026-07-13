@@ -106,6 +106,28 @@ export function clientInput(input: Input) {
   };
 }
 
+/** Preserve omission semantics for Client updates after manifest validation. */
+export function clientPatchInput(input: Input) {
+  return {
+    ...(Object.hasOwn(input, "name") ? { name: requiredString(input, "name") } : {}),
+    ...(Object.hasOwn(input, "type")
+      ? { type: oneOf(input.type, ["person", "organization"] as const, "person") }
+      : {}),
+    ...(Object.hasOwn(input, "status")
+      ? { status: oneOf(input.status, ["new", "active", "nurture", "inactive", "archived"] as const, "new") }
+      : {}),
+    ...(Object.hasOwn(input, "source") ? { source: optionalString(input, "source") } : {}),
+    ...(Object.hasOwn(input, "company") ? { company: optionalString(input, "company") } : {}),
+    ...(Object.hasOwn(input, "contactName") ? { contactName: optionalString(input, "contactName") } : {}),
+    ...(Object.hasOwn(input, "email") || Object.hasOwn(input, "contact")
+      ? { email: optionalString(input, "email") ?? optionalString(input, "contact") ?? "" }
+      : {}),
+    ...(Object.hasOwn(input, "phone") ? { phone: optionalString(input, "phone") ?? "" } : {}),
+    ...(Object.hasOwn(input, "website") ? { website: optionalString(input, "website") } : {}),
+    ...(Object.hasOwn(input, "notes") ? { notes: optionalString(input, "notes") } : {}),
+  };
+}
+
 export function projectStatus(input: Input) {
   return oneOf(input.status, ["planned", "active", "paused", "completed", "archived"] as const, "planned");
 }
@@ -168,6 +190,37 @@ export function calendarInput(input: Input) {
   };
 }
 
+export function calendarPatchInput(input: Input) {
+  return {
+    ...(Object.hasOwn(input, "title") ? { title: requiredString(input, "title") } : {}),
+    ...(Object.hasOwn(input, "ownerUserId") ? { ownerUserId: optionalRelationId(input, "ownerUserId") } : {}),
+    ...(Object.hasOwn(input, "clientId") ? { clientId: optionalRelationId(input, "clientId") } : {}),
+    ...(Object.hasOwn(input, "projectId") ? { projectId: optionalRelationId(input, "projectId") } : {}),
+    ...(Object.hasOwn(input, "taskId") ? { taskId: optionalRelationId(input, "taskId") } : {}),
+    ...(Object.hasOwn(input, "documentId") ? { documentId: optionalRelationId(input, "documentId") } : {}),
+    ...(Object.hasOwn(input, "startAt") ? { startAt: requiredNumber(input, "startAt") } : {}),
+    ...(Object.hasOwn(input, "endAt") ? { endAt: requiredNumber(input, "endAt") } : {}),
+    ...(Object.hasOwn(input, "type")
+      ? { type: oneOf(input.type, ["meeting", "deadline", "document", "reminder", "milestone", "focusBlock"] as const, "meeting") }
+      : {}),
+    ...(Object.hasOwn(input, "status")
+      ? { status: oneOf(input.status, ["confirmed", "pending", "draft"] as const, "confirmed") }
+      : {}),
+    ...(Object.hasOwn(input, "attendeeUserIds")
+      ? { attendeeUserIds: Array.isArray(input.attendeeUserIds) ? input.attendeeUserIds.filter((id): id is string => typeof id === "string") : [] }
+      : {}),
+    ...(Object.hasOwn(input, "externalAttendees")
+      ? { externalAttendees: Array.isArray(input.externalAttendees) ? input.externalAttendees.filter((id): id is string => typeof id === "string") : [] }
+      : {}),
+    ...(Object.hasOwn(input, "location") ? { location: optionalString(input, "location") } : {}),
+    ...(Object.hasOwn(input, "meetingUrl") ? { meetingUrl: optionalString(input, "meetingUrl") } : {}),
+    ...(Object.hasOwn(input, "notes") ? { notes: optionalString(input, "notes") } : {}),
+    ...(Object.hasOwn(input, "tags")
+      ? { tags: Array.isArray(input.tags) ? input.tags.filter((tag): tag is string => typeof tag === "string") : [] }
+      : {}),
+  };
+}
+
 function priority(input: Input) {
   return oneOf(input.priority, ["low", "normal", "high", "urgent"] as const, "normal");
 }
@@ -191,22 +244,23 @@ export function taskInput(input: Input) {
   };
 }
 
-export function taskUpdateInput(input: Input, existing: Record<string, unknown>) {
-  const newClientId = optionalRelationId(input, "clientId");
-  const newProjectId = optionalRelationId(input, "projectId");
-  
+export function taskPatchInput(input: Input) {
   return {
-    title: optionalString(input, "title") ?? (existing.title as string),
-    status: (input.status !== undefined ? taskStatus(input) : existing.status) as "todo" | "inProgress" | "waiting" | "done" | "canceled",
-    priority: (input.priority !== undefined ? priority(input) : existing.priority) as "low" | "normal" | "high" | "urgent",
-    assigneeUserId: optionalString(input, "assigneeUserId") ?? (existing.assigneeUserId as string | undefined),
-    assigneeUserIds: existing.assigneeUserIds as string[] | undefined,
-    clientId: (newClientId !== undefined ? newClientId : (existing.clientId as Id<"clients"> | undefined)) as Id<"clients"> | undefined,
-    projectId: (newProjectId !== undefined ? newProjectId : (existing.projectId as Id<"projects"> | undefined)) as Id<"projects"> | undefined,
-    spaceId: optionalString(input, "spaceId") ?? (existing.spaceId as string | undefined),
-    dueDate: optionalString(input, "dueDate") ?? (existing.dueDate as string | undefined),
-    description: optionalString(input, "description") ?? optionalString(input, "notes") ?? (existing.description as string | undefined),
-    visibility: (input.visibility !== undefined ? oneOf(input.visibility, ["private", "team", "workspace"] as const, "workspace") : existing.visibility) as "private" | "team" | "workspace",
+    ...(Object.hasOwn(input, "title") ? { title: requiredString(input, "title") } : {}),
+    ...(Object.hasOwn(input, "status") ? { status: requiredString(input, "status") } : {}),
+    ...(Object.hasOwn(input, "priority") ? { priority: priority(input) } : {}),
+    ...(Object.hasOwn(input, "assigneeUserId") ? { assigneeUserId: optionalRelationId(input, "assigneeUserId") } : {}),
+    ...(Object.hasOwn(input, "clientId") ? { clientId: optionalRelationId(input, "clientId") } : {}),
+    ...(Object.hasOwn(input, "projectId") ? { projectId: optionalRelationId(input, "projectId") } : {}),
+    ...(Object.hasOwn(input, "spaceId") ? { spaceId: optionalRelationId(input, "spaceId") } : {}),
+    ...(Object.hasOwn(input, "startDate") ? { startDate: optionalString(input, "startDate") } : {}),
+    ...(Object.hasOwn(input, "dueDate") ? { dueDate: optionalString(input, "dueDate") } : {}),
+    ...(Object.hasOwn(input, "description") || Object.hasOwn(input, "notes")
+      ? { description: optionalString(input, "description") ?? optionalString(input, "notes") }
+      : {}),
+    ...(Object.hasOwn(input, "visibility")
+      ? { visibility: oneOf(input.visibility, ["private", "team", "workspace"] as const, "workspace") }
+      : {}),
   };
 }
 
@@ -226,47 +280,6 @@ export async function assertMediaResource(
   if (resourceType === "calendarEvent") return assertActiveWorkspaceRecord(await ctx.db.get(resourceId as Id<"calendarEvents">), organizationId, "Calendar event");
   if (resourceType === "task") return assertActiveWorkspaceRecord(await ctx.db.get(resourceId as Id<"tasks">), organizationId, "Task");
   throw new Error("Unsupported media resource type.");
-}
-
-export async function assertCalendarLinks(
-  ctx: MutationCtx,
-  organizationId: string,
-  input: ReturnType<typeof calendarInput>,
-) {
-  if (input.clientId) {
-    const client = await ctx.db.get(input.clientId as Id<"clients">);
-    assertActiveWorkspaceRecord(client, organizationId, "Client");
-  }
-  if (input.projectId) {
-    const project = await ctx.db.get(input.projectId as Id<"projects">);
-    assertActiveWorkspaceRecord(project, organizationId, "Project");
-  }
-  if (input.taskId) {
-    const task = await ctx.db.get(input.taskId as Id<"tasks">);
-    assertActiveWorkspaceRecord(task, organizationId, "Task");
-  }
-  if (input.documentId) {
-    const document = await ctx.db.get(input.documentId as Id<"docs">);
-    assertActiveWorkspaceRecord(document, organizationId, "Document");
-  }
-}
-
-export async function assertTaskLinks(
-  ctx: MutationCtx,
-  organizationId: string,
-  input: ReturnType<typeof taskInput> | { status: "done"; completedAt: number },
-) {
-  const clientId = "clientId" in input ? input.clientId : undefined;
-  const projectId = "projectId" in input ? input.projectId : undefined;
-  
-  if (clientId) {
-    const client = await ctx.db.get(clientId as Id<"clients">);
-    assertActiveWorkspaceRecord(client, organizationId, "Client");
-  }
-  if (projectId) {
-    const project = await ctx.db.get(projectId as Id<"projects">);
-    assertActiveWorkspaceRecord(project, organizationId, "Project");
-  }
 }
 
 export async function assertDealLinks(

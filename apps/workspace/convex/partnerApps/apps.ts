@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
-import { authUser } from "../auth";
+import { getAuthUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import {
   hasPartnerScope,
@@ -87,7 +87,7 @@ export const authorizeConnectionFromHono = mutation({
   },
   returns: partnerConnectionOutputValidator,
   handler: async (ctx, args) => {
-    const user = await authUser.getAuthUser(ctx);
+    const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "oauthApp", "authorize");
 
     const requestedScopes = normalizePartnerScopes(args.scopes);

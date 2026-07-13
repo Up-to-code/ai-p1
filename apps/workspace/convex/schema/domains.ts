@@ -4,6 +4,7 @@ import {
   recordStateValidator,
   workOsCustomFieldValueValidator,
 } from "./validators";
+import { storedClientPriorityValidator } from "../clients/validators";
 
 export const domainTables = {
   spaces: defineTable({
@@ -182,14 +183,7 @@ export const domainTables = {
     pipelineOrder: v.optional(v.number()),
     source: v.string(),
     contact: v.optional(v.string()),
-    priority: v.optional(
-      v.union(
-        v.literal("low"),
-        v.literal("normal"),
-        v.literal("high"),
-        v.literal("urgent"),
-      ),
-    ),
+    priority: v.optional(storedClientPriorityValidator),
     budget: v.optional(v.string()),
     assetInterest: v.optional(v.string()),
     added: v.optional(v.string()),
@@ -378,6 +372,7 @@ export const domainTables = {
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_status", ["organizationId", "status"])
     .index("by_organization_assignee", ["organizationId", "assigneeUserId"])
+    .index("by_organization_creator_updated", ["organizationId", "createdByUserId", "updatedAt"])
     .index("by_organization_client", ["organizationId", "clientId"])
     .index("by_organization_project", ["organizationId", "projectId"])
     .index("by_organization_project_space", [
@@ -416,6 +411,19 @@ export const domainTables = {
     ])
     .index("by_due", ["organizationId", "dueDate"])
     .index("by_organization_updated", ["organizationId", "updatedAt"]),
+
+  taskAssignments: defineTable({
+    organizationId: v.string(),
+    taskId: v.id("tasks"),
+    userId: v.string(),
+    isPrimary: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_task_user", ["taskId", "userId"])
+    .index("by_task", ["taskId"])
+    .index("by_organization_user_task", ["organizationId", "userId", "taskId"])
+    .index("by_organization_user_updated", ["organizationId", "userId", "updatedAt"]),
 
   calendarEvents: defineTable({
     organizationId: v.string(),
