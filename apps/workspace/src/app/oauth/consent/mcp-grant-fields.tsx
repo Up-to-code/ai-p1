@@ -3,8 +3,6 @@
 import {
   Check,
   ChevronDown,
-  Clock3,
-  Layers3,
   ShieldCheck,
   SlidersHorizontal,
 } from "lucide-react";
@@ -14,13 +12,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { McpAction, McpResource } from "@qentrah/mcp-contracts";
 import type { McpConsentGrantController } from "./use-mcp-consent-grant";
 
@@ -42,11 +33,17 @@ const actionLabels: Record<McpAction, string> = {
   delete: "Delete",
 };
 
-const scopeLabels = {
-  organization: "Entire organization",
-  space: "Selected spaces",
-  project: "Selected projects",
-} as const;
+const scopeOptions = [
+  { value: "organization", label: "Organization" },
+  { value: "space", label: "Spaces" },
+  { value: "project", label: "Projects" },
+] as const;
+
+const lifetimeOptions = [
+  { value: "7", label: "7 days" },
+  { value: "30", label: "30 days" },
+  { value: "90", label: "90 days" },
+] as const;
 
 export function McpGrantFields({
   controller,
@@ -62,72 +59,35 @@ export function McpGrantFields({
   );
 
   return (
-    <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <ConsentSelectField
-          icon={Layers3}
+    <div className="overflow-hidden rounded-xl border border-border bg-background">
+      <div className="space-y-4 p-4">
+        <ChoiceGroup
           label="Access scope"
-          description="Choose where the agent can work."
-        >
-          <Select
-            value={controller.scopeType}
-            onValueChange={(value) => {
-              if (value) controller.setScopeType(value);
-            }}
-          >
-            <SelectTrigger size="sm" aria-label="Access scope">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent align="start">
-              {Object.entries(scopeLabels).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </ConsentSelectField>
+          value={controller.scopeType}
+          options={scopeOptions}
+          onSelect={controller.setScopeType}
+        />
 
-        <ConsentSelectField
-          icon={Clock3}
-          label="Connection duration"
-          description="Access ends automatically."
-        >
-          <Select
-            value={String(controller.lifetimeDays)}
-            onValueChange={(value) => {
-              if (value) {
-                controller.setLifetimeDays(Number(value) as 7 | 30 | 90);
-              }
-            }}
-          >
-            <SelectTrigger size="sm" aria-label="Connection duration">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent align="start">
-              <SelectItem value="7">7 days</SelectItem>
-              <SelectItem value="30">30 days</SelectItem>
-              <SelectItem value="90">90 days</SelectItem>
-            </SelectContent>
-          </Select>
-        </ConsentSelectField>
+        <ChoiceGroup
+          label="Duration"
+          value={String(controller.lifetimeDays)}
+          options={lifetimeOptions}
+          onSelect={(value) =>
+            controller.setLifetimeDays(Number(value) as 7 | 30 | 90)
+          }
+        />
+
+        <ScopeResourcePicker controller={controller} />
       </div>
 
-      <ScopeResourcePicker controller={controller} />
-
-      <Collapsible className="overflow-hidden rounded-xl border border-border bg-background">
-        <CollapsibleTrigger className="group flex w-full items-center gap-3 px-4 py-3.5 text-start transition-colors hover:bg-muted/40">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+      <Collapsible className="border-t border-border">
+        <CollapsibleTrigger className="group flex w-full items-center gap-3 px-4 py-3 text-start transition-colors hover:bg-muted/40">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <ShieldCheck className="size-4" aria-hidden="true" />
           </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-semibold text-foreground">
-              {enabledResources.length} resources · {enabledActionCount}{" "}
-              permissions
-            </span>
-            <span className="mt-0.5 block text-xs text-muted-foreground">
-              Recommended access is selected. Expand to customize it.
-            </span>
+          <span className="min-w-0 flex-1 text-sm font-semibold text-foreground">
+            {enabledResources.length} resources · {enabledActionCount}{" "}
+            permissions
           </span>
           <span className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
             <SlidersHorizontal className="size-3.5" aria-hidden="true" />
@@ -177,32 +137,50 @@ export function McpGrantFields({
   );
 }
 
-function ConsentSelectField({
-  icon: Icon,
+function ChoiceGroup<TValue extends string>({
   label,
-  description,
-  children,
+  value,
+  options,
+  onSelect,
 }: {
-  icon: typeof Layers3;
   label: string;
-  description: string;
-  children: React.ReactNode;
+  value: TValue;
+  options: ReadonlyArray<{ value: TValue; label: string }>;
+  onSelect: (value: TValue) => void;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-background p-3.5">
-      <div className="mb-3 flex items-start gap-2.5">
-        <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-          <Icon className="size-4" aria-hidden="true" />
-        </span>
-        <div>
-          <p className="text-xs font-semibold text-foreground">{label}</p>
-          <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
-            {description}
-          </p>
-        </div>
+    <fieldset>
+      <legend className="mb-2 text-xs font-semibold text-foreground">
+        {label}
+      </legend>
+      <div
+        className="flex flex-wrap gap-2"
+        role="radiogroup"
+        aria-label={label}
+      >
+        {options.map((option) => {
+          const checked = option.value === value;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={checked}
+              onClick={() => onSelect(option.value)}
+              className={cn(
+                "inline-flex min-h-9 flex-1 items-center gap-2 rounded-lg border px-3 text-start text-xs font-medium transition-colors sm:flex-none",
+                checked
+                  ? "border-primary/40 bg-primary/10 text-foreground"
+                  : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              <SelectionBox checked={checked} />
+              {option.label}
+            </button>
+          );
+        })}
       </div>
-      {children}
-    </div>
+    </fieldset>
   );
 }
 
@@ -227,16 +205,11 @@ function ScopeResourcePicker({
       : controller.selectedProjectIds;
 
   return (
-    <div className="rounded-xl border border-border bg-background p-3.5">
-      <div className="mb-2">
-        <p className="text-xs font-semibold text-foreground">
-          Choose {scopeType === "space" ? "spaces" : "projects"}
-        </p>
-        <p className="mt-0.5 text-[11px] text-muted-foreground">
-          Select at least one. You can change this access later.
-        </p>
-      </div>
-      <div className="grid max-h-40 gap-1 overflow-y-auto sm:grid-cols-2">
+    <fieldset className="border-t border-border pt-4">
+      <legend className="mb-2 text-xs font-semibold text-foreground">
+        Choose {scopeType === "space" ? "spaces" : "projects"}
+      </legend>
+      <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto">
         {options.map((option) => {
           const checked = selectedIds.includes(option.id);
           return (
@@ -247,30 +220,35 @@ function ScopeResourcePicker({
               aria-checked={checked}
               onClick={() => controller.toggleId(scopeType, option.id)}
               className={cn(
-                "flex items-center gap-2 rounded-lg border px-3 py-2 text-start text-xs font-medium transition-colors",
+                "inline-flex min-h-9 min-w-0 items-center gap-2 rounded-lg border px-3 text-start text-xs font-medium transition-colors",
                 checked
                   ? "border-primary/40 bg-primary/10 text-foreground"
-                  : "border-transparent bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground",
+                  : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
-              <span
-                className={cn(
-                  "flex size-4 shrink-0 items-center justify-center rounded border",
-                  checked
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-background",
-                )}
-              >
-                {checked ? (
-                  <Check className="size-3" aria-hidden="true" />
-                ) : null}
-              </span>
-              <span className="truncate">{option.name}</span>
+              <SelectionBox checked={checked} />
+              <span className="max-w-48 truncate">{option.name}</span>
             </button>
           );
         })}
       </div>
-    </div>
+    </fieldset>
+  );
+}
+
+function SelectionBox({ checked }: { checked: boolean }) {
+  return (
+    <span
+      className={cn(
+        "flex size-4 shrink-0 items-center justify-center rounded border",
+        checked
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border bg-background",
+      )}
+      aria-hidden="true"
+    >
+      {checked ? <Check className="size-3" /> : null}
+    </span>
   );
 }
 
@@ -300,16 +278,7 @@ function PermissionActionToggle({
         disabled && "cursor-not-allowed opacity-40",
       )}
     >
-      <span
-        className={cn(
-          "flex size-3.5 items-center justify-center rounded-sm border",
-          checked
-            ? "border-primary bg-primary text-primary-foreground"
-            : "border-border",
-        )}
-      >
-        {checked ? <Check className="size-2.5" aria-hidden="true" /> : null}
-      </span>
+      <SelectionBox checked={checked} />
       {actionLabels[action]}
     </button>
   );

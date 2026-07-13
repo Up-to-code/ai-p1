@@ -31,19 +31,27 @@ function createController(): McpConsentGrantController {
 }
 
 describe("McpGrantFields", () => {
-  it("shows a compact grant summary before the detailed permissions", () => {
-    render(<McpGrantFields controller={createController()} />);
+  it("shows scope and duration as compact choices before permissions", async () => {
+    const controller = createController();
+    render(<McpGrantFields controller={controller} />);
 
     expect(
-      screen.getByRole("combobox", { name: "Access scope" }),
+      screen.getByRole("radiogroup", { name: "Access scope" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("combobox", { name: "Connection duration" }),
+      screen.getByRole("radiogroup", { name: "Duration" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Organization" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
     expect(screen.getByText("2 resources · 4 permissions")).toBeInTheDocument();
     expect(
       screen.queryByRole("checkbox", { name: "View" }),
     ).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("radio", { name: "Projects" }));
+    expect(controller.setScopeType).toHaveBeenCalledWith("project");
   });
 
   it("reveals accessible permission toggles on demand", async () => {

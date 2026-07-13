@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 import { formatTemplate, getOAuthCopy } from "../oauth-copy";
 import type { OAuthLocale } from "../oauth-locale";
 import {
@@ -250,7 +251,12 @@ export function OAuthConsentClient({
       dir={direction}
       className="flex min-h-screen items-center justify-center bg-muted/50 px-4 py-8 text-foreground sm:px-6"
     >
-      <section className="w-full max-w-[860px] overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
+      <section
+        className={cn(
+          "w-full overflow-hidden rounded-lg border border-border bg-card text-card-foreground",
+          isMcpAuthorization ? "max-w-[720px]" : "max-w-[860px]",
+        )}
+      >
         <div className="relative border-b border-border px-6 py-6 sm:px-8">
           <button
             type="button"
@@ -305,6 +311,29 @@ export function OAuthConsentClient({
             <p className="mt-2 text-sm font-medium leading-6 text-muted-foreground">
               {consentDescription}
             </p>
+            {isMcpAuthorization ? (
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                {displayScopes.map((scope) => {
+                  const meta = permissionMeta[scope];
+                  return (
+                    <span
+                      key={scope}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs font-semibold text-foreground"
+                    >
+                      <CheckCircle2
+                        className="size-3.5 text-primary"
+                        aria-hidden="true"
+                      />
+                      {meta
+                        ? isArabic
+                          ? meta.ar
+                          : meta.en
+                        : fallbackScopeLabel(scope)}
+                    </span>
+                  );
+                })}
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -315,60 +344,50 @@ export function OAuthConsentClient({
               : "grid gap-6 px-6 py-6 sm:px-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.45fr)] lg:gap-8"
           }
         >
-          <div
-            className={
-              isMcpAuthorization
-                ? "rounded-xl border border-border bg-muted/20 p-4"
-                : undefined
-            }
-          >
-            <h2 className="text-sm font-bold text-foreground">
-              {permissionIntro}
-            </h2>
+          {!isMcpAuthorization ? (
+            <div>
+              <h2 className="text-sm font-bold text-foreground">
+                {permissionIntro}
+              </h2>
 
-            <div
-              className={
-                isMcpAuthorization
-                  ? "mt-3 grid gap-3 sm:grid-cols-3"
-                  : "mt-4 space-y-4"
-              }
-            >
-              {displayScopes.map((scope) => {
-                const meta = permissionMeta[scope];
-                return (
-                  <div key={scope} className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-primary text-primary">
-                      <CheckCircle2
-                        className="h-3.5 w-3.5"
-                        aria-hidden="true"
-                      />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-semibold leading-5 text-foreground">
+              <div className="mt-4 space-y-4">
+                {displayScopes.map((scope) => {
+                  const meta = permissionMeta[scope];
+                  return (
+                    <div key={scope} className="flex items-start gap-3">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-primary text-primary">
+                        <CheckCircle2
+                          className="h-3.5 w-3.5"
+                          aria-hidden="true"
+                        />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-semibold leading-5 text-foreground">
+                            {meta
+                              ? isArabic
+                                ? meta.ar
+                                : meta.en
+                              : fallbackScopeLabel(scope)}
+                          </p>
+                          <code className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+                            {scope}
+                          </code>
+                        </div>
+                        <p className="mt-0.5 text-xs font-medium leading-5 text-muted-foreground">
                           {meta
                             ? isArabic
-                              ? meta.ar
-                              : meta.en
-                            : fallbackScopeLabel(scope)}
+                              ? meta.detailAr
+                              : meta.detailEn
+                            : scope}
                         </p>
-                        <code className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
-                          {scope}
-                        </code>
                       </div>
-                      <p className="mt-0.5 text-xs font-medium leading-5 text-muted-foreground">
-                        {meta
-                          ? isArabic
-                            ? meta.detailAr
-                            : meta.detailEn
-                          : scope}
-                      </p>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          ) : null}
 
           <div className="min-w-0">
             {isMcpAuthorization ? (
@@ -385,7 +404,7 @@ export function OAuthConsentClient({
 
         <div className="flex flex-col-reverse gap-3 border-t border-border bg-muted/30 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <p className="max-w-xl text-xs font-medium leading-5 text-muted-foreground">
-            {trustNote}
+            {isMcpAuthorization ? copy.mcpShortTrustNote : trustNote}
           </p>
           <div className="flex shrink-0 gap-3">
             <button

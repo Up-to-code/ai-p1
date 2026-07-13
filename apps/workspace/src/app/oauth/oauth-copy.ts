@@ -27,6 +27,7 @@ const oauthCopy = {
     mcpPermissionIntro: "This agent will be able to",
     mcpTrustNote:
       "The agent receives access only to this workspace and only with the permissions shown above. You can revoke access at any time.",
+    mcpShortTrustNote: "Revoke access anytime.",
     connectAgent: "Connect agent",
     chooseTitle: "Choose an organization",
     chooseDescription:
@@ -72,6 +73,7 @@ const oauthCopy = {
     mcpPermissionIntro: "سيتمكن هذا الوكيل من",
     mcpTrustNote:
       "يحصل الوكيل على وصول إلى مساحة العمل هذه فقط وبالصلاحيات الموضحة أعلاه. يمكنك إلغاء الوصول في أي وقت.",
+    mcpShortTrustNote: "يمكنك إلغاء الوصول في أي وقت.",
     connectAgent: "ربط الوكيل",
     chooseTitle: "اختر مساحة العمل",
     chooseDescription:
