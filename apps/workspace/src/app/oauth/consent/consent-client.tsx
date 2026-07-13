@@ -250,7 +250,7 @@ export function OAuthConsentClient({
       dir={direction}
       className="flex min-h-screen items-center justify-center bg-muted/50 px-4 py-8 text-foreground sm:px-6"
     >
-      <section className="w-full max-w-[860px] overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+      <section className="w-full max-w-[860px] overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
         <div className="relative border-b border-border px-6 py-6 sm:px-8">
           <button
             type="button"

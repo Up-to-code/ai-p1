@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { useMutation, useQuery } from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import type { McpAction, McpPermission, McpResource } from "@qentrah/mcp-contracts";
@@ -88,10 +88,14 @@ function profileUrl(profile: Pick<Profile, "publicId">) {
 
 export function PersonalMcpScreen() {
   const session = useAuthSession();
+  const { isAuthenticated: isConvexAuthenticated } = useConvexAuth();
   const { toast } = useToast();
   const organizationId = session.organization.id ?? "";
-  const profiles = useQuery(api.mcp.connectionProfiles.listMine, organizationId ? { organizationId } : "skip");
-  const grants = useQuery(api.mcp.oauthGrants.listMine, organizationId ? { organizationId } : "skip");
+  const authenticatedOrganizationArgs = isConvexAuthenticated && organizationId
+    ? { organizationId }
+    : "skip";
+  const profiles = useQuery(api.mcp.connectionProfiles.listMine, authenticatedOrganizationArgs);
+  const grants = useQuery(api.mcp.oauthGrants.listMine, authenticatedOrganizationArgs);
   const removeProfile = useMutation(api.mcp.connectionProfiles.remove);
   const revokeGrant = useMutation(api.mcp.oauthGrants.revoke);
   const [editing, setEditing] = useState<Profile | "new" | null>(null);
@@ -153,13 +157,14 @@ export function PersonalMcpScreen() {
           ) : (
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader><TableRow><TableHead>Agent</TableHead><TableHead>Permissions</TableHead><TableHead>Scope</TableHead><TableHead>Expires</TableHead><TableHead className="w-16" /></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>Agent</TableHead><TableHead>Permissions</TableHead><TableHead>Scope</TableHead><TableHead>Last activity</TableHead><TableHead>Expires</TableHead><TableHead className="w-16" /></TableRow></TableHeader>
                 <TableBody>
                   {activeGrants.map((grant) => (
                     <TableRow key={grant.id}>
                       <TableCell><div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><ShieldCheck className="h-4 w-4" /></span><span><span className="block font-medium text-foreground">{grant.clientName}</span><span className="block text-xs capitalize text-muted-foreground">{grant.status} OAuth connection</span></span></div></TableCell>
                       <TableCell><span className="inline-flex rounded-md bg-muted px-2 py-1 text-xs font-medium">{permissionCount(grant.permissions)} allowed</span></TableCell>
                       <TableCell className="capitalize text-muted-foreground">{grant.scope.type}</TableCell>
+                      <TableCell className="text-muted-foreground">{grant.lastUsedAt ? new Date(grant.lastUsedAt).toLocaleDateString() : "—"}</TableCell>
                       <TableCell className="text-muted-foreground">{new Date(grant.expiresAt).toLocaleDateString()}</TableCell>
                       <TableCell><Button variant="ghost" size="icon-sm" aria-label={`Revoke ${grant.clientName}`} title={`Revoke ${grant.clientName}`} onClick={() => setRevoking(grant)}><Unplug className="h-4 w-4" /></Button></TableCell>
                     </TableRow>
