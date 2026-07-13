@@ -5,11 +5,15 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { McpGrantFields } from "./mcp-grant-fields";
 import type { McpConsentGrantController } from "./use-mcp-consent-grant";
+import type { McpResource } from "@qentrah/mcp-contracts";
 
 function createController(): McpConsentGrantController {
   return {
     resources: ["organization", "task"],
-    actions: ["read", "create", "update", "delete"],
+    actionsForResource: (resource: McpResource) =>
+      resource === "organization"
+        ? ["read"]
+        : ["read", "create", "update", "delete"],
     scopeType: "organization",
     setScopeType: vi.fn(),
     selectedSpaceIds: [],
@@ -64,9 +68,8 @@ describe("McpGrantFields", () => {
     });
     expect(viewToggles).toHaveLength(2);
 
-    await userEvent.click(
-      screen.getAllByRole("checkbox", { name: "Delete" })[1],
-    );
+    expect(screen.getAllByRole("checkbox", { name: "Delete" })).toHaveLength(1);
+    await userEvent.click(screen.getByRole("checkbox", { name: "Delete" }));
     expect(controller.togglePermission).toHaveBeenCalledWith("task", "delete");
   });
 });

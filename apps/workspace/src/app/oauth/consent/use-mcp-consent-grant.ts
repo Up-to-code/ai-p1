@@ -4,33 +4,12 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import type {
-  McpAction,
-  McpPermission,
-  McpResource,
-} from "@qentrah/mcp-contracts";
-
-const resources: McpResource[] = [
-  "organization",
-  "space",
-  "project",
-  "task",
-  "client",
-  "deal",
-  "calendar",
-  "media",
-];
-const actions: McpAction[] = ["read", "create", "update", "delete"];
-
-function initialPermissions(canWrite: boolean): McpPermission[] {
-  return resources.map((resource) => ({
-    resource,
-    actions:
-      canWrite && resource !== "organization"
-        ? ["read", "create", "update"]
-        : ["read"],
-  }));
-}
+import type { McpPermission, McpResource } from "@qentrah/mcp-contracts";
+import {
+  defaultMcpConsentPermissions,
+  mcpConsentActions,
+  mcpConsentResources,
+} from "./mcp-consent-permissions";
 
 export function useMcpConsentGrant(input: {
   enabled: boolean;
@@ -45,7 +24,7 @@ export function useMcpConsentGrant(input: {
   const [selectedSpaceIds, setSelectedSpaceIds] = useState<string[]>([]);
   const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
   const [permissions, setPermissions] = useState<McpPermission[]>(() =>
-    initialPermissions(input.canWrite),
+    defaultMcpConsentPermissions(input.canWrite),
   );
   const [lifetimeDays, setLifetimeDays] = useState<7 | 30 | 90>(30);
   const organizationId = input.organizationId ?? "";
@@ -75,7 +54,11 @@ export function useMcpConsentGrant(input: {
     hasPermission,
   );
 
-  function togglePermission(resource: McpResource, action: McpAction) {
+  function togglePermission(
+    resource: McpResource,
+    action: McpPermission["actions"][number],
+  ) {
+    if (!mcpConsentActions(resource).includes(action)) return;
     if (action !== "read" && !input.canWrite) return;
     setPermissions((current) =>
       current.map((permission) => {
@@ -128,8 +111,8 @@ export function useMcpConsentGrant(input: {
 
   return useMemo(
     () => ({
-      resources,
-      actions,
+      resources: mcpConsentResources,
+      actionsForResource: mcpConsentActions,
       scopeType,
       setScopeType,
       selectedSpaceIds,

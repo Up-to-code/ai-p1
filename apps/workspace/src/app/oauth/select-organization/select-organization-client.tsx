@@ -91,7 +91,7 @@ export function OAuthSelectOrganizationClient({
     >
       <header className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
         <div className="flex items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-xl border border-border bg-background shadow-sm">
+          <span className="flex size-9 items-center justify-center rounded-xl border border-border bg-background">
             <BrandMark className="h-5 w-5" priority />
           </span>
           <span className="text-sm font-semibold tracking-tight">Qentrah</span>
@@ -103,7 +103,7 @@ export function OAuthSelectOrganizationClient({
       </header>
 
       <div className="mx-auto flex max-w-6xl items-start justify-center px-5 pb-12 pt-8 sm:px-8 sm:pt-16">
-        <section className="w-full max-w-2xl overflow-hidden rounded-3xl border border-border bg-background shadow-xl shadow-foreground/5">
+        <section className="w-full max-w-2xl overflow-hidden rounded-3xl border border-border bg-background">
           <div className="border-b border-border px-6 py-7 sm:px-9 sm:py-9">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-3 py-1 text-xs font-semibold text-muted-foreground">
               <ShieldCheck
@@ -157,12 +157,12 @@ export function OAuthSelectOrganizationClient({
                   return (
                     <button
                       key={organization.id}
-                      className="group flex w-full items-center gap-4 rounded-2xl border border-border bg-background p-4 text-start transition hover:border-foreground/25 hover:bg-muted/30 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 sm:p-5"
+                      className="group flex w-full items-center gap-4 rounded-2xl border border-border bg-background p-4 text-start transition hover:border-foreground/25 hover:bg-muted/30 disabled:cursor-not-allowed disabled:opacity-60 sm:p-5"
                       disabled={Boolean(busyId)}
                       onClick={() => void chooseOrganization(organization.id)}
                       type="button"
                     >
-                      <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-foreground text-background shadow-sm">
+                      <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-foreground text-background">
                         {isBusy ? (
                           <LoaderCircle
                             className="size-5 animate-spin"

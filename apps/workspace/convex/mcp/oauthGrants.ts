@@ -1,5 +1,10 @@
 import { v } from "convex/values";
-import { internalMutation, internalQuery, mutation, query } from "../_generated/server";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import { getAuthUser } from "../auth";
 import { resolveConvexAuthTopology } from "../auth/topology";
@@ -12,12 +17,21 @@ import {
 import { canActorUseMcpPermission, resolveScopePolicy } from "./scopePolicy";
 import { mcpToolPermissionMap, toolsForMcpAdapter } from "./toolRegistry";
 
-const grantLifetimeDaysValidator = v.union(v.literal(7), v.literal(30), v.literal(90));
+const grantLifetimeDaysValidator = v.union(
+  v.literal(7),
+  v.literal(30),
+  v.literal(90),
+);
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_GRANTS_PER_USER = 100;
 const MCP_RESOURCE = resolveConvexAuthTopology().mcpResourceUrl;
+const mcpPermissionKeys = new Set(
+  toolsForMcpAdapter().map((tool) => `${tool.resource}:${tool.action}`),
+);
 
-function isCurrentResourceGrant(grant: Pick<Doc<"mcpOAuthGrants">, "resourceUrl">) {
+function isCurrentResourceGrant(
+  grant: Pick<Doc<"mcpOAuthGrants">, "resourceUrl">,
+) {
   return grant.resourceUrl === MCP_RESOURCE;
 }
 
@@ -31,7 +45,7 @@ function presentGrant(grant: Doc<"mcpOAuthGrants">) {
     clientName: grant.clientName,
     permissions: grant.permissions,
     scope: grant.scope,
-    status: retiredResource ? "revoked" as const : grant.status,
+    status: retiredResource ? ("revoked" as const) : grant.status,
     createdAt: grant.createdAt,
     updatedAt: grant.updatedAt,
     expiresAt: grant.expiresAt,
@@ -48,14 +62,23 @@ async function livePermissions(
   scope: Doc<"mcpOAuthGrants">["scope"],
   requested: McpPermission[],
 ) {
-  const policy = await resolveScopePolicy(ctx, { organizationId, actorUserId: userId, scope });
+  const policy = await resolveScopePolicy(ctx, {
+    organizationId,
+    actorUserId: userId,
+    scope,
+  });
   const permissions: McpPermission[] = [];
   for (const permission of requested) {
     const actions: McpAction[] = [];
     for (const action of permission.actions) {
-      if (await canActorUseMcpPermission(ctx, policy, permission.resource, action)) actions.push(action);
+      if (!mcpPermissionKeys.has(`${permission.resource}:${action}`)) continue;
+      if (
+        await canActorUseMcpPermission(ctx, policy, permission.resource, action)
+      )
+        actions.push(action);
     }
-    if (actions.length > 0) permissions.push({ resource: permission.resource, actions });
+    if (actions.length > 0)
+      permissions.push({ resource: permission.resource, actions });
   }
   return { policy, permissions };
 }
@@ -72,14 +95,25 @@ export const upsert = mutation({
   handler: async (ctx, args) => {
     const user = await getAuthUser(ctx);
     const clientName = args.clientName.trim().slice(0, 120);
-    if (!clientName || !args.oauthClientId.trim()) throw new Error("OAuth client is required.");
-    const { permissions } = await livePermissions(ctx, args.organizationId, user._id, args.scope, args.permissions);
-    if (permissions.length === 0) throw new Error("At least one permitted action is required.");
+    if (!clientName || !args.oauthClientId.trim())
+      throw new Error("OAuth client is required.");
+    const { permissions } = await livePermissions(
+      ctx,
+      args.organizationId,
+      user._id,
+      args.scope,
+      args.permissions,
+    );
+    if (permissions.length === 0)
+      throw new Error("At least one permitted action is required.");
 
     const existing = await ctx.db
       .query("mcpOAuthGrants")
       .withIndex("by_user_organization_client", (q) =>
-        q.eq("userId", user._id).eq("organizationId", args.organizationId).eq("oauthClientId", args.oauthClientId),
+        q
+          .eq("userId", user._id)
+          .eq("organizationId", args.organizationId)
+          .eq("oauthClientId", args.oauthClientId),
       )
       .first();
     const now = Date.now();
@@ -101,9 +135,12 @@ export const upsert = mutation({
 
     const current = await ctx.db
       .query("mcpOAuthGrants")
-      .withIndex("by_user_organization", (q) => q.eq("userId", user._id).eq("organizationId", args.organizationId))
+      .withIndex("by_user_organization", (q) =>
+        q.eq("userId", user._id).eq("organizationId", args.organizationId),
+      )
       .take(MAX_GRANTS_PER_USER + 1);
-    if (current.length >= MAX_GRANTS_PER_USER) throw new Error("Too many OAuth MCP grants.");
+    if (current.length >= MAX_GRANTS_PER_USER)
+      throw new Error("Too many OAuth MCP grants.");
     const grantId = await ctx.db.insert("mcpOAuthGrants", {
       organizationId: args.organizationId,
       userId: user._id,
@@ -128,7 +165,9 @@ export const listMine = query({
     const user = await getAuthUser(ctx);
     const grants = await ctx.db
       .query("mcpOAuthGrants")
-      .withIndex("by_user_organization", (q) => q.eq("userId", user._id).eq("organizationId", args.organizationId))
+      .withIndex("by_user_organization", (q) =>
+        q.eq("userId", user._id).eq("organizationId", args.organizationId),
+      )
       .take(MAX_GRANTS_PER_USER);
     return grants.map(presentGrant);
   },
@@ -139,20 +178,33 @@ export const revoke = mutation({
   handler: async (ctx, args) => {
     const user = await getAuthUser(ctx);
     const grant = await ctx.db.get(args.grantId);
-    if (!grant || grant.userId !== user._id) throw new Error("OAuth MCP grant was not found.");
+    if (!grant || grant.userId !== user._id)
+      throw new Error("OAuth MCP grant was not found.");
     const now = Date.now();
-    await ctx.db.patch(args.grantId, { status: "revoked", revokedAt: now, updatedAt: now });
+    await ctx.db.patch(args.grantId, {
+      status: "revoked",
+      revokedAt: now,
+      updatedAt: now,
+    });
     return { ok: true };
   },
 });
 
 export const resolveInternal = internalQuery({
-  args: { userId: v.string(), organizationId: v.string(), oauthClientId: v.string(), now: v.number() },
+  args: {
+    userId: v.string(),
+    organizationId: v.string(),
+    oauthClientId: v.string(),
+    now: v.number(),
+  },
   handler: async (ctx, args) => {
     const grant = await ctx.db
       .query("mcpOAuthGrants")
       .withIndex("by_user_organization_client", (q) =>
-        q.eq("userId", args.userId).eq("organizationId", args.organizationId).eq("oauthClientId", args.oauthClientId),
+        q
+          .eq("userId", args.userId)
+          .eq("organizationId", args.organizationId)
+          .eq("oauthClientId", args.oauthClientId),
       )
       .first();
     if (
@@ -163,8 +215,15 @@ export const resolveInternal = internalQuery({
     ) {
       throw new Error("OAuth MCP approval is required.");
     }
-    const { policy, permissions } = await livePermissions(ctx, grant.organizationId, grant.userId, grant.scope, grant.permissions);
-    if (permissions.length === 0) throw new Error("OAuth MCP access is no longer available.");
+    const { policy, permissions } = await livePermissions(
+      ctx,
+      grant.organizationId,
+      grant.userId,
+      grant.scope,
+      grant.permissions,
+    );
+    if (permissions.length === 0)
+      throw new Error("OAuth MCP access is no longer available.");
     return { grant, permissions, policy };
   },
 });
@@ -184,19 +243,33 @@ export const recordUseInternal = internalMutation({
 
 export function authorizedTools(permissions: McpPermission[]) {
   return toolsForMcpAdapter()
-    .filter((tool) => permissions.some((permission) =>
-      permission.resource === tool.resource && permission.actions.includes(tool.action),
-    ))
+    .filter((tool) =>
+      permissions.some(
+        (permission) =>
+          permission.resource === tool.resource &&
+          permission.actions.includes(tool.action),
+      ),
+    )
     .map(({ name, title, description, resource, action, destructive }) => ({
-      name, title, description, resource, action, ...(destructive ? { destructive: true } : {}),
+      name,
+      title,
+      description,
+      resource,
+      action,
+      ...(destructive ? { destructive: true } : {}),
     }));
 }
 
-export function assertOAuthToolPermission(permissions: McpPermission[], tool: string) {
+export function assertOAuthToolPermission(
+  permissions: McpPermission[],
+  tool: string,
+) {
   const required = mcpToolPermissionMap[tool];
   if (!required) throw new Error("Unknown MCP tool.");
-  const allowed = permissions.some((permission) =>
-    permission.resource === required.resource && permission.actions.includes(required.action),
+  const allowed = permissions.some(
+    (permission) =>
+      permission.resource === required.resource &&
+      permission.actions.includes(required.action),
   );
   if (!allowed) throw new Error("OAuth MCP grant does not allow this tool.");
   return required;

@@ -115,7 +115,7 @@ export function McpGrantFields({
                     {resourceLabels[resource]}
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {controller.actions.map((action) => (
+                    {controller.actionsForResource(resource).map((action) => (
                       <PermissionActionToggle
                         key={action}
                         action={action}
@@ -205,10 +205,10 @@ function ScopeResourcePicker({
       : controller.selectedProjectIds;
 
   return (
-    <fieldset className="border-t border-border pt-4">
-      <legend className="mb-2 text-xs font-semibold text-foreground">
+    <div className="border-t border-border pt-4">
+      <p className="mb-2 text-xs font-semibold text-foreground">
         Choose {scopeType === "space" ? "spaces" : "projects"}
-      </legend>
+      </p>
       <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto">
         {options.map((option) => {
           const checked = selectedIds.includes(option.id);
@@ -232,7 +232,7 @@ function ScopeResourcePicker({
           );
         })}
       </div>
-    </fieldset>
+    </div>
   );
 }
 

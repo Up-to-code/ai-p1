@@ -6,8 +6,8 @@
 
 ## Inventory summary
 
-- Source files scanned: 1632
-- Files exposing interfaces: 1376
+- Source files scanned: 1633
+- Files exposing interfaces: 1377
 - Convex registered functions: 321
 - Application routes: 92
 - Hono/Convex HTTP registrations: 196
@@ -1343,6 +1343,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/not-found.tsx` | function: NotFound |
 | `apps/workspace/src/app/oauth/authorize/route.ts` | value: dynamic<br>function: GET |
 | `apps/workspace/src/app/oauth/consent/consent-client.tsx` | function: OAuthConsentClient |
+| `apps/workspace/src/app/oauth/consent/mcp-consent-permissions.ts` | value: mcpConsentResources<br>function: mcpConsentActions<br>function: defaultMcpConsentPermissions |
 | `apps/workspace/src/app/oauth/consent/mcp-grant-fields.tsx` | function: McpGrantFields |
 | `apps/workspace/src/app/oauth/consent/page.tsx` | function: OAuthConsentPage |
 | `apps/workspace/src/app/oauth/consent/use-mcp-consent-grant.ts` | function: useMcpConsentGrant<br>type: McpConsentGrantController |
