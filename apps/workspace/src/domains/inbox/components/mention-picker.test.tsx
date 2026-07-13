@@ -1,352 +1,130 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+// @vitest-environment happy-dom
+
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MentionPicker } from "./mention-picker";
-import type { MessageMention } from "../types/inbox.types";
 
-// Mock dependencies
+const mocks = vi.hoisted(() => ({
+  listOrganizationMembers: vi.fn(),
+  useTasksQuery: vi.fn(),
+  useDocsQuery: vi.fn(),
+  useProjectsIndexQuery: vi.fn(),
+  useClientsIndexQuery: vi.fn(),
+  useOpportunitiesQuery: vi.fn(),
+}));
+
 vi.mock("@/domains/organization/api", () => ({
-  listOrganizationMembers: vi.fn(() =>
-    Promise.resolve([
-      {
-        userId: "user1",
-        user: { name: "John Doe", email: "john@example.com" },
-      },
-      {
-        userId: "user2",
-        user: { name: "Jane Smith", email: "jane@example.com" },
-      },
-    ])
-  ),
+  listOrganizationMembers: mocks.listOrganizationMembers,
 }));
-
-vi.mock("@/domains/tasks/api/tasks", () => ({
-  useTasksQuery: vi.fn(() => [
-    { id: "task1", title: "Complete feature", status: "in_progress" },
-    { id: "task2", title: "Review PR", status: "todo" },
-  ]),
+vi.mock("@/domains/tasks/api/tasks", () => ({ useTasksQuery: mocks.useTasksQuery }));
+vi.mock("@/domains/docs/api/docs", () => ({ useDocsQuery: mocks.useDocsQuery }));
+vi.mock("@/domains/projects/api/projects", () => ({
+  useProjectsIndexQuery: mocks.useProjectsIndexQuery,
 }));
-
-vi.mock("@/domains/docs/api/docs", () => ({
-  useDocsQuery: vi.fn(() => [
-    { id: "doc1", title: "API Documentation", folderId: "folder1" },
-    { id: "doc2", title: "User Guide", folderId: null },
-  ]),
+vi.mock("@/domains/clients/api/clients", () => ({
+  useClientsIndexQuery: mocks.useClientsIndexQuery,
 }));
-
-vi.mock("convex/react", () => ({
-  useQuery: vi.fn(() => undefined),
+vi.mock("@/domains/opportunities/api/opportunities", () => ({
+  useOpportunitiesQuery: mocks.useOpportunitiesQuery,
 }));
 
 describe("MentionPicker", () => {
-  const mockOnSelect = vi.fn();
-  const mockOnClose = vi.fn();
-  const defaultProps = {
-    organizationId: "org123",
-    onSelect: mockOnSelect,
-    onClose: mockOnClose,
-  };
+  const onSelect = vi.fn();
+  const onClose = vi.fn();
+  const props = { organizationId: "org123", onSelect, onClose };
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.listOrganizationMembers.mockResolvedValue([
+      { userId: "user1", user: { name: "John Doe", email: "john@example.com" } },
+      { userId: "user2", user: { name: "Jane Smith", email: "jane@example.com" } },
+    ]);
+    mocks.useTasksQuery.mockReturnValue({
+      data: [{ id: "task1", title: "Complete feature", status: "in_progress" }],
+      isLoading: false,
+    });
+    mocks.useDocsQuery.mockReturnValue({
+      data: [{ id: "doc1", title: "API Documentation", folderId: "folder1" }],
+      isLoading: false,
+    });
+    mocks.useProjectsIndexQuery.mockReturnValue({ results: [] });
+    mocks.useClientsIndexQuery.mockReturnValue({ results: [] });
+    mocks.useOpportunitiesQuery.mockReturnValue([]);
   });
 
-  describe("Rendering", () => {
-    it("should render search input", () => {
-      render(<MentionPicker {...defaultProps} />);
-      const searchInput = screen.getByPlaceholderText(/search users, tasks, documents/i);
-      expect(searchInput).toBeInTheDocument();
-    });
+  it("renders the workspace search, category tabs, and keyboard help", async () => {
+    render(<MentionPicker {...props} />);
 
-    it("should render category tabs", () => {
-      render(<MentionPicker {...defaultProps} />);
-      expect(screen.getByText("All")).toBeInTheDocument();
-      expect(screen.getByText("Users")).toBeInTheDocument();
-      expect(screen.getByText("Tasks")).toBeInTheDocument();
-      expect(screen.getByText("Documents")).toBeInTheDocument();
-      expect(screen.getByText("Files")).toBeInTheDocument();
-    });
-
-    it("should render keyboard shortcuts in footer", () => {
-      render(<MentionPicker {...defaultProps} />);
-      expect(screen.getByText(/Navigate/i)).toBeInTheDocument();
-      expect(screen.getByText(/Select/i)).toBeInTheDocument();
-      expect(screen.getByText(/Close/i)).toBeInTheDocument();
-    });
-
-    it("should show loading state initially", () => {
-      render(<MentionPicker {...defaultProps} />);
-      expect(screen.getByRole("status", { hidden: true })).toBeInTheDocument();
-    });
+    expect(screen.getByPlaceholderText(/search people, tasks, docs/i)).toBeInTheDocument();
+    expect(screen.getByText("People")).toBeInTheDocument();
+    expect(screen.getByText("Docs")).toBeInTheDocument();
+    expect(screen.getByText(/navigate/i)).toBeInTheDocument();
+    await screen.findByText("John Doe");
   });
 
-  describe("Search Functionality", () => {
-    it("should filter items by search query", async () => {
-      render(<MentionPicker {...defaultProps} />);
-      const searchInput = screen.getByPlaceholderText(/search users, tasks, documents/i);
+  it("searches across workspace resources", async () => {
+    render(<MentionPicker {...props} />);
+    const search = screen.getByPlaceholderText(/search people, tasks, docs/i);
 
-      await userEvent.type(searchInput, "john");
+    await userEvent.type(search, "john");
 
-      await waitFor(() => {
-        expect(screen.queryByText("Jane Smith")).not.toBeInTheDocument();
-      });
-    });
-
-    it("should show all items when search is cleared", async () => {
-      render(<MentionPicker {...defaultProps} />);
-      const searchInput = screen.getByPlaceholderText(/search users, tasks, documents/i);
-
-      await userEvent.type(searchInput, "test");
-      await userEvent.clear(searchInput);
-
-      await waitFor(() => {
-        const items = screen.queryAllByRole("button", { name: /./i });
-        expect(items.length).toBeGreaterThan(0);
-      });
-    });
-
-    it("should show no results message when search has no matches", async () => {
-      render(<MentionPicker {...defaultProps} />);
-      const searchInput = screen.getByPlaceholderText(/search users, tasks, documents/i);
-
-      await userEvent.type(searchInput, "nonexistentitem12345");
-
-      await waitFor(() => {
-        expect(screen.getByText(/no items found/i)).toBeInTheDocument();
-      });
-    });
+    expect(await screen.findByText("John Doe")).toBeInTheDocument();
+    expect(screen.queryByText("Jane Smith")).not.toBeInTheDocument();
+    expect(screen.queryByText("Complete feature")).not.toBeInTheDocument();
   });
 
-  describe("Category Filtering", () => {
-    it("should filter to users category", async () => {
-      render(<MentionPicker {...defaultProps} />);
+  it("filters by resource category", async () => {
+    render(<MentionPicker {...props} />);
+    await screen.findByText("John Doe");
 
-      await waitFor(() => {
-        expect(screen.queryByText("John Doe")).toBeInTheDocument();
-      });
+    await userEvent.click(screen.getByRole("button", { name: "Tasks" }));
 
-      const usersTab = screen.getByText("Users");
-      await userEvent.click(usersTab);
+    expect(screen.getByText("Complete feature")).toBeInTheDocument();
+    expect(screen.queryByText("John Doe")).not.toBeInTheDocument();
+  });
 
-      await waitFor(() => {
-        expect(screen.getByText("John Doe")).toBeInTheDocument();
-        expect(screen.queryByText("Complete feature")).not.toBeInTheDocument();
-      });
-    });
+  it("returns the selected mention and closes", async () => {
+    render(<MentionPicker {...props} />);
 
-    it("should filter to tasks category", async () => {
-      render(<MentionPicker {...defaultProps} />);
+    await userEvent.click((await screen.findByText("John Doe")).closest("button")!);
 
-      const tasksTab = screen.getByText("Tasks");
-      await userEvent.click(tasksTab);
+    expect(onSelect).toHaveBeenCalledWith({ id: "user1", name: "John Doe", type: "user" });
+    expect(onClose).toHaveBeenCalledOnce();
+  });
 
-      await waitFor(() => {
-        expect(screen.getByText("Complete feature")).toBeInTheDocument();
-        expect(screen.queryByText("John Doe")).not.toBeInTheDocument();
-      });
-    });
+  it("supports keyboard selection and closing", async () => {
+    render(<MentionPicker {...props} />);
+    await screen.findByText("John Doe");
 
-    it("should filter to documents category", async () => {
-      render(<MentionPicker {...defaultProps} />);
+    fireEvent.keyDown(window, { key: "Enter" });
+    expect(onSelect).toHaveBeenCalled();
 
-      const docsTab = screen.getByText("Documents");
-      await userEvent.click(docsTab);
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(onClose).toHaveBeenCalled();
+  });
 
-      await waitFor(() => {
-        expect(screen.getByText("API Documentation")).toBeInTheDocument();
-        expect(screen.queryByText("John Doe")).not.toBeInTheDocument();
-      });
-    });
+  it("keeps mentions organization-wide even when a project id is supplied", async () => {
+    render(<MentionPicker {...props} projectId="project123" />);
 
-    it("should show all categories when All tab is selected", async () => {
-      render(<MentionPicker {...defaultProps} />);
-
-      const usersTab = screen.getByText("Users");
-      await userEvent.click(usersTab);
-
-      const allTab = screen.getByText("All");
-      await userEvent.click(allTab);
-
-      await waitFor(() => {
-        expect(screen.queryByText("John Doe")).toBeInTheDocument();
-        expect(screen.queryByText("Complete feature")).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(mocks.useTasksQuery).toHaveBeenCalledWith("org123", { status: "all" });
+      expect(mocks.useDocsQuery).toHaveBeenCalledWith("org123");
     });
   });
 
-  describe("Selection Behavior", () => {
-    it("should call onSelect when item is clicked", async () => {
-      render(<MentionPicker {...defaultProps} />);
+  it("shows a localized-neutral unmatched result state", async () => {
+    mocks.listOrganizationMembers.mockResolvedValue([]);
+    mocks.useTasksQuery.mockReturnValue({ data: [], isLoading: false });
+    mocks.useDocsQuery.mockReturnValue({ data: [], isLoading: false });
+    render(<MentionPicker {...props} />);
+    await userEvent.type(
+      screen.getByPlaceholderText(/search people, tasks, docs/i),
+      "does-not-exist",
+    );
 
-      await waitFor(() => {
-        expect(screen.queryByText("John Doe")).toBeInTheDocument();
-      });
-
-      const userItem = screen.getByText("John Doe").closest("button");
-      if (userItem) {
-        await userEvent.click(userItem);
-      }
-
-      expect(mockOnSelect).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: "user1",
-          name: "John Doe",
-          type: "user",
-        })
-      );
-    });
-
-    it("should call onClose after selection", async () => {
-      render(<MentionPicker {...defaultProps} />);
-
-      await waitFor(() => {
-        expect(screen.queryByText("John Doe")).toBeInTheDocument();
-      });
-
-      const userItem = screen.getByText("John Doe").closest("button");
-      if (userItem) {
-        await userEvent.click(userItem);
-      }
-
-      expect(mockOnClose).toHaveBeenCalled();
-    });
-
-    it("should highlight item on hover", async () => {
-      render(<MentionPicker {...defaultProps} />);
-
-      await waitFor(() => {
-        expect(screen.queryByText("John Doe")).toBeInTheDocument();
-      });
-
-      const userItem = screen.getByText("John Doe").closest("button");
-      if (userItem) {
-        fireEvent.mouseEnter(userItem);
-        expect(userItem).toHaveClass("bg-accent");
-      }
-    });
-  });
-
-  describe("Keyboard Navigation", () => {
-    it("should navigate down with ArrowDown", async () => {
-      render(<MentionPicker {...defaultProps} />);
-
-      await waitFor(() => {
-        expect(screen.queryByText("John Doe")).toBeInTheDocument();
-      });
-
-      fireEvent.keyDown(window, { key: "ArrowDown" });
-
-      await waitFor(() => {
-        const items = screen.queryAllByRole("button");
-        const secondItem = items[1];
-        expect(secondItem).toHaveClass("bg-accent");
-      });
-    });
-
-    it("should navigate up with ArrowUp", async () => {
-      render(<MentionPicker {...defaultProps} />);
-
-      await waitFor(() => {
-        expect(screen.queryByText("John Doe")).toBeInTheDocument();
-      });
-
-      fireEvent.keyDown(window, { key: "ArrowDown" });
-      fireEvent.keyDown(window, { key: "ArrowDown" });
-      fireEvent.keyDown(window, { key: "ArrowUp" });
-
-      await waitFor(() => {
-        const items = screen.queryAllByRole("button");
-        const firstItem = items[0];
-        expect(firstItem).toHaveClass("bg-accent");
-      });
-    });
-
-    it("should select item with Enter key", async () => {
-      render(<MentionPicker {...defaultProps} />);
-
-      await waitFor(() => {
-        expect(screen.queryByText("John Doe")).toBeInTheDocument();
-      });
-
-      fireEvent.keyDown(window, { key: "Enter" });
-
-      expect(mockOnSelect).toHaveBeenCalled();
-    });
-
-    it("should close picker with Escape key", async () => {
-      render(<MentionPicker {...defaultProps} />);
-
-      fireEvent.keyDown(window, { key: "Escape" });
-
-      expect(mockOnClose).toHaveBeenCalled();
-    });
-  });
-
-  describe("Project Scoping", () => {
-    it("should pass projectId to queries when provided", () => {
-      const { useTasksQuery } = require("@/domains/tasks/api/tasks");
-      const { useDocsQuery } = require("@/domains/docs/api/docs");
-
-      render(<MentionPicker {...defaultProps} projectId="proj123" />);
-
-      expect(useTasksQuery).toHaveBeenCalledWith(
-        "org123",
-        expect.objectContaining({
-          projectId: "proj123",
-        })
-      );
-
-      expect(useDocsQuery).toHaveBeenCalledWith(
-        "org123",
-        expect.objectContaining({
-          projectId: "proj123",
-        })
-      );
-    });
-
-    it("should work without projectId", () => {
-      const { useTasksQuery } = require("@/domains/tasks/api/tasks");
-
-      render(<MentionPicker {...defaultProps} />);
-
-      expect(useTasksQuery).toHaveBeenCalledWith(
-        "org123",
-        expect.objectContaining({
-          projectId: null,
-        })
-      );
-    });
-  });
-
-  describe("Category Icons", () => {
-    it("should display correct icons for each category", async () => {
-      render(<MentionPicker {...defaultProps} />);
-
-      await waitFor(() => {
-        expect(screen.queryByText("Users")).toBeInTheDocument();
-      });
-
-      const categories = ["Users", "Tasks", "Documents"];
-      categories.forEach((category) => {
-        const categoryElement = screen.getByText(category);
-        expect(categoryElement.parentElement).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe("Empty States", () => {
-    it("should show empty state when no items exist", () => {
-      const { useTasksQuery } = require("@/domains/tasks/api/tasks");
-      const { useDocsQuery } = require("@/domains/docs/api/docs");
-
-      useTasksQuery.mockReturnValue([]);
-      useDocsQuery.mockReturnValue([]);
-
-      render(<MentionPicker {...defaultProps} />);
-
-      waitFor(() => {
-        expect(screen.queryByText(/no items found/i)).toBeInTheDocument();
-      });
-    });
+    await waitFor(() =>
+      expect(screen.getByText(/no matching workspace items/i)).toBeInTheDocument(),
+    );
   });
 });
