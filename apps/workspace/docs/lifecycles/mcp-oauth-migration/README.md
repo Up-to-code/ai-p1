@@ -1,7 +1,14 @@
-# MCP OAuth Cutover
+# MCP OAuth Workspace Cutover
 
-Qentrah MCP uses OAuth 2.1 authorization code with PKCE. The public MCP resource is owned by the standalone Hono gateway at `https://mcp.qentrah.com/mcp`; the workspace remains the Better Auth issuer and consent host.
+Qentrah MCP uses OAuth 2.1 authorization code with PKCE. The workspace owns the
+only public MCP resource at `https://app.qentrah.com/api/mcp`, as well as the
+Better Auth issuer and consent experience.
 
-Durable grants bind a Better Auth user, organization, OAuth client, organization/space/project scope, exact resource actions, and an expiry. Convex revalidates the grant and current membership before every tool call.
+Durable Convex grants bind a Better Auth user, Organization, OAuth client,
+Organization/Space/Project scope, exact resource actions, and expiry. Convex
+revalidates the grant, membership, and resource access before every tool list
+or call.
 
-Secret-bearing agent links are retired. The legacy route exists only as a sanitized `410 Gone` migration tombstone and never reads the embedded secret.
+The standalone gateway and secret-bearing agent links are retired. There is no
+migration tombstone or compatibility resource; existing clients reconnect and
+approve the new audience through OAuth.

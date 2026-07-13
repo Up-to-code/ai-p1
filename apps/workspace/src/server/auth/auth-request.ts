@@ -2,6 +2,13 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { fetchAction, fetchMutation, fetchQuery } from "convex/nextjs";
 import type { ArgsAndOptions, FunctionReference, FunctionReturnType } from "convex/server";
 import { getToken as getBetterAuthToken } from "@convex-dev/better-auth/utils";
+import { resolveAuthTopology } from "@qentrah/auth/config";
+import { readAuthCredential } from "@qentrah/auth/credentials";
+import {
+  AuthHttpRequestError,
+  createAuthHttpClient,
+  type AuthHttpRequestOptions,
+} from "@qentrah/auth/http";
 import {
   fetchAuthAction as nextFetchAuthAction,
   fetchAuthMutation as nextFetchAuthMutation,
@@ -28,18 +35,28 @@ type OptionalArgs<FuncRef extends FunctionReference<"query" | "mutation" | "acti
     ? [args?: FuncRef["_args"]]
     : [args: FuncRef["_args"]];
 
-const requestStore = new AsyncLocalStorage<Request>();
+export type AuthRequestContext = Readonly<{ headers: Headers }>;
+
+const requestStore = new AsyncLocalStorage<AuthRequestContext>();
 
 const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL!;
-const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const authTopology = resolveAuthTopology();
+const authHttp = createAuthHttpClient({
+  baseUrl: authTopology.authIssuer,
+  fetch: (...args) => globalThis.fetch(...args),
+  credentialProvider: () => {
+    const headers = getRequestHeaders();
+    return headers ? readAuthCredential(headers) : null;
+  },
+});
 
 export function runWithAuthHeaders<T>(headers: Headers, operation: () => T | Promise<T>) {
-  const request = new Request("https://qentrah.internal/api/auth-context", { headers });
-  return requestStore.run(request, operation);
+  return requestStore.run({ headers: new Headers(headers) }, operation);
 }
 
 export function getRequestHeaders(): Headers | null {
-  return requestStore.getStore()?.headers ?? null;
+  const headers = requestStore.getStore()?.headers;
+  return headers ? new Headers(headers) : null;
 }
 
 export const authRequestStore = requestStore;
@@ -49,17 +66,12 @@ export async function isAuthenticated(): Promise<boolean> {
   return nextIsAuthenticated();
 }
 
-function authHeaders() {
+function requestOriginHeaders() {
   const incoming = getRequestHeaders();
   const headers = new Headers();
-  headers.set("content-type", "application/json");
-  headers.set("origin", new URL(appBaseUrl).origin);
+  headers.set("origin", authTopology.workspaceOrigin);
 
   if (incoming) {
-    const cookie = incoming.get("cookie");
-    if (cookie) headers.set("cookie", cookie);
-    const authorization = incoming.get("authorization");
-    if (authorization) headers.set("authorization", authorization);
     const origin = incoming.get("origin");
     if (origin) headers.set("origin", origin);
     const referer = incoming.get("referer");
@@ -118,54 +130,21 @@ export async function fetchAuthenticatedAction<Action extends FunctionReference<
 
 export async function callBetterAuth<T>(
   path: string,
-  options: {
-    method?: "GET" | "POST" | "PATCH" | "DELETE";
-    query?: Record<string, string | number | boolean | undefined>;
-    body?: unknown;
-  } = {},
+  options: AuthHttpRequestOptions = {},
 ): Promise<T> {
-  const url = new URL(`/api/auth${path}`, appBaseUrl);
-  for (const [key, value] of Object.entries(options.query ?? {})) {
-    if (value !== undefined) url.searchParams.set(key, String(value));
-  }
-
-  const res = await fetch(url, {
-    method: options.method ?? (options.body === undefined ? "GET" : "POST"),
-    headers: authHeaders(),
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+  return authHttp.request<T>(path, {
+    ...options,
+    headers: new Headers([
+      ...requestOriginHeaders().entries(),
+      ...new Headers(options.headers).entries(),
+    ]),
+    // Better Auth endpoint-specific normalization remains owned by the
+    // organization/session Adapter that requested this typed result.
+    parse: (value) => value as T,
   });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => res.statusText);
-    const message = betterAuthErrorMessage(text || res.statusText);
-    throw new BetterAuthRequestError(message, res.status);
-  }
-
-  return res.json() as Promise<T>;
 }
 
-export class BetterAuthRequestError extends Error {
-  constructor(
-    message: string,
-    public readonly status: number,
-  ) {
-    super(message);
-    this.name = "BetterAuthRequestError";
-  }
-}
-
-function betterAuthErrorMessage(value: string) {
-  try {
-    const parsed = JSON.parse(value) as { message?: unknown; error?: unknown; code?: unknown };
-    if (typeof parsed.message === "string") return parsed.message;
-    if (typeof parsed.error === "string") return parsed.error;
-    if (typeof parsed.code === "string") return parsed.code;
-  } catch {
-    // Keep the raw response body below.
-  }
-
-  return value;
-}
+export { AuthHttpRequestError, AuthHttpRequestError as BetterAuthRequestError };
 
 export async function getAuthRequestSession(): Promise<AuthRequestSession> {
   try {

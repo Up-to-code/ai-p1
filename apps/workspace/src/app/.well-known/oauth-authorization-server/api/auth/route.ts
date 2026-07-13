@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
+import { resolveAuthTopology } from "@qentrah/auth/config";
 
 function authServerMetadata() {
-  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/u, "");
-  const issuer = `${appUrl}/api/auth`;
+  const topology = resolveAuthTopology();
 
   return {
-    issuer,
-    authorization_endpoint: `${appUrl}/oauth/authorize`,
-    token_endpoint: `${issuer}/oauth2/token`,
-    registration_endpoint: `${issuer}/oauth2/register`,
-    jwks_uri: `${issuer}/jwks`,
+    issuer: topology.authIssuer,
+    authorization_endpoint: `${topology.workspaceOrigin}/oauth/authorize`,
+    token_endpoint: `${topology.authIssuer}/oauth2/token`,
+    registration_endpoint: `${topology.authIssuer}/oauth2/register`,
+    jwks_uri: topology.jwksUrl,
     response_types_supported: ["code"],
     grant_types_supported: ["authorization_code", "refresh_token"],
     token_endpoint_auth_methods_supported: ["none"],

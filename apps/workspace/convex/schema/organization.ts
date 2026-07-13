@@ -186,6 +186,7 @@ export const organizationTables = {
     organizationId: v.string(),
     userId: v.string(),
     oauthClientId: v.string(),
+    resourceUrl: v.optional(v.string()),
     clientName: v.string(),
     permissions: v.array(v.object({
       resource: v.union(

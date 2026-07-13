@@ -1,10 +1,11 @@
 # Qentrah Module Map
 
-Status: Wave 0 baseline, 2026-07-13
+Status: Workspace MCP and shared Auth cutover, 2026-07-13
 
 This map records ownership and the intended seams across the Workspace, Convex,
-MCP gateway, and Eve. `CONTEXT.md` remains the source for domain language;
-accepted decisions under `docs/decisions/` remain authoritative.
+workspace-owned MCP transport, and Eve. `CONTEXT.md` remains the source for
+domain language; accepted decisions under `docs/decisions/` remain
+authoritative.
 
 ## Source-of-truth index
 
@@ -15,6 +16,8 @@ accepted decisions under `docs/decisions/` remain authoritative.
 | Exported interfaces, routes, Convex functions, tools, and package commands | Generated `qentrah-codebase-interface-map.md` |
 | Rendered shared UI and real consumers | `component-registry.json` |
 | Workspace navigation and route classification | `apps/workspace/src/domains/navigation/route-catalog.ts` and `workspace-route-policy.ts` |
+| Auth deployment topology, credentials, claims, scopes, HTTP behavior, and pure guards | `packages/auth` (`@qentrah/auth`) |
+| Public MCP resource | `https://app.qentrah.com/api/mcp`, adapted by `apps/workspace/src/app/api/mcp/route.ts` |
 | MCP tool identity, permissions, and Adapter claims | `packages/mcp-contracts/src/tool-catalog.ts` |
 | MCP executable handler parity | `apps/workspace/convex/mcp/handlers/registry.ts` |
 | Eve agents and commands | `apps/workspace/agent/subagents/*/agent.ts`, `subagents/*/tools/*.ts`, and `agent/tools/*.ts` |
@@ -32,7 +35,7 @@ ownership or accepted decisions.
 
 | Module | Public Interface | Primary implementation | Adapters | Authorization and source of truth |
 |---|---|---|---|---|
-| Workspace Identity | Authenticated user and active Organization membership | `src/domains/auth`, `src/server/auth`, `convex/auth.ts` | Better Auth browser, server request, Convex actor, Eve channel | Better Auth identifies the user; server policy resolves membership |
+| Workspace Identity | Authenticated user, normalized Auth Context, and active Organization membership | `@qentrah/auth`; focused Better Auth composition in `apps/workspace/convex/auth` | Browser, Next.js request, Convex actor, mobile SecureStore, Eve channel | Better Auth identifies the user; server policy resolves membership |
 | Resource Access | Record-aware read/write decisions | `convex/access` | Workspace queries/writes, MCP, Eve | Organization → Space → Project; always derived server-side |
 | Platform Administration | Fail-closed cross-Organization operational access | `packages/auth/src/platform-admin.ts` | Next.js config, Convex platform access, Media visibility controls | Authenticated email must match the configured allowlist; Organization roles do not grant access |
 | Domain Contracts | Runtime inputs, outputs, patch shapes, inferred types | `packages/domain-contracts` plus focused Convex validators | Workspace forms, Hono, Convex, MCP, Eve | Contracts validate shape; access Modules authorize records |
@@ -40,7 +43,7 @@ ownership or accepted decisions.
 | Locale Registry | Locale, direction, font, fallback, messages, metadata | `src/i18n`, `src/lib/i18n` | Next.js layouts, OAuth, metadata, errors | Server-rendered; no DOM translation observer |
 | Resource Workspace | Persistent resource shell and routed view placement | `src/components/shared/resource-workspace` | Task, Client, and future resource route layouts | Convex remains source of truth for reactive reads |
 | Task Workspace | Scope, query state, commands, shared presentation | `src/domains/tasks` | Table, list, board, detail | Task access Module plus Task Mutation Module |
-| MCP Execution | Grant, tool contract, scope, dispatch, audit | `convex/mcp`, `src/server/protocols/mcp` | OAuth MCP transport and domain operation Adapters | Dynamic grant and record scope on every invocation |
+| MCP Execution | OAuth bearer identity, grant-filtered tool contract, scope, dispatch, audit | workspace `/api/mcp` Adapter and `src/server/protocols/mcp`; `convex/mcp`; `@qentrah/mcp-contracts` | Stateless Streamable HTTP, Convex executor, and domain operation Adapters | `@qentrah/auth` verifies the token; Convex derives live grant and record scope on every invocation |
 | Eve Execution | Authenticated actor, planning, tools, presentation | `agent`, `src/domains/eve` | Eve channel and domain operation Adapters | Same resource access and lifecycle invariants as MCP |
 | Shared UI | Proven cross-domain rendered behavior | `packages/our-platform-components`, `src/components/shared` | Registered consumers in `component-registry.json` | UI capability state is informative, never authoritative |
 
@@ -53,7 +56,7 @@ access, presentation, and tests local to that behavior.
 | Domain Module | Workspace owner | Convex/persistence owner | Routes and external Adapters | Verification focus |
 |---|---|---|---|---|
 | Activity | `src/domains/activity` | Organization audit and Inbox event reads | `/activity`, Organization aliases | canonical route, localized states, access |
-| Auth | `src/domains/auth`, `src/server/auth` | `convex/auth.ts`, `betterAuth.ts` | auth routes, Hono, Eve | session, token forwarding, membership |
+| Auth | `@qentrah/auth`; `src/domains/auth`, `src/server/auth` runtime Adapters | focused Better Auth Modules under `convex/auth`, with `betterAuth.ts` binding | auth routes, business API, mobile SecureStore, Eve | canonical topology, credential parsing, Auth Context, scopes, guards; runtime Adapters resolve sessions and membership |
 | Automations | `src/domains/automations` | `convex/automations` | `/automations` | graph invariants, persistence, execution |
 | Billing | `src/domains/billing` | `convex/billing` | `/billing`, provider webhooks | idempotency, signatures, credit surface |
 | Cache | `src/domains/cache` | none | Workspace hooks | invalidation without duplicate truth |
@@ -68,7 +71,7 @@ access, presentation, and tests local to that behavior.
 | Eve | `src/domains/eve` | durable execution pending | `/ai`, Eve channel | actor scope, retry, persistence |
 | Inbox | `src/domains/inbox` | `convex/inbox` | `/inbox`; Channels remain separate | message/thread compound access |
 | Integrations | `src/domains/integrations` | partner/integration records | `/integrations`, partner Adapters | credentials via backend write gateway |
-| MCP | `src/domains/mcp` | `convex/mcp` | `/mcp`, OAuth, MCP gateway | manifest parity, dynamic scope, audit |
+| MCP | `src/domains/mcp`; workspace MCP protocol Adapter | `convex/mcp` | `/mcp` grant-management UI, `/api/mcp` OAuth resource | catalog/handler parity, bearer-only transport, dynamic scope, rate limit, audit |
 | Media | `src/domains/media` | `convex/media` | resource upload/browser Adapters | durable URLs, ownership, cleanup |
 | Navigation | `src/domains/navigation` | none | proxy, layouts, sidebar | route-policy completeness |
 | Notifications | `src/domains/notifications` | `convex/notifications` | Inbox, push, Eve | retry, audit, token removal |

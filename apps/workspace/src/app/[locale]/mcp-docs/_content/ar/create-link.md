@@ -6,7 +6,7 @@ description: "اربط عميل MCP ثم سجّل الدخول إلى كانتر
 
 ## خطوات الإعداد
 
-1. أضف `https://mcp.qentrah.com/mcp` كخادم MCP بعيد باستخدام Streamable HTTP.
+1. أضف `https://app.qentrah.com/api/mcp` كخادم MCP بعيد باستخدام Streamable HTTP.
 2. ابدأ الاتصال ليكتشف العميل خادم OAuth 2.1 الخاص بكانترا.
 3. سجّل الدخول واختر المؤسسة.
 4. اختر نطاق المؤسسة أو مساحات محددة أو مشاريع محددة.
@@ -14,7 +14,7 @@ description: "اربط عميل MCP ثم سجّل الدخول إلى كانتر
 6. وافق على الوكيل ليعود التدفق إلى رابط OAuth المسجل للعميل.
 
 ```bash
-codex mcp add qentrah --url https://mcp.qentrah.com/mcp
+codex mcp add qentrah --url https://app.qentrah.com/api/mcp
 codex mcp login qentrah
 ```
 

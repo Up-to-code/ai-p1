@@ -43,6 +43,7 @@
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@number-flow/react": "^0.6.0",
     "@openrouter/ai-sdk-provider": "^2.9.0",
+    "@qentrah/auth": "0.1.0",
     "@qentrah/brand-identity": "0.1.0",
     "@qentrah/domain-contracts": "0.1.0",
     "@qentrah/location-map": "^0.1.0",

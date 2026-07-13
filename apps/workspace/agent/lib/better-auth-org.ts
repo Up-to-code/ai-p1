@@ -1,36 +1,48 @@
 import type { ToolContext } from "eve/tools";
+import { resolveAuthTopology } from "@qentrah/auth/config";
+import type { AuthCredential } from "@qentrah/auth/credentials";
+import { createAuthHttpClient } from "@qentrah/auth/http";
+import { z } from "zod";
 import { requireWorkspaceActorToken } from "./workspace-actor";
 
-type OrganizationRole = { id: string; role: string; key?: string };
-type OrganizationMember = { id: string; userId: string; role: string };
-type OrganizationInvitation = { id: string; role: string; status?: string };
+const idResponseSchema = z.object({ id: z.string() }).passthrough();
+const organizationMemberSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  role: z.string(),
+}).passthrough();
+const organizationInvitationSchema = z.object({
+  id: z.string(),
+  role: z.string(),
+  status: z.string().optional(),
+}).passthrough();
+const organizationMembersSchema = z.object({
+  members: z.array(organizationMemberSchema).optional(),
+}).passthrough();
+const organizationInvitationsSchema = z.union([
+  z.array(organizationInvitationSchema),
+  z.object({ invitations: z.array(organizationInvitationSchema).optional() }).passthrough(),
+]);
 
-const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+type OrganizationRole = { id: string; role: string; key?: string };
+const authTopology = resolveAuthTopology();
 
 function getSessionToken(ctx: ToolContext): string {
   return requireWorkspaceActorToken(ctx, "sessionToken");
 }
 
-async function betterAuthFetch<T>(
-  ctx: ToolContext,
-  path: string,
-  options: { method?: "GET" | "POST" | "PATCH" | "DELETE"; body?: unknown } = {},
-): Promise<T> {
-  const response = await fetch(`${appBaseUrl}/api/auth${path}`, {
-    method: options.method ?? "POST",
-    headers: {
-      "content-type": "application/json",
-      cookie: `better-auth.session_token=${getSessionToken(ctx)}`,
-    },
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+function authClientFor(ctx: ToolContext) {
+  const token = getSessionToken(ctx);
+  const credential: AuthCredential = {
+    kind: "session",
+    token,
+    cookieName: "better-auth.session_token",
+    cookie: `better-auth.session_token=${encodeURIComponent(token)}`,
+  };
+  return createAuthHttpClient({
+    baseUrl: authTopology.authIssuer,
+    credentialProvider: () => credential,
   });
-
-  if (!response.ok) {
-    const text = await response.text().catch(() => response.statusText);
-    throw new Error(`Organization action failed: ${text}`);
-  }
-
-  return response.json() as Promise<T>;
 }
 
 export async function updateOrganizationIdentity(
@@ -38,8 +50,9 @@ export async function updateOrganizationIdentity(
   organizationId: string,
   input: { name?: string; logo?: string },
 ) {
-  return betterAuthFetch<{ id: string }>(ctx, "/organization/update", {
+  return authClientFor(ctx).request("/organization/update", {
     body: { organizationId, data: input },
+    parse: (value) => idResponseSchema.parse(value),
   });
 }
 
@@ -48,8 +61,9 @@ export async function createOrganizationInvitation(
   organizationId: string,
   input: { emailAddress: string; role: string },
 ) {
-  return betterAuthFetch<{ id: string }>(ctx, "/organization/invite-member", {
+  return authClientFor(ctx).request("/organization/invite-member", {
     body: { organizationId, email: input.emailAddress, role: input.role },
+    parse: (value) => idResponseSchema.parse(value),
   });
 }
 
@@ -58,8 +72,9 @@ export async function revokeOrganizationInvitation(
   _organizationId: string,
   invitationId: string,
 ) {
-  return betterAuthFetch<{ id: string }>(ctx, "/organization/cancel-invitation", {
+  return authClientFor(ctx).request("/organization/cancel-invitation", {
     body: { invitationId },
+    parse: (value) => idResponseSchema.parse(value),
   });
 }
 
@@ -69,8 +84,9 @@ export async function updateOrganizationMemberRole(
   memberId: string,
   role: string,
 ) {
-  return betterAuthFetch<{ id: string }>(ctx, "/organization/update-member-role", {
+  return authClientFor(ctx).request("/organization/update-member-role", {
     body: { organizationId, memberId, role },
+    parse: (value) => idResponseSchema.parse(value),
   });
 }
 
@@ -79,8 +95,9 @@ export async function removeOrganizationMember(
   organizationId: string,
   memberIdOrEmail: string,
 ) {
-  return betterAuthFetch<{ id: string }>(ctx, "/organization/remove-member", {
+  return authClientFor(ctx).request("/organization/remove-member", {
     body: { organizationId, memberIdOrEmail },
+    parse: (value) => idResponseSchema.parse(value),
   });
 }
 
@@ -110,20 +127,18 @@ export async function deleteOrganizationRole(
 }
 
 export async function listOrganizationMembers(ctx: ToolContext, organizationId: string) {
-  const data = await betterAuthFetch<{ members?: OrganizationMember[] }>(
-    ctx,
-    "/organization/list-members",
-    { body: { organizationId } },
-  );
+  const data = await authClientFor(ctx).request("/organization/list-members", {
+    body: { organizationId },
+    parse: (value) => organizationMembersSchema.parse(value),
+  });
   return data.members ?? [];
 }
 
 export async function listOrganizationInvitations(ctx: ToolContext, organizationId: string) {
-  const data = await betterAuthFetch<OrganizationInvitation[] | { invitations?: OrganizationInvitation[] }>(
-    ctx,
-    "/organization/list-invitations",
-    { body: { organizationId } },
-  );
+  const data = await authClientFor(ctx).request("/organization/list-invitations", {
+    body: { organizationId },
+    parse: (value) => organizationInvitationsSchema.parse(value),
+  });
   return Array.isArray(data) ? data : data.invitations ?? [];
 }
 

@@ -1,20 +1,22 @@
-# Flow
+# MCP OAuth Flow
 
-## Old Flow (API Key)
+1. The client discovers the workspace protected-resource metadata for
+   `https://app.qentrah.com/api/mcp`.
+2. The client starts Better Auth authorization code with PKCE.
+3. The user authenticates, selects an Organization, and approves resource
+   scope, actions, and grant lifetime.
+4. Better Auth issues an RS256 access token whose audience is the workspace MCP
+   resource; Convex persists the exact OAuth grant.
+5. The client calls `/api/mcp` with `Authorization: Bearer <token>`.
+6. The workspace Adapter uses `@qentrah/auth` to verify signature, issuer,
+   audience, expiry, and `mcp:read`; write tools also require `mcp:write`.
+7. `authorizeOAuthGrant` or `callToolOAuth` resolves the active Convex grant,
+   current membership, and current Organization/Space/Project policy.
+8. Tool exposure and dispatch use `@qentrah/mcp-contracts` plus the active
+   Convex handler registry.
+9. Convex applies the correct quota, executes the canonical domain lifecycle,
+   writes audit data, and records grant activity.
 
-1. User creates "agent link" via UI → generates publicId + secret
-2. Convex stores API key + permissions in `organizationMcpConnections`
-3. External MCP client connects via `POST /api/mcp/agent/:publicId/:secret`
-4. Server validates via `convexHttp.query(api.mcp.connections.validateConnection)` (unauthenticated)
-5. Each tool call re-validates publicId + secret + permission
-
-## New Flow (OAuth)
-
-1. MCP client discovers OAuth metadata from `.well-known/oauth-protected-resource/mcp`
-2. MCP client initiates OAuth 2.1 with Better Auth (user authenticates in browser)
-3. Better Auth issues a resource-bound OAuth access token
-4. Client connects via `POST /api/mcp` with `Authorization: Bearer <token>`
-5. `withMcpAuth` calls verify callback → `auth({ acceptsToken: 'oauth_token' })` → verifies token
-6. `createMcpHandler` dispatches to tool handler with `authInfo`
-7. Tool handler calls `convexHttp.action(api.mcp.tools.callToolOAuth, { userId, orgId, orgRole, tool, input })`
-8. Convex derives permissions from orgRole, checks permission, dispatches to handler
+Session cookies, client-supplied roles, retired gateway secrets, and legacy
+agent-link identifiers do not authorize this flow. Revocation or access loss is
+effective on the next request.

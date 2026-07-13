@@ -85,7 +85,7 @@ describe("better auth server bridge", () => {
 
     await expect(callBetterAuth("/get-session")).rejects.toEqual(
       expect.objectContaining<Partial<BetterAuthRequestError>>({
-        name: "BetterAuthRequestError",
+        name: "AuthHttpRequestError",
         message: "Session expired",
         status: 401,
       }),

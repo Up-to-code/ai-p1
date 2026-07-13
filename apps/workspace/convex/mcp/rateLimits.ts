@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation, mutation } from "../_generated/server";
+import { internalMutation } from "../_generated/server";
 
 export function nextRateLimitBucket(
   existing: { count: number; expiresAt: number } | null,
@@ -32,34 +32,6 @@ export const reserve = internalMutation({
       return { allowed: next.allowed, retryAfterMs: next.retryAfterMs };
     }
     if (next.allowed) await ctx.db.patch(existing!._id, { count: next.count });
-    return { allowed: next.allowed, retryAfterMs: next.retryAfterMs };
-  },
-});
-
-export const reserveGateway = mutation({
-  args: { secret: v.string(), key: v.string() },
-  returns: v.object({ allowed: v.boolean(), retryAfterMs: v.number() }),
-  handler: async (ctx, args) => {
-    const expectedSecret = process.env.MCP_GATEWAY_RATE_LIMIT_SECRET;
-    if (!expectedSecret || args.secret !== expectedSecret) {
-      throw new Error("Gateway rate limit authorization failed.");
-    }
-
-    const key = `gateway:${args.key.slice(0, 200)}`;
-    const now = Date.now();
-    const existing = await ctx.db.query("mcpRateLimits").withIndex("by_key", (q) => q.eq("key", key)).first();
-    const next = nextRateLimitBucket(existing, { max: 30, windowMs: 60_000, now });
-    if (next.reset) {
-      if (existing) await ctx.db.delete(existing._id);
-      await ctx.db.insert("mcpRateLimits", {
-        key,
-        windowStartedAt: now,
-        count: next.count,
-        expiresAt: next.expiresAt,
-      });
-    } else if (next.allowed) {
-      await ctx.db.patch(existing!._id, { count: next.count });
-    }
     return { allowed: next.allowed, retryAfterMs: next.retryAfterMs };
   },
 });

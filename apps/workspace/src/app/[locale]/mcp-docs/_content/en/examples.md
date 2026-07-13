@@ -12,14 +12,14 @@ Each OAuth client receives its own reviewed grant. A sales helper, vendor helper
 Good for a non-technical team member asking questions, drafting follow-ups, or summarizing approved records.
 
 * **Connector name**: `Qentrah organization`
-* **Connector URL**: `https://mcp.qentrah.com/mcp`
+* **Connector URL**: `https://app.qentrah.com/api/mcp`
 * **Suggested scope**: only the resources and actions approved during OAuth consent
 
 ### Claude
 Good for reviewing long notes, vendor handoffs, policy documents, or detailed client context.
 
 * **Name**: `Qentrah organization`
-* **Remote MCP URL**: `https://mcp.qentrah.com/mcp`
+* **Remote MCP URL**: `https://app.qentrah.com/api/mcp`
 * **Notes**: Claude cloud must be able to reach this HTTPS endpoint.
 
 ### Grok / xAI
@@ -33,7 +33,7 @@ Good for a custom cloud workflow that needs the same approved Qentrah tools.
     {
       "type": "mcp",
       "server_label": "qentrah",
-      "server_url": "https://mcp.qentrah.com/mcp"
+      "server_url": "https://app.qentrah.com/api/mcp"
     }
   ]
 }
@@ -43,7 +43,7 @@ Good for a custom cloud workflow that needs the same approved Qentrah tools.
 Good for technical teams building automation around your organization data.
 
 ```bash
-codex mcp add qentrah --url https://mcp.qentrah.com/mcp
+codex mcp add qentrah --url https://app.qentrah.com/api/mcp
 codex mcp login qentrah
 ```
 
@@ -52,7 +52,7 @@ Or write it in your configuration:
 {
   "mcpServers": {
     "qentrah": {
-      "url": "https://mcp.qentrah.com/mcp"
+      "url": "https://app.qentrah.com/api/mcp"
     }
   }
 }
@@ -69,7 +69,7 @@ Good when your own product calls OpenAI and attaches Qentrah as a remote MCP ser
     {
       "type": "mcp",
       "server_label": "qentrah",
-      "server_url": "https://mcp.qentrah.com/mcp",
+      "server_url": "https://app.qentrah.com/api/mcp",
       "allowed_tools": ["organization_info", "clients_list", "tasks_create"],
       "require_approval": "never"
     }

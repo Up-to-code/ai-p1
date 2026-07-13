@@ -1,148 +1,43 @@
-import { betterAuth } from "better-auth";
-import { convex } from "@convex-dev/better-auth/plugins";
-import { requireRunMutationCtx } from "@convex-dev/better-auth/utils";
-import { emailOTP, jwt, lastLoginMethod, organization } from "better-auth/plugins";
-import { oauthProvider } from "@better-auth/oauth-provider";
-import { i18n } from "@better-auth/i18n";
 import { expo } from "@better-auth/expo";
-import { betterAuthClient } from "./betterAuth";
-import authConfig from "./auth.config";
+import { i18n } from "@better-auth/i18n";
+import { convex } from "@convex-dev/better-auth/plugins";
+import { betterAuth } from "better-auth";
+import { lastLoginMethod } from "better-auth/plugins";
+import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
+import authConfig from "./auth.config";
 import {
   getAuthUser as getBetterAuthUser,
   safeGetAuthUser as safeGetBetterAuthUser,
 } from "./betterAuth";
-import { getAppUrl, getTransactionalFromEmail, resend } from "./email";
+import { betterAuthClient } from "./betterAuth";
+import { createEmailAndPasswordOptions, createEmailOtpPlugin } from "./auth/email";
+import { createOrganizationPlugin } from "./auth/organization";
+import { createAccessTokenJwtPlugin, createMcpOAuthPlugin } from "./auth/oauth";
+import {
+  AUTH_JWT_ALGORITHM,
+  asBetterAuthAdapterContext,
+  resolveBetterAuthRuntime,
+  resolveSocialProviders,
+  type BetterAuthRuntimeContext,
+} from "./auth/runtime";
 
-const AUTH_JWT_ALGORITHM = "RS256" as const;
-
-export const createAuth = (ctx: any) => {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
-  const appOrigin = appUrl.replace(/\/$/u, "");
-  const defaultMcpResource = new URL(appOrigin).hostname === "app.qentrah.com"
-    ? "https://mcp.qentrah.com/mcp"
-    : `${appOrigin}/mcp`;
-  const mcpResource = (process.env.MCP_RESOURCE_URL ?? defaultMcpResource).replace(/\/$/u, "");
+/**
+ * Compose the Better Auth server while keeping provider-specific behavior in
+ * focused auth Modules. This remains the single runtime Interface used by the
+ * Convex HTTP Adapter and authenticated domain functions.
+ */
+export const createAuth = (ctx: BetterAuthRuntimeContext) => {
+  const runtime = resolveBetterAuthRuntime();
 
   return betterAuth({
-    database: betterAuthClient.adapter(ctx),
-
-    emailAndPassword: {
-      enabled: true,
-      requireEmailVerification: false,
-      sendResetPassword: async ({ user, url }) => {
-        await resend.sendEmail(requireRunMutationCtx(ctx), {
-          from: getTransactionalFromEmail(),
-          to: user.email,
-          subject: "Reset your Qentrah password",
-          html: [
-            "<p>We received a request to reset your Qentrah password.</p>",
-            `<p><a href="${url}">Reset your password</a></p>`,
-            "<p>If you did not request this, you can ignore this email.</p>",
-          ].join(""),
-          text: [
-            "We received a request to reset your Qentrah password.",
-            "",
-            `Reset your password: ${url}`,
-            "",
-            "If you did not request this, you can ignore this email.",
-          ].join("\n"),
-        });
-      },
-    },
-
-    socialProviders: {
-      ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
-        ? {
-            google: {
-              clientId: process.env.GOOGLE_CLIENT_ID,
-              clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            },
-          }
-        : {}),
-      ...(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET
-        ? {
-            apple: {
-              clientId: process.env.APPLE_CLIENT_ID,
-              clientSecret: process.env.APPLE_CLIENT_SECRET,
-            },
-          }
-        : {}),
-    },
-
+    database: betterAuthClient.adapter(asBetterAuthAdapterContext(ctx)),
+    emailAndPassword: createEmailAndPasswordOptions(ctx),
+    socialProviders: resolveSocialProviders(),
     plugins: [
-      emailOTP({
-        expiresIn: 10 * 60,
-        allowedAttempts: 5,
-        sendVerificationOTP: async ({ email, otp, type }) => {
-          const subject =
-            type === "forget-password"
-              ? "Your Qentrah password reset code"
-              : "Your Qentrah verification code";
-          const intro =
-            type === "forget-password"
-              ? "Use this code to reset your Qentrah password."
-              : "Use this code to verify your Qentrah account.";
-
-          await resend.sendEmail(requireRunMutationCtx(ctx), {
-            from: getTransactionalFromEmail(),
-            to: email,
-            subject,
-            html: [
-              `<p>${intro}</p>`,
-              `<p style="font-size: 24px; font-weight: 700; letter-spacing: 0.2em;">${otp}</p>`,
-              "<p>This code expires in 10 minutes.</p>",
-              "<p>If you did not request this, you can ignore this email.</p>",
-            ].join(""),
-            text: [
-              intro,
-              "",
-              otp,
-              "",
-              "This code expires in 10 minutes.",
-              "If you did not request this, you can ignore this email.",
-            ].join("\n"),
-          });
-        },
-      }),
-      organization({
-        sendInvitationEmail: async ({ invitation, inviter, organization }) => {
-          const invitationId =
-            invitation.id || (invitation as { _id?: string })._id;
-          if (!invitationId) {
-            throw new Error(
-              "Invitation email could not be sent because the invitation id is missing.",
-            );
-          }
-
-          const inviteUrl = `${getAppUrl()}/en/accept-invite?invitationId=${encodeURIComponent(invitationId)}`;
-          const invitedBy =
-            inviter.user.name || inviter.user.email || "A teammate";
-
-          await resend.sendEmail(requireRunMutationCtx(ctx), {
-            from: getTransactionalFromEmail(),
-            to: invitation.email,
-            subject: `${invitedBy} invited you to join ${organization.name} on Qentrah`,
-            html: [
-              `<p>${invitedBy} invited you to join ${organization.name} on Qentrah.</p>`,
-              `<p><a href="${inviteUrl}">Accept invitation</a></p>`,
-              "<p>If you were not expecting this invitation, you can ignore this email.</p>",
-            ].join(""),
-            text: [
-              `${invitedBy} invited you to join ${organization.name} on Qentrah.`,
-              "",
-              `Accept invitation: ${inviteUrl}`,
-              "",
-              "If you were not expecting this invitation, you can ignore this email.",
-            ].join("\n"),
-          });
-        },
-      }),
-      jwt({
-        jwks: {
-          keyPairConfig: { alg: AUTH_JWT_ALGORITHM },
-        },
-      }),
+      createEmailOtpPlugin(ctx),
+      createOrganizationPlugin(ctx, runtime.workspaceOrigin),
+      createAccessTokenJwtPlugin(),
       expo(),
       i18n({
         defaultLocale: "en",
@@ -160,43 +55,7 @@ export const createAuth = (ctx: any) => {
         },
       }),
       lastLoginMethod({ storeInDatabase: true }),
-      oauthProvider({
-        loginPage: "/en/sign-in",
-        consentPage: "/oauth/consent",
-        validAudiences: [mcpResource],
-        scopes: ["openid", "profile", "email", "offline_access", "mcp:read", "mcp:write"],
-        allowDynamicClientRegistration: true,
-        allowUnauthenticatedClientRegistration: true,
-        accessTokenExpiresIn: 60 * 60,
-        refreshTokenExpiresIn: 90 * 24 * 60 * 60,
-        rateLimit: {
-          token: { window: 60, max: 20 },
-          authorize: { window: 60, max: 20 },
-          introspect: { window: 60, max: 60 },
-          revoke: { window: 60, max: 20 },
-          register: { window: 60, max: 5 },
-          userinfo: { window: 60, max: 30 },
-        },
-        silenceWarnings: { oauthAuthServerConfig: true },
-        clientRegistrationDefaultScopes: ["openid", "profile", "email", "mcp:read"],
-        clientRegistrationAllowedScopes: ["offline_access", "mcp:write"],
-        selectAccount: {
-          page: "/oauth/select-organization",
-          shouldRedirect: () => true,
-        },
-        postLogin: {
-          page: "/oauth/select-organization",
-          shouldRedirect: ({ session }) =>
-            typeof session.activeOrganizationId !== "string" ||
-            session.activeOrganizationId.length === 0,
-          consentReferenceId: ({ session }) =>
-            typeof session.activeOrganizationId === "string"
-              ? session.activeOrganizationId
-              : undefined,
-        },
-        customAccessTokenClaims: ({ referenceId }) =>
-          referenceId ? { org_id: referenceId } : {},
-      }),
+      createMcpOAuthPlugin(runtime.mcpResourceUrl),
       convex({
         authConfig,
         // Production may still have an EdDSA key from the pre-RS256 setup.
@@ -204,9 +63,8 @@ export const createAuth = (ctx: any) => {
         jwksRotateOnTokenGenerationError: true,
       }),
     ],
-
-    baseURL: process.env.NEXT_PUBLIC_APP_URL!,
-    trustedOrigins: [process.env.NEXT_PUBLIC_APP_URL!, "qentrah://", "qentrah://*"],
+    baseURL: runtime.workspaceOrigin,
+    trustedOrigins: runtime.trustedOrigins,
     trustedProxyHeaders: true,
     advanced: {
       database: {
@@ -217,24 +75,23 @@ export const createAuth = (ctx: any) => {
   });
 };
 
-/** Required authenticated identity for Convex domain adapters. */
-export async function getAuthUser(ctx: any) {
-  return getBetterAuthUser(ctx);
+/** Required authenticated identity for Convex domain Adapters. */
+export async function getAuthUser(ctx: BetterAuthRuntimeContext) {
+  return getBetterAuthUser(asBetterAuthAdapterContext(ctx));
 }
 
-/** Optional authenticated identity for public or mixed-access adapters. */
-export async function safeGetAuthUser(ctx: any) {
-  return safeGetBetterAuthUser(ctx);
+/** Optional authenticated identity for public or mixed-access Adapters. */
+export async function safeGetAuthUser(ctx: BetterAuthRuntimeContext) {
+  return safeGetBetterAuthUser(asBetterAuthAdapterContext(ctx));
 }
 
-/**
- * Rotate Better Auth signing keys through the Convex-owned JWT Adapter.
- *
- * This is intentionally internal: operators may run it during an algorithm
- * migration, while browser and API callers cannot invalidate active tokens.
- */
+/** Rotate Better Auth signing keys through the Convex-owned JWT Adapter. */
 export const rotateKeys = internalAction({
   args: {},
+  returns: v.object({
+    rotated: v.boolean(),
+    algorithm: v.literal(AUTH_JWT_ALGORITHM),
+  }),
   handler: async (ctx) => {
     await createAuth(ctx).api.rotateKeys();
     return { rotated: true, algorithm: AUTH_JWT_ALGORITHM };

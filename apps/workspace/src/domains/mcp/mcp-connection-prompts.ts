@@ -1,5 +1,6 @@
-export const defaultMcpEndpoint =
-  process.env.NEXT_PUBLIC_MCP_RESOURCE_URL ?? "https://mcp.qentrah.com/mcp";
+import { resolveAuthTopology } from "@qentrah/auth/config";
+
+export const defaultMcpEndpoint = resolveAuthTopology().mcpResourceUrl;
 
 export type McpPromptPreset = "general" | "client" | "calendar" | "full";
 

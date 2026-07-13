@@ -1,52 +1,92 @@
-# Hono MCP Gateway Cutover
+# Workspace MCP Cutover and Gateway Retirement
 
-## Boundaries
+Status: accepted hard cutover, 2026-07-13
 
-- `apps/mcp-gateway` owns the public MCP resource at `mcp.qentrah.com`: discovery, bearer verification, rate limiting, Streamable HTTP transport, protocol-safe errors, and tool exposure.
-- `apps/workspace` remains the Better Auth OAuth 2.1 issuer at `app.qentrah.com`: login, organization selection, consent, dynamic client registration, token issuance, and grant management.
-- Convex remains the source of truth for organization membership, delegated MCP grants, scope policy, tool authorization, auditing, and business execution.
-- `packages/mcp-contracts` owns protocol-safe tool metadata and permission mappings shared by the gateway and Convex.
+This document supersedes the earlier standalone Hono gateway design. The
+filename is retained so existing architecture links continue to resolve; the
+standalone gateway itself is not a compatibility surface.
 
-The gateway never accepts a Qentrah session cookie and never owns application users. The workspace never serves the MCP transport after cutover.
+## Decision
 
-## Implementation passes
+`apps/workspace` owns the only public MCP resource:
 
-### Pass 1: Shared contract and gateway
+```text
+https://app.qentrah.com/api/mcp
+```
 
-Current behavior: the workspace Next.js app serves OAuth MCP and a secret-bearing Hono transport.
+`apps/mcp-gateway`, `mcp.qentrah.com`, gateway-only secrets, and gateway-only
+rate limiting are retired. There is no alias, redirect, or fallback transport.
+Existing clients must remove the old registration and complete OAuth again for
+the new resource audience.
 
-Structural improvement: add a standalone Hono service and a shared contract package; keep the workspace OAuth issuer unchanged until the gateway is verifiable.
+## Ownership and seams
 
-Validation check: gateway health, discovery, unauthenticated challenge, token validation, and MCP initialize tests.
+| Module | Interface | Implementation and source of truth |
+|---|---|---|
+| Auth Topology | `resolveAuthTopology(env)` | `@qentrah/auth/config`; derives issuer, JWKS, workspace, marketing, and MCP URLs from canonical environment inputs |
+| Resource Server | bearer verification, scope checks, challenges, no-store responses | `@qentrah/auth`; pure cross-runtime policy with a workspace Next.js Adapter |
+| OAuth Issuer | discovery, PKCE, consent, token issuance, refresh, revocation | Better Auth in `apps/workspace`; one RS256 keyset and its advertised JWKS route |
+| MCP Transport | stateless Streamable HTTP at `/api/mcp` | `apps/workspace` Next.js Adapter; accepts OAuth bearer tokens only |
+| MCP Contract | tool identity, descriptions, resource/action mappings | `@qentrah/mcp-contracts` |
+| MCP Authorization | durable grant, live membership, scope, permission, expiry, rate limits | `apps/workspace/convex/mcp`; re-evaluated for every list or call |
+| Business Execution | domain handlers, record access, audit, side effects | Convex lifecycle and access Modules |
+| Grant Management | consent and user-visible revoke/activity UI | Workspace OAuth and MCP domain Modules |
 
-### Pass 2: Durable OAuth grants
+The shared Auth Modules are deep seams: callers provide runtime credentials and
+environment inputs, while URL normalization, credential parsing, safe HTTP,
+claims, scopes, and policy remain local to `@qentrah/auth`. Next.js, Convex,
+mobile SecureStore, and Eve remain Adapters; they do not duplicate that policy.
 
-Current behavior: OAuth tokens carry broad read/write scopes and dispatch with an invalid user-id-to-legacy-connection-id cast.
+## Request invariants
 
-Structural improvement: persist an exact organization/space/project grant and revalidate it before listing or calling tools.
+- The MCP Adapter accepts `Authorization: Bearer <access-token>` and never
+  authenticates an external MCP request from a workspace session cookie.
+- The access token issuer, audience, signature, expiry, and `mcp:read` scope are
+  verified before protocol parsing or Convex dispatch.
+- Write tools additionally require `mcp:write`.
+- Tool exposure is the intersection of the shared catalog, token scopes, the
+  durable OAuth grant, current membership, current resource scope, and current
+  permission policy.
+- Revocation, grant expiry, membership loss, and permission loss take effect on
+  the next request.
+- Convex owns grant/tool rate limits and audits. The transport does not maintain
+  a second quota source.
+- Authorization headers, cookies, OAuth codes, access/refresh tokens, and raw
+  upstream errors are never logged or returned.
+- Transport responses are protocol-safe and `no-store`; authentication failures
+  include the canonical protected-resource challenge.
 
-Validation check: permission-clamping, expiry, revocation, tenant isolation, and scope regression tests.
+## Hard-cutover sequence
 
-### Pass 3: Legacy removal
+1. Deploy the shared Auth topology and Better Auth RS256/JWKS configuration.
+2. Deploy the workspace `/api/mcp` Adapter and protected-resource metadata.
+3. Revoke grants whose audience is the retired gateway resource.
+4. Verify OAuth, tool listing, a read call, a permitted write call, auditing,
+   revocation, and rate limiting against the workspace URL.
+5. Remove the standalone gateway application, deployment configuration,
+   gateway-only secrets, and `mcp.qentrah.com` DNS/deployment.
+6. Update client setup instructions to require reconnection to the new URL.
 
-Current behavior: the UI and API still create, rotate, and execute long-lived secrets embedded in URLs.
+The release is considered incomplete while either public resource is presented
+as supported. If verification fails, roll forward in the workspace deployment;
+do not restore the gateway as an undocumented fallback.
 
-Structural improvement: replace creation with OAuth connection guidance and grant management; retire the old endpoint with a sanitized migration response and purge legacy key data.
+## Verification gates
 
-Validation check: every legacy method returns `410`, secrets never reach logs, and no creation or rotation path remains.
+- OAuth authorization-server metadata and protected-resource metadata name the
+  workspace MCP resource and the same issuer.
+- The advertised JWKS route exists and verifies an issued MCP access token.
+- Unauthenticated and invalid-token requests return a safe `401` challenge.
+- `initialize`, `tools/list`, read, write, destructive-denial, grant revocation,
+  tenant isolation, timeout, request-size, and rate-limit scenarios pass.
+- Repository searches find no active gateway package, gateway hostname,
+  gateway secret, fake internal URL, or duplicate credential parser.
+- A real Codex connection completes OAuth, lists only authorized tools, performs
+  a read, and updates the grant's activity record.
 
-### Pass 4: Clerk removal
+## Unchanged boundaries
 
-Current behavior: workspace and mobile use Better Auth. Active Clerk runtime packages, adapters, environment variables, and compatibility loaders have been removed; migration records remain historical documentation only.
-
-Structural improvement: use Better Auth Expo/SecureStore while preserving the local auth-client contract, then remove Clerk packages, variables, shims, and active documentation.
-
-Validation check: web and mobile sign-in, social callback, session restoration, organization switching, API authentication, and repository-wide Clerk searches.
-
-## Parity and security invariants
-
-- Existing Google, Apple, email/password, email OTP, organization, and billing behavior remains available.
-- Every MCP tool decision is derived server-side from the verified OAuth identity and current Convex state.
-- Access loss, scope loss, grant expiry, or revocation is effective on the next request.
-- No authorization header, cookie, OAuth code, refresh token, legacy MCP secret, or raw upstream error is logged or returned.
-- Dodo Payments and Better Auth Agent Auth are outside this cutover.
+Google, Apple, email/password, email OTP, Organization selection and
+invitations, mobile authentication, Eve, billing, partner OAuth clients, and
+domain authorization rules retain their behavior. Convex remains authoritative
+for Organization membership and business data.

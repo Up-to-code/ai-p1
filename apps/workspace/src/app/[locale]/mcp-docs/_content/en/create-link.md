@@ -6,7 +6,7 @@ description: "Connect an MCP client, sign in to Qentrah, and approve exact acces
 
 ## Setup
 
-1. Add `https://mcp.qentrah.com/mcp` as a remote Streamable HTTP MCP server.
+1. Add `https://app.qentrah.com/api/mcp` as a remote Streamable HTTP MCP server.
 2. Start the connection. The client discovers Qentrah's OAuth 2.1 authorization server automatically.
 3. Sign in to Qentrah and choose an organization.
 4. Choose organization, selected-space, or selected-project scope.
@@ -16,7 +16,7 @@ description: "Connect an MCP client, sign in to Qentrah, and approve exact acces
 For Codex:
 
 ```bash
-codex mcp add qentrah --url https://mcp.qentrah.com/mcp
+codex mcp add qentrah --url https://app.qentrah.com/api/mcp
 codex mcp login qentrah
 ```
 

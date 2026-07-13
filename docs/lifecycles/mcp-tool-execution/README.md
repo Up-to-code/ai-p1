@@ -1,14 +1,26 @@
 # MCP Tool Execution Lifecycle
 
-**Purpose**: External AI agents (Claude Desktop, Cursor via agent-link) call workspace tools through the MCP protocol. This lifecycle covers how a tool call flows from external request through auth/validation to execution, and what side effects it produces.
+**Purpose**: Describe how an external AI client discovers, authorizes, lists,
+and calls Qentrah tools through the single workspace-owned MCP resource.
 
-**Owner app**: `apps/workspace` — Convex backend
+**Owner app**: `apps/workspace`
 
-**Entry points**:
-- Public action: `convex/mcp/tools.ts:callTool` (exposed via HTTP transport at `/mcp/:publicId/:secret`)
-- Internal query: `convex/mcp/tools.ts:readTool` (read operations)
-- Internal mutation: `convex/mcp/tools.ts:writeTool` (write operations)
+**Public resource**: `https://app.qentrah.com/api/mcp`
 
-**Actor/system flow**: External AI → HTTP POST → agent-link transport → `callTool` action → `executeMcpToolCall` → `readTool`/`writeTool` → DB operations
+**Primary entry points**:
 
-**Current status**: Active. Internal mutations being added to canonical write.ts files to eliminate duplicate inline write logic in tools.ts.
+- Next.js Streamable HTTP Adapter: `src/app/api/mcp/route.ts`
+- Workspace protocol Module: `src/server/protocols/mcp`
+- Grant authorization: `convex/mcp/toolsOAuth.ts:authorizeOAuthGrant`
+- Tool execution: `convex/mcp/toolsOAuth.ts:callToolOAuth`
+- Durable grant policy: `convex/mcp/oauthGrants.ts`
+- Handler registry: `convex/mcp/handlers/registry.ts`
+- Shared catalog: `@qentrah/mcp-contracts`
+
+**Actor/system flow**: External AI → workspace MCP Adapter → request policy and
+shared bearer-token verification → Convex executor → grant resolution →
+grant-filtered registry → domain handler → canonical data/access Module → audit
+and grant-activity update.
+
+**Current status**: Workspace hard cutover. The standalone gateway and
+secret-bearing agent links are retired and are not fallback paths.

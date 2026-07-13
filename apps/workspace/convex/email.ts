@@ -1,5 +1,6 @@
 import { Resend } from "@convex-dev/resend";
 import { components } from "./_generated/api";
+import { resolveConvexAuthTopology } from "./auth/topology";
 
 export const resend = new Resend(components.resend, {
   testMode: process.env.RESEND_TEST_MODE === "true",
@@ -29,9 +30,5 @@ export function getUpdatesFromEmail() {
 }
 
 export function getAppUrl() {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.SITE_URL ||
-    "http://localhost:3000"
-  );
+  return resolveConvexAuthTopology().workspaceOrigin;
 }

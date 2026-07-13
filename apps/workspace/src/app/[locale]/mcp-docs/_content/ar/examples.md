@@ -12,14 +12,14 @@ description: "استخدم نفس رابط مؤسسة كانترا مع الوك
 مناسب لعضو فريق غير تقني يسأل أسئلة أو يكتب متابعات أو يلخص السجلات المسموحة.
 
 * **اسم الموصّل**: `Qentrah organization`
-* **رابط الموصّل**: `https://mcp.qentrah.com/mcp`
+* **رابط الموصّل**: `https://app.qentrah.com/api/mcp`
 * **النطاق المقترح**: الأدوات المحددة فقط عند إنشاء الرابط.
 
 ### Claude
 مناسب لمراجعة الملاحظات الطويلة وتسليمات الموردين والسياسات وسياق العملاء المفصل.
 
 * **الاسم**: `Qentrah organization`
-* **رابط MCP البعيد**: `https://mcp.qentrah.com/mcp`
+* **رابط MCP البعيد**: `https://app.qentrah.com/api/mcp`
 * **ملاحظات**: سحابة Claude يجب أن تكون قادرة على الوصول لهذا الرابط عبر HTTPS.
 
 ### Grok / xAI
@@ -33,7 +33,7 @@ description: "استخدم نفس رابط مؤسسة كانترا مع الوك
     {
       "type": "mcp",
       "server_label": "qentrah",
-      "server_url": "https://mcp.qentrah.com/mcp"
+      "server_url": "https://app.qentrah.com/api/mcp"
     }
   ]
 }
@@ -43,7 +43,7 @@ description: "استخدم نفس رابط مؤسسة كانترا مع الوك
 مناسب للفرق التقنية التي تبني أتمتة حول بيانات المؤسسة.
 
 ```bash
-codex mcp add qentrah --url https://mcp.qentrah.com/mcp
+codex mcp add qentrah --url https://app.qentrah.com/api/mcp
 codex mcp login qentrah
 ```
 
@@ -52,7 +52,7 @@ codex mcp login qentrah
 {
   "mcpServers": {
     "qentrah": {
-      "url": "https://mcp.qentrah.com/mcp"
+      "url": "https://app.qentrah.com/api/mcp"
     }
   }
 }
@@ -69,7 +69,7 @@ codex mcp login qentrah
     {
       "type": "mcp",
       "server_label": "qentrah",
-      "server_url": "https://mcp.qentrah.com/mcp",
+      "server_url": "https://app.qentrah.com/api/mcp",
       "allowed_tools": ["organization_info", "clients_list", "tasks_create"],
       "require_approval": "never"
     }

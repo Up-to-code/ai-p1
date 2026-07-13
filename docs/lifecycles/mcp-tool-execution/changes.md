@@ -1,4 +1,37 @@
-# 2026-07-01: Prerequisite pass — added missing internal mutations to canonical write files
+# 2026-07-13: Workspace MCP hard cutover
+
+## What changed
+
+- Moved the only supported MCP resource to
+  `https://app.qentrah.com/api/mcp`.
+- Retired the standalone Hono gateway, its hostname, gateway-only secrets, and
+  gateway-only quota Adapter.
+- Kept Convex as the source of truth for OAuth grants, live scope/permission
+  evaluation, rate limits, handler dispatch, audit, and business execution.
+- Centralized topology, bearer verification, scopes, credential parsing, and
+  authenticated HTTP behavior behind shared `@qentrah/auth` Interfaces.
+- Required existing MCP clients to reconnect; no compatibility alias or
+  fallback resource is provided.
+
+## Why
+
+OAuth issuer and MCP transport now share one workspace deployment while policy
+remains behind deep Auth and Convex seams. This removes duplicated environment,
+token, quota, and transport behavior without moving business authorization into
+the Next.js route.
+
+## Verification
+
+See `tests.md`. The release gate includes metadata/JWKS/token agreement, OAuth
+reconnection, grant-filtered tool listing, a real read call, audit/activity,
+revocation, and repository searches for retired gateway surfaces.
+
+---
+
+# Historical: 2026-07-01 prerequisite pass — canonical internal mutations
+
+The entries below explain the retired connection-based execution path and its
+refactoring history. They are reference material, not the current OAuth flow.
 
 ## What changed
 The 2026-06-28 entry claimed `createInternal` / `updateInternal` / `deleteInternal` were added to 5 canonical write files. Verification (2026-07-01) showed they were never written — `convex/mcp/handlers/*.ts` referenced `internal.clients.write.createInternal` etc. but the symbols did not exist. The build passed only because the handlers were dead code (no caller). Added the 15 internal mutations:
@@ -22,7 +55,7 @@ Used the **shared-helper pattern**: each domain now has private `*Core` async fu
 
 ---
 
-# 2026-06-28: Wave A — Add internal mutations, refactor MCP tools (aspirational; partially completed 2026-07-01)
+# Historical: 2026-06-28 Wave A — internal mutation proposal
 
 ## What changed
 1. Added `createInternal`, `updateInternal`, `deleteInternal` to canonical write files — **CLAIMED, NOT DONE** until 2026-07-01 entry above.

@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internalMutation, internalQuery, mutation, query } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import { getAuthUser } from "../auth";
+import { resolveConvexAuthTopology } from "../auth/topology";
 import {
   mcpPermissionValidator,
   mcpScopeValidator,
@@ -14,8 +15,14 @@ import { mcpToolPermissionMap, toolsForMcpAdapter } from "./toolRegistry";
 const grantLifetimeDaysValidator = v.union(v.literal(7), v.literal(30), v.literal(90));
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_GRANTS_PER_USER = 100;
+const MCP_RESOURCE = resolveConvexAuthTopology().mcpResourceUrl;
+
+function isCurrentResourceGrant(grant: Pick<Doc<"mcpOAuthGrants">, "resourceUrl">) {
+  return grant.resourceUrl === MCP_RESOURCE;
+}
 
 function presentGrant(grant: Doc<"mcpOAuthGrants">) {
+  const retiredResource = !isCurrentResourceGrant(grant);
   return {
     id: grant._id,
     organizationId: grant.organizationId,
@@ -24,13 +31,13 @@ function presentGrant(grant: Doc<"mcpOAuthGrants">) {
     clientName: grant.clientName,
     permissions: grant.permissions,
     scope: grant.scope,
-    status: grant.status,
+    status: retiredResource ? "revoked" as const : grant.status,
     createdAt: grant.createdAt,
     updatedAt: grant.updatedAt,
     expiresAt: grant.expiresAt,
     lastUsedAt: grant.lastUsedAt,
     usageCount: grant.usageCount,
-    revokedAt: grant.revokedAt,
+    revokedAt: retiredResource ? grant.updatedAt : grant.revokedAt,
   };
 }
 
@@ -77,6 +84,7 @@ export const upsert = mutation({
       .first();
     const now = Date.now();
     const patch = {
+      resourceUrl: MCP_RESOURCE,
       clientName,
       permissions,
       scope: args.scope,
@@ -100,6 +108,7 @@ export const upsert = mutation({
       organizationId: args.organizationId,
       userId: user._id,
       oauthClientId: args.oauthClientId,
+      resourceUrl: MCP_RESOURCE,
       clientName,
       permissions,
       scope: args.scope,
@@ -146,7 +155,12 @@ export const resolveInternal = internalQuery({
         q.eq("userId", args.userId).eq("organizationId", args.organizationId).eq("oauthClientId", args.oauthClientId),
       )
       .first();
-    if (!grant || grant.status !== "active" || grant.expiresAt <= args.now) {
+    if (
+      !grant ||
+      !isCurrentResourceGrant(grant) ||
+      grant.status !== "active" ||
+      grant.expiresAt <= args.now
+    ) {
       throw new Error("OAuth MCP approval is required.");
     }
     const { policy, permissions } = await livePermissions(ctx, grant.organizationId, grant.userId, grant.scope, grant.permissions);

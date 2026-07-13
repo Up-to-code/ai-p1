@@ -16,7 +16,6 @@ export function resolveAuthIssuer(env: AuthRuntimeEnv = process.env): string {
   return normalizeIssuer(
     readAuthEnv("QENTRAH_AUTH_ISSUER", env)
       ?? readAuthEnv("QENTRAH_OAUTH_ISSUER", env)
-      ?? readAuthEnv("BETTER_AUTH_URL", env)
       ?? readAuthEnv("CONVEX_SITE_URL", env)
       ?? "http://localhost:3211",
   );

@@ -6,13 +6,13 @@
 
 ## Inventory summary
 
-- Source files scanned: 1700
-- Files exposing interfaces: 1408
-- Convex registered functions: 322
-- Application routes: 93
-- Hono/Convex HTTP registrations: 204
+- Source files scanned: 1632
+- Files exposing interfaces: 1376
+- Convex registered functions: 321
+- Application routes: 92
+- Hono/Convex HTTP registrations: 196
 - Eve/MCP tool entries: 118
-- Package commands: 100
+- Package commands: 82
 
 ## Package commands
 
@@ -22,12 +22,6 @@
 | @qentrah/marketing | build | `next build` |
 | @qentrah/marketing | start | `next start --port 3005` |
 | @qentrah/marketing | typecheck | `tsc --noEmit` |
-| @qentrah/mcp-gateway | dev | `tsx watch src/server.ts` |
-| @qentrah/mcp-gateway | prebuild | `npm --workspace @qentrah/auth run build` |
-| @qentrah/mcp-gateway | build | `npm --workspace @qentrah/mcp-contracts run build && tsc -p tsconfig.json` |
-| @qentrah/mcp-gateway | start | `node dist/server.js` |
-| @qentrah/mcp-gateway | typecheck | `tsc -p tsconfig.json --noEmit` |
-| @qentrah/mcp-gateway | test | `vitest run` |
 | @qentrah/mobile | start | `QENTRAH_MOBILE_ENV=development npx expo start --clear --max-workers 1` |
 | @qentrah/mobile | start:production | `QENTRAH_MOBILE_ENV=production npx expo start --clear --max-workers 1` |
 | @qentrah/mobile | android | `QENTRAH_MOBILE_ENV=development npx expo run:android` |
@@ -38,11 +32,6 @@
 | @qentrah/mobile | typecheck | `tsc --noEmit` |
 | @qentrah/mobile | maestro:test | `maestro test .maestro/flows` |
 | @qentrah/mobile | maestro:smoke | `maestro test .maestro/flows` |
-| @qentrah/strapi | dev | `strapi develop` |
-| @qentrah/strapi | start | `strapi start` |
-| @qentrah/strapi | build | `strapi build` |
-| @qentrah/strapi | strapi | `strapi` |
-| @qentrah/strapi | seed | `tsx scripts/seed.ts` |
 | @qentrah/workspace | dev | `npm --workspace @qentrah/location-map --include-workspace-root=false run build && npm --workspace @qentrah/domain-contracts --include-workspace-root=false run build && concurrently -n next,convex -c cyan,magenta "next dev" "convex dev"` |
 | @qentrah/workspace | dev:stack | `concurrently -n next,convex -c cyan,magenta "next dev" "convex dev"` |
 | @qentrah/workspace | desktop:dev | `concurrently -n next,convex,electron -c cyan,magenta,blue "next dev" "convex dev" "electron ."` |
@@ -75,13 +64,9 @@
 | qentrah | dev:workspace:desktop | `npm --workspace @qentrah/workspace run desktop:dev` |
 | qentrah | build:workspace:desktop | `npm --workspace @qentrah/workspace run desktop:pack` |
 | qentrah | dist:workspace:desktop | `npm --workspace @qentrah/workspace run desktop:dist` |
-| qentrah | dev:partners | `npm --workspace @qentrah/partners run dev` |
-| qentrah | dev:admin | `npm --workspace @qentrah/admin-review run dev` |
-| qentrah | dev:demo | `npm --workspace @qentrah/demo-partner-app run dev` |
 | qentrah | dev:marketing | `npm --workspace @qentrah/marketing run dev` |
-| qentrah | dev:strapi | `npm --workspace @qentrah/strapi run dev` |
-| qentrah | build:strapi | `npm --workspace @qentrah/strapi run build` |
-| qentrah | seed:strapi | `npm --workspace @qentrah/strapi run seed` |
+| qentrah | dev:mobile | `npm --workspace @qentrah/mobile run start` |
+| qentrah | dev:zapier | `npm --workspace @qentrah/zapier-app run dev` |
 | qentrah | brand:assets | `node scripts/brand-assets.mjs` |
 | qentrah | brand:scan | `node scripts/brand-scan.mjs` |
 | qentrah | brand:sync | `node scripts/brand-sync.mjs` |
@@ -112,9 +97,6 @@
 | @qentrah/partner-workspace-sync | typecheck | `tsc --noEmit` |
 | @qentrah/platform-core | build | `tsc -p tsconfig.json` |
 | @qentrah/platform-core | test | `vitest run` |
-| @qentrah/svar-ui-components | prebuild | `npm --workspace @qentrah/platform-core run build` |
-| @qentrah/svar-ui-components | build | `tsc -p tsconfig.json` |
-| @qentrah/svar-ui-components | test | `vitest run` |
 | @qentrah/ui | prebuild | `npm --workspace @qentrah/brand-identity run build && npm --workspace @qentrah/platform-core run build && npm --workspace @qentrah/auth run build` |
 | @qentrah/ui | build | `tsc -p tsconfig.json` |
 | @qentrah/ui | test | `vitest run` |
@@ -133,8 +115,6 @@
 | `/:locale/automations` | page | `apps/workspace/src/app/[locale]/(app)/automations/page.tsx` |
 | `/:locale/billing` | page | `apps/marketing/app/(site)/[locale]/billing/page.tsx` |
 | `/:locale/billing` | page | `apps/workspace/src/app/[locale]/(app)/billing/page.tsx` |
-| `/:locale/blog` | page | `apps/marketing/app/(site)/[locale]/blog/page.tsx` |
-| `/:locale/blog/:slug` | page | `apps/marketing/app/(site)/[locale]/blog/[slug]/page.tsx` |
 | `/:locale/calendar` | page | `apps/workspace/src/app/[locale]/(app)/calendar/page.tsx` |
 | `/:locale/channels` | page | `apps/workspace/src/app/[locale]/(app)/channels/page.tsx` |
 | `/:locale/choose-org` | page | `apps/workspace/src/app/[locale]/(auth)/choose-org/page.tsx` |
@@ -203,12 +183,13 @@
 | `/:locale/ws/table` | page | `apps/workspace/src/app/[locale]/(app)/ws/table/page.tsx` |
 | `/api/:[...route]` | handler | `apps/workspace/src/app/api/[[...route]]/route.ts` |
 | `/api/auth/:all*` | handler | `apps/workspace/src/app/api/auth/[...all]/route.ts` |
+| `/api/auth/jwks` | handler | `apps/workspace/src/app/api/auth/jwks/route.ts` |
+| `/api/mcp` | handler | `apps/workspace/src/app/api/mcp/route.ts` |
 | `/billing` | page | `apps/marketing/app/(site)/billing/page.tsx` |
 | `/dashboard` | page | `apps/marketing/app/(site)/dashboard/page.tsx` |
 | `/docs` | page | `apps/marketing/app/(site)/docs/page.tsx` |
 | `/f/:id` | page | `apps/workspace/src/app/f/[id]/page.tsx` |
 | `/legal` | page | `apps/marketing/app/(site)/legal/page.tsx` |
-| `/mcp` | handler | `apps/workspace/src/app/mcp/route.ts` |
 | `/oauth/authorize` | handler | `apps/workspace/src/app/oauth/authorize/route.ts` |
 | `/oauth/consent` | page | `apps/workspace/src/app/oauth/consent/page.tsx` |
 | `/oauth/select-organization` | page | `apps/workspace/src/app/oauth/select-organization/page.tsx` |
@@ -225,14 +206,6 @@ fully composed path.
 
 | Method | Registered path | Source |
 | --- | --- | --- |
-| GET | `/` | `apps/mcp-gateway/src/app.ts` |
-| GET | `/.well-known/oauth-authorization-server` | `apps/mcp-gateway/src/app.ts` |
-| GET | `/.well-known/oauth-protected-resource/mcp` | `apps/mcp-gateway/src/app.ts` |
-| GET | `/.well-known/openai-apps-challenge` | `apps/mcp-gateway/src/app.ts` |
-| GET | `/health/live` | `apps/mcp-gateway/src/app.ts` |
-| GET | `/health/ready` | `apps/mcp-gateway/src/app.ts` |
-| GET | `/mcp` | `apps/mcp-gateway/src/app.ts` |
-| POST | `/mcp` | `apps/mcp-gateway/src/app.ts` |
 | POST | `/dodopayments-webhook` | `apps/workspace/convex/billing/webhooks.ts` |
 | POST | `/dodopayments-webhook` | `apps/workspace/convex/http.ts` |
 | POST | `/resend-webhook` | `apps/workspace/convex/http.ts` |
@@ -576,7 +549,6 @@ fully composed path.
 | mutation | `upsert` | `apps/workspace/convex/mcp/oauthGrants.ts` |
 | internalMutation | `cleanup` | `apps/workspace/convex/mcp/rateLimits.ts` |
 | internalMutation | `reserve` | `apps/workspace/convex/mcp/rateLimits.ts` |
-| mutation | `reserveGateway` | `apps/workspace/convex/mcp/rateLimits.ts` |
 | action | `authorizeOAuthGrant` | `apps/workspace/convex/mcp/toolsOAuth.ts` |
 | action | `callToolOAuth` | `apps/workspace/convex/mcp/toolsOAuth.ts` |
 | internalQuery | `readToolOAuth` | `apps/workspace/convex/mcp/toolsOAuth.ts` |
@@ -889,10 +861,7 @@ intentionally excluded; callers should depend on public interfaces.
 | Source | Exported interface |
 | --- | --- |
 | `apps/marketing/app/(site)/[locale]/billing/page.tsx` | function: BillingRedirectPage |
-| `apps/marketing/app/(site)/[locale]/blog/[slug]/page.tsx` | value: revalidate<br>function: generateMetadata<br>function: BlogPostPage<br>function: generateStaticParams |
-| `apps/marketing/app/(site)/[locale]/blog/page.tsx` | value: revalidate<br>function: generateMetadata<br>function: BlogPage |
 | `apps/marketing/app/(site)/[locale]/dashboard/page.tsx` | function: DashboardRedirectPage |
-| `apps/marketing/app/(site)/[locale]/docs/page-cms.tsx` | function: generateMetadata<br>function: DocsPageCMS |
 | `apps/marketing/app/(site)/[locale]/docs/page.tsx` | function: DocsRedirectPage |
 | `apps/marketing/app/(site)/[locale]/layout.tsx` | function: generateStaticParams<br>function: generateMetadata<br>function: LocaleLayout |
 | `apps/marketing/app/(site)/[locale]/legal/page-content.tsx` | function: LegalPage |
@@ -900,7 +869,6 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/marketing/app/(site)/[locale]/mcp/page.tsx` | function: MarketingMcpHandoffPage |
 | `apps/marketing/app/(site)/[locale]/page.tsx` | value: revalidate<br>function: generateMetadata<br>function: LocaleHomePage |
 | `apps/marketing/app/(site)/[locale]/partners/page.tsx` | function: PartnersRedirectPage |
-| `apps/marketing/app/(site)/[locale]/pricing/page-cms.tsx` | function: generateMetadata<br>function: PricingPageCMS |
 | `apps/marketing/app/(site)/[locale]/pricing/page.tsx` | value: revalidate<br>function: generateMetadata<br>function: PricingPageRoute |
 | `apps/marketing/app/(site)/[locale]/privacy/page-content.tsx` | function: PrivacyPage |
 | `apps/marketing/app/(site)/[locale]/privacy/page.tsx` | value: revalidate<br>function: generateMetadata<br>function: PrivacyPageWrapper |
@@ -919,11 +887,6 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/marketing/app/manifest.ts` | function: manifest |
 | `apps/marketing/app/robots.ts` | function: robots |
 | `apps/marketing/app/sitemap.ts` | value: revalidate<br>function: sitemap |
-| `apps/mcp-gateway/src/auth.ts` | type: GatewayIdentity<br>function: verifyGatewayToken |
-| `apps/mcp-gateway/src/config.ts` | type: GatewayConfig<br>function: gatewayConfig |
-| `apps/mcp-gateway/src/convex.ts` | function: resolveGrant<br>function: executeTool |
-| `apps/mcp-gateway/src/mcp.ts` | function: handleMcpRequest |
-| `apps/mcp-gateway/src/rate-limit.ts` | function: hasDistributedPreAuthLimit<br>function: preAuthLimit |
 | `apps/mobile/app/(app)/_layout.tsx` | function: AppLayout |
 | `apps/mobile/app/(app)/appearance.tsx` | function: AppearanceScreen |
 | `apps/mobile/app/(app)/errors/[kind].tsx` | function: ErrorKindRedirect |
@@ -1080,6 +1043,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/access/task.ts` | type: TaskAccessErrorCode<br>interface: TaskAccess<br>type: TaskScopeInput<br>function: resolveTaskAccess |
 | `apps/workspace/convex/apiKeys.ts` | value: apiKeys |
 | `apps/workspace/convex/auth.ts` | value: createAuth<br>function: getAuthUser<br>function: safeGetAuthUser<br>convex-internalAction: rotateKeys |
+| `apps/workspace/convex/auth/email.ts` | function: createEmailAndPasswordOptions<br>function: createEmailOtpPlugin |
+| `apps/workspace/convex/auth/oauth.ts` | function: createAccessTokenJwtPlugin<br>function: createMcpOAuthPlugin |
+| `apps/workspace/convex/auth/organization.ts` | function: createOrganizationPlugin |
+| `apps/workspace/convex/auth/runtime.ts` | type: BetterAuthRuntimeContext<br>function: asBetterAuthAdapterContext<br>value: AUTH_JWT_ALGORITHM<br>function: resolveBetterAuthRuntime<br>function: resolveSocialProviders |
+| `apps/workspace/convex/auth/topology.ts` | function: resolveConvexAuthTopology |
 | `apps/workspace/convex/automations/execute.ts` | convex-mutation: runManual<br>convex-internalMutation: runWebhook |
 | `apps/workspace/convex/automations/graph.ts` | function: orderedReachableActions<br>function: graphProblem |
 | `apps/workspace/convex/automations/layout.ts` | function: mergeAutomationPositions<br>function: automationLayoutUnchanged |
@@ -1153,7 +1121,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/mcp/handlers/tasks.ts` | value: tasksList<br>value: tasksGet<br>value: tasksCreate<br>value: tasksUpdate<br>value: tasksComplete<br>value: tasksDelete |
 | `apps/workspace/convex/mcp/markdownToHtml.ts` | function: markdownToHtml |
 | `apps/workspace/convex/mcp/oauthGrants.ts` | convex-mutation: upsert<br>convex-query: listMine<br>convex-mutation: revoke<br>convex-internalQuery: resolveInternal<br>convex-internalMutation: recordUseInternal<br>function: authorizedTools<br>function: assertOAuthToolPermission |
-| `apps/workspace/convex/mcp/rateLimits.ts` | function: nextRateLimitBucket<br>convex-internalMutation: reserve<br>convex-mutation: reserveGateway<br>convex-internalMutation: cleanup |
+| `apps/workspace/convex/mcp/rateLimits.ts` | function: nextRateLimitBucket<br>convex-internalMutation: reserve<br>convex-internalMutation: cleanup |
 | `apps/workspace/convex/mcp/readSurface.ts` | function: mcpPublicWorkspaceRecords<br>function: mcpPublicWorkspacePage<br>function: mcpPublicWorkspaceSearchResult<br>function: mcpPublicMediaPage<br>function: mcpCalendarEventPage |
 | `apps/workspace/convex/mcp/scopePolicy.ts` | type: EffectiveScopePolicy<br>type: ScopePolicyContext<br>type: ScopePolicyErrorCode<br>function: normalizeMcpScope<br>function: resolveScopePolicy<br>function: canActorUseMcpPermission<br>function: assertToolCallInScope<br>function: scopePolicyContext<br>function: scopeActorUserId<br>function: isScopedProject<br>function: isScopedSpace<br>function: isScopedClient<br>function: isScopedResourceLink<br>function: projectVisibilityForMcpCreate |
 | `apps/workspace/convex/mcp/toolInputs.ts` | type: Input<br>function: inputObject<br>function: requiredString<br>function: optionalString<br>function: optionalRelationId<br>function: optionalNumber<br>function: listLimit<br>function: listCursor<br>function: searchTerm<br>function: matchesSearch<br>function: requiredNumber<br>function: pagedResult<br>function: cappedSearchResult<br>function: clientInput<br>function: clientPatchInput<br>function: projectStatus<br>function: projectInput<br>function: dealInput<br>function: calendarInput<br>function: calendarPatchInput<br>function: taskStatus<br>function: taskInput<br>function: taskPatchInput<br>function: mediaKind<br>function: assertMediaResource<br>function: assertDealLinks<br>function: assertProjectLinks |
@@ -1366,11 +1334,12 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/onboarding/page.tsx` | function: OnboardingPage |
 | `apps/workspace/src/app/[locale]/page.tsx` | function: WorkspaceHome |
 | `apps/workspace/src/app/api/[[...route]]/route.ts` | value: runtime<br>value: GET<br>value: POST<br>value: PUT<br>value: PATCH<br>value: DELETE<br>value: OPTIONS |
+| `apps/workspace/src/app/api/auth/jwks/route.ts` | function: GET |
+| `apps/workspace/src/app/api/mcp/route.ts` | value: runtime<br>value: dynamic<br>value: GET<br>value: POST<br>value: OPTIONS |
 | `apps/workspace/src/app/f/[id]/page.tsx` | function: PublicFilePage |
 | `apps/workspace/src/app/f/layout.tsx` | value: metadata<br>function: FileShareLayout |
 | `apps/workspace/src/app/layout.tsx` | value: metadata<br>function: RootLayout |
 | `apps/workspace/src/app/manifest.ts` | function: manifest |
-| `apps/workspace/src/app/mcp/route.ts` | function: POST |
 | `apps/workspace/src/app/not-found.tsx` | function: NotFound |
 | `apps/workspace/src/app/oauth/authorize/route.ts` | value: dynamic<br>function: GET |
 | `apps/workspace/src/app/oauth/consent/consent-client.tsx` | function: OAuthConsentClient |
@@ -2018,7 +1987,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/packages/config/public.ts` | value: convexRuntimeConfig |
 | `apps/workspace/src/proxy.ts` | function: middleware<br>value: config |
 | `apps/workspace/src/server/app/app.ts` | value: app |
-| `apps/workspace/src/server/auth/auth-request.ts` | type: AuthRequestSession<br>function: runWithAuthHeaders<br>function: getRequestHeaders<br>value: authRequestStore<br>function: isAuthenticated<br>function: getConvexToken<br>function: fetchAuthenticatedQuery<br>function: fetchAuthenticatedMutation<br>function: fetchAuthenticatedAction<br>function: callBetterAuth<br>class: BetterAuthRequestError<br>function: getAuthRequestSession<br>function: getSessionUserId |
+| `apps/workspace/src/server/auth/auth-request.ts` | type: AuthRequestSession<br>type: AuthRequestContext<br>function: runWithAuthHeaders<br>function: getRequestHeaders<br>value: authRequestStore<br>function: isAuthenticated<br>function: getConvexToken<br>function: fetchAuthenticatedQuery<br>function: fetchAuthenticatedMutation<br>function: fetchAuthenticatedAction<br>function: callBetterAuth<br>function: getAuthRequestSession<br>function: getSessionUserId |
 | `apps/workspace/src/server/config/agent-runtime.ts` | function: normalizeOpenRouterModelId<br>function: parseOpenRouterModelList<br>function: getOpenRouterModelCandidates<br>value: agentRuntimeConfig |
 | `apps/workspace/src/server/convex/http-client.ts` | value: convexHttp<br>value: convexCalls |
 | `apps/workspace/src/server/domains/billing/handlers/billing.ts` | function: handleGetBillingSubscription<br>function: handleGetBillingUsage<br>function: handleCreateCheckout<br>function: handleGetPaymentStatus<br>function: handleDodoWebhook |
@@ -2124,9 +2093,15 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/server/domains/theories/validation/theory.schema.ts` | value: theoryPayloadSchema<br>type: TheoryPayload |
 | `apps/workspace/src/server/effect/route.ts` | function: parseJsonBody<br>function: routePromise<br>function: routeSync<br>function: runEffectRoute |
 | `apps/workspace/src/server/middleware/mobile-request-context/index.ts` | type: MobileRequestContext<br>function: getMobileRequestContext<br>function: mobileRequestContextMiddleware |
+| `apps/workspace/src/server/protocols/mcp/authorization/bearer-auth.ts` | type: McpBearerTopology<br>type: McpBearerIdentity<br>function: verifyMcpBearer |
+| `apps/workspace/src/server/protocols/mcp/executor/convex-executor.ts` | type: McpToolInput<br>type: McpExecutor<br>function: createMcpConvexExecutor |
+| `apps/workspace/src/server/protocols/mcp/index.ts` | function: handleWorkspaceMcpRequest |
 | `apps/workspace/src/server/protocols/mcp/tools/catalog.ts` | type: McpPermission<br>type: McpToolDefinition<br>value: agentToolCatalog<br>value: mcpToolCatalog<br>function: canUseMcpTool<br>function: allowedMcpTools<br>function: getMcpToolDefinition |
 | `apps/workspace/src/server/protocols/mcp/tools/risk-policy.ts` | type: AgentRiskDecision<br>type: AgentToolIntent<br>function: evaluateAgentRequestRisk<br>function: evaluateAgentToolRisk |
 | `apps/workspace/src/server/protocols/mcp/transports/agent-link.ts` | function: handleRetiredMcpAgentLink<br>function: registerMcpAgentTransport |
+| `apps/workspace/src/server/protocols/mcp/transports/http-handler.ts` | type: McpHttpTopology<br>type: McpHttpHandlerDependencies<br>function: createMcpHttpHandler |
+| `apps/workspace/src/server/protocols/mcp/transports/request-policy.ts` | value: MCP_MAX_REQUEST_BYTES<br>value: MCP_REQUEST_TIMEOUT_MS<br>class: McpRequestPolicyError<br>function: enforceMcpRequestSize<br>function: withMcpDeadline |
+| `apps/workspace/src/server/protocols/mcp/transports/streamable-http.ts` | function: handleStreamableMcpRequest |
 | `apps/workspace/src/server/routing/admin/router.ts` | value: adminRouter |
 | `apps/workspace/src/server/routing/v1/router.ts` | value: v1Router |
 | `apps/workspace/src/server/security/cors-checkers/cors.contracts.ts` | interface: CorsPolicyContract<br>interface: CorsPreflightPolicy |
@@ -2164,8 +2139,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/auth/src/config/clients.ts` | type: TrustedOidcClient<br>function: resolveTrustedOidcClients |
 | `packages/auth/src/config/env.ts` | type: AuthRuntimeEnv<br>function: readAuthEnv<br>function: readRequiredAuthEnv |
 | `packages/auth/src/config/issuer.ts` | function: normalizeIssuer<br>function: resolveAuthIssuer<br>function: getOpenIdConfigurationUrl<br>function: getJwksUrl |
+| `packages/auth/src/config/topology.ts` | type: ResolvedAuthTopology<br>function: resolveAuthTopology |
+| `packages/auth/src/credentials/credential.ts` | value: BETTER_AUTH_SESSION_COOKIE_NAMES<br>type: BetterAuthSessionCookieName<br>type: AuthCredential<br>type: AuthCredentialSource<br>function: readAuthCredential<br>function: authCredentialHeaders<br>function: redactAuthCredential |
 | `packages/auth/src/flow/registry.ts` | function: createFlowRegistry |
 | `packages/auth/src/flow/types.ts` | type: FlowContext<br>interface: AuthFlow<br>type: FlowRegistry |
+| `packages/auth/src/http/auth-http-client.ts` | type: AuthCredentialProvider<br>type: AuthHttpQuery<br>type: AuthHttpRequestOptions<br>type: ParsedAuthHttpRequestOptions<br>type: AuthHttpClientOptions<br>type: AuthHttpRequestErrorCode<br>class: AuthHttpRequestError<br>function: createAuthHttpClient<br>type: AuthHttpClient |
 | `packages/auth/src/permissions.ts` | value: organizationPermissionStatement<br>type: OrganizationPermissionStatement<br>value: organizationAccessControl<br>value: organizationRoles |
 | `packages/auth/src/platform-admin.ts` | type: PlatformAdminAllowlist<br>function: parsePlatformAdminEmails<br>function: isPlatformAdminEmail |
 | `packages/auth/src/react/AuthProvider.tsx` | type: AuthProviderValue<br>function: AuthProvider<br>function: useAuthProviderValue |
@@ -2226,37 +2204,6 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/platform-core/src/errors.ts` | type: DomainErrorShape<br>value: DOMAIN_STATUS_BY_CODE<br>class: DomainError<br>function: normalizeDomainError<br>function: toErrorResponse |
 | `packages/platform-core/src/locale.ts` | type: AppLocale<br>type: LocaleDirection<br>value: SUPPORTED_LOCALES<br>function: resolveLocale<br>function: isRtlLocale<br>function: getLocaleDirection<br>function: getLocaleLabel<br>function: getLocaleNumberFormat<br>function: getLocaleDateFormat<br>function: getNextLocale<br>function: formatLocaleDateTime<br>function: formatLocaleNumber |
 | `packages/platform-core/src/session.ts` | type: AdminAccess<br>type: SessionContext<br>type: SessionUser<br>function: toSessionUser |
-| `packages/svar-ui-components/src/calendar/QentrahCalendar.tsx` | type: CalendarView<br>interface: CalendarEvent<br>interface: QentrahCalendarProps<br>function: QentrahCalendar |
-| `packages/svar-ui-components/src/examples/ClientViews.tsx` | interface: Client<br>interface: ClientViewsProps<br>function: ClientViews |
-| `packages/svar-ui-components/src/examples/ProjectViews.tsx` | interface: ProjectTask<br>interface: ProjectViewsProps<br>function: ProjectViews |
-| `packages/svar-ui-components/src/filemanager/QentrahFileManager.tsx` | type: FileView<br>interface: FileManagerItem<br>interface: QentrahFileManagerProps<br>function: QentrahFileManager |
-| `packages/svar-ui-components/src/gantt/QentrahGantt.tsx` | type: GanttScale<br>interface: GanttTask<br>interface: GanttLink<br>interface: GanttColumn<br>interface: QentrahGanttProps<br>function: QentrahGantt |
-| `packages/svar-ui-components/src/grid/QentrahTableWithViews.tsx` | interface: QentrahTableWithViewsProps<br>function: QentrahTableWithViews |
-| `packages/svar-ui-components/src/hooks/useViewConfig.ts` | interface: UseViewConfigProps<br>function: useViewConfig |
-| `packages/svar-ui-components/src/kanban/QentrahKanban.tsx` | interface: KanbanColumn<br>interface: KanbanCard<br>interface: QentrahKanbanProps<br>function: QentrahKanban |
-| `packages/svar-ui-components/src/modals/QentrahDialog.tsx` | interface: QentrahDialogProps<br>function: QentrahDialog |
-| `packages/svar-ui-components/src/modals/QentrahModal.tsx` | type: ModalSize<br>interface: QentrahModalProps<br>function: QentrahModal |
-| `packages/svar-ui-components/src/theme/QentrahTheme.tsx` | interface: QentrahThemeConfig<br>interface: QentrahThemeProviderProps<br>function: QentrahThemeProvider<br>function: useQentrahTheme<br>function: injectQentrahThemeVars |
-| `packages/svar-ui-components/src/types/index.ts` | type: ViewType<br>interface: FilterRule<br>interface: ColumnConfig<br>interface: ViewConfig |
-| `packages/ui/src/admin/AdminPageLayout.tsx` | type: AdminPageLayoutVariant<br>function: AdminPageLayout<br>function: AdminMetricGrid<br>function: AdminSectionStack |
-| `packages/ui/src/admin/AdminRenderBoundary.tsx` | class: AdminRenderBoundary |
-| `packages/ui/src/admin/AreaTrendChart.tsx` | function: AreaTrendChart |
-| `packages/ui/src/admin/Button.tsx` | type: AdminButtonProps<br>function: Button |
-| `packages/ui/src/admin/DataTable.tsx` | function: DataTable |
-| `packages/ui/src/admin/DonutBreakdownChart.tsx` | function: DonutBreakdownChart |
-| `packages/ui/src/admin/EmptyState.tsx` | function: EmptyState |
-| `packages/ui/src/admin/KeyValueGrid.tsx` | function: KeyValueGrid |
-| `packages/ui/src/admin/LineTrendChart.tsx` | function: LineTrendChart |
-| `packages/ui/src/admin/MetricBarChart.tsx` | function: MetricBarChart |
-| `packages/ui/src/admin/PageHeader.tsx` | function: PageHeader |
-| `packages/ui/src/admin/ResponsiveChartFrame.tsx` | function: ResponsiveChartFrame |
-| `packages/ui/src/admin/RouteTabs.tsx` | type: RouteTab<br>type: RouteTabsLinkProps<br>type: RouteTabsProps<br>function: RouteTabs |
-| `packages/ui/src/admin/StatCard.tsx` | function: StatCard |
-| `packages/ui/src/admin/StatusBadge.tsx` | function: StatusBadge |
-| `packages/ui/src/admin/ThemeToggle.tsx` | type: ThemeToggleProps<br>function: ThemeToggle |
-| `packages/ui/src/admin/WorkspacePanel.tsx` | function: WorkspacePanel |
-| `packages/ui/src/admin/chart.tsx` | type: ChartConfig<br>value: ChartContainer<br>value: ChartTooltip<br>value: ChartLegend<br>function: ChartTooltipContent<br>function: ChartLegendContent |
-| `packages/ui/src/admin/chartTypes.ts` | type: ChartDatum<br>type: ChartSeries<br>type: ChartBreakdownDatum<br>function: buildChartConfig<br>function: formatChartNumber |
 | `packages/ui/src/auth/AuthStateGate.tsx` | function: AuthStateGate<br>function: EntitlementGate<br>function: RequireAuth |
 | `packages/ui/src/auth/SecureSignOutButton.tsx` | function: SecureSignOutButton |
 | `packages/ui/src/auth/SessionAvatar.tsx` | function: SessionAvatar |
@@ -2289,10 +2236,3 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/ui/src/qentrah-table/hooks/useScreenDetection.ts` | type: ScreenVisibility<br>interface: UseScreenDetectionOptions<br>interface: UseScreenDetectionResult<br>function: useScreenDetection |
 | `packages/ui/src/qentrah-table/qentrah-table.tsx` | type: QentrahTableDensity<br>interface: QentrahTableColumnState<br>interface: QentrahTableRef<br>interface: QentrahTableProps<br>type: QentrahColumnDef<br>value: QentrahTable<br>type: QentrahCellRendererParams<br>type: QentrahValueFormatterParams |
 | `packages/ui/src/qentrah-table/theme.ts` | function: ensureAgGridModules<br>value: qentrahQuartz<br>value: qentrahQuartzDark<br>value: qentrahQuartzLight |
-| `packages/ui/src/workspace/AssetCard.tsx` | type: WorkspaceAssetCardContentProps<br>function: WorkspaceAssetCardContent |
-| `packages/ui/src/workspace/BrokerPresenceChip.tsx` | type: BrokerPresence<br>function: BrokerPresenceChip |
-| `packages/ui/src/workspace/DeveloperCard.tsx` | type: DeveloperCardData |
-| `packages/ui/src/workspace/FilterChipBar.tsx` | type: FilterChip |
-| `packages/ui/src/workspace/OrganizationMemberCard.tsx` | function: getOrganizationMemberRoleLabel<br>function: getOrganizationMemberInitials<br>function: getOrganizationMemberTheme |
-| `packages/ui/src/workspace/PersonCard.tsx` | function: brokerPresenceToPersonCard |
-| `packages/ui/src/workspace/types.ts` | type: WorkspacePersonCardType<br>type: WorkspacePersonBadge<br>type: WorkspaceAssetReference<br>type: WorkspaceProjectReference<br>type: WorkspacePersonRelation<br>type: WorkspaceOrganizationMemberRole<br>type: WorkspaceOrganizationType<br>type: WorkspaceOrganizationMemberDisplay |

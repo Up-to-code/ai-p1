@@ -44,7 +44,7 @@ export type McpGrantAuthorization = {
   tools: AuthorizedMcpTool[];
 };
 
-export const MCP_RESOURCE_PATH = "/mcp";
+export const MCP_RESOURCE_PATH = "/api/mcp";
 export const MCP_READ_SCOPE = "mcp:read";
 export const MCP_WRITE_SCOPE = "mcp:write";
 

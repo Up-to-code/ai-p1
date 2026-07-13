@@ -3,9 +3,9 @@
 ## Submission type
 
 - Type: With MCP (app-only, no bundled skill)
-- Production MCP URL: `https://mcp.qentrah.com/mcp`
+- Production MCP URL: `https://app.qentrah.com/api/mcp`
 - Authentication: OAuth 2.1 authorization code with PKCE
-- Challenge base URL: `https://mcp.qentrah.com`
+- Challenge base URL: `https://app.qentrah.com`
 - Publisher: Qentrah
 
 ## Public listing
@@ -36,7 +36,7 @@ The connection uses browser-based OAuth. Qentrah shows the exact resource permis
 
 ## Reviewer setup
 
-1. Connect to `https://mcp.qentrah.com/mcp`.
+1. Connect to `https://app.qentrah.com/api/mcp`.
 2. Complete OAuth in the browser with the reviewer account supplied in the portal.
 3. Select the review organization.
 4. Approve organization-wide access for 30 days with read, create, and update permissions. Leave delete disabled for the normal test pass.
@@ -60,8 +60,8 @@ The connection uses browser-based OAuth. Qentrah shows the exact resource permis
 
 The current app-only plugin has no ChatGPT-hosted custom UI and makes no browser-side network requests. If the portal requires explicit domains, use only:
 
-- Connect: `https://mcp.qentrah.com`, `https://app.qentrah.com`
-- Resource: `https://mcp.qentrah.com`, `https://app.qentrah.com`, `https://qentrah.com`
+- Connect: `https://app.qentrah.com`, `https://app.qentrah.com`
+- Resource: `https://app.qentrah.com`, `https://app.qentrah.com`, `https://qentrah.com`
 
 ## Country availability
 

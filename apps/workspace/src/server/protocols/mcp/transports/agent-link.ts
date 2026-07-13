@@ -1,6 +1,7 @@
 import type { Context, Hono } from "hono";
+import { resolveAuthTopology } from "@qentrah/auth/config";
 
-const OAUTH_MCP_URL = process.env.MCP_RESOURCE_URL ?? "https://mcp.qentrah.com/mcp";
+const OAUTH_MCP_URL = resolveAuthTopology().mcpResourceUrl;
 
 /** Temporary migration tombstone. It never reads or validates the legacy URL secret. */
 export function handleRetiredMcpAgentLink(c: Context) {

@@ -21,7 +21,8 @@ const required = [
   "NEXT_PUBLIC_CONVEX_SITE_URL",
   "CONVEX_SITE_URL",
   "BETTER_AUTH_SECRET",
-  "BETTER_AUTH_URL",
+  "QENTRAH_WORKSPACE_URL",
+  "NEXT_PUBLIC_APP_URL",
   "ADMIN_CONVEX_SERVICE_TOKEN",
   "WORKSPACE_ADMIN_SERVICE_TOKEN",
   "WORKSPACE_CONVEX_BRIDGE_SECRET",
@@ -41,6 +42,8 @@ const expected = {
   CONVEX_URL: "https://focused-shepherd-801.convex.cloud",
   NEXT_PUBLIC_CONVEX_SITE_URL: "https://focused-shepherd-801.convex.site",
   CONVEX_SITE_URL: "https://focused-shepherd-801.convex.site",
+  QENTRAH_WORKSPACE_URL: "https://app.qentrah.com",
+  NEXT_PUBLIC_APP_URL: "https://app.qentrah.com",
   PARTNER_OAUTH_ISSUER: "https://app.qentrah.com",
   PARTNER_OAUTH_AUDIENCE: "https://app.qentrah.com/api/v1/partner",
   RESEND_TEST_MODE: "false",
@@ -64,6 +67,9 @@ const removedWorkspaceVariables = [
   ["NEXT_PUBLIC", "C" + "LERK", "PUBLISHABLE_KEY"].join("_"),
   ["C" + "LERK", "SECRET_KEY"].join("_"),
   ["C" + "LERK", "FRONTEND_API_URL"].join("_"),
+  ["BETTER", "AUTH", "URL"].join("_"),
+  ["MCP", "RESOURCE", "URL"].join("_"),
+  ["MCP", "GATEWAY", "RATE", "LIMIT", "SECRET"].join("_"),
 ];
 
 const placeholder = /^<.*>$/u;

@@ -31,6 +31,7 @@ The dev script starts Next.js and Convex together. Use
 - OAuth authorization code + PKCE provider for partner apps.
 - Partner resource APIs under `/api/v1/partner`.
 - Internal service APIs used by Partners and Admin Review.
+- OAuth-protected MCP transport at `/api/mcp`.
 - Upload, map, AI runtime, observability, permissions, and domain services.
 
 ## Important Routes
@@ -44,6 +45,7 @@ The dev script starts Next.js and Convex together. Use
 | `src/app/oauth/token` | OAuth token endpoint |
 | `src/app/oauth/consent` | Consent page for partner access |
 | `src/app/oauth/select-organization` | Organization selection for OAuth |
+| `src/app/api/mcp` | OAuth-protected MCP Streamable HTTP transport |
 | `src/app/api/[[...route]]` | Hono/API route entrypoint |
 
 ## Important Folders
@@ -74,8 +76,8 @@ Common Workspace variables include:
 - `NEXT_PUBLIC_SITE_URL`
 - `SITE_URL`
 - `BETTER_AUTH_SECRET`
+- `QENTRAH_WORKSPACE_URL`
 - `NEXT_PUBLIC_APP_URL`
-- `MCP_RESOURCE_URL`
 - `CONVEX_DEPLOYMENT`
 - `NEXT_PUBLIC_CONVEX_URL`
 - `CONVEX_URL`

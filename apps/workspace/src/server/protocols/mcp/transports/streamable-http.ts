@@ -1,10 +1,8 @@
+import type { McpGrantAuthorization } from "@qentrah/mcp-contracts";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { z } from "zod";
-import type { McpGrantAuthorization } from "@qentrah/mcp-contracts";
-import type { GatewayConfig } from "./config.js";
-import type { GatewayIdentity } from "./auth.js";
-import { executeTool } from "./convex.js";
+import type { McpExecutor, McpToolInput } from "../executor/convex-executor";
 
 const passthroughInput = z.object({}).passthrough();
 
@@ -17,12 +15,21 @@ function textContent(value: unknown) {
   };
 }
 
-export async function handleMcpRequest(
+function toolFailureMessage(error: unknown) {
+  return error instanceof Error && error.message.includes("MCP_RATE_LIMITED")
+    ? "The approved agent rate limit was reached. Retry later."
+    : "The Qentrah tool request could not be completed.";
+}
+
+/**
+ * Handles one stateless Streamable HTTP exchange. Only tools returned by the
+ * canonical Convex grant authorization are registered for this connection.
+ */
+export async function handleStreamableMcpRequest(
   request: Request,
-  identity: GatewayIdentity,
   grant: McpGrantAuthorization,
-  config: GatewayConfig,
-) {
+  executor: Pick<McpExecutor, "executeTool">,
+): Promise<Response> {
   const server = new McpServer({ name: "Qentrah MCP", version: "1.0.0" });
 
   for (const tool of grant.tools) {
@@ -38,14 +45,11 @@ export async function handleMcpRequest(
           destructiveHint: tool.destructive === true || tool.action === "delete",
         },
       },
-      async (input: Record<string, unknown>) => {
+      async (input: McpToolInput) => {
         try {
-          return textContent(await executeTool(identity, config, tool.name, input));
+          return textContent(await executor.executeTool(tool.name, input));
         } catch (error) {
-          const message = error instanceof Error && error.message.includes("MCP_RATE_LIMITED")
-            ? "The approved agent rate limit was reached. Retry later."
-            : "The Qentrah tool request could not be completed.";
-          return { isError: true, ...textContent(message) };
+          return { isError: true, ...textContent(toolFailureMessage(error)) };
         }
       },
     );
@@ -66,7 +70,12 @@ export async function handleMcpRequest(
     async () => textContent({
       organizationId: grant.organizationId,
       expiresAt: grant.expiresAt,
-      tools: grant.tools.map(({ name, title, resource, action }) => ({ name, title, resource, action })),
+      tools: grant.tools.map(({ name, title, resource, action }) => ({
+        name,
+        title,
+        resource,
+        action,
+      })),
     }),
   );
 

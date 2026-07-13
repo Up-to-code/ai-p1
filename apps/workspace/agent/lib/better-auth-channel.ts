@@ -1,72 +1,95 @@
 import { getToken as getBetterAuthToken } from "@convex-dev/better-auth/utils";
+import { resolveAuthTopology } from "@qentrah/auth/config";
+import {
+  authCredentialHeaders,
+  readAuthCredential,
+  type AuthCredential,
+} from "@qentrah/auth/credentials";
+import { createAuthHttpClient } from "@qentrah/auth/http";
 import type { AuthFn } from "eve/channels/auth";
 import type { SessionAuthContext } from "eve/context";
+import { z } from "zod";
 
-type BetterAuthSessionResponse = {
-  session?: { userId?: string; activeOrganizationId?: string | null } | null;
-  user?: { id?: string; email?: string; name?: string } | null;
-};
-
-type ActiveMemberRoleResponse = { role?: string | null };
 type SessionCredential = { token: string; cookie: string };
 
-const appBaseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/u, "");
+const sessionResponseSchema = z.object({
+  session: z.object({
+    userId: z.string().optional(),
+    activeOrganizationId: z.string().nullish(),
+  }).nullish(),
+  user: z.object({
+    id: z.string().optional(),
+    email: z.string().optional(),
+    name: z.string().optional(),
+  }).nullish(),
+});
+const activeMemberRoleSchema = z.object({ role: z.string().nullish() });
+const authTopology = resolveAuthTopology();
 const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL ?? "";
-const requestTimeoutMs = 5_000;
 
 export function readSessionCredential(event: Request): SessionCredential | null {
-  const authorization = event.headers.get("authorization");
-  if (authorization?.toLowerCase().startsWith("bearer ")) {
-    const token = authorization.slice("bearer ".length).trim();
-    return token ? { token, cookie: `better-auth.session_token=${token}` } : null;
+  const credential = readAuthCredential(event);
+  if (!credential) return null;
+  if (credential.kind === "session") {
+    return { token: credential.token, cookie: credential.cookie };
   }
-
-  const cookie = event.headers.get("cookie") ?? "";
-  const match = cookie.match(/(?:^|;\s*)((?:__Secure-|__Host-)?better-auth\.session_token)=([^;]+)/);
-  if (!match?.[1] || !match[2]) return null;
-  return { token: decodeURIComponent(match[2]), cookie: `${match[1]}=${match[2]}` };
+  return {
+    token: credential.token,
+    cookie: `better-auth.session_token=${encodeURIComponent(credential.token)}`,
+  };
 }
 
-function authHeaders(credential: SessionCredential) {
-  return new Headers({
+function sessionAuthCredential(credential: SessionCredential): AuthCredential {
+  const [cookieName = "better-auth.session_token"] = credential.cookie.split("=", 1);
+  const supportedCookieName = cookieName === "__Host-better-auth.session_token" ||
+    cookieName === "__Secure-better-auth.session_token"
+    ? cookieName
+    : "better-auth.session_token";
+  return {
+    kind: "session",
+    token: credential.token,
+    cookieName: supportedCookieName,
     cookie: credential.cookie,
-    "accept-encoding": "identity",
-    "cache-control": "no-store",
-  });
+  };
 }
 
-async function betterAuthGet<T>(path: string, credential: SessionCredential): Promise<T | null> {
-  const response = await fetch(`${appBaseUrl}/api/auth${path}`, {
-    method: "GET",
-    headers: authHeaders(credential),
-    cache: "no-store",
-    signal: AbortSignal.timeout(requestTimeoutMs),
+function authClientFor(credential: AuthCredential) {
+  return createAuthHttpClient({
+    baseUrl: authTopology.authIssuer,
+    credentialProvider: () => credential,
   });
-  if (!response.ok) return null;
-  return response.json() as Promise<T>;
 }
 
 export const betterAuth: AuthFn = async (event) => {
   try {
     const credential = readSessionCredential(event);
     if (!credential || !convexSiteUrl) return null;
+    const authCredential = sessionAuthCredential(credential);
+    const authHttp = authClientFor(authCredential);
 
     // These live checks intentionally run for every Eve authentication request.
     // Revoked sessions and removed organization memberships therefore fail closed.
-    const session = await betterAuthGet<BetterAuthSessionResponse>("/get-session", credential);
+    const session = await authHttp.request("/get-session", {
+      method: "GET",
+      parse: (value) => sessionResponseSchema.parse(value),
+    });
     const userId = session?.session?.userId ?? session?.user?.id;
     const activeOrganizationId = session?.session?.activeOrganizationId ?? "";
     const requestedOrganizationId = event.headers.get("x-organization-id")?.trim() ?? "";
     if (!userId || !activeOrganizationId || requestedOrganizationId !== activeOrganizationId) return null;
 
-    const membership = await betterAuthGet<ActiveMemberRoleResponse>(
-      `/organization/get-active-member-role?organizationId=${encodeURIComponent(activeOrganizationId)}`,
-      credential,
-    );
+    const membership = await authHttp.request("/organization/get-active-member-role", {
+      method: "GET",
+      query: { organizationId: activeOrganizationId },
+      parse: (value) => activeMemberRoleSchema.parse(value),
+    });
     const role = membership?.role?.trim();
     if (!role) return null;
 
-    const convexResult = await getBetterAuthToken(convexSiteUrl, authHeaders(credential)).catch(() => null);
+    const convexResult = await getBetterAuthToken(
+      convexSiteUrl,
+      authCredentialHeaders(authCredential),
+    ).catch(() => null);
     if (!convexResult?.token) return null;
 
     return {

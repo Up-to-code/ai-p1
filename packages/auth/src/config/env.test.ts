@@ -8,6 +8,6 @@ describe("auth env reader", () => {
   });
 
   it("keeps direct non-brand env names available", () => {
-    expect(readAuthEnv("BETTER_AUTH_URL", { BETTER_AUTH_URL: "http://localhost:3000" })).toBe("http://localhost:3000");
+    expect(readAuthEnv("AUTH_TEST_VALUE", { AUTH_TEST_VALUE: " enabled " })).toBe("enabled");
   });
 });
