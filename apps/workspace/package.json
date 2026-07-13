@@ -124,6 +124,7 @@
     "next-intl": "^4.11.0",
     "notion-types": "^7.10.0",
     "notion-utils": "^7.10.0",
+    "posthog-js": "^1.399.4",
     "prosemirror-model": "^1.25.7",
     "react": "19.2.3",
     "react-aria-components": "^1.17.0",
