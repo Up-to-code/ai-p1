@@ -18,7 +18,7 @@ const source = {
   brandLogoWhiteSvg: path.join(sourceDir, "brand-logo-white.svg"),
 };
 
-const webApps = ["admin", "marketing", "partners", "workspace"];
+const webApps = ["marketing", "partners", "workspace"];
 
 function appPath(...segments) {
   return path.join(root, "apps", ...segments);
@@ -129,8 +129,6 @@ async function syncLogos() {
   }
 
   await renderPng(source.appIcon, appPath("workspace", "public", "qwntrah-logo-app.png"), 512);
-
-  await renderFaviconSvg(appPath("demo-partner-app", "public", "favicon.svg"));
 }
 
 async function main() {

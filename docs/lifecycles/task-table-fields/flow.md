@@ -75,5 +75,5 @@
   (Convex), `useFieldValuesQuery` (Convex), `listOrganizationMembers` (Hono).
 - **Downstream**: `updateTaskRequest` (Hono → Convex), `createCustomFieldRequest`
   (Hono → Convex), `setCustomFieldValueRequest` (Hono → Convex).
-- **Cross-app**: admin and partner apps do not currently consume
+- **Cross-app**: other applications do not currently consume
   `QentrahTable`; this work is workspace-only.

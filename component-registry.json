@@ -954,7 +954,7 @@
         "className"
       ],
       "createdAt": "2026-07-01",
-      "notes": "Replaces 5+ inlined filter trigger patterns (clients-screens filter popover, saved-views-dropdown, etc.). The existing FilterChipBar.tsx in packages/ui/src/workspace/ remains for backward compat."
+      "notes": "Replaces inlined filter trigger patterns such as client filters and saved-view selectors."
     },
     {
       "name": "LegendItem",
@@ -1010,7 +1010,7 @@
         "className"
       ],
       "createdAt": "2026-07-01",
-      "notes": "Replaces 8+ inlined `bg-emerald-500/10 text-emerald-600 border-emerald-500/20` palette copies in notion-client-table, client-picker-modal, calendar-tab, task-table-widget, task-list-view, etc. (planned). The three existing partials (crud-ui/StatusPill, admin/StatusBadge, components/ui/status-badge) are re-exports."
+      "notes": "Centralizes status tone and label presentation used by record tables and workspace views."
     },
     {
       "name": "TagChip",

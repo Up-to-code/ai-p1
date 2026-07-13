@@ -1,4 +1,3 @@
-export * from "./admin";
 export * from "./auth";
 export * from "./chat";
 export { ColorDot, type ColorDotProps, type ColorDotSize } from "./components/ui/color-dot";
@@ -20,4 +19,3 @@ export * from "./forms";
 export * from "./oauth";
 export * from "./public";
 export * from "./qentrah-table";
-export * from "./workspace";

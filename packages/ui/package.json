@@ -16,10 +16,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./admin": {
-      "types": "./dist/admin/index.d.ts",
-      "import": "./dist/admin/index.js"
-    },
     "./auth": {
       "types": "./dist/auth/index.d.ts",
       "import": "./dist/auth/index.js"
@@ -48,10 +44,6 @@
       "types": "./dist/qentrah-table/index.d.ts",
       "import": "./dist/qentrah-table/index.js"
     },
-    "./workspace": {
-      "types": "./dist/workspace/index.d.ts",
-      "import": "./dist/workspace/index.js"
-    },
     "./button": {
       "types": "./dist/components/ui/button.d.ts",
       "import": "./dist/components/ui/button.js"
@@ -76,7 +68,6 @@
     "lucide-react": "^0.577.0",
     "marked": "^17.0.5",
     "react-markdown": "^10.1.0",
-    "recharts": "^3.8.0",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
     "shiki": "^4.0.2",

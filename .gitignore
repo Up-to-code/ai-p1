@@ -33,9 +33,3 @@ coverage
 apps/workspace/.workflow-data/
 bun.lock
 architecture-review-*.html
-
-# Strapi CMS
-apps/strapi/.tmp
-apps/strapi/build
-apps/strapi/dist
-apps/strapi/.cache

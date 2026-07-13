@@ -73,5 +73,5 @@ Give workspace users a ClickUp-style:
   generated `api.customFields.*` codegen path yet). When the project
   runs `npx convex codegen`, the field wrappers can drop the
   `listByOrganization ?? listByOrganizationForTable` fallback.
-- The Fields panel is workspace-level only; admin / partner apps do
+- The Fields panel is Workspace-level only; other applications do
   not yet consume `QentrahTable`.

@@ -15,7 +15,6 @@ export const workspaceAliases = [
   { find: "@qentrah/auth/scopes", replacement: fromRoot("./packages/auth/src/scopes/index.ts") },
   { find: "@qentrah/auth/server", replacement: fromRoot("./packages/auth/src/server/index.ts") },
   { find: "@qentrah/auth", replacement: fromRoot("./packages/auth/src/index.ts") },
-  { find: "@qentrah/authorization", replacement: fromRoot("./packages/authorization/src/index.ts") },
   { find: "@qentrah/platform-core/auth-next", replacement: fromRoot("./packages/platform-core/src/auth-next.ts") },
   { find: "@qentrah/platform-core/classnames", replacement: fromRoot("./packages/platform-core/src/classnames.ts") },
   { find: "@qentrah/platform-core/effect-api", replacement: fromRoot("./packages/platform-core/src/effect-api.ts") },
@@ -26,8 +25,6 @@ export const workspaceAliases = [
   { find: "@qentrah/domain-contracts/subscription-pricing", replacement: fromRoot("./packages/domain-contracts/src/subscriptionPricing.ts") },
   { find: /^@qentrah\/domain-contracts\/(.+)$/, replacement: fromRoot("./packages/domain-contracts/src/$1.ts") },
   { find: "@qentrah/domain-contracts", replacement: fromRoot("./packages/domain-contracts/src/index.ts") },
-  { find: /^@qentrah\/web-foundation\/(.+)$/, replacement: fromRoot("./packages/web-foundation/src/$1.ts") },
-  { find: "@qentrah/web-foundation", replacement: fromRoot("./packages/web-foundation/src/index.ts") },
   { find: /^@qentrah\/our-platform-components\/(pipeline|widget-grid)$/, replacement: fromRoot("./packages/our-platform-components/src/$1/index.ts") },
   { find: "@qentrah/our-platform-components", replacement: fromRoot("./packages/our-platform-components/src/index.ts") },
 ];

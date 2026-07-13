@@ -22,30 +22,6 @@
         "ps"
       ]
     },
-    "apps/partners": {
-      "entry": [
-        ".source/browser.ts",
-        ".source/dynamic.ts",
-        ".source/source.config.mjs",
-        "e2e/**/*.spec.ts",
-        "scripts/check-production-env.mjs"
-      ],
-      "ignoreDependencies": [
-        "@better-auth/core",
-        "better-call"
-      ],
-      "ignoreBinaries": [
-        "playwright"
-      ]
-    },
-    "apps/demo-partner-app": {
-      "entry": [
-        "e2e/**/*.spec.ts"
-      ],
-      "ignoreBinaries": [
-        "playwright"
-      ]
-    },
     "apps/mobile": {
       "entry": [
         "app.config.ts",

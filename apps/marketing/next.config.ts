@@ -25,17 +25,6 @@ const baseConfig: NextConfig = {
         protocol: "https",
         hostname: "hebbkx1anhila5yf.public.blob.vercel-storage.com",
       },
-      // Strapi media — update hostname to match your Strapi instance
-      {
-        protocol: "https",
-        hostname: process.env.STRAPI_IMAGE_HOSTNAME ?? "localhost",
-      },
-      // Strapi local dev (http)
-      {
-        protocol: "http",
-        hostname: process.env.STRAPI_IMAGE_HOSTNAME ?? "localhost",
-        port: "1337",
-      },
     ],
   },
 };

@@ -40,7 +40,7 @@ function stubWindow(args: {
   return { addEventListener, locationAssign, removeEventListener };
 }
 
-describe("@qentrah/authorization", () => {
+describe("@qentrah/auth authorization", () => {
   it("generates PKCE material", async () => {
     const pair = await createPkcePair();
 

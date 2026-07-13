@@ -1,5 +1,4 @@
 import { brandDomainUrl, brandLabel } from "@qentrah/brand-identity";
-import type { StrapiBlogPost } from "./strapi";
 import type { Locale } from "./content";
 
 const siteUrl = brandDomainUrl("root");
@@ -44,36 +43,6 @@ export function websiteSchema(locale: Locale): JsonLd {
       target: `${siteUrl}/${locale}/search?q={search_term_string}`,
       "query-input": "required name=search_term_string",
     },
-  };
-}
-
-export function articleSchema(post: StrapiBlogPost, locale: Locale): JsonLd {
-  const brand = brandLabel(locale);
-  return {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
-    description: post.excerpt,
-    image: post.heroImage ? post.heroImage.url : `${siteUrl}/logo.ico`,
-    datePublished: post.publishedAt,
-    dateModified: post.publishedAt,
-    author: {
-      "@type": "Person",
-      name: post.author,
-      ...(post.authorRole ? { jobTitle: post.authorRole } : {}),
-      ...(post.authorAvatar ? { image: post.authorAvatar.url } : {}),
-    },
-    publisher: {
-      "@type": "Organization",
-      name: brand,
-      logo: { "@type": "ImageObject", url: `${siteUrl}/logo.ico` },
-    },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `${siteUrl}/${locale}/blog/${post.slug}`,
-    },
-    ...(post.category ? { articleSection: post.category } : {}),
-    ...(post.tags ? { keywords: post.tags.join(", ") } : {}),
   };
 }
 
