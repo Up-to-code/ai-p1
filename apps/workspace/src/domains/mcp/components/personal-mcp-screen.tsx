@@ -8,7 +8,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import type { McpAction, McpPermission, McpResource } from "@qentrah/mcp-contracts";
 import {
   AlertTriangle, Bot, Copy, Ellipsis, ExternalLink, Loader2, Pencil,
-  Plus, ShieldCheck, Trash2,
+  Plus, ShieldCheck, Trash2, Unplug,
 } from "lucide-react";
 import { useAuthSession } from "@/domains/auth";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ const resources: Array<{ id: McpResource; label: string; actions: McpAction[] }>
 const actions: McpAction[] = ["read", "create", "update", "delete"];
 
 type Profile = NonNullable<ReturnType<typeof useQuery<typeof api.mcp.connectionProfiles.listMine>>>[number];
+type OAuthGrant = NonNullable<ReturnType<typeof useQuery<typeof api.mcp.oauthGrants.listMine>>>[number];
 type ClientId = "codex" | "claude" | "chatgpt" | "grok" | "vscode" | "openai";
 
 const clients: Array<{ id: ClientId; label: string; logo: string }> = [
@@ -90,10 +91,17 @@ export function PersonalMcpScreen() {
   const { toast } = useToast();
   const organizationId = session.organization.id ?? "";
   const profiles = useQuery(api.mcp.connectionProfiles.listMine, organizationId ? { organizationId } : "skip");
+  const grants = useQuery(api.mcp.oauthGrants.listMine, organizationId ? { organizationId } : "skip");
   const removeProfile = useMutation(api.mcp.connectionProfiles.remove);
+  const revokeGrant = useMutation(api.mcp.oauthGrants.revoke);
   const [editing, setEditing] = useState<Profile | "new" | null>(null);
   const [connectProfile, setConnectProfile] = useState<Profile | null>(null);
   const [deleting, setDeleting] = useState<Profile | null>(null);
+  const [revoking, setRevoking] = useState<OAuthGrant | null>(null);
+  const activeGrants = useMemo(
+    () => (grants ?? []).filter((grant) => grant.status === "active" && grant.expiresAt > Date.now()),
+    [grants],
+  );
 
   async function copy(value: string, title = "Copied") {
     await navigator.clipboard.writeText(value);
@@ -111,18 +119,62 @@ export function PersonalMcpScreen() {
     }
   }
 
+  async function revoke() {
+    if (!revoking) return;
+    try {
+      await revokeGrant({ grantId: revoking.id });
+      setRevoking(null);
+      toast({ title: "Connection revoked", description: "The agent can no longer access Qentrah.", type: "success" });
+    } catch (error) {
+      toast({ title: "Could not revoke connection", description: error instanceof Error ? error.message : "Try again.", type: "error" });
+    }
+  }
+
   return (
     <main className="h-[calc(100dvh-4rem)] min-h-0 overflow-y-auto bg-background p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-6 pb-10">
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h1 className="text-2xl font-semibold text-foreground">MCP connections</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Manage the agents that can request access to Qentrah.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Review live OAuth access and prepare new agent connections.</p>
           </div>
           <Button onClick={() => setEditing("new")}><Plus className="me-2 h-4 w-4" />New MCP</Button>
         </header>
 
         <section className="overflow-hidden rounded-lg border border-border bg-card">
+          <div className="border-b border-border px-5 py-4">
+            <h2 className="font-semibold text-foreground">Approved agents</h2>
+            <p className="mt-1 text-xs text-muted-foreground">Live OAuth grants. Revoking one immediately blocks that agent.</p>
+          </div>
+          {grants === undefined ? (
+            <div className="flex h-32 items-center justify-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Loading approved agents</div>
+          ) : activeGrants.length === 0 ? (
+            <div className="px-5 py-10 text-center text-sm text-muted-foreground">No agents currently have OAuth access.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader><TableRow><TableHead>Agent</TableHead><TableHead>Permissions</TableHead><TableHead>Scope</TableHead><TableHead>Expires</TableHead><TableHead className="w-16" /></TableRow></TableHeader>
+                <TableBody>
+                  {activeGrants.map((grant) => (
+                    <TableRow key={grant.id}>
+                      <TableCell><div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"><ShieldCheck className="h-4 w-4" /></span><span><span className="block font-medium text-foreground">{grant.clientName}</span><span className="block text-xs capitalize text-muted-foreground">{grant.status} OAuth connection</span></span></div></TableCell>
+                      <TableCell><span className="inline-flex rounded-md bg-muted px-2 py-1 text-xs font-medium">{permissionCount(grant.permissions)} allowed</span></TableCell>
+                      <TableCell className="capitalize text-muted-foreground">{grant.scope.type}</TableCell>
+                      <TableCell className="text-muted-foreground">{new Date(grant.expiresAt).toLocaleDateString()}</TableCell>
+                      <TableCell><Button variant="ghost" size="icon-sm" aria-label={`Revoke ${grant.clientName}`} title={`Revoke ${grant.clientName}`} onClick={() => setRevoking(grant)}><Unplug className="h-4 w-4" /></Button></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </section>
+
+        <section className="overflow-hidden rounded-lg border border-border bg-card">
+          <div className="border-b border-border px-5 py-4">
+            <h2 className="font-semibold text-foreground">Connection templates</h2>
+            <p className="mt-1 text-xs text-muted-foreground">Reusable setup instructions. The final scope and permissions are approved during OAuth.</p>
+          </div>
           {profiles === undefined ? (
             <div className="flex h-52 items-center justify-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />Loading MCPs
@@ -131,7 +183,7 @@ export function PersonalMcpScreen() {
             <div className="flex min-h-72 flex-col items-center justify-center px-6 text-center">
               <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-muted/40"><Bot className="h-5 w-5" /></span>
               <h2 className="font-semibold text-foreground">No MCP connections yet</h2>
-              <p className="mt-1 max-w-sm text-sm text-muted-foreground">Create one, choose its permissions, then connect your AI client with browser OAuth.</p>
+              <p className="mt-1 max-w-sm text-sm text-muted-foreground">Create a setup template, then approve the live connection through browser OAuth.</p>
               <Button className="mt-5" onClick={() => setEditing("new")}><Plus className="me-2 h-4 w-4" />New MCP</Button>
             </div>
           ) : (
@@ -185,6 +237,12 @@ export function PersonalMcpScreen() {
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>Delete MCP?</DialogTitle><DialogDescription>This removes the saved configuration. Existing OAuth approval can still be revoked separately.</DialogDescription></DialogHeader>
           <DialogFooter><Button variant="outline" onClick={() => setDeleting(null)}>Cancel</Button><Button variant="destructive" onClick={() => void remove()}>Delete</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={Boolean(revoking)} onOpenChange={(open) => { if (!open) setRevoking(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Revoke agent access?</DialogTitle><DialogDescription>{revoking?.clientName ?? "This agent"} will immediately lose access to Qentrah. The agent can request a new OAuth approval later.</DialogDescription></DialogHeader>
+          <DialogFooter><Button variant="outline" onClick={() => setRevoking(null)}>Cancel</Button><Button variant="destructive" onClick={() => void revoke()}>Revoke access</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </main>
@@ -429,6 +487,7 @@ function ConnectDialog({ profile, onOpenChange, onCopy }: {
             <div className="min-w-0"><p className="text-[11px] font-medium uppercase text-muted-foreground">MCP URL</p><p className="truncate font-mono text-xs text-foreground">{url}</p></div>
             <Button variant="outline" size="icon-sm" aria-label="Copy MCP URL" title="Copy MCP URL" onClick={() => void onCopy(url, "MCP URL copied")}><Copy className="h-3.5 w-3.5" /></Button>
           </div>
+          <p className="text-xs leading-5 text-muted-foreground">Keep your client&apos;s login command running while approving OAuth. The browser returns to a temporary <code className="rounded bg-muted px-1 py-0.5">127.0.0.1</code> callback owned by that client.</p>
           <div>
             <div className="mb-2 flex items-center justify-between"><p className="text-xs font-semibold text-foreground">Choose a client</p><span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5 text-primary" />OAuth protected</span></div>
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">

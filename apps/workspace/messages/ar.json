@@ -1341,6 +1341,8 @@
     "emailPlaceholder": "name@company.com",
     "passwordLabel": "كلمة المرور",
     "passwordPlaceholder": "أدخل كلمة المرور",
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور",
     "continueWithEmail": "المتابعة بالبريد",
     "createAccountButton": "إنشاء الحساب",
     "verificationCodeLabel": "رمز التحقق",

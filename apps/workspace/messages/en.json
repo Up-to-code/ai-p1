@@ -1349,6 +1349,8 @@
     "emailPlaceholder": "name@company.com",
     "passwordLabel": "Password",
     "passwordPlaceholder": "Enter your password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "continueWithEmail": "Continue with email",
     "createAccountButton": "Create account",
     "verificationCodeLabel": "Verification code",

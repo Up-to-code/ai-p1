@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, ArrowLeft, ArrowRight, KeyRound, Loader2, Mail, UserRound } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Eye, EyeOff, KeyRound, Loader2, Mail, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { FormEvent, useState } from "react";
 import { brandDomainUrl } from "@qentrah/brand-identity";
@@ -102,6 +102,35 @@ function ErrorBanner({ message }: { message: string }) {
     >
       <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
       <p>{message}</p>
+    </div>
+  );
+}
+
+function PasswordInput({
+  hideLabel,
+  showLabel,
+  className,
+  ...props
+}: React.ComponentProps<typeof Input> & { hideLabel: string; showLabel: string }) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="relative">
+      <KeyRound className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
+      <Input
+        {...props}
+        className={`${className ?? ""} ps-11 pe-11 text-start`}
+        type={visible ? "text" : "password"}
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((current) => !current)}
+        className="absolute end-1 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-text-secondary transition hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+        aria-label={visible ? hideLabel : showLabel}
+        title={visible ? hideLabel : showLabel}
+      >
+        {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
     </div>
   );
 }
@@ -337,20 +366,18 @@ export function AuthAccessScreen({
                       </button>
                     ) : null}
                   </div>
-                  <div className="relative">
-                    <KeyRound className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
-                    <Input
-                      autoComplete={isSignUp ? "new-password" : "current-password"}
-                      className="h-11 rounded-md ps-11 text-start"
-                      id="auth-password"
-                      minLength={8}
-                      onChange={(event) => setPassword(event.target.value)}
-                      placeholder={t("passwordPlaceholder")}
-                      required
-                      type="password"
-                      value={password}
-                    />
-                  </div>
+                  <PasswordInput
+                    autoComplete={isSignUp ? "new-password" : "current-password"}
+                    className="h-11 rounded-md"
+                    hideLabel={t("hidePassword")}
+                    id="auth-password"
+                    minLength={8}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder={t("passwordPlaceholder")}
+                    required
+                    showLabel={t("showPassword")}
+                    value={password}
+                  />
                 </div>
 
                 {error ? <ErrorBanner message={error} /> : null}
@@ -500,20 +527,18 @@ export function AuthAccessScreen({
                   <Label htmlFor="new-password" className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary">
                     {t("newPasswordLabel")}
                   </Label>
-                  <div className="relative">
-                    <KeyRound className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
-                    <Input
-                      autoComplete="new-password"
-                      className="h-12 rounded-2xl ps-11 text-start"
-                      id="new-password"
-                      minLength={8}
-                      onChange={(event) => setNewPassword(event.target.value)}
-                      placeholder={t("passwordPlaceholder")}
-                      required
-                      type="password"
-                      value={newPassword}
-                    />
-                  </div>
+                  <PasswordInput
+                    autoComplete="new-password"
+                    className="h-12 rounded-2xl"
+                    hideLabel={t("hidePassword")}
+                    id="new-password"
+                    minLength={8}
+                    onChange={(event) => setNewPassword(event.target.value)}
+                    placeholder={t("passwordPlaceholder")}
+                    required
+                    showLabel={t("showPassword")}
+                    value={newPassword}
+                  />
                 </div>
                 {error ? <ErrorBanner message={error} /> : null}
                 <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={isPending} type="submit">
