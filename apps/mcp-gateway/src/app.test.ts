@@ -4,6 +4,7 @@ beforeEach(() => {
   process.env.CONVEX_URL = "https://example.convex.cloud";
   process.env.MCP_RESOURCE_URL = "https://mcp.qentrah.com/mcp";
   process.env.BETTER_AUTH_URL = "https://app.qentrah.com/api/auth";
+  delete process.env.OPENAI_APPS_CHALLENGE;
 });
 
 describe("MCP gateway", () => {
@@ -14,6 +15,23 @@ describe("MCP gateway", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/html");
     expect(await response.text()).toContain("Authorized remote access");
+  });
+
+  it("serves the OpenAI domain challenge as plain text when configured", async () => {
+    process.env.OPENAI_APPS_CHALLENGE = "openai-verification-token";
+    vi.resetModules();
+    const { app } = await import("./app.js");
+    const response = await app.request("/.well-known/openai-apps-challenge");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/plain");
+    expect(await response.text()).toBe("openai-verification-token");
+  });
+
+  it("does not expose an unconfigured OpenAI domain challenge", async () => {
+    vi.resetModules();
+    const { app } = await import("./app.js");
+    const response = await app.request("/.well-known/openai-apps-challenge");
+    expect(response.status).toBe(404);
   });
 
   it("publishes protected resource metadata", async () => {

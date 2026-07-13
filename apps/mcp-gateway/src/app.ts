@@ -33,8 +33,17 @@ app.use("/mcp", timeout(30_000));
 
 app.get("/", (c) => c.html(`<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Qentrah MCP</title><style>body{margin:0;background:#0b0b0c;color:#f4f4f5;font:16px/1.5 system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}main{max-width:560px;padding:32px}h1{font-size:28px;margin:0 0 8px}p{color:#a1a1aa;margin:0 0 20px}code{background:#18181b;border:1px solid #27272a;border-radius:6px;padding:4px 8px}a{color:#f4f4f5}</style></head>
-<body><main><h1>Qentrah MCP</h1><p>Authorized remote access to your Qentrah workspace. MCP clients connect with OAuth and you approve access in your browser.</p><code>https://mcp.qentrah.com/mcp</code></main></body></html>`));
+<title>Qentrah MCP</title><style>body{margin:0;background:#0b0b0c;color:#f4f4f5;font:16px/1.5 system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}main{max-width:560px;padding:32px}h1{font-size:28px;margin:0 0 8px}p{color:#a1a1aa;margin:0 0 20px}code{background:#18181b;border:1px solid #27272a;border-radius:6px;padding:4px 8px}nav{display:flex;gap:16px;margin-top:24px}a{color:#f4f4f5}</style></head>
+<body><main><h1>Qentrah MCP</h1><p>Authorized remote access to your Qentrah workspace. MCP clients connect with OAuth and you approve access in your browser.</p><code>https://mcp.qentrah.com/mcp</code><nav aria-label="Legal and support"><a href="https://qentrah.com/en/privacy">Privacy</a><a href="https://qentrah.com/en/terms">Terms</a><a href="mailto:hello@qentrah.com">Support</a></nav></main></body></html>`));
+
+app.get("/.well-known/openai-apps-challenge", (c) => {
+  const token = process.env.OPENAI_APPS_CHALLENGE?.trim();
+  if (!token) return c.text("Not configured", 404);
+  return c.text(token, 200, {
+    "cache-control": "no-store",
+    "content-type": "text/plain; charset=UTF-8",
+  });
+});
 
 app.get("/health/live", (c) => c.json({ status: "ok" }));
 app.get("/health/ready", (c) => {

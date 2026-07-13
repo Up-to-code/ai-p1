@@ -11,10 +11,15 @@ Standalone Hono gateway for `https://mcp.qentrah.com/mcp`. Better Auth remains o
 - `MCP_ALLOWED_ORIGINS=https://app.qentrah.com`
 - `UPSTASH_REDIS_REST_URL=<distributed rate-limit Redis URL>`
 - `UPSTASH_REDIS_REST_TOKEN=<distributed rate-limit Redis token>`
+- `OPENAI_APPS_CHALLENGE=<token from the OpenAI plugin submission portal>`
 
 Production readiness fails closed when the distributed anonymous rate limiter is
 not configured. Authenticated client, grant, and tool limits are enforced
 atomically by Convex.
+
+The OpenAI challenge value must be copied exactly from the submission portal.
+The gateway serves it as plain text at
+`/.well-known/openai-apps-challenge` for domain verification.
 
 ## Commands
 

@@ -32,7 +32,11 @@ export async function handleMcpRequest(
         title: tool.title,
         description: tool.description,
         inputSchema: passthroughInput,
-        annotations: tool.destructive ? { destructiveHint: true } : undefined,
+        annotations: {
+          readOnlyHint: tool.action === "read",
+          openWorldHint: false,
+          destructiveHint: tool.destructive === true || tool.action === "delete",
+        },
       },
       async (input: Record<string, unknown>) => {
         try {
@@ -53,6 +57,11 @@ export async function handleMcpRequest(
       title: "Allowed work",
       description: "Describe the work approved for this OAuth connection.",
       inputSchema: z.object({}),
+      annotations: {
+        readOnlyHint: true,
+        openWorldHint: false,
+        destructiveHint: false,
+      },
     },
     async () => textContent({
       organizationId: grant.organizationId,
