@@ -79,9 +79,10 @@ function permissionText(permissions: McpPermission[]) {
 }
 
 function profileUrl(profile: Pick<Profile, "publicId">) {
-  const url = new URL(defaultMcpEndpoint);
-  url.searchParams.set("profile", profile.publicId);
-  return url.toString();
+  // OAuth resource identifiers are exact audiences. Profile query parameters
+  // make every saved connection a different, unregistered audience.
+  void profile;
+  return defaultMcpEndpoint;
 }
 
 export function PersonalMcpScreen() {

@@ -248,22 +248,22 @@ export function OAuthConsentClient({
   return (
     <main
       dir={direction}
-      className="flex min-h-screen items-center justify-center bg-[#eef2f5] px-4 py-8 text-[#111827] sm:px-6"
+      className="flex min-h-screen items-center justify-center bg-muted/50 px-4 py-8 text-foreground sm:px-6"
     >
-      <section className="w-full max-w-[470px] overflow-hidden rounded-[12px] border border-[#d9dee6] bg-[#fbfbfc] shadow-none">
-        <div className="relative border-b border-[#e4e7ec] px-5 pb-5 pt-8 sm:px-8">
+      <section className="w-full max-w-[860px] overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-sm">
+        <div className="relative border-b border-border px-6 py-6 sm:px-8">
           <button
             type="button"
             onClick={() => submitConsent(false)}
             disabled={busy}
             aria-label={copy.cancel}
-            className="absolute end-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-[8px] border border-transparent text-[#8a94a3] transition hover:border-[#d9dee6] hover:bg-white hover:text-[#111827] disabled:opacity-50"
+            className="absolute end-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-md border border-transparent text-muted-foreground transition hover:border-border hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
 
           <div className="flex items-center justify-center gap-3">
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[12px] border border-[#d9dee6] bg-[#111827]">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-border bg-foreground">
               <Image
                 src="/brand-logo-white.svg"
                 alt="Qentrah"
@@ -273,10 +273,10 @@ export function OAuthConsentClient({
                 priority
               />
             </span>
-            <span className="flex h-8 w-8 items-center justify-center text-[#9aa3af]">
+            <span className="flex h-8 w-8 items-center justify-center text-muted-foreground">
               <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
             </span>
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[12px] border border-[#d9dee6] bg-white">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-background">
               {isMcpAuthorization ? (
                 <Bot
                   className="h-6 w-6 text-[var(--q-accent)]"
@@ -298,43 +298,44 @@ export function OAuthConsentClient({
             </span>
           </div>
 
-          <div className="mx-auto mt-5 max-w-[360px] text-center">
-            <h1 className="text-[22px] font-black leading-7 tracking-normal text-[#111827]">
+          <div className="mx-auto mt-5 max-w-xl text-center">
+            <h1 className="text-[22px] font-bold leading-7 tracking-normal text-foreground">
               {consentTitle}
             </h1>
-            <p className="mt-2 text-sm font-medium leading-6 text-[#4b5563]">
+            <p className="mt-2 text-sm font-medium leading-6 text-muted-foreground">
               {consentDescription}
             </p>
           </div>
         </div>
 
-        <div className="px-5 py-5 sm:px-8">
-          <h2 className="text-sm font-black text-[#111827]">
-            {permissionIntro}
-          </h2>
+        <div className="grid gap-6 px-6 py-6 sm:px-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.45fr)] lg:gap-8">
+          <div>
+            <h2 className="text-sm font-bold text-foreground">
+              {permissionIntro}
+            </h2>
 
-          <div className="mt-3 space-y-3">
+            <div className="mt-4 space-y-4">
             {displayScopes.map((scope) => {
               const meta = permissionMeta[scope];
               return (
                 <div key={scope} className="flex items-start gap-3">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#2448b8] text-[#2448b8]">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-primary text-primary">
                     <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold leading-5 text-[#374151]">
+                      <p className="text-sm font-semibold leading-5 text-foreground">
                         {meta
                           ? isArabic
                             ? meta.ar
                             : meta.en
                           : fallbackScopeLabel(scope)}
                       </p>
-                      <code className="rounded-full bg-[#f0f2f5] px-2 py-0.5 text-[10px] font-bold text-[#667085]">
+                      <code className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
                         {scope}
                       </code>
                     </div>
-                    <p className="mt-0.5 text-xs font-medium leading-5 text-[#667085]">
+                    <p className="mt-0.5 text-xs font-medium leading-5 text-muted-foreground">
                       {meta
                         ? isArabic
                           ? meta.detailAr
@@ -345,19 +346,22 @@ export function OAuthConsentClient({
                 </div>
               );
             })}
+            </div>
           </div>
 
-          {isMcpAuthorization ? <McpGrantFields controller={mcpGrant} /> : null}
+          <div className="min-w-0">
+            {isMcpAuthorization ? <McpGrantFields controller={mcpGrant} /> : null}
 
-          {error ? (
-            <p className="mt-4 rounded-[10px] bg-red-50 p-3 text-sm font-semibold text-red-700">
-              {error}
-            </p>
-          ) : null}
+            {error ? (
+              <p className="mt-4 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm font-semibold text-destructive">
+                {error}
+              </p>
+            ) : null}
+          </div>
         </div>
 
-        <div className="flex flex-col-reverse gap-3 border-t border-[#e4e7ec] bg-white px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p className="text-xs font-medium leading-5 text-[#667085]">
+        <div className="flex flex-col-reverse gap-3 border-t border-border bg-muted/30 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+          <p className="max-w-xl text-xs font-medium leading-5 text-muted-foreground">
             {trustNote}
           </p>
           <div className="flex shrink-0 gap-3">
@@ -365,7 +369,7 @@ export function OAuthConsentClient({
               type="button"
               onClick={() => submitConsent(false)}
               disabled={busy}
-              className="inline-flex h-10 items-center justify-center rounded-[8px] border border-[#d0d5dd] bg-white px-4 text-sm font-bold text-[#344054] transition hover:bg-[#f8fafc] disabled:opacity-50"
+              className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-bold text-foreground transition hover:bg-muted disabled:opacity-50"
             >
               {copy.cancel}
             </button>
@@ -376,7 +380,7 @@ export function OAuthConsentClient({
                 busy || !organization?.id || resourceScopes.length === 0 ||
                 (isMcpAuthorization && !mcpGrant.canApprove)
               }
-              className="inline-flex h-10 items-center justify-center rounded-[8px] bg-[#3246bd] px-4 text-sm font-bold text-white transition hover:bg-[#263aa3] disabled:opacity-50"
+              className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-bold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
             >
               {approveLabel}
             </button>
