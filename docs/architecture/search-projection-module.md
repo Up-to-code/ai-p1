@@ -7,6 +7,7 @@
 - Search-provider gateway Adapter: `apps/workspace/src/server/domains/search`
 - Command-palette Adapter: `apps/workspace/src/components/layout/workspace-global-search`
 - Search Center, saved/recent query UI, and URL state: `apps/workspace/src/domains/search`
+- Search Policy administration and queue health: `/organization/search-policy`
 
 Convex is authoritative. Meilisearch stores replaceable lexical candidates and
 never decides whether an actor can read a record.
@@ -23,6 +24,29 @@ never decides whether an actor can read a record.
    state. Administrators can explicitly retry dead letters.
 5. Durable reindex jobs rebuild existing Project or Task projections in small
    cursor-owned batches without loading an Organization dataset into a client.
+
+## Attachment extraction flow
+
+1. A new media record is stored with `malwareScanStatus: pending`; public media
+   reads and Search Projection creation fail closed until a configured scanner
+   returns a clean verdict. Legacy unverified media is never extracted
+   automatically.
+2. The security worker accepts only HTTPS UploadThing hosts or an explicit
+   server-side host allowlist, enforces response and declared-size limits, and
+   records scanner engine/version. Infected media is quarantined and its Search
+   Projection is tombstoned.
+3. Clean media is queued only when Search Policy enables Attachment projection,
+   extraction, the exact MIME type, and (for images) OCR. Source byte, extracted
+   text, metadata, timeout, and retry limits are bounded.
+4. Apache Tika and Tesseract are private infrastructure Adapters. Extracted text
+   is stored separately with source version, extractor version, OCR languages,
+   and locale; the original object remains the media source of truth.
+5. Attachment candidates are hydrated through their containing Project, Task,
+   Space, Client, or Calendar access boundary. Team or membership changes thus
+   affect results without reprocessing the attachment.
+
+The Admin Search Policy surface reports separate outbox, security, extraction,
+quarantine, and reindex state and exposes audited, bounded retry commands.
 
 ## Read flow
 
@@ -54,6 +78,11 @@ Both the Workspace gateway and Convex worker require server-side
 defaults to `qentrah_search`. These values must never use a `NEXT_PUBLIC_`
 prefix or reach browser bundles.
 
+Attachment processing additionally uses server-only `MALWARE_SCANNER_URL`,
+optional `MALWARE_SCANNER_API_KEY`, `TIKA_URL`, `TESSERACT_OCR_URL`, and optional
+`MEDIA_EXTRACTION_SOURCE_HOSTS`. Missing adapters leave work pending; workers do
+not claim jobs they cannot process.
+
 If provider configuration is absent, the scheduled worker leaves events
 pending and reports `configured: false`. The command palette preserves the
 legacy Project fallback while presenting a truthful error for indexed-only
@@ -71,3 +100,5 @@ Task search.
   before new facet fields are relied on.
 - Embeddings remain an unimplemented contract seam; the active implementation
   is lexical only.
+- Unscanned, failed-scan, and quarantined media cannot be served publicly or
+  represented as an Attachment search result.

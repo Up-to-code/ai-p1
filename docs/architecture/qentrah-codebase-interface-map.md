@@ -6,10 +6,10 @@
 
 ## Inventory summary
 
-- Source files scanned: 1698
-- Files exposing interfaces: 1427
-- Convex registered functions: 360
-- Application routes: 96
+- Source files scanned: 1704
+- Files exposing interfaces: 1433
+- Convex registered functions: 373
+- Application routes: 97
 - Hono/Convex HTTP registrations: 199
 - Eve/MCP tool entries: 118
 - Package commands: 88
@@ -154,6 +154,7 @@
 | `/:locale/organization/activity` | page | `apps/workspace/src/app/[locale]/(app)/organization/activity/page.tsx` |
 | `/:locale/organization/channels` | page | `apps/workspace/src/app/[locale]/(app)/organization/channels/page.tsx` |
 | `/:locale/organization/custom-permissions` | page | `apps/workspace/src/app/[locale]/(app)/organization/custom-permissions/page.tsx` |
+| `/:locale/organization/search-policy` | page | `apps/workspace/src/app/[locale]/(app)/organization/search-policy/page.tsx` |
 | `/:locale/organization/spaces` | page | `apps/workspace/src/app/[locale]/(app)/organization/spaces/page.tsx` |
 | `/:locale/partners` | page | `apps/marketing/app/(site)/[locale]/partners/page.tsx` |
 | `/:locale/pricing` | page | `apps/marketing/app/(site)/[locale]/pricing/page.tsx` |
@@ -719,6 +720,18 @@ fully composed path.
 | mutation | `share` | `apps/workspace/convex/savedViews/write.ts` |
 | mutation | `update` | `apps/workspace/convex/savedViews/write.ts` |
 | query | `resolve` | `apps/workspace/convex/search/accessContext.ts` |
+| internalMutation | `claimExtractionJob` | `apps/workspace/convex/search/extraction.ts` |
+| internalMutation | `claimSecurityJob` | `apps/workspace/convex/search/extraction.ts` |
+| internalMutation | `completeExtractionJob` | `apps/workspace/convex/search/extraction.ts` |
+| internalMutation | `completeSecurityJob` | `apps/workspace/convex/search/extraction.ts` |
+| internalMutation | `failExtractionJob` | `apps/workspace/convex/search/extraction.ts` |
+| internalMutation | `failSecurityJob` | `apps/workspace/convex/search/extraction.ts` |
+| internalQuery | `loadExtractionSource` | `apps/workspace/convex/search/extraction.ts` |
+| internalQuery | `loadSecuritySource` | `apps/workspace/convex/search/extraction.ts` |
+| mutation | `reprocessAttachment` | `apps/workspace/convex/search/extraction.ts` |
+| mutation | `retryDeadLetters` | `apps/workspace/convex/search/extraction.ts` |
+| internalAction | `processExtractionBatch` | `apps/workspace/convex/search/extractionWorker.ts` |
+| internalAction | `processSecurityBatch` | `apps/workspace/convex/search/extractionWorker.ts` |
 | query | `candidates` | `apps/workspace/convex/search/hydrate.ts` |
 | internalMutation | `claimNext` | `apps/workspace/convex/search/outbox.ts` |
 | internalMutation | `complete` | `apps/workspace/convex/search/outbox.ts` |
@@ -728,6 +741,7 @@ fully composed path.
 | internalQuery | `loadProjection` | `apps/workspace/convex/search/outbox.ts` |
 | internalMutation | `markIndexConfigured` | `apps/workspace/convex/search/outbox.ts` |
 | query | `health` | `apps/workspace/convex/search/read.ts` |
+| query | `policy` | `apps/workspace/convex/search/read.ts` |
 | internalMutation | `processNextBatch` | `apps/workspace/convex/search/reindex.ts` |
 | mutation | `retryDeadLetters` | `apps/workspace/convex/search/reindex.ts` |
 | mutation | `start` | `apps/workspace/convex/search/reindex.ts` |
@@ -1188,7 +1202,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/mcp/validators.ts` | value: mcpResourceValidator<br>value: mcpActionValidator<br>value: mcpPermissionValidator<br>value: mcpConnectionPrincipalTypeValidator<br>value: mcpScopeTypeValidator<br>value: mcpScopeValidator<br>value: createMcpConnectionInputValidator<br>value: updateMcpConnectionInputValidator<br>value: mcpConnectionValidator<br>type: McpResource<br>type: McpAction<br>type: McpPermission<br>type: McpScope |
 | `apps/workspace/convex/media/attachment.ts` | function: attachMediaToResource<br>function: updateMediaAsset<br>function: removeMediaAsset<br>function: createMediaFolderForResource<br>function: deleteMediaFolderForResource |
 | `apps/workspace/convex/media/data.ts` | type: MediaResourceType<br>function: getMediaAsset<br>function: getMediaFolder<br>function: listResourceMedia<br>function: orderedResourceMedia<br>function: listResourceMediaFolders<br>function: orderedResourceMediaFolders<br>function: selectCoverUrl |
-| `apps/workspace/convex/media/read.ts` | convex-query: listForResource<br>convex-query: getForDelete<br>convex-query: listFoldersForResource<br>convex-query: getForPublicRoute<br>convex-query: getForAuthorizedRoute |
+| `apps/workspace/convex/media/read.ts` | function: isPublicMediaAvailable<br>convex-query: listForResource<br>convex-query: getForDelete<br>convex-query: listFoldersForResource<br>convex-query: getForPublicRoute<br>convex-query: getForAuthorizedRoute |
 | `apps/workspace/convex/media/resourcePolicy.ts` | function: permissionResourceForMedia<br>function: assertMediaPermission<br>function: assertMediaResourceExists<br>function: clearExistingCover<br>function: mediaAssetsInFolder<br>function: clearMediaFolderAssignments<br>function: assertFolderBelongsToResource |
 | `apps/workspace/convex/media/validators.ts` | value: mediaKindValidator<br>value: mediaResourceTypeValidator<br>value: mediaShareVisibilityValidator<br>value: mediaFolderValidator<br>value: mediaAssetValidator<br>value: attachMediaInputValidator<br>value: updateMediaInputValidator<br>value: createMediaFolderInputValidator |
 | `apps/workspace/convex/media/write.ts` | convex-mutation: attachFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: removeFromHono<br>convex-mutation: createFolderFromHono<br>convex-mutation: deleteFolderFromHono |
@@ -1282,15 +1296,19 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/schema/views.ts` | value: viewTables |
 | `apps/workspace/convex/schema_utils.ts` | value: IndexPatterns<br>value: QueryOptimization<br>function: checkIndexCoverage<br>function: indexName |
 | `apps/workspace/convex/search/accessContext.ts` | convex-query: resolve |
+| `apps/workspace/convex/search/adapters/attachment.ts` | function: attachmentSearchProjection |
 | `apps/workspace/convex/search/adapters/project.ts` | function: projectPrincipalKeys<br>function: projectSearchProjection |
 | `apps/workspace/convex/search/adapters/shared.ts` | function: searchLocale<br>function: normalizedKeywords<br>function: searchDateValue |
 | `apps/workspace/convex/search/adapters/task.ts` | function: taskPrincipalKeys<br>function: taskSearchProjection |
+| `apps/workspace/convex/search/extraction.ts` | value: MAX_EXTRACTION_SOURCE_BYTES<br>value: MAX_EXTRACTED_TEXT_CHARS<br>function: enqueueMediaSecurityScan<br>convex-internalMutation: claimSecurityJob<br>convex-internalQuery: loadSecuritySource<br>convex-internalMutation: completeSecurityJob<br>convex-internalMutation: failSecurityJob<br>convex-internalMutation: claimExtractionJob<br>convex-internalQuery: loadExtractionSource<br>convex-internalMutation: completeExtractionJob<br>convex-internalMutation: failExtractionJob<br>function: cleanupAttachmentSearch<br>function: refreshAttachmentSearchProjection<br>convex-mutation: retryDeadLetters<br>convex-mutation: reprocessAttachment |
+| `apps/workspace/convex/search/extractionState.ts` | value: MAX_EXTRACTION_ATTEMPTS<br>function: failedExtractionState |
+| `apps/workspace/convex/search/extractionWorker.ts` | convex-internalAction: processSecurityBatch<br>convex-internalAction: processExtractionBatch<br>function: fetchSourceBytes<br>function: assertAllowedSourceUrl |
 | `apps/workspace/convex/search/hydrate.ts` | function: highestScoringCandidates<br>function: isCurrentSearchCandidate<br>convex-query: candidates |
 | `apps/workspace/convex/search/indexPolicy.ts` | function: shouldExternallyIndex<br>function: searchIndexName |
 | `apps/workspace/convex/search/outbox.ts` | convex-internalMutation: claimNext<br>convex-internalQuery: loadProjection<br>convex-internalQuery: loadPolicy<br>convex-internalQuery: indexSettingsVersion<br>convex-internalMutation: markIndexConfigured<br>convex-internalMutation: complete<br>convex-internalMutation: fail |
 | `apps/workspace/convex/search/outboxState.ts` | value: MAX_SEARCH_OUTBOX_ATTEMPTS<br>function: failedOutboxState |
-| `apps/workspace/convex/search/projection.ts` | function: writeSearchProjection |
-| `apps/workspace/convex/search/read.ts` | convex-query: health |
+| `apps/workspace/convex/search/projection.ts` | function: writeSearchProjection<br>function: tombstoneSearchResource |
+| `apps/workspace/convex/search/read.ts` | convex-query: policy<br>convex-query: health |
 | `apps/workspace/convex/search/reindex.ts` | convex-mutation: start<br>convex-internalMutation: processNextBatch<br>convex-mutation: retryDeadLetters |
 | `apps/workspace/convex/search/savedQueries.ts` | convex-query: listSaved<br>convex-query: listRecent<br>convex-mutation: save<br>convex-mutation: remove<br>convex-mutation: recordRecent<br>convex-mutation: recordResultOpened<br>function: normalizeSearchConfiguration<br>function: searchConfigurationFingerprint<br>function: searchConfigurationFilterCount |
 | `apps/workspace/convex/search/validators.ts` | value: searchResourceTypeValidator<br>value: searchScopeTypeValidator<br>value: searchSensitivityValidator<br>value: searchOutboxStatusValidator<br>value: searchQueryConfigurationValidator<br>value: searchProjectionFields<br>value: searchProjectionInputValidator<br>value: searchProjectionValidator<br>value: searchOutboxEventValidator<br>value: searchPolicyValidator<br>value: searchCandidateInputValidator<br>value: hydratedSearchResultValidator |
@@ -1357,6 +1375,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/organization/channels/page.tsx` | function: OrganizationChannelsPage |
 | `apps/workspace/src/app/[locale]/(app)/organization/custom-permissions/page.tsx` | function: OrganizationCustomPermissionsPage |
 | `apps/workspace/src/app/[locale]/(app)/organization/page.tsx` | function: OrganizationPage |
+| `apps/workspace/src/app/[locale]/(app)/organization/search-policy/page.tsx` | function: SearchPolicyPage |
 | `apps/workspace/src/app/[locale]/(app)/organization/spaces/page.tsx` | function: OrganizationSpacesPage |
 | `apps/workspace/src/app/[locale]/(app)/profile/page.tsx` | function: ProfilePage |
 | `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/layout.tsx` | function: ProjectLayout |
@@ -1962,6 +1981,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/search/api/saved-searches.ts` | type: SavedSearch<br>type: RecentSearch<br>function: useSavedSearches<br>function: useRecentSearches<br>function: useSavedSearchCommands |
 | `apps/workspace/src/domains/search/api/search.ts` | function: useAuthorizedSearchQuery |
 | `apps/workspace/src/domains/search/components/search-center-screen.tsx` | function: SearchCenterScreen |
+| `apps/workspace/src/domains/search/components/search-policy-screen.tsx` | function: SearchPolicyScreen |
 | `apps/workspace/src/domains/search/normalization.ts` | function: normalizeSearchText |
 | `apps/workspace/src/domains/search/search-center-state.ts` | function: searchConfigurationFromParams<br>function: paramsFromSearchConfiguration<br>function: searchFilterCount<br>function: dateInputValue |
 | `apps/workspace/src/domains/settings/components/workspace-settings-screen.tsx` | function: WorkspaceSettingsScreen |
@@ -2270,7 +2290,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/domain-contracts/src/deals.ts` | value: dealStageSchema<br>value: dealStatusSchema<br>value: dealPrioritySchema<br>value: dealInputSchema<br>value: dealRecordSchema<br>type: DealStage<br>type: DealStatus<br>type: DealPriority<br>type: DealInput<br>type: DealRecord<br>type: DealSummary<br>type: DealStats<br>value: crmDealStageSchema<br>value: crmDealRelationTypeSchema<br>value: crmClientPreviewSchema<br>value: crmBrokerPreviewSchema<br>value: crmProjectPreviewSchema<br>value: crmDealInputSchema<br>value: crmUpdateDealInputSchema<br>value: crmUpdateDealStageInputSchema<br>value: crmUpdateDealNotesInputSchema<br>value: crmUpdateDealFollowUpInputSchema<br>value: crmAddDealDocumentInputSchema<br>value: crmAssetDealsInputSchema<br>value: crmArchiveDealInputSchema<br>type: CrmDealInput<br>type: CrmUpdateDealInput<br>type: CrmUpdateDealStageInput<br>type: CrmUpdateDealNotesInput<br>type: CrmUpdateDealFollowUpInput<br>type: CrmAddDealDocumentInput<br>type: CrmAssetDealsInput<br>type: CrmArchiveDealInput<br>type: CrmDealRelationType<br>type: CrmClientPreview<br>type: CrmBrokerPreview<br>type: CrmProjectPreview |
 | `packages/domain-contracts/src/navigation.ts` | value: navigationDomainIdSchema<br>value: navigationRailModeSchema<br>value: navigationNodeTypeSchema<br>value: navigationNodeSchema<br>value: navigationDomainSchema<br>value: authorizedNavigationProjectionSchema<br>value: navigationOverlayInputSchema<br>type: NavigationDomainId<br>type: NavigationRailMode<br>type: NavigationNodeType<br>type: NavigationDomain<br>type: AuthorizedNavigationProjection<br>type: NavigationOverlayInput<br>interface: NavigationNode |
 | `packages/domain-contracts/src/projects.ts` | value: projectStatusSchema<br>value: projectHealthSchema<br>value: projectVisibilitySchema<br>value: projectInputSchema<br>value: projectRecordSchema<br>type: ProjectStatus<br>type: ProjectHealth<br>type: ProjectVisibility<br>type: ProjectInput<br>type: ProjectRecord<br>type: ProjectSummary |
-| `packages/domain-contracts/src/search.ts` | value: searchResourceTypeSchema<br>value: searchScopeTypeSchema<br>value: searchSensitivitySchema<br>value: searchOutboxStatusSchema<br>value: searchProjectionSchema<br>value: searchPolicySchema<br>type: SearchResourceType<br>type: SearchScopeType<br>type: SearchSensitivity<br>type: SearchOutboxStatus<br>type: SearchProjection<br>type: SearchPolicy<br>interface: SearchCandidate<br>value: hydratedSearchResultSchema<br>type: HydratedSearchResult<br>interface: SearchFilterConfiguration<br>interface: SearchQuery<br>interface: SearchProvider<br>interface: EmbeddingAdapter |
+| `packages/domain-contracts/src/search.ts` | value: searchResourceTypeSchema<br>value: searchScopeTypeSchema<br>value: searchSensitivitySchema<br>value: searchOutboxStatusSchema<br>value: searchProjectionSchema<br>value: searchPolicySchema<br>type: SearchResourceType<br>type: SearchScopeType<br>type: SearchSensitivity<br>type: SearchOutboxStatus<br>type: SearchProjection<br>type: SearchPolicy<br>interface: SearchCandidate<br>value: hydratedSearchResultSchema<br>type: HydratedSearchResult<br>interface: SearchFilterConfiguration<br>interface: SearchQuery<br>interface: SearchProvider<br>interface: EmbeddingAdapter<br>type: MalwareVerdict<br>interface: MalwareScanAdapter<br>interface: ContentExtractionAdapter |
 | `packages/domain-contracts/src/spaces.ts` | value: spaceVisibilitySchema<br>value: spaceProjectVisibilitySchema<br>value: spaceInputSchema<br>value: spaceRecordSchema<br>type: SpaceVisibility<br>type: SpaceProjectVisibility<br>type: SpaceInput<br>type: SpaceRecord |
 | `packages/domain-contracts/src/subscriptionPricing.ts` | type: SubscriptionPlanId<br>type: BillingCycle<br>type: BillingPlanKey<br>type: CreditPackId<br>type: AiModelClass<br>type: UsageMeterKind<br>type: BillingProviderId<br>type: SubscriptionStatus<br>type: EntitlementKey<br>type: SubscriptionEntitlements<br>type: EnterpriseEntitlementOverrides<br>type: OrganizationEntitlements<br>type: EntitlementDecision<br>type: GlobalSubscriptionPlan<br>type: MarketBillingVariant<br>type: CreditPack<br>type: CreditPurchase<br>type: CreditReservation<br>type: AiCreditCalculationInput<br>type: AiCreditCalculation<br>type: CreditBalance<br>type: AppliedCreditUsage<br>value: DEFAULT_SUBSCRIPTION_PLAN_ID<br>value: DEFAULT_BILLING_CYCLE<br>function: getGlobalPlan<br>function: listGlobalPlans<br>function: getMarketPricing<br>function: getCreditPack<br>function: listCreditPacks<br>function: includedCreditCardsForPlan<br>function: canAddCreditCardsToPlan<br>function: listAddOnCreditCards<br>function: resolveSubscriptionEntitlements<br>function: resolveOrganizationEntitlements<br>function: decideEntitlement<br>function: normalizeBillingSelection<br>function: normalizeBillingPlanKey<br>function: subscriptionPlanIdForBillingKey<br>function: billingCycleForKey<br>function: billingSelectionKey<br>function: aiModelClass<br>function: calculateAiCredits<br>function: creditsForProviderCost<br>function: customCreditPurchase<br>function: applyUsageToCreditBalance |
 | `packages/domain-contracts/src/subscriptionPricingConfig.ts` | value: CREDIT_PACKS<br>value: MODEL_CLASS_CONFIG<br>value: FALLBACK_MODEL_CREDIT_MULTIPLIER<br>value: CREDIT_CARD_UNIT_SIZE<br>value: CREDITS_PER_USD<br>value: MIN_CUSTOM_CREDIT_PURCHASE_USD<br>value: MAX_CUSTOM_CREDIT_PURCHASE_USD |

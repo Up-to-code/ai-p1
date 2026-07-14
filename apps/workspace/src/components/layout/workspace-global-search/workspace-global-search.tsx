@@ -65,7 +65,7 @@ export function WorkspaceGlobalSearch() {
   const authorizedSearch = useAuthorizedSearchQuery(
     activeTab === "all" || activeTab === "tasks" ? searchOrgId : undefined,
     debouncedQuery,
-    activeTab === "tasks" ? ["task"] : ["project", "task"],
+    activeTab === "tasks" ? ["task"] : ["project", "task", "attachment"],
   );
   const clientsQuery = useClientsPagedQuery(
     (activeTab === "all" || activeTab === "clients") ? searchOrgId : undefined,
@@ -128,6 +128,11 @@ export function WorkspaceGlobalSearch() {
     [activeTab, authorizedResults],
   );
 
+  const attachmentResults = useMemo(
+    () => activeTab === "all" ? authorizedResults.filter((result) => result.type === "document").slice(0, globalSearchPageSize) : [],
+    [activeTab, authorizedResults],
+  );
+
   const clientResults = useMemo(
     () =>
       (activeTab === "all" || activeTab === "clients")
@@ -164,6 +169,7 @@ export function WorkspaceGlobalSearch() {
     filteredNav.length > 0 ||
     projectResults.length > 0 ||
     taskResults.length > 0 ||
+    attachmentResults.length > 0 ||
     clientResults.length > 0 ||
     docResults.length > 0;
 
@@ -351,6 +357,15 @@ export function WorkspaceGlobalSearch() {
                         hint={doc.updatedAt ? new Date(doc.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : undefined}
                         onClick={() => goTo(`/docs?docId=${doc._id}`)}
                       />
+                    ))}
+                  </section>
+                )}
+
+                {attachmentResults.length > 0 && (
+                  <section className="pb-2">
+                    <p className="px-3 pb-1.5 pt-2 text-[10px] font-black uppercase tracking-[0.18em] text-text-muted">{t("searchAttachments")}</p>
+                    {attachmentResults.map((result) => (
+                      <CmdRow key={result.id} icon={result.icon} label={result.title} hint={result.description} onClick={() => goTo(result.href)} />
                     ))}
                   </section>
                 )}

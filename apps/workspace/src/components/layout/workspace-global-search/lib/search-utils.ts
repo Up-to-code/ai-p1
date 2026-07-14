@@ -1,4 +1,4 @@
-import { Building2, ListTodo, UserRound } from "lucide-react";
+import { Building2, ListTodo, Paperclip, UserRound } from "lucide-react";
 import type { HydratedSearchResult } from "@qentrah/domain-contracts";
 import type { Client } from "@/domains/clients/store/clients.types";
 import type { Project } from "@/domains/projects/store/projects.types";
@@ -43,13 +43,13 @@ export function toClientSearchResult(client: Client): GlobalSearchResult {
 }
 
 export function toAuthorizedSearchResult(result: HydratedSearchResult): GlobalSearchResult | null {
-  if (result.resourceType !== "project" && result.resourceType !== "task") return null;
+  if (result.resourceType !== "project" && result.resourceType !== "task" && result.resourceType !== "attachment") return null;
   return {
     id: `${result.resourceType}:${result.resourceId}`,
-    type: result.resourceType,
+    type: result.resourceType === "attachment" ? "document" : result.resourceType,
     title: result.title,
     description: result.subtitle ?? "",
     href: result.route,
-    icon: result.resourceType === "task" ? ListTodo : Building2,
+    icon: result.resourceType === "task" ? ListTodo : result.resourceType === "attachment" ? Paperclip : Building2,
   };
 }

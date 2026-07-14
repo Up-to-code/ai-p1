@@ -1,8 +1,11 @@
 import { ConvexError, v } from "convex/values";
 import { query } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
+import type { QueryCtx } from "../_generated/server";
 import { resolveProjectAccess } from "../access/project";
 import { resolveTaskAccess } from "../access/task";
+import { resolveSpaceAccess } from "../access/space";
+import { assertMediaPermission } from "../media/resourcePolicy";
 import { searchCandidateInputValidator, hydratedSearchResultValidator } from "./validators";
 import type { SearchCandidate, SearchProjection } from "@qentrah/domain-contracts";
 
@@ -35,9 +38,10 @@ export const candidates = query({
     if (args.candidates.length > MAX_CANDIDATES) {
       throw new ConvexError({ code: "SEARCH_CANDIDATE_LIMIT", message: `Search accepts at most ${MAX_CANDIDATES} candidates.` });
     }
-    const [projectAccess, taskAccess] = await Promise.all([
+    const [projectAccess, taskAccess, spaceAccess] = await Promise.all([
       resolveProjectAccess(ctx, args.organizationId),
       resolveTaskAccess(ctx, args.organizationId),
+      resolveSpaceAccess(ctx, args.organizationId),
     ]);
     const uniqueCandidates = highestScoringCandidates(args.candidates);
     const hydrated = await Promise.all(uniqueCandidates.map(async (candidate) => {
@@ -62,6 +66,22 @@ export const candidates = query({
           canUpdate: await taskAccess.canUpdate(task),
           canDelete: await taskAccess.canDelete(task),
         });
+      }
+      if (candidate.resourceType === "attachment") {
+        const id = ctx.db.normalizeId("mediaAssets", candidate.resourceId);
+        const asset = id ? await ctx.db.get(id) : null;
+        if (!asset || asset.organizationId !== args.organizationId || asset.malwareScanStatus !== "clean") return null;
+        const capabilities = await attachmentCapabilities(ctx, asset, { projectAccess, taskAccess, spaceAccess });
+        if (!capabilities.canRead) return null;
+        return {
+          resourceType: "attachment" as const,
+          resourceId: String(asset._id),
+          title: asset.name,
+          subtitle: `${asset.mimeType} · ${formatBytes(asset.size)}`,
+          route: projection.route,
+          score: candidate.score,
+          capabilities,
+        };
       }
       return null;
     }));
@@ -89,6 +109,60 @@ function presentProject(
       canDelete: access.canDelete(project),
     },
   };
+}
+
+async function attachmentCapabilities(
+  ctx: QueryCtx,
+  asset: Doc<"mediaAssets">,
+  access: {
+    projectAccess: Awaited<ReturnType<typeof resolveProjectAccess>>;
+    taskAccess: Awaited<ReturnType<typeof resolveTaskAccess>>;
+    spaceAccess: Awaited<ReturnType<typeof resolveSpaceAccess>>;
+  },
+) {
+  if (asset.resourceType === "project") {
+    const id = ctx.db.normalizeId("projects", asset.resourceId);
+    const project = id ? await ctx.db.get(id) : null;
+    return project && access.projectAccess.canRead(project)
+      ? { canRead: true, canUpdate: access.projectAccess.canUpdate(project), canDelete: access.projectAccess.canUpdate(project) }
+      : { canRead: false, canUpdate: false, canDelete: false };
+  }
+  if (asset.resourceType === "task") {
+    const id = ctx.db.normalizeId("tasks", asset.resourceId);
+    const task = id ? await ctx.db.get(id) : null;
+    return task && await access.taskAccess.canRead(task)
+      ? { canRead: true, canUpdate: await access.taskAccess.canUpdate(task), canDelete: await access.taskAccess.canDelete(task) }
+      : { canRead: false, canUpdate: false, canDelete: false };
+  }
+  if (asset.resourceType === "space") {
+    const id = ctx.db.normalizeId("spaces", asset.resourceId);
+    const space = id ? await ctx.db.get(id) : null;
+    return space && access.spaceAccess.canRead(space)
+      ? { canRead: true, canUpdate: access.spaceAccess.canUpdate(space), canDelete: access.spaceAccess.canUpdate(space) }
+      : { canRead: false, canUpdate: false, canDelete: false };
+  }
+  const canRead = await mediaPermission(ctx, asset, "read");
+  const canUpdate = canRead && await mediaPermission(ctx, asset, "update");
+  return { canRead, canUpdate, canDelete: canUpdate };
+}
+
+async function mediaPermission(
+  ctx: QueryCtx,
+  asset: Doc<"mediaAssets">,
+  action: "read" | "update",
+) {
+  try {
+    await assertMediaPermission(ctx, asset.organizationId, asset.resourceType, action);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1_024) return `${bytes} B`;
+  if (bytes < 1_048_576) return `${Math.round(bytes / 1_024)} KB`;
+  return `${(bytes / 1_048_576).toFixed(1)} MB`;
 }
 
 function presentTask(

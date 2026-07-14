@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const searchResourceTypeSchema = z.enum([
-  "space", "project", "task", "document", "comment", "message",
+  "space", "project", "task", "document", "attachment", "comment", "message",
   "client", "contact", "company", "deal", "proposal", "contract",
   "engagement", "deliverable", "approval", "invoice", "expense", "payment",
 ]);
@@ -124,4 +124,25 @@ export interface SearchProvider {
 /** Reserved seam; no vector implementation is selected by the lexical-first release. */
 export interface EmbeddingAdapter {
   embed(texts: string[], locale: string): Promise<number[][]>;
+}
+
+export type MalwareVerdict = "clean" | "infected" | "failed";
+
+export interface MalwareScanAdapter {
+  scan(input: { bytes: ArrayBuffer; mimeType: string; filename: string; timeoutMs: number }): Promise<{
+    verdict: MalwareVerdict;
+    engine: string;
+    engineVersion: string;
+    signature?: string;
+  }>;
+}
+
+export interface ContentExtractionAdapter {
+  extract(input: { bytes: ArrayBuffer; mimeType: string; filename: string; locale: string; timeoutMs: number }): Promise<{
+    text: string;
+    metadata: Record<string, string>;
+    extractor: "tika" | "tesseract";
+    extractorVersion: string;
+    ocrLanguages: string[];
+  }>;
 }

@@ -25,10 +25,48 @@ export const searchTables = {
     version: v.number(), updatedByUserId: v.string(), createdAt: v.number(), updatedAt: v.number(),
   }).index("by_organization", ["organizationId"]),
   extractionJobs: defineTable({
-    organizationId: v.string(), mediaId: v.string(), status: v.union(v.literal("pending"), v.literal("processing"), v.literal("completed"), v.literal("failed")),
+    organizationId: v.string(), mediaId: v.string(), status: v.union(v.literal("pending"), v.literal("processing"), v.literal("completed"), v.literal("failed"), v.literal("dead_letter")),
     extractor: v.union(v.literal("tika"), v.literal("tesseract")), extractorVersion: v.string(), ocrLanguages: v.array(v.string()),
-    attempts: v.number(), nextAttemptAt: v.number(), failureReason: v.optional(v.string()), createdAt: v.number(), updatedAt: v.number(),
-  }).index("by_status_attempt", ["status", "nextAttemptAt"]).index("by_media", ["organizationId", "mediaId"]),
+    attempts: v.number(), nextAttemptAt: v.number(), failureReason: v.optional(v.string()), claimedAt: v.optional(v.number()),
+    sourceUpdatedAt: v.number(), completedAt: v.optional(v.number()), createdAt: v.number(), updatedAt: v.number(),
+  })
+    .index("by_status_attempt", ["status", "nextAttemptAt"])
+    .index("by_organization_status_attempt", ["organizationId", "status", "nextAttemptAt"])
+    .index("by_media", ["organizationId", "mediaId"]),
+  mediaSecurityJobs: defineTable({
+    organizationId: v.string(),
+    mediaId: v.id("mediaAssets"),
+    status: v.union(v.literal("pending"), v.literal("processing"), v.literal("clean"), v.literal("quarantined"), v.literal("dead_letter")),
+    attempts: v.number(),
+    nextAttemptAt: v.number(),
+    claimedAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+    engine: v.optional(v.string()),
+    engineVersion: v.optional(v.string()),
+    signature: v.optional(v.string()),
+    failureReason: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_status_attempt", ["status", "nextAttemptAt"])
+    .index("by_organization_status_attempt", ["organizationId", "status", "nextAttemptAt"])
+    .index("by_media", ["organizationId", "mediaId"]),
+  extractedSearchContent: defineTable({
+    organizationId: v.string(),
+    mediaId: v.id("mediaAssets"),
+    sourceUpdatedAt: v.number(),
+    sourceMimeType: v.string(),
+    text: v.string(),
+    locale: v.string(),
+    metadata: v.array(v.object({ key: v.string(), value: v.string() })),
+    extractor: v.union(v.literal("tika"), v.literal("tesseract")),
+    extractorVersion: v.string(),
+    ocrLanguages: v.array(v.string()),
+    extractedAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_media", ["organizationId", "mediaId"])
+    .index("by_organization_updated", ["organizationId", "updatedAt"]),
   searchIndexStates: defineTable({
     indexName: v.string(),
     settingsVersion: v.number(),

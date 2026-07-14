@@ -115,6 +115,7 @@ export const IMPLEMENTED_NAVIGATION_CATALOG: readonly NavigationCatalogDomain[] 
       node("admin", "admin.mcp", "mcpConnections", "mcp", "mcp"),
       node("admin", "admin.billing", "billing", "billing", "billing"),
       node("admin", "admin.usage", "usage", "usage", "usage"),
+      node("admin", "admin.searchPolicy", "searchPolicy", "search", "searchPolicy"),
     ],
   },
 ] as const;

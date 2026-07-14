@@ -30,3 +30,45 @@ export async function writeSearchProjection(ctx: MutationCtx, projection: Search
   });
   return projectionId;
 }
+
+export async function tombstoneSearchResource(
+  ctx: MutationCtx,
+  organizationId: string,
+  resourceType: SearchProjection["resourceType"],
+  resourceId: string,
+) {
+  const existing = await ctx.db.query("searchProjections").withIndex("by_resource", (q) => q
+    .eq("organizationId", organizationId).eq("resourceType", resourceType).eq("resourceId", resourceId)).unique();
+  if (!existing || existing.deletedAt) return;
+  const projection: SearchProjection = {
+    organizationId: existing.organizationId,
+    resourceType: existing.resourceType,
+    resourceId: existing.resourceId,
+    route: existing.route,
+    title: existing.title,
+    subtitle: existing.subtitle,
+    identifier: existing.identifier,
+    searchText: existing.searchText,
+    keywords: existing.keywords,
+    locale: existing.locale,
+    scopeType: existing.scopeType,
+    spaceIds: existing.spaceIds,
+    projectIds: existing.projectIds,
+    principalKeys: existing.principalKeys,
+    sensitivity: existing.sensitivity,
+    sourceUpdatedAt: existing.sourceUpdatedAt,
+    version: existing.version,
+    ownerIds: existing.ownerIds,
+    assigneeIds: existing.assigneeIds,
+    clientIds: existing.clientIds,
+    statuses: existing.statuses,
+    tagIds: existing.tagIds,
+    dateValue: existing.dateValue,
+  };
+  await writeSearchProjection(ctx, {
+    ...projection,
+    deletedAt: Date.now(),
+    sourceUpdatedAt: Math.max(Date.now(), projection.sourceUpdatedAt + 1),
+    version: projection.version + 1,
+  });
+}
