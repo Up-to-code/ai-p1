@@ -6,8 +6,8 @@
 
 ## Inventory summary
 
-- Source files scanned: 1660
-- Files exposing interfaces: 1391
+- Source files scanned: 1661
+- Files exposing interfaces: 1392
 - Convex registered functions: 335
 - Application routes: 93
 - Hono/Convex HTTP registrations: 198
@@ -1428,6 +1428,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-panel-mode-switch.tsx` | function: SidebarPanelModeSwitch |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-panel-mode.ts` | type: SecondaryPanelMode<br>type: SecondaryPanelRouteMemory<br>value: DEFAULT_SECONDARY_PANEL_ROUTES<br>function: getSecondaryPanelModeForHref<br>function: buildCurrentModeHref<br>function: getSecondaryPanelModeHref |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-project-panel.tsx` | function: SidebarProjectPanel |
+| `apps/workspace/src/components/layout/sidebar/components/sidebar-projected-domain-links.tsx` | function: SidebarProjectedDomainLinks |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-rail-skeleton.tsx` | function: SidebarRailSkeleton |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-rail.tsx` | function: SidebarRail |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-secondary-panel.tsx` | function: clampSidebarWidth<br>function: SidebarSecondaryPanel |

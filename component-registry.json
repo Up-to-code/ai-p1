@@ -1125,10 +1125,27 @@
         "paramKey",
         "paramValue",
         "clearParams",
+        "extraParams",
         "iconPicker"
       ],
       "createdAt": "2026-07-07",
       "notes": "Extracted from duplicated local PanelLink modules in sidebar domain and inbox panels."
+    },
+    {
+      "name": "SidebarProjectedDomainLinks",
+      "path": "apps/workspace/src/components/layout/sidebar/components/sidebar-projected-domain-links.tsx",
+      "kind": "domain-shared",
+      "summary": "Renders the fixed authorized portion of a contextual domain tree from semantic route, icon, label, and query identifiers.",
+      "usedIn": [
+        "domains/workspace/components/workspace-sidebar-panel",
+        "components/layout/sidebar/components/sidebar-domain-panels",
+        "components/layout/sidebar/components/sidebar-inbox-panel"
+      ],
+      "props": [
+        "domainId"
+      ],
+      "createdAt": "2026-07-14",
+      "notes": "Dynamic Space/resource trees remain owned by their domain panels; this component renders only server-authorized fixed nodes."
     },
     {
       "name": "TaskTableView",

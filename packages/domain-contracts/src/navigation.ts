@@ -35,6 +35,7 @@ export const navigationNodeSchema: z.ZodType<NavigationNode> = z.object({
   labelOverride: z.string().trim().min(1).optional(),
   iconId: z.string().min(1),
   routeId: z.string().min(1),
+  params: z.record(z.string(), z.string()).optional(),
   nodeType: navigationNodeTypeSchema,
   required: z.boolean(),
   opensPanel: z.boolean(),
@@ -84,6 +85,7 @@ export interface NavigationNode {
   labelOverride?: string;
   iconId: string;
   routeId: string;
+  params?: Record<string, string>;
   nodeType: NavigationNodeType;
   required: boolean;
   opensPanel: boolean;

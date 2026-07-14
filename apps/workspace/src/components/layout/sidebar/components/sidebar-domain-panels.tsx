@@ -1,119 +1,45 @@
 "use client";
 
-import {
-  ListTodo,
-  CalendarDays,
-  UserRound,
-  BadgeDollarSign,
-  FileText,
-  CheckCircle2,
-  Clock,
-  CalendarClock,
-  CalendarCheck,
-  UserX,
-  Flag,
-  Share2,
-  TrendingUp,
-  Users,
-  Plus,
-  FolderKanban,
-  LayoutDashboard,
-  Settings,
-  Plug,
-  CreditCard,
-  Activity,
-  ShieldCheck,
-  Workflow,
-} from "lucide-react";
+import { FileText, Plus } from "lucide-react";
+import type { NavigationDomainId } from "@qentrah/domain-contracts";
 import { useTranslations } from "next-intl";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { useAuthSession } from "@/domains/auth";
 import { useDocsQuery } from "@/domains/docs/api/docs";
 import { SidebarPanelLayout } from "./sidebar-panel-layout";
-import { SidebarPanelLink } from "./sidebar-panel-link";
+import { SidebarProjectedDomainLinks } from "./sidebar-projected-domain-links";
 
-export function SidebarTasksPanel() {
+function ProjectedDomainPanel({ domainId }: { domainId: NavigationDomainId }) {
+  const t = useTranslations("Sidebar");
   return (
-    <SidebarPanelLayout title="Tasks">
-      <div className="flex flex-col gap-2">
-        <SidebarPanelLink href="/tasks" icon={ListTodo} label="All tasks" clearParams={["filter"]} />
-        <SidebarPanelLink href="/tasks?filter=my" icon={UserRound} label="My tasks" paramKey="filter" paramValue="my" />
-        <SidebarPanelLink href="/tasks?filter=assigned" icon={Share2} label="Assigned by me" paramKey="filter" paramValue="assigned" />
-        <SidebarPanelLink href="/tasks?filter=unassigned" icon={UserX} label="Unassigned" paramKey="filter" paramValue="unassigned" />
-        <div className="mx-4 my-2 h-px bg-border/50" />
-        <SidebarPanelLink href="/tasks?filter=today" icon={CalendarCheck} label="Due today" paramKey="filter" paramValue="today" />
-        <SidebarPanelLink href="/tasks?filter=upcoming" icon={CalendarClock} label="Upcoming" paramKey="filter" paramValue="upcoming" />
-        <SidebarPanelLink href="/tasks?filter=completed" icon={CheckCircle2} label="Completed" paramKey="filter" paramValue="completed" />
-        <SidebarPanelLink href="/tasks?filter=overdue" icon={Clock} label="Overdue" paramKey="filter" paramValue="overdue" />
-        <SidebarPanelLink href="/tasks?filter=high-priority" icon={Flag} label="High priority" paramKey="filter" paramValue="high-priority" />
-      </div>
+    <SidebarPanelLayout title={t(domainId)}>
+      <SidebarProjectedDomainLinks domainId={domainId} />
     </SidebarPanelLayout>
   );
+}
+
+export function SidebarTasksPanel() {
+  return <ProjectedDomainPanel domainId="tasks" />;
 }
 
 export function SidebarCalendarPanel() {
-  return (
-    <SidebarPanelLayout title="Calendar">
-      <div className="flex flex-col gap-2">
-        <SidebarPanelLink href="/calendar" icon={CalendarDays} label="Calendar" clearParams={["view", "filter"]} />
-      </div>
-    </SidebarPanelLayout>
-  );
+  return <ProjectedDomainPanel domainId="calendar" />;
 }
 
 export function SidebarProjectsPanel() {
-  const t = useTranslations("Sidebar.domainPanels");
-  return (
-    <SidebarPanelLayout title={t("projects.title")}>
-      <div className="flex flex-col gap-2">
-        <SidebarPanelLink href="/projects" icon={FolderKanban} label={t("projects.all")} />
-        <SidebarPanelLink href="/spaces" icon={LayoutDashboard} label={t("projects.bySpace")} />
-      </div>
-    </SidebarPanelLayout>
-  );
+  return <ProjectedDomainPanel domainId="projects" />;
 }
 
 export function SidebarCrmPanel() {
-  const t = useTranslations("Sidebar.domainPanels");
-  return (
-    <SidebarPanelLayout title={t("crm.title")}>
-      <div className="flex flex-col gap-2">
-        <SidebarPanelLink href="/clients" icon={UserRound} label={t("crm.clients")} />
-        <SidebarPanelLink href="/deals" icon={BadgeDollarSign} label={t("crm.deals")} />
-      </div>
-    </SidebarPanelLayout>
-  );
+  return <ProjectedDomainPanel domainId="crm" />;
 }
 
 export function SidebarAutomationsPanel() {
-  const t = useTranslations("Sidebar.domainPanels");
-  return (
-    <SidebarPanelLayout title={t("automations.title")}>
-      <div className="flex flex-col gap-2">
-        <SidebarPanelLink href="/automations" icon={Workflow} label={t("automations.library")} />
-      </div>
-    </SidebarPanelLayout>
-  );
+  return <ProjectedDomainPanel domainId="automations" />;
 }
 
 export function SidebarAdminPanel() {
-  const t = useTranslations("Sidebar.domainPanels");
-  return (
-    <SidebarPanelLayout title={t("admin.title")}>
-      <div className="flex flex-col gap-2">
-        <SidebarPanelLink href="/organization" icon={Settings} label={t("admin.organization")} />
-        <SidebarPanelLink href="/team" icon={Users} label={t("admin.members")} />
-        <SidebarPanelLink href="/organization/custom-permissions" icon={ShieldCheck} label={t("admin.permissions")} />
-        <SidebarPanelLink href="/organization/spaces" icon={LayoutDashboard} label={t("admin.spaces")} />
-        <div className="mx-4 my-2 h-px bg-border/50" />
-        <SidebarPanelLink href="/web-apps" icon={Plug} label={t("admin.integrations")} />
-        <SidebarPanelLink href="/mcp" icon={Share2} label={t("admin.mcp")} />
-        <SidebarPanelLink href="/billing" icon={CreditCard} label={t("admin.billing")} />
-        <SidebarPanelLink href="/usage" icon={TrendingUp} label={t("admin.usage")} />
-        <SidebarPanelLink href="/activity" icon={Activity} label={t("admin.audit")} />
-      </div>
-    </SidebarPanelLayout>
-  );
+  return <ProjectedDomainPanel domainId="admin" />;
 }
 
 export function SidebarDocsPanel() {
@@ -138,11 +64,7 @@ export function SidebarDocsPanel() {
       }
     >
       <div className="flex flex-col gap-2">
-        <SidebarPanelLink href="/docs" icon={FileText} label="All docs" clearParams={["filter", "template"]} />
-        <SidebarPanelLink href="/docs?filter=shared" icon={Share2} label="Shared with me" paramKey="filter" paramValue="shared" />
-        <div className="mx-4 my-2 h-px bg-border/50" />
-        <SidebarPanelLink href="/docs?filter=recent" icon={Clock} label="Recent" paramKey="filter" paramValue="recent" />
-        <SidebarPanelLink href="/docs?template=true" icon={FileText} label="Templates" paramKey="template" paramValue="true" />
+        <SidebarProjectedDomainLinks domainId="docs" />
         <div className="mx-2 mt-3 border-t border-border/60 pt-3">
           <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Recently edited</p>
           <div className="space-y-0.5">

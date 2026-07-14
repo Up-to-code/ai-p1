@@ -31,6 +31,7 @@ export const navigationNodeValidator = v.object({
   labelOverride: v.optional(v.string()),
   iconId: v.string(),
   routeId: v.string(),
+  params: v.optional(v.record(v.string(), v.string())),
   nodeType: v.union(
     v.literal("route"),
     v.literal("group"),
@@ -47,6 +48,7 @@ export const navigationNodeValidator = v.object({
     labelOverride: v.optional(v.string()),
     iconId: v.string(),
     routeId: v.string(),
+    params: v.optional(v.record(v.string(), v.string())),
     nodeType: v.union(
       v.literal("route"),
       v.literal("group"),

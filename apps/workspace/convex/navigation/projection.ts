@@ -55,6 +55,10 @@ export function buildAuthorizedNavigationProjection(input: {
     ...(input.organizationLayout?.aliases ?? {}),
     ...(input.userOverlay?.aliases ?? {}),
   };
+  const hiddenOptionalNodeIds = new Set([
+    ...(input.organizationLayout?.hiddenOptionalNodeIds ?? []),
+    ...(input.userOverlay?.hiddenOptionalNodeIds ?? []),
+  ]);
   const domains: NavigationDomain[] = ordered.map((domain) => ({
     id: domain.id,
     labelKey: domain.labelKey,
@@ -63,7 +67,12 @@ export function buildAuthorizedNavigationProjection(input: {
     routeId: domain.routeId,
     required: domain.required,
     opensPanel: domain.opensPanel,
-    nodes: [],
+    nodes: domain.nodes
+      .filter((navigationNode) => navigationNode.required || !hiddenOptionalNodeIds.has(navigationNode.id))
+      .map((navigationNode) => ({
+        ...navigationNode,
+        labelOverride: aliases[`node:${navigationNode.id}`],
+      })),
   }));
   return {
     organizationId: input.organizationId,

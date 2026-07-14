@@ -22,6 +22,7 @@ type SidebarPanelLinkProps = {
   paramKey?: string;
   paramValue?: string;
   clearParams?: string[];
+  extraParams?: Record<string, string>;
   iconPicker?: React.ReactNode | ((props: { close: () => void }) => React.ReactNode);
 };
 
@@ -32,6 +33,7 @@ export function SidebarPanelLink({
   paramKey,
   paramValue,
   clearParams,
+  extraParams: explicitExtraParams,
   iconPicker,
 }: SidebarPanelLinkProps) {
   const pathname = usePathname();
@@ -39,8 +41,11 @@ export function SidebarPanelLink({
   const [iconPickerOpen, setIconPickerOpen] = useState(false);
   const pathPart = href.split("?")[0];
 
+  const hasMatchingExplicitParams = Object.entries(explicitExtraParams ?? {})
+    .every(([key, value]) => searchParams.get(key) === value);
   const isActive =
     pathname.startsWith(pathPart) &&
+    hasMatchingExplicitParams &&
     (paramKey
       ? searchParams.get(paramKey) === paramValue
       : clearParams
@@ -51,7 +56,7 @@ export function SidebarPanelLink({
     typeof iconPicker === "function"
       ? iconPicker({ close: () => setIconPickerOpen(false) })
       : iconPicker;
-  const extraParams =
+  const derivedExtraParams =
     paramKey || clearParams
       ? {
           ...(clearParams?.reduce<Record<string, string>>((params, key) => {
@@ -61,12 +66,13 @@ export function SidebarPanelLink({
           ...(paramKey && paramValue ? { [paramKey]: paramValue } : {}),
         }
       : undefined;
+  const extraParams = { ...(derivedExtraParams ?? {}), ...(explicitExtraParams ?? {}) };
 
   return (
     <div className="group relative">
       <WorkspaceLink
         href={href}
-        extraParams={extraParams}
+        extraParams={Object.keys(extraParams).length > 0 ? extraParams : undefined}
         className={cn(
           "flex h-7 w-full items-center gap-2 rounded-md px-2 text-[12px] font-medium transition-colors",
           isActive

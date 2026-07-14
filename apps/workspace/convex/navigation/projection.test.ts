@@ -46,4 +46,20 @@ describe("Authorized Navigation Projection", () => {
     });
     expect(result.domains.map((domain) => domain.id)).toEqual(["tasks", "home", "projects"]);
   });
+
+  it("keeps required nodes while applying optional visibility and aliases", () => {
+    const result = buildAuthorizedNavigationProjection({
+      organizationId: "org_1",
+      allowedDomainIds: new Set(["tasks"]),
+      catalog: IMPLEMENTED_NAVIGATION_CATALOG,
+      organizationLayout: {
+        hiddenOptionalNodeIds: ["tasks.mine", "tasks.all"],
+        aliases: { "node:tasks.overdue": "Late work" },
+      },
+    });
+    const nodes = result.domains[0]?.nodes ?? [];
+    expect(nodes.some((node) => node.id === "tasks.all")).toBe(true);
+    expect(nodes.some((node) => node.id === "tasks.mine")).toBe(false);
+    expect(nodes.find((node) => node.id === "tasks.overdue")?.labelOverride).toBe("Late work");
+  });
 });

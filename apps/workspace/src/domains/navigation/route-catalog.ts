@@ -23,6 +23,8 @@ export const ROUTE_IDS = [
   "usage",
   "integrations",
   "mcp",
+  "permissions",
+  "organizationSpaces",
 ] as const;
 
 export type RouteId = (typeof ROUTE_IDS)[number];
@@ -59,6 +61,8 @@ export const ROUTE_CATALOG: readonly RouteCatalogEntry[] = [
   { id: "usage", path: "/usage", persistentParams: [], railItem: "admin" },
   { id: "integrations", path: "/web-apps", persistentParams: [], railItem: "admin", aliases: ["/integrations"] },
   { id: "mcp", path: "/mcp", persistentParams: [], railItem: "admin" },
+  { id: "permissions", path: "/organization/custom-permissions", persistentParams: [], railItem: "admin" },
+  { id: "organizationSpaces", path: "/organization/spaces", persistentParams: [], railItem: "admin" },
 ];
 
 function normalizePath(pathname: string): string | null {

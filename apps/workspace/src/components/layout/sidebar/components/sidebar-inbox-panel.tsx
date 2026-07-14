@@ -29,6 +29,7 @@ import type {
   OrgFilterType,
   SidebarInboxChannel,
 } from "./sidebar-inbox-panel/types";
+import { SidebarProjectedDomainLinks } from "./sidebar-projected-domain-links";
 
 export function SidebarInboxPanel() {
   const { channels, isLoadingChannels } = useInboxState();
@@ -64,6 +65,9 @@ export function SidebarInboxPanel() {
         </WorkspaceLink>
       }
     >
+      <div className="mb-3 border-b border-border/60 pb-3">
+        <SidebarProjectedDomainLinks domainId="inbox" />
+      </div>
       {isLoadingChannels ? <InboxChannelSkeleton /> : null}
 
       {!isLoadingChannels && channels.length === 0 ? (
