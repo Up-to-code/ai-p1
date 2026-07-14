@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { useAuthSession } from "@/domains/auth"
 import { logger } from "@/lib/logger"
 
-const CONFIGURABLE_TYPES = ["project", "task", "attachment"] as const satisfies readonly SearchResourceType[]
+const CONFIGURABLE_TYPES = ["project", "task", "attachment", "proposal", "contract", "engagement", "deliverable"] as const satisfies readonly SearchResourceType[]
 const DEFAULT_MIME_TYPES = [
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -145,6 +145,10 @@ function SearchPolicyForm({ organizationId, policy, health }: { organizationId: 
                 <Button type="button" variant="outline" disabled={busy !== null} onClick={() => void run("retry-extraction", () => retryExtraction({ organizationId }))}>{t("retryExtraction")}</Button>
                 <Button type="button" variant="outline" disabled={busy !== null} onClick={() => void run("reindex-project", () => startReindex({ organizationId, resourceType: "project" }))}>{t("reindexProjects")}</Button>
                 <Button type="button" variant="outline" disabled={busy !== null} onClick={() => void run("reindex-task", () => startReindex({ organizationId, resourceType: "task" }))}>{t("reindexTasks")}</Button>
+                <Button type="button" variant="outline" disabled={busy !== null} onClick={() => void run("reindex-proposal", () => startReindex({ organizationId, resourceType: "proposal" }))}>{t("reindexProposals")}</Button>
+                <Button type="button" variant="outline" disabled={busy !== null} onClick={() => void run("reindex-contract", () => startReindex({ organizationId, resourceType: "contract" }))}>{t("reindexContracts")}</Button>
+                <Button type="button" variant="outline" disabled={busy !== null} onClick={() => void run("reindex-engagement", () => startReindex({ organizationId, resourceType: "engagement" }))}>{t("reindexEngagements")}</Button>
+                <Button type="button" variant="outline" disabled={busy !== null} onClick={() => void run("reindex-deliverable", () => startReindex({ organizationId, resourceType: "deliverable" }))}>{t("reindexDeliverables")}</Button>
               </div>
             </section>
             <Button type="submit" className="w-full" disabled={busy !== null}>{busy === "save" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{t("save")}</Button>

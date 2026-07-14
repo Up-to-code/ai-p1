@@ -6,10 +6,10 @@
 
 ## Inventory summary
 
-- Source files scanned: 1704
-- Files exposing interfaces: 1433
-- Convex registered functions: 373
-- Application routes: 97
+- Source files scanned: 1717
+- Files exposing interfaces: 1446
+- Convex registered functions: 393
+- Application routes: 100
 - Hono/Convex HTTP registrations: 199
 - Eve/MCP tool entries: 118
 - Package commands: 88
@@ -128,9 +128,12 @@
 | `/:locale/clients/:id` | page | `apps/workspace/src/app/[locale]/(app)/clients/[id]/page.tsx` |
 | `/:locale/clients/:id/edit` | page | `apps/workspace/src/app/[locale]/(app)/clients/[id]/edit/page.tsx` |
 | `/:locale/clients/create` | page | `apps/workspace/src/app/[locale]/(app)/clients/create/page.tsx` |
+| `/:locale/crm/contracts` | page | `apps/workspace/src/app/[locale]/(app)/crm/contracts/page.tsx` |
+| `/:locale/crm/proposals` | page | `apps/workspace/src/app/[locale]/(app)/crm/proposals/page.tsx` |
 | `/:locale/dashboard` | page | `apps/marketing/app/(site)/[locale]/dashboard/page.tsx` |
 | `/:locale/deals` | page | `apps/workspace/src/app/[locale]/(app)/deals/page.tsx` |
 | `/:locale/deals/:id` | page | `apps/workspace/src/app/[locale]/(app)/deals/[id]/page.tsx` |
+| `/:locale/delivery` | page | `apps/workspace/src/app/[locale]/(app)/delivery/page.tsx` |
 | `/:locale/docs` | page | `apps/marketing/app/(site)/[locale]/docs/page.tsx` |
 | `/:locale/docs` | page | `apps/workspace/src/app/[locale]/(app)/docs/page.tsx` |
 | `/:locale/docs/:docId` | page | `apps/workspace/src/app/[locale]/(app)/docs/[docId]/page.tsx` |
@@ -547,6 +550,26 @@ fully composed path.
 | internalMutation | `deleteInternal` | `apps/workspace/convex/deals/write.ts` |
 | mutation | `updateFromHono` | `apps/workspace/convex/deals/write.ts` |
 | internalMutation | `updateInternal` | `apps/workspace/convex/deals/write.ts` |
+| mutation | `acceptProposal` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `activateEngagement` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `createChangeOrder` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `createDeliverable` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `createProposal` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `decideApproval` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `grantPortalAccess` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `invitePortalIdentity` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `linkProject` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `recordConcern` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `sendContract` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `sendProposal` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `signContract` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `submitChangeOrder` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `submitDeliverable` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `updateConcern` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| query | `engagementDetail` | `apps/workspace/convex/delivery/read.ts` |
+| query | `listContracts` | `apps/workspace/convex/delivery/read.ts` |
+| query | `listEngagements` | `apps/workspace/convex/delivery/read.ts` |
+| query | `listProposals` | `apps/workspace/convex/delivery/read.ts` |
 | query | `getChannel` | `apps/workspace/convex/inbox/read.ts` |
 | query | `getThread` | `apps/workspace/convex/inbox/read.ts` |
 | query | `listChannels` | `apps/workspace/convex/inbox/read.ts` |
@@ -1103,6 +1126,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/agent/subagents/tasks/task-update-input.ts` | value: taskUpdateToolInputSchema<br>function: parseTaskUpdatePatch |
 | `apps/workspace/convex/access/actor.ts` | type: ServerActor<br>function: requireServerActor |
 | `apps/workspace/convex/access/channel.ts` | type: ChannelAccessErrorCode<br>interface: ChannelAccess<br>type: ChannelScopeInput<br>function: findChannelByPublicId<br>function: resolveChannelAccess |
+| `apps/workspace/convex/access/delivery.ts` | function: resolveDeliveryAccess |
 | `apps/workspace/convex/access/document.ts` | type: DocumentAccessErrorCode<br>interface: DocumentAccess<br>function: resolveDocumentAccess |
 | `apps/workspace/convex/access/project.ts` | type: ProjectAccessErrorCode<br>interface: ProjectAccess<br>function: resolveProjectAccess |
 | `apps/workspace/convex/access/projectSpace.ts` | type: ProjectSpaceAccessErrorCode<br>interface: ProjectSpaceAccess<br>function: resolveProjectSpaceAccess |
@@ -1174,6 +1198,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/deals/read.ts` | convex-query: list<br>convex-query: get<br>convex-query: options<br>convex-query: stats |
 | `apps/workspace/convex/deals/validators.ts` | value: dealStageValidator<br>value: dealStatusValidator<br>value: dealPriorityValidator<br>value: dealInputValidator<br>value: dealValidator |
 | `apps/workspace/convex/deals/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono<br>convex-internalMutation: createInternal<br>convex-internalMutation: updateInternal<br>convex-internalMutation: deleteInternal |
+| `apps/workspace/convex/delivery/lifecycle.ts` | convex-mutation: createProposal<br>convex-mutation: sendProposal<br>convex-mutation: acceptProposal<br>convex-mutation: sendContract<br>convex-mutation: signContract<br>convex-mutation: activateEngagement<br>convex-mutation: linkProject<br>convex-mutation: createDeliverable<br>convex-mutation: submitDeliverable<br>convex-mutation: decideApproval<br>convex-mutation: createChangeOrder<br>convex-mutation: submitChangeOrder<br>convex-mutation: recordConcern<br>convex-mutation: updateConcern<br>convex-mutation: invitePortalIdentity<br>convex-mutation: grantPortalAccess |
+| `apps/workspace/convex/delivery/read.ts` | convex-query: listProposals<br>convex-query: listContracts<br>convex-query: listEngagements<br>convex-query: engagementDetail |
+| `apps/workspace/convex/delivery/search.ts` | function: proposalSearchProjection<br>function: contractSearchProjection<br>function: engagementSearchProjection<br>function: deliverableSearchProjection |
+| `apps/workspace/convex/delivery/transitions.ts` | type: CommercialLifecycle<br>function: assertCommercialTransition<br>function: assertProposalAcceptable<br>function: nextAgreedAmount |
+| `apps/workspace/convex/delivery/validators.ts` | value: commercialModelValidator<br>value: proposalStatusValidator<br>value: contractStatusValidator<br>value: engagementStatusValidator<br>value: deliveryHealthValidator<br>value: deliverableStatusValidator<br>value: approvalStatusValidator<br>value: changeOrderStatusValidator<br>value: concernTypeValidator<br>value: concernSeverityValidator<br>value: concernStatusValidator<br>value: proposalValidator<br>value: contractValidator<br>value: engagementValidator<br>value: deliverableValidator<br>value: engagementProjectValidator<br>value: approvalValidator<br>value: changeOrderValidator<br>value: concernValidator |
 | `apps/workspace/convex/email.ts` | value: resend<br>function: getTransactionalFromEmail<br>function: getUpdatesFromEmail<br>function: getAppUrl |
 | `apps/workspace/convex/inbox/read.ts` | convex-query: listChannels<br>convex-query: getChannel<br>convex-query: listMessages<br>convex-query: listMessagesPage<br>convex-query: getThread |
 | `apps/workspace/convex/inbox/validators.ts` | value: channelTypeValidator<br>value: channelVisibilityValidator<br>value: channelInputValidator<br>value: channelValidator<br>value: messageAttachmentValidator<br>value: messageInputValidator<br>value: messageValidator<br>value: threadValidator |
@@ -1282,6 +1311,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/schema/automations.ts` | value: automationNodeValidator<br>value: automationEdgeValidator<br>value: automationViewportValidator<br>value: automationTables |
 | `apps/workspace/convex/schema/billing.ts` | value: billingTables |
 | `apps/workspace/convex/schema/custom_fields.ts` | value: customFieldTables |
+| `apps/workspace/convex/schema/delivery.ts` | value: deliveryTables |
 | `apps/workspace/convex/schema/docs.ts` | value: docsTables |
 | `apps/workspace/convex/schema/domains.ts` | value: domainTables |
 | `apps/workspace/convex/schema/maintenance.ts` | value: maintenanceTables |
@@ -1351,8 +1381,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/clients/create/page.tsx` | function: CreateClientPage |
 | `apps/workspace/src/app/[locale]/(app)/clients/layout.tsx` | function: ClientsLayout |
 | `apps/workspace/src/app/[locale]/(app)/clients/page.tsx` | function: ClientsPage |
+| `apps/workspace/src/app/[locale]/(app)/crm/contracts/page.tsx` | function: ContractsPage |
+| `apps/workspace/src/app/[locale]/(app)/crm/proposals/page.tsx` | function: ProposalsPage |
 | `apps/workspace/src/app/[locale]/(app)/deals/[id]/page.tsx` | function: DealDetailPage |
 | `apps/workspace/src/app/[locale]/(app)/deals/page.tsx` | function: DealsPage |
+| `apps/workspace/src/app/[locale]/(app)/delivery/page.tsx` | function: DeliveryPage |
 | `apps/workspace/src/app/[locale]/(app)/docs/[docId]/page.tsx` | function: DocEditorPage |
 | `apps/workspace/src/app/[locale]/(app)/docs/layout.tsx` | function: DocsLayout |
 | `apps/workspace/src/app/[locale]/(app)/docs/page.tsx` | function: DocsPage |
@@ -1484,7 +1517,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/components/layout/sidebar/components/identity-avatar.tsx` | function: IdentityAvatar |
 | `apps/workspace/src/components/layout/sidebar/components/nav-tooltip.tsx` | function: NavTooltip |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-chat-panel.tsx` | function: SidebarChatPanel |
-| `apps/workspace/src/components/layout/sidebar/components/sidebar-domain-panels.tsx` | function: SidebarTasksPanel<br>function: SidebarCalendarPanel<br>function: SidebarProjectsPanel<br>function: SidebarCrmPanel<br>function: SidebarAutomationsPanel<br>function: SidebarAdminPanel<br>function: SidebarDocsPanel |
+| `apps/workspace/src/components/layout/sidebar/components/sidebar-domain-panels.tsx` | function: SidebarTasksPanel<br>function: SidebarCalendarPanel<br>function: SidebarProjectsPanel<br>function: SidebarCrmPanel<br>function: SidebarDeliveryPanel<br>function: SidebarAutomationsPanel<br>function: SidebarAdminPanel<br>function: SidebarDocsPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel.tsx` | function: SidebarInboxPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel/channel-filter.ts` | function: filterChannelsByScope<br>function: groupInboxChannels |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel/channel-section.tsx` | function: ChannelSection |
@@ -1753,6 +1786,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/deals/lib/deal-view-model.ts` | value: dealStages<br>value: activeDealStages<br>value: dealViews<br>function: stageTone<br>function: priorityTone<br>function: formatValue<br>function: formatTotalValue<br>function: formFromDeal<br>function: dealValuesForStage<br>function: matchesDealSearch |
 | `apps/workspace/src/domains/deals/store/deals.types.ts` | type: DealStats<br>type: DealFormValues |
 | `apps/workspace/src/domains/deals/validation/deal.schema.ts` | value: dealStageSchema<br>value: dealStatusSchema<br>value: dealPrioritySchema<br>value: dealSchema<br>type: DealSchemaValues |
+| `apps/workspace/src/domains/delivery/components/commercial-lifecycle-screen.tsx` | function: CommercialLifecycleScreen |
+| `apps/workspace/src/domains/delivery/components/delivery-screen.tsx` | function: DeliveryScreen |
 | `apps/workspace/src/domains/docs/api/docs.ts` | function: useDocsQuery<br>function: useDocQuery<br>function: useDocSearchQuery<br>function: useDocFoldersQuery<br>function: docFolderPayloadFromForm<br>function: createDocRequest<br>function: updateDocRequest<br>function: useUpdateDocMutation<br>function: deleteDocRequest<br>function: moveDocRequest<br>function: createDocFolderRequest<br>function: renameDocFolderRequest<br>function: deleteDocFolderRequest |
 | `apps/workspace/src/domains/docs/components/DocsPageRedesigned.tsx` | function: DocsPageRedesigned |
 | `apps/workspace/src/domains/docs/components/custom-fields-modal.tsx` | function: CustomFieldsModal |
@@ -2288,6 +2323,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/domain-contracts/src/calendar.ts` | value: calendarEventTypeSchema<br>value: calendarEventStatusSchema<br>value: calendarEventInputObjectSchema<br>value: calendarEventInputSchema<br>value: calendarEventPatchObjectSchema<br>value: calendarEventPatchSchema<br>type: CalendarEventInput<br>type: CalendarEventPatch<br>type: CalendarEventType<br>type: CalendarEventStatus |
 | `packages/domain-contracts/src/clients.ts` | value: clientTypeSchema<br>value: clientStatusSchema<br>value: clientPrioritySchema<br>value: clientPipelineStageSchema<br>value: visibilitySchema<br>value: clientInputSchema<br>value: clientPatchObjectSchema<br>value: clientPatchSchema<br>value: clientRecordSchema<br>type: ClientType<br>type: ClientStatus<br>type: ClientPriority<br>type: ClientPipelineStage<br>type: Visibility<br>type: ClientInput<br>type: ClientPatch<br>type: ClientRecord<br>type: ClientSummary |
 | `packages/domain-contracts/src/deals.ts` | value: dealStageSchema<br>value: dealStatusSchema<br>value: dealPrioritySchema<br>value: dealInputSchema<br>value: dealRecordSchema<br>type: DealStage<br>type: DealStatus<br>type: DealPriority<br>type: DealInput<br>type: DealRecord<br>type: DealSummary<br>type: DealStats<br>value: crmDealStageSchema<br>value: crmDealRelationTypeSchema<br>value: crmClientPreviewSchema<br>value: crmBrokerPreviewSchema<br>value: crmProjectPreviewSchema<br>value: crmDealInputSchema<br>value: crmUpdateDealInputSchema<br>value: crmUpdateDealStageInputSchema<br>value: crmUpdateDealNotesInputSchema<br>value: crmUpdateDealFollowUpInputSchema<br>value: crmAddDealDocumentInputSchema<br>value: crmAssetDealsInputSchema<br>value: crmArchiveDealInputSchema<br>type: CrmDealInput<br>type: CrmUpdateDealInput<br>type: CrmUpdateDealStageInput<br>type: CrmUpdateDealNotesInput<br>type: CrmUpdateDealFollowUpInput<br>type: CrmAddDealDocumentInput<br>type: CrmAssetDealsInput<br>type: CrmArchiveDealInput<br>type: CrmDealRelationType<br>type: CrmClientPreview<br>type: CrmBrokerPreview<br>type: CrmProjectPreview |
+| `packages/domain-contracts/src/delivery.ts` | value: commercialModelSchema<br>value: proposalStatusSchema<br>value: contractStatusSchema<br>value: engagementStatusSchema<br>value: deliveryHealthSchema<br>value: deliverableStatusSchema<br>value: approvalStatusSchema<br>value: changeOrderStatusSchema<br>value: concernTypeSchema<br>value: concernSeveritySchema<br>value: concernStatusSchema<br>value: proposalInputSchema<br>value: contractTermsSchema<br>value: deliverableInputSchema<br>value: changeOrderInputSchema<br>type: CommercialModel<br>type: ProposalStatus<br>type: ContractStatus<br>type: EngagementStatus<br>type: DeliveryHealth<br>type: DeliverableStatus<br>type: ApprovalStatus<br>type: ChangeOrderStatus<br>type: ProposalInput<br>type: ContractTerms<br>type: DeliverableInput<br>type: ChangeOrderInput |
 | `packages/domain-contracts/src/navigation.ts` | value: navigationDomainIdSchema<br>value: navigationRailModeSchema<br>value: navigationNodeTypeSchema<br>value: navigationNodeSchema<br>value: navigationDomainSchema<br>value: authorizedNavigationProjectionSchema<br>value: navigationOverlayInputSchema<br>type: NavigationDomainId<br>type: NavigationRailMode<br>type: NavigationNodeType<br>type: NavigationDomain<br>type: AuthorizedNavigationProjection<br>type: NavigationOverlayInput<br>interface: NavigationNode |
 | `packages/domain-contracts/src/projects.ts` | value: projectStatusSchema<br>value: projectHealthSchema<br>value: projectVisibilitySchema<br>value: projectInputSchema<br>value: projectRecordSchema<br>type: ProjectStatus<br>type: ProjectHealth<br>type: ProjectVisibility<br>type: ProjectInput<br>type: ProjectRecord<br>type: ProjectSummary |
 | `packages/domain-contracts/src/search.ts` | value: searchResourceTypeSchema<br>value: searchScopeTypeSchema<br>value: searchSensitivitySchema<br>value: searchOutboxStatusSchema<br>value: searchProjectionSchema<br>value: searchPolicySchema<br>type: SearchResourceType<br>type: SearchScopeType<br>type: SearchSensitivity<br>type: SearchOutboxStatus<br>type: SearchProjection<br>type: SearchPolicy<br>interface: SearchCandidate<br>value: hydratedSearchResultSchema<br>type: HydratedSearchResult<br>interface: SearchFilterConfiguration<br>interface: SearchQuery<br>interface: SearchProvider<br>interface: EmbeddingAdapter<br>type: MalwareVerdict<br>interface: MalwareScanAdapter<br>interface: ContentExtractionAdapter |

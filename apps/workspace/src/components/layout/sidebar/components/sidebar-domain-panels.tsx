@@ -34,6 +34,10 @@ export function SidebarCrmPanel() {
   return <ProjectedDomainPanel domainId="crm" />;
 }
 
+export function SidebarDeliveryPanel() {
+  return <ProjectedDomainPanel domainId="delivery" />;
+}
+
 export function SidebarAutomationsPanel() {
   return <ProjectedDomainPanel domainId="automations" />;
 }

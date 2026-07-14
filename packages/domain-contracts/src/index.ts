@@ -6,4 +6,5 @@ export * from "./spaces";
 export * from "./tasks";
 export * from "./navigation";
 export * from "./search";
+export * from "./delivery";
 export * from "./subscriptionPricing";

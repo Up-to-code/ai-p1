@@ -74,7 +74,7 @@ export const searchTables = {
   }).index("by_index_name", ["indexName"]),
   searchReindexJobs: defineTable({
     organizationId: v.string(),
-    resourceType: v.union(v.literal("project"), v.literal("task")),
+    resourceType: v.union(v.literal("project"), v.literal("task"), v.literal("proposal"), v.literal("contract"), v.literal("engagement"), v.literal("deliverable")),
     status: v.union(v.literal("pending"), v.literal("running"), v.literal("completed"), v.literal("failed")),
     cursor: v.optional(v.string()),
     processed: v.number(),

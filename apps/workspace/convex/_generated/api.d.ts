@@ -10,6 +10,7 @@
 
 import type * as access_actor from "../access/actor.js";
 import type * as access_channel from "../access/channel.js";
+import type * as access_delivery from "../access/delivery.js";
 import type * as access_document from "../access/document.js";
 import type * as access_project from "../access/project.js";
 import type * as access_projectSpace from "../access/projectSpace.js";
@@ -81,6 +82,11 @@ import type * as dashboard_read from "../dashboard/read.js";
 import type * as deals_read from "../deals/read.js";
 import type * as deals_validators from "../deals/validators.js";
 import type * as deals_write from "../deals/write.js";
+import type * as delivery_lifecycle from "../delivery/lifecycle.js";
+import type * as delivery_read from "../delivery/read.js";
+import type * as delivery_search from "../delivery/search.js";
+import type * as delivery_transitions from "../delivery/transitions.js";
+import type * as delivery_validators from "../delivery/validators.js";
 import type * as email from "../email.js";
 import type * as http from "../http.js";
 import type * as inbox_read from "../inbox/read.js";
@@ -190,6 +196,7 @@ import type * as savedViews_write from "../savedViews/write.js";
 import type * as schema_automations from "../schema/automations.js";
 import type * as schema_billing from "../schema/billing.js";
 import type * as schema_custom_fields from "../schema/custom_fields.js";
+import type * as schema_delivery from "../schema/delivery.js";
 import type * as schema_docs from "../schema/docs.js";
 import type * as schema_domains from "../schema/domains.js";
 import type * as schema_maintenance from "../schema/maintenance.js";
@@ -258,6 +265,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   "access/actor": typeof access_actor;
   "access/channel": typeof access_channel;
+  "access/delivery": typeof access_delivery;
   "access/document": typeof access_document;
   "access/project": typeof access_project;
   "access/projectSpace": typeof access_projectSpace;
@@ -329,6 +337,11 @@ declare const fullApi: ApiFromModules<{
   "deals/read": typeof deals_read;
   "deals/validators": typeof deals_validators;
   "deals/write": typeof deals_write;
+  "delivery/lifecycle": typeof delivery_lifecycle;
+  "delivery/read": typeof delivery_read;
+  "delivery/search": typeof delivery_search;
+  "delivery/transitions": typeof delivery_transitions;
+  "delivery/validators": typeof delivery_validators;
   email: typeof email;
   http: typeof http;
   "inbox/read": typeof inbox_read;
@@ -438,6 +451,7 @@ declare const fullApi: ApiFromModules<{
   "schema/automations": typeof schema_automations;
   "schema/billing": typeof schema_billing;
   "schema/custom_fields": typeof schema_custom_fields;
+  "schema/delivery": typeof schema_delivery;
   "schema/docs": typeof schema_docs;
   "schema/domains": typeof schema_domains;
   "schema/maintenance": typeof schema_maintenance;

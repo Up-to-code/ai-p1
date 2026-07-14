@@ -15,6 +15,9 @@ describe("route catalog", () => {
     expect(getRouteId("/tasks/123")).toBe("tasks");
     expect(getRouteId("/ar/projects/123/overview")).toBe("projects");
     expect(getRouteId("/en/search")).toBe("search");
+    expect(getRouteId("/en/crm/proposals")).toBe("proposals");
+    expect(getRouteId("/ar/crm/contracts")).toBe("contracts");
+    expect(getActiveRailItem("/en/delivery/engagements")).toBe("delivery");
     expect(getActiveRailItem("/en/search")).toBe("home");
     expect(getRouteId("/organization-extra")).toBeNull();
   });

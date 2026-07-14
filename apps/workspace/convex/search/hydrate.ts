@@ -6,6 +6,8 @@ import { resolveProjectAccess } from "../access/project";
 import { resolveTaskAccess } from "../access/task";
 import { resolveSpaceAccess } from "../access/space";
 import { assertMediaPermission } from "../media/resourcePolicy";
+import { resolveDeliveryAccess } from "../access/delivery";
+import { canUseOrganizationResourceAction } from "../organizations/profile/access";
 import { searchCandidateInputValidator, hydratedSearchResultValidator } from "./validators";
 import type { SearchCandidate, SearchProjection } from "@qentrah/domain-contracts";
 
@@ -38,10 +40,13 @@ export const candidates = query({
     if (args.candidates.length > MAX_CANDIDATES) {
       throw new ConvexError({ code: "SEARCH_CANDIDATE_LIMIT", message: `Search accepts at most ${MAX_CANDIDATES} candidates.` });
     }
-    const [projectAccess, taskAccess, spaceAccess] = await Promise.all([
+    const [projectAccess, taskAccess, spaceAccess, deliveryAccess, canReadDeals, canUpdateDeals] = await Promise.all([
       resolveProjectAccess(ctx, args.organizationId),
       resolveTaskAccess(ctx, args.organizationId),
       resolveSpaceAccess(ctx, args.organizationId),
+      resolveDeliveryAccess(ctx, args.organizationId),
+      canUseOrganizationResourceAction(ctx, args.organizationId, "deal", "read"),
+      canUseOrganizationResourceAction(ctx, args.organizationId, "deal", "update"),
     ]);
     const uniqueCandidates = highestScoringCandidates(args.candidates);
     const hydrated = await Promise.all(uniqueCandidates.map(async (candidate) => {
@@ -83,12 +88,60 @@ export const candidates = query({
           capabilities,
         };
       }
+      if (candidate.resourceType === "proposal") {
+        const id = ctx.db.normalizeId("proposals", candidate.resourceId);
+        const proposal = id ? await ctx.db.get(id) : null;
+        if (!canReadDeals || !activeOrganizationRecord(proposal, args.organizationId)) return null;
+        return presentCommercial(proposal, candidate.score, projection.route, canUpdateDeals);
+      }
+      if (candidate.resourceType === "contract") {
+        const id = ctx.db.normalizeId("contracts", candidate.resourceId);
+        const contract = id ? await ctx.db.get(id) : null;
+        if (!canReadDeals || !activeOrganizationRecord(contract, args.organizationId)) return null;
+        return presentCommercial(contract, candidate.score, projection.route, canUpdateDeals);
+      }
+      if (candidate.resourceType === "engagement") {
+        const id = ctx.db.normalizeId("engagements", candidate.resourceId);
+        const engagement = id ? await ctx.db.get(id) : null;
+        if (!engagement || !await deliveryAccess.canRead(engagement)) return null;
+        const canUpdate = await deliveryAccess.canUpdate(engagement);
+        return { resourceType: "engagement" as const, resourceId: String(engagement._id), title: engagement.name, subtitle: `${engagement.commercialModel} · ${engagement.status}`, route: projection.route, score: candidate.score, capabilities: { canRead: true, canUpdate, canDelete: false } };
+      }
+      if (candidate.resourceType === "deliverable") {
+        const id = ctx.db.normalizeId("deliverables", candidate.resourceId);
+        const deliverable = id ? await ctx.db.get(id) : null;
+        const engagement = deliverable ? await ctx.db.get(deliverable.engagementId) : null;
+        if (!deliverable || deliverable.organizationId !== args.organizationId || deliverable.deletedAt || !engagement || !await deliveryAccess.canRead(engagement)) return null;
+        const canUpdate = await deliveryAccess.canUpdate(engagement);
+        return { resourceType: "deliverable" as const, resourceId: String(deliverable._id), title: deliverable.name, subtitle: deliverable.description, route: projection.route, score: candidate.score, capabilities: { canRead: true, canUpdate, canDelete: false } };
+      }
       return null;
     }));
     return hydrated.filter((result): result is NonNullable<typeof result> => result !== null)
       .sort((left, right) => right.score - left.score);
   },
 });
+
+function activeOrganizationRecord<T extends { organizationId: string; deletedAt?: number; recordState: string }>(record: T | null, organizationId: string): record is T {
+  return Boolean(record && record.organizationId === organizationId && !record.deletedAt && record.recordState !== "deleted");
+}
+
+function presentCommercial(
+  record: Doc<"proposals"> | Doc<"contracts">,
+  score: number,
+  route: string,
+  canUpdate: boolean,
+) {
+  return {
+    resourceType: ("proposalId" in record ? "contract" : "proposal") as "proposal" | "contract",
+    resourceId: String(record._id),
+    title: record.title,
+    subtitle: `${record.commercialModel} · ${record.status}`,
+    route,
+    score,
+    capabilities: { canRead: true, canUpdate, canDelete: false },
+  };
+}
 
 function presentProject(
   project: Doc<"projects">,

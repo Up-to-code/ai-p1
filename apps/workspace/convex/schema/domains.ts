@@ -321,6 +321,8 @@ export const domainTables = {
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_stage", ["organizationId", "stage"])
     .index("by_organization_status", ["organizationId", "status"])
+    .index("by_organization_owner", ["organizationId", "ownerUserId"])
+    .index("by_org_stage_status_state_updated", ["organizationId", "stage", "status", "recordState", "updatedAt"])
     .index("by_org_state_updated", [
       "organizationId",
       "recordState",

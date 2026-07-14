@@ -22,8 +22,9 @@ never decides whether an actor can read a record.
    upserts or removes the external document.
 4. Failures use bounded exponential backoff and eventually enter dead-letter
    state. Administrators can explicitly retry dead letters.
-5. Durable reindex jobs rebuild existing Project or Task projections in small
-   cursor-owned batches without loading an Organization dataset into a client.
+5. Durable reindex jobs rebuild existing Project, Task, Proposal, Contract,
+   Engagement, or Deliverable projections in small cursor-owned batches without
+   loading an Organization dataset into a client.
 
 ## Attachment extraction flow
 
@@ -86,7 +87,9 @@ not claim jobs they cannot process.
 If provider configuration is absent, the scheduled worker leaves events
 pending and reports `configured: false`. The command palette preserves the
 legacy Project fallback while presenting a truthful error for indexed-only
-Task search.
+Task search. Proposal, Contract, Engagement, and Deliverable projections are
+written by their commercial lifecycle commands and are reauthorized through
+live Deal or linked-Project Delivery access during hydration.
 
 ## Invariants
 

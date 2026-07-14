@@ -19,7 +19,7 @@ import { logger } from "@/lib/logger"
 import { useAuthorizedSearchQuery, useRecentSearches, useSavedSearchCommands, useSavedSearches } from "../index"
 import { dateInputValue, paramsFromSearchConfiguration, searchConfigurationFromParams, searchFilterCount } from "../search-center-state"
 
-const searchableTypes = ["project", "task", "attachment"] as const satisfies readonly SearchResourceType[]
+const searchableTypes = ["project", "task", "attachment", "proposal", "contract", "engagement", "deliverable"] as const satisfies readonly SearchResourceType[]
 
 export function SearchCenterScreen() {
   const t = useTranslations("SearchCenter")
@@ -163,7 +163,7 @@ export function SearchCenterScreen() {
                       onClick={() => organizationId && void commands.recordResultOpened({ organizationId, queryLength: active.search.length, resourceType: result.resourceType, filterCount })}
                       className="group flex items-start gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                      <span className="mt-0.5 rounded-lg bg-muted px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{result.resourceType === "project" ? t("types.project") : result.resourceType === "task" ? t("types.task") : result.resourceType === "attachment" ? t("types.attachment") : result.resourceType}</span>
+                      <span className="mt-0.5 rounded-lg bg-muted px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground"><SearchTypeLabel type={result.resourceType} /></span>
                       <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold text-foreground">{result.title}</span>{result.subtitle ? <span className="mt-1 block line-clamp-2 text-xs text-muted-foreground">{result.subtitle}</span> : null}</span>
                       <span className="text-xs text-muted-foreground group-hover:text-foreground">{t("open")}</span>
                     </WorkspaceLink>
@@ -225,4 +225,10 @@ function sensitivityValue(value: string): SearchFilterConfiguration["sensitivity
 
 function option(id: string, label: string): [string, string] {
   return [id, label]
+}
+
+function SearchTypeLabel({ type }: { type: SearchResourceType }) {
+  const t = useTranslations("SearchCenter.types")
+  if (type === "project" || type === "task" || type === "attachment" || type === "proposal" || type === "contract" || type === "engagement" || type === "deliverable") return t(type)
+  return type
 }

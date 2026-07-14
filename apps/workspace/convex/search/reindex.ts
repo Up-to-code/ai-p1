@@ -5,8 +5,9 @@ import { requireServerActor } from "../access/actor";
 import { assertOrganizationPermission } from "../organizations/profile/access";
 import { projectSearchProjection } from "./adapters/project";
 import { taskSearchProjection } from "./adapters/task";
+import { contractSearchProjection, deliverableSearchProjection, engagementSearchProjection, proposalSearchProjection } from "../delivery/search";
 
-const reindexResourceValidator = v.union(v.literal("project"), v.literal("task"));
+const reindexResourceValidator = v.union(v.literal("project"), v.literal("task"), v.literal("proposal"), v.literal("contract"), v.literal("engagement"), v.literal("deliverable"));
 
 export const start = mutation({
   args: { organizationId: v.string(), resourceType: reindexResourceValidator },
@@ -52,8 +53,28 @@ export const processNextBatch = internalMutation({
         for (const project of page.page) await projectSearchProjection(ctx, project);
         return finishPage(ctx, job, page);
       }
-      const page = await ctx.db.query("tasks").withIndex("by_org_state_updated", (q) => q.eq("organizationId", job.organizationId).eq("recordState", "active")).paginate({ cursor: job.cursor ?? null, numItems: 25 });
-      for (const task of page.page) await taskSearchProjection(ctx, task);
+      if (job.resourceType === "task") {
+        const page = await ctx.db.query("tasks").withIndex("by_org_state_updated", (q) => q.eq("organizationId", job.organizationId).eq("recordState", "active")).paginate({ cursor: job.cursor ?? null, numItems: 25 });
+        for (const task of page.page) await taskSearchProjection(ctx, task);
+        return finishPage(ctx, job, page);
+      }
+      if (job.resourceType === "proposal") {
+        const page = await ctx.db.query("proposals").withIndex("by_org_state_updated", (q) => q.eq("organizationId", job.organizationId).eq("recordState", "active")).paginate({ cursor: job.cursor ?? null, numItems: 25 });
+        for (const proposal of page.page) await proposalSearchProjection(ctx, proposal);
+        return finishPage(ctx, job, page);
+      }
+      if (job.resourceType === "contract") {
+        const page = await ctx.db.query("contracts").withIndex("by_org_state_updated", (q) => q.eq("organizationId", job.organizationId).eq("recordState", "active")).paginate({ cursor: job.cursor ?? null, numItems: 25 });
+        for (const contract of page.page) await contractSearchProjection(ctx, contract);
+        return finishPage(ctx, job, page);
+      }
+      if (job.resourceType === "engagement") {
+        const page = await ctx.db.query("engagements").withIndex("by_org_state_updated", (q) => q.eq("organizationId", job.organizationId).eq("recordState", "active")).paginate({ cursor: job.cursor ?? null, numItems: 25 });
+        for (const engagement of page.page) await engagementSearchProjection(ctx, engagement);
+        return finishPage(ctx, job, page);
+      }
+      const page = await ctx.db.query("deliverables").withIndex("by_org_state_updated", (q) => q.eq("organizationId", job.organizationId).eq("recordState", "active")).paginate({ cursor: job.cursor ?? null, numItems: 25 });
+      for (const deliverable of page.page) await deliverableSearchProjection(ctx, deliverable);
       return finishPage(ctx, job, page);
     } catch (error) {
       await ctx.db.patch(job._id, { status: "failed", error: (error instanceof Error ? error.message : "Reindex failed.").slice(0, 2_000), updatedAt: Date.now() });

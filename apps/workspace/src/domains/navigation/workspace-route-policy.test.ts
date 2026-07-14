@@ -16,6 +16,8 @@ describe("Workspace route policy", () => {
     expect(classifyWorkspaceRoute("/ar/tasks/123")).toBe("protected");
     expect(classifyWorkspaceRoute("/en/billing")).toBe("protected");
     expect(classifyWorkspaceRoute("/ar/search")).toBe("protected");
+    expect(classifyWorkspaceRoute("/en/crm/proposals")).toBe("protected");
+    expect(classifyWorkspaceRoute("/en/delivery")).toBe("protected");
     expect(classifyWorkspaceRoute("/en/mcp-docs")).toBe("localized-public");
     expect(classifyWorkspaceRoute("/en/eve/channel")).toBe("localized-eve");
   });

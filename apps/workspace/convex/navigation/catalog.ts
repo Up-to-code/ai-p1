@@ -94,6 +94,19 @@ export const IMPLEMENTED_NAVIGATION_CATALOG: readonly NavigationCatalogDomain[] 
     nodes: [
       node("crm", "crm.clients", "clients", "clients", "clients", { required: true }),
       node("crm", "crm.deals", "deals", "deals", "deals", { required: true }),
+      node("crm", "crm.proposals", "proposals", "docs", "proposals"),
+      node("crm", "crm.contracts", "contracts", "docs", "contracts"),
+    ],
+  },
+  {
+    id: "delivery", labelKey: "delivery", iconId: "delivery", routeId: "delivery", required: true, opensPanel: true, readResources: ["project"],
+    nodes: [
+      node("delivery", "delivery.overview", "deliveryOverview", "overview", "delivery", { required: true }),
+      node("delivery", "delivery.engagements", "engagements", "projects", "delivery", { required: true }),
+      node("delivery", "delivery.active", "activeDelivery", "attention", "delivery", { params: { status: "active" } }),
+      node("delivery", "delivery.approvals", "clientApprovals", "inbox", "delivery", { params: { view: "approvals" } }),
+      node("delivery", "delivery.change-orders", "changeOrders", "docs", "delivery", { params: { view: "change-orders" } }),
+      node("delivery", "delivery.risks", "risksAndIssues", "attention", "delivery", { params: { view: "risks" } }),
     ],
   },
   {

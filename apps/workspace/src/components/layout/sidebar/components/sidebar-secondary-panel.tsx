@@ -18,6 +18,7 @@ import {
   SidebarCrmPanel,
   SidebarAutomationsPanel,
   SidebarAdminPanel,
+  SidebarDeliveryPanel,
 } from "./sidebar-domain-panels";
 
 const MIN_WIDTH = 188;
@@ -83,6 +84,7 @@ export function SidebarSecondaryPanel() {
             {activeRailItem === "tasks" && <SidebarTasksPanel />}
             {activeRailItem === "calendar" && <SidebarCalendarPanel />}
             {activeRailItem === "crm" && <SidebarCrmPanel />}
+            {activeRailItem === "delivery" && <SidebarDeliveryPanel />}
             {activeRailItem === "docs" && <SidebarDocsPanel />}
             {activeRailItem === "inbox" && <SidebarInboxPanel />}
             {activeRailItem === "automations" && <SidebarAutomationsPanel />}

@@ -1,6 +1,6 @@
 import type { SearchFilterConfiguration, SearchResourceType, SearchScopeType, SearchSensitivity } from "@qentrah/domain-contracts"
 
-const resourceTypes = ["project", "task", "attachment"] as const satisfies readonly SearchResourceType[]
+const resourceTypes = ["project", "task", "attachment", "proposal", "contract", "engagement", "deliverable"] as const satisfies readonly SearchResourceType[]
 const scopeTypes = ["organization", "space", "project", "private"] as const satisfies readonly SearchScopeType[]
 const sensitivityValues = ["standard", "restricted", "confidential"] as const satisfies readonly SearchSensitivity[]
 
