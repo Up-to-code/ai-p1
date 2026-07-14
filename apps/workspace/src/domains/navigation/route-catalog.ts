@@ -1,16 +1,8 @@
 import { isLocale } from "@/i18n/locale-registry";
 
-export type RailItemId =
-  | "home"
-  | "ws"
-  | "spaces"
-  | "tasks"
-  | "calendar"
-  | "clients"
-  | "deals"
-  | "docs"
-  | "inbox"
-  | null;
+import type { NavigationDomainId } from "@qentrah/domain-contracts";
+
+export type RailItemId = NavigationDomainId | null;
 
 export const ROUTE_IDS = [
   "ws",
@@ -25,6 +17,12 @@ export const ROUTE_IDS = [
   "spaces",
   "projects",
   "organization",
+  "automations",
+  "team",
+  "billing",
+  "usage",
+  "integrations",
+  "mcp",
 ] as const;
 
 export type RouteId = (typeof ROUTE_IDS)[number];
@@ -44,17 +42,23 @@ const taskParams = ["filter", "project", "space"] as const;
 
 export const ROUTE_CATALOG: readonly RouteCatalogEntry[] = [
   { id: "ws", path: "/ws", persistentParams: [], railItem: "home" },
-  { id: "ai", path: "/ai", persistentParams: aiParams, railItem: "home" },
+  { id: "ai", path: "/ai", persistentParams: aiParams, railItem: "ai" },
   { id: "tasks", path: "/tasks", persistentParams: taskParams, railItem: "tasks" },
   { id: "calendar", path: "/calendar", persistentParams: contextParams, railItem: "calendar" },
   { id: "docs", path: "/docs", persistentParams: contextParams, railItem: "docs" },
-  { id: "clients", path: "/clients", persistentParams: [], railItem: "clients" },
-  { id: "deals", path: "/deals", persistentParams: dealParams, railItem: "deals", aliases: ["/opportunities"] },
+  { id: "clients", path: "/clients", persistentParams: [], railItem: "crm" },
+  { id: "deals", path: "/deals", persistentParams: dealParams, railItem: "crm", aliases: ["/opportunities"] },
   { id: "channels", path: "/channels", persistentParams: contextParams, railItem: "inbox", aliases: ["/ws/channels", "/inbox/channels", "/organization/channels"] },
   { id: "inbox", path: "/inbox", persistentParams: [], railItem: "inbox", aliases: ["/ws/inbox"] },
   { id: "spaces", path: "/spaces", persistentParams: [], railItem: "spaces", aliases: ["/ws/spaces", "/inbox/spaces", "/organization/spaces"] },
-  { id: "projects", path: "/projects", persistentParams: [], railItem: "spaces" },
-  { id: "organization", path: "/organization", persistentParams: [], railItem: null },
+  { id: "projects", path: "/projects", persistentParams: [], railItem: "projects" },
+  { id: "organization", path: "/organization", persistentParams: [], railItem: "admin" },
+  { id: "automations", path: "/automations", persistentParams: [], railItem: "automations" },
+  { id: "team", path: "/team", persistentParams: [], railItem: "admin" },
+  { id: "billing", path: "/billing", persistentParams: [], railItem: "admin" },
+  { id: "usage", path: "/usage", persistentParams: [], railItem: "admin" },
+  { id: "integrations", path: "/web-apps", persistentParams: [], railItem: "admin", aliases: ["/integrations"] },
+  { id: "mcp", path: "/mcp", persistentParams: [], railItem: "admin" },
 ];
 
 function normalizePath(pathname: string): string | null {
@@ -88,6 +92,14 @@ export function getActiveRailItem(pathname: string): RailItemId {
 
 export function getSupportedPersistentParams(pathname: string): readonly string[] {
   return getRouteEntry(pathname)?.persistentParams ?? [];
+}
+
+export function getRoutePath(routeId: RouteId): `/${string}` {
+  return ROUTE_CATALOG.find((entry) => entry.id === routeId)?.path ?? "/ws";
+}
+
+export function getRoutePathById(routeId: string): `/${string}` {
+  return ROUTE_CATALOG.find((entry) => entry.id === routeId)?.path ?? "/ws";
 }
 
 export function isInternalHref(href: string): boolean {

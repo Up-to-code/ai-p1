@@ -6,9 +6,9 @@
 
 ## Inventory summary
 
-- Source files scanned: 1653
-- Files exposing interfaces: 1384
-- Convex registered functions: 332
+- Source files scanned: 1660
+- Files exposing interfaces: 1391
+- Convex registered functions: 335
 - Application routes: 93
 - Hono/Convex HTTP registrations: 198
 - Eve/MCP tool entries: 118
@@ -599,6 +599,9 @@ fully composed path.
 | query | `listSurfaceTabs` | `apps/workspace/convex/modelization/read.ts` |
 | query | `listWorkflowStates` | `apps/workspace/convex/modelization/read.ts` |
 | mutation | `seedWorkspaceDefaults` | `apps/workspace/convex/modelization/write.ts` |
+| query | `getAuthorizedProjection` | `apps/workspace/convex/navigation/read.ts` |
+| mutation | `updateMyOverlay` | `apps/workspace/convex/navigation/write.ts` |
+| mutation | `updateOrganizationLayout` | `apps/workspace/convex/navigation/write.ts` |
 | internalMutation | `dispatchJob` | `apps/workspace/convex/notifications/dispatch.ts` |
 | internalMutation | `recoverDueJobs` | `apps/workspace/convex/notifications/dispatch.ts` |
 | query | `listPrimary` | `apps/workspace/convex/notifications/inbox.ts` |
@@ -1170,6 +1173,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/modelization/read.ts` | convex-query: getSurfaceByKey<br>convex-query: listSurfaceTabs<br>convex-query: listSavedViews<br>convex-query: listWorkflowStates |
 | `apps/workspace/convex/modelization/validators.ts` | value: seedWorkspaceDefaultsResultValidator<br>value: surfaceValidator<br>value: surfaceTabValidator<br>value: savedViewValidator<br>value: workflowStateValidator |
 | `apps/workspace/convex/modelization/write.ts` | convex-mutation: seedWorkspaceDefaults |
+| `apps/workspace/convex/navigation/catalog.ts` | type: NavigationCatalogDomain<br>value: IMPLEMENTED_NAVIGATION_CATALOG |
+| `apps/workspace/convex/navigation/projection.ts` | type: NavigationLayoutLayer<br>function: buildAuthorizedNavigationProjection |
+| `apps/workspace/convex/navigation/read.ts` | convex-query: getAuthorizedProjection |
+| `apps/workspace/convex/navigation/validators.ts` | value: navigationDomainIdValidator<br>value: navigationRailModeValidator<br>value: navigationNodeValidator<br>value: navigationDomainValidator<br>value: authorizedNavigationProjectionValidator |
+| `apps/workspace/convex/navigation/write.ts` | convex-mutation: updateMyOverlay<br>convex-mutation: updateOrganizationLayout |
 | `apps/workspace/convex/notifications/dispatch.ts` | convex-internalMutation: dispatchJob<br>convex-internalMutation: recoverDueJobs |
 | `apps/workspace/convex/notifications/helpers.ts` | type: NotificationCategory<br>type: NotificationSourceType<br>type: NotificationTrigger<br>type: ReminderRule<br>value: defaultNotificationCategories<br>value: defaultReminderRules<br>function: userPrincipalKey<br>function: organizationPrincipalKey<br>function: recipientKey<br>function: tokenLast4<br>function: defaultPreference<br>function: normalizeReminderRules<br>function: getPreference<br>function: getEffectivePreference<br>function: scheduledAtForRule<br>function: cancelQueuedJobsForSource<br>function: createNotificationJob<br>function: scheduleCalendarEventReminders<br>function: scheduleTaskReminders<br>function: nextRecurringTime<br>function: scheduleManualNotification |
 | `apps/workspace/convex/notifications/inbox.ts` | convex-query: listPrimary<br>convex-mutation: markRead<br>convex-mutation: markAllRead |
@@ -1233,6 +1241,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/schema/domains.ts` | value: domainTables |
 | `apps/workspace/convex/schema/maintenance.ts` | value: maintenanceTables |
 | `apps/workspace/convex/schema/media.ts` | value: mediaTables |
+| `apps/workspace/convex/schema/navigation.ts` | value: navigationTables |
 | `apps/workspace/convex/schema/organization.ts` | value: organizationTables |
 | `apps/workspace/convex/schema/partner.ts` | value: partnerTables |
 | `apps/workspace/convex/schema/theories.ts` | value: theoriesTables |
@@ -1406,7 +1415,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/components/layout/sidebar/components/identity-avatar.tsx` | function: IdentityAvatar |
 | `apps/workspace/src/components/layout/sidebar/components/nav-tooltip.tsx` | function: NavTooltip |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-chat-panel.tsx` | function: SidebarChatPanel |
-| `apps/workspace/src/components/layout/sidebar/components/sidebar-domain-panels.tsx` | function: SidebarTasksPanel<br>function: SidebarCalendarPanel<br>function: SidebarClientsPanel<br>function: SidebarDealsPanel<br>function: SidebarDocsPanel |
+| `apps/workspace/src/components/layout/sidebar/components/sidebar-domain-panels.tsx` | function: SidebarTasksPanel<br>function: SidebarCalendarPanel<br>function: SidebarProjectsPanel<br>function: SidebarCrmPanel<br>function: SidebarAutomationsPanel<br>function: SidebarAdminPanel<br>function: SidebarDocsPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel.tsx` | function: SidebarInboxPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel/channel-filter.ts` | function: filterChannelsByScope<br>function: groupInboxChannels |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel/channel-section.tsx` | function: ChannelSection |
@@ -1421,10 +1430,10 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-project-panel.tsx` | function: SidebarProjectPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-rail-skeleton.tsx` | function: SidebarRailSkeleton |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-rail.tsx` | function: SidebarRail |
-| `apps/workspace/src/components/layout/sidebar/components/sidebar-secondary-panel.tsx` | function: clampSidebarWidth<br>function: sidebarWidthStorageKey<br>function: SidebarSecondaryPanel |
+| `apps/workspace/src/components/layout/sidebar/components/sidebar-secondary-panel.tsx` | function: clampSidebarWidth<br>function: SidebarSecondaryPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-space-panel.tsx` | function: SidebarSpacePanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-workspace-switcher.tsx` | function: SidebarWorkspaceSwitcher |
-| `apps/workspace/src/components/layout/sidebar/config/nav.config.ts` | type: SidebarNavItem<br>type: SidebarNavGroup<br>value: sidebarStaticNav<br>value: sidebarPrimaryNav<br>value: sidebarNavGroups<br>value: sidebarSpaceNav<br>value: sidebarProjectNav<br>value: sidebarComingSoonNav<br>value: sidebarWorkspaceNav<br>value: sidebarVisibleThreadLimit<br>value: sidebarOrganizationListLimit |
+| `apps/workspace/src/components/layout/sidebar/config/navigation-icon-registry.ts` | type: NavigationIcon<br>function: navigationIcon |
 | `apps/workspace/src/components/layout/sidebar/hooks/use-organization-switch.ts` | function: useOrganizationSwitch |
 | `apps/workspace/src/components/layout/sidebar/lib/sidebar-utils.ts` | function: sidebarInitials<br>function: isGeneratedOrganizationName |
 | `apps/workspace/src/components/layout/sidebar/lib/types.ts` | type: AgentThread<br>type: BetterAuthOrganization |
@@ -1764,7 +1773,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/media/media-upload-view-model.ts` | type: UploadQueueStatus<br>type: MediaUploadLabels<br>type: UploadQueueItem<br>value: defaultMediaUploadLabels<br>function: mergeMediaUploadLabels<br>function: mediaUploadAccept<br>function: userFacingUploadError<br>function: createQueueItem<br>function: appendUploadQueueItems<br>function: uploadQueueItemsById<br>function: markUploadQueueItemUploading<br>function: markUploadQueueItemUploaded<br>function: markUploadQueueItemFailed<br>function: markUploadQueueBatchFailed<br>function: removeUploadQueueItem<br>function: queuedUploadItemIds<br>function: uploadFileSizeLabel<br>function: selectAcceptedMediaFiles<br>function: resourceMediaUploadState<br>function: removePendingMediaFileAt<br>function: uploadQueueStatusPresentation |
 | `apps/workspace/src/domains/navigation/canonical-redirect.ts` | type: PageSearchParams<br>function: buildCanonicalRedirectPath |
 | `apps/workspace/src/domains/navigation/navigation-context.tsx` | function: NavigationProvider<br>function: useNavigation |
-| `apps/workspace/src/domains/navigation/route-catalog.ts` | type: RailItemId<br>value: ROUTE_IDS<br>type: RouteId<br>interface: RouteCatalogEntry<br>value: ROUTE_CATALOG<br>function: getRouteEntry<br>function: getRouteId<br>function: getActiveRailItem<br>function: getSupportedPersistentParams<br>function: isInternalHref |
+| `apps/workspace/src/domains/navigation/route-catalog.ts` | type: RailItemId<br>value: ROUTE_IDS<br>type: RouteId<br>interface: RouteCatalogEntry<br>value: ROUTE_CATALOG<br>function: getRouteEntry<br>function: getRouteId<br>function: getActiveRailItem<br>function: getSupportedPersistentParams<br>function: getRoutePath<br>function: getRoutePathById<br>function: isInternalHref |
 | `apps/workspace/src/domains/navigation/types.ts` | type: NavLevel<br>interface: NavState<br>interface: NavActions |
 | `apps/workspace/src/domains/navigation/workspace-route-policy.ts` | type: WorkspaceRouteClass<br>interface: LocalizedPath<br>function: splitLocalizedPath<br>function: classifyWorkspaceRoute<br>function: localizedEvePath<br>function: isLocalizedWorkspaceRoot<br>function: getSubdomainLabel<br>function: buildSignInPath<br>value: workspaceRoutePolicy |
 | `apps/workspace/src/domains/notifications/api/notifications.ts` | type: NotificationCategory<br>type: NotificationSourceType<br>type: NotificationTrigger<br>type: NotificationPreference<br>type: NotificationSchedule<br>type: PushDeviceStatus<br>value: defaultNotificationPreference<br>function: getPushDeviceStatus<br>function: getMyNotificationPreferences<br>function: updateMyNotificationPreferences<br>function: getOrganizationNotificationPreferences<br>function: updateOrganizationNotificationPreferences<br>function: listNotificationSchedules |
@@ -2195,6 +2204,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/domain-contracts/src/calendar.ts` | value: calendarEventTypeSchema<br>value: calendarEventStatusSchema<br>value: calendarEventInputObjectSchema<br>value: calendarEventInputSchema<br>value: calendarEventPatchObjectSchema<br>value: calendarEventPatchSchema<br>type: CalendarEventInput<br>type: CalendarEventPatch<br>type: CalendarEventType<br>type: CalendarEventStatus |
 | `packages/domain-contracts/src/clients.ts` | value: clientTypeSchema<br>value: clientStatusSchema<br>value: clientPrioritySchema<br>value: clientPipelineStageSchema<br>value: visibilitySchema<br>value: clientInputSchema<br>value: clientPatchObjectSchema<br>value: clientPatchSchema<br>value: clientRecordSchema<br>type: ClientType<br>type: ClientStatus<br>type: ClientPriority<br>type: ClientPipelineStage<br>type: Visibility<br>type: ClientInput<br>type: ClientPatch<br>type: ClientRecord<br>type: ClientSummary |
 | `packages/domain-contracts/src/deals.ts` | value: dealStageSchema<br>value: dealStatusSchema<br>value: dealPrioritySchema<br>value: dealInputSchema<br>value: dealRecordSchema<br>type: DealStage<br>type: DealStatus<br>type: DealPriority<br>type: DealInput<br>type: DealRecord<br>type: DealSummary<br>type: DealStats<br>value: crmDealStageSchema<br>value: crmDealRelationTypeSchema<br>value: crmClientPreviewSchema<br>value: crmBrokerPreviewSchema<br>value: crmProjectPreviewSchema<br>value: crmDealInputSchema<br>value: crmUpdateDealInputSchema<br>value: crmUpdateDealStageInputSchema<br>value: crmUpdateDealNotesInputSchema<br>value: crmUpdateDealFollowUpInputSchema<br>value: crmAddDealDocumentInputSchema<br>value: crmAssetDealsInputSchema<br>value: crmArchiveDealInputSchema<br>type: CrmDealInput<br>type: CrmUpdateDealInput<br>type: CrmUpdateDealStageInput<br>type: CrmUpdateDealNotesInput<br>type: CrmUpdateDealFollowUpInput<br>type: CrmAddDealDocumentInput<br>type: CrmAssetDealsInput<br>type: CrmArchiveDealInput<br>type: CrmDealRelationType<br>type: CrmClientPreview<br>type: CrmBrokerPreview<br>type: CrmProjectPreview |
+| `packages/domain-contracts/src/navigation.ts` | value: navigationDomainIdSchema<br>value: navigationRailModeSchema<br>value: navigationNodeTypeSchema<br>value: navigationNodeSchema<br>value: navigationDomainSchema<br>value: authorizedNavigationProjectionSchema<br>value: navigationOverlayInputSchema<br>type: NavigationDomainId<br>type: NavigationRailMode<br>type: NavigationNodeType<br>type: NavigationDomain<br>type: AuthorizedNavigationProjection<br>type: NavigationOverlayInput<br>interface: NavigationNode |
 | `packages/domain-contracts/src/projects.ts` | value: projectStatusSchema<br>value: projectHealthSchema<br>value: projectVisibilitySchema<br>value: projectInputSchema<br>value: projectRecordSchema<br>type: ProjectStatus<br>type: ProjectHealth<br>type: ProjectVisibility<br>type: ProjectInput<br>type: ProjectRecord<br>type: ProjectSummary |
 | `packages/domain-contracts/src/spaces.ts` | value: spaceVisibilitySchema<br>value: spaceProjectVisibilitySchema<br>value: spaceInputSchema<br>value: spaceRecordSchema<br>type: SpaceVisibility<br>type: SpaceProjectVisibility<br>type: SpaceInput<br>type: SpaceRecord |
 | `packages/domain-contracts/src/subscriptionPricing.ts` | type: SubscriptionPlanId<br>type: BillingCycle<br>type: BillingPlanKey<br>type: CreditPackId<br>type: AiModelClass<br>type: UsageMeterKind<br>type: BillingProviderId<br>type: SubscriptionStatus<br>type: EntitlementKey<br>type: SubscriptionEntitlements<br>type: EnterpriseEntitlementOverrides<br>type: OrganizationEntitlements<br>type: EntitlementDecision<br>type: GlobalSubscriptionPlan<br>type: MarketBillingVariant<br>type: CreditPack<br>type: CreditPurchase<br>type: CreditReservation<br>type: AiCreditCalculationInput<br>type: AiCreditCalculation<br>type: CreditBalance<br>type: AppliedCreditUsage<br>value: DEFAULT_SUBSCRIPTION_PLAN_ID<br>value: DEFAULT_BILLING_CYCLE<br>function: getGlobalPlan<br>function: listGlobalPlans<br>function: getMarketPricing<br>function: getCreditPack<br>function: listCreditPacks<br>function: includedCreditCardsForPlan<br>function: canAddCreditCardsToPlan<br>function: listAddOnCreditCards<br>function: resolveSubscriptionEntitlements<br>function: resolveOrganizationEntitlements<br>function: decideEntitlement<br>function: normalizeBillingSelection<br>function: normalizeBillingPlanKey<br>function: subscriptionPlanIdForBillingKey<br>function: billingCycleForKey<br>function: billingSelectionKey<br>function: aiModelClass<br>function: calculateAiCredits<br>function: creditsForProviderCost<br>function: customCreditPurchase<br>function: applyUsageToCreditBalance |

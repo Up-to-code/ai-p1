@@ -6,7 +6,7 @@ describe("route catalog", () => {
   it("selects the active rail item without confusing /ws with nested routes", () => {
     expect(getActiveRailItem("/ws")).toBe("home");
     expect(getActiveRailItem("/ws-extra")).toBeNull();
-    expect(getActiveRailItem("/ai")).toBe("home");
+    expect(getActiveRailItem("/ai")).toBe("ai");
     expect(getRouteId("/ws")).toBe("ws");
     expect(getRouteId("/ai")).toBe("ai");
   });
@@ -17,14 +17,14 @@ describe("route catalog", () => {
     expect(getRouteId("/organization-extra")).toBeNull();
   });
 
-  it("maps legacy opportunity routes to the canonical Deals rail item", () => {
-    expect(getActiveRailItem("/clients")).toBe("clients");
-    expect(getActiveRailItem("/clients/123")).toBe("clients");
+  it("maps Client, Deal, and legacy Opportunity routes to the CRM domain", () => {
+    expect(getActiveRailItem("/clients")).toBe("crm");
+    expect(getActiveRailItem("/clients/123")).toBe("crm");
     expect(getRouteId("/opportunities")).toBe("deals");
-    expect(getActiveRailItem("/opportunities")).toBe("deals");
-    expect(getActiveRailItem("/opportunities/123")).toBe("deals");
-    expect(getActiveRailItem("/deals")).toBe("deals");
-    expect(getActiveRailItem("/deals/123")).toBe("deals");
+    expect(getActiveRailItem("/opportunities")).toBe("crm");
+    expect(getActiveRailItem("/opportunities/123")).toBe("crm");
+    expect(getActiveRailItem("/deals")).toBe("crm");
+    expect(getActiveRailItem("/deals/123")).toBe("crm");
   });
 
   it("resolves reviewed legacy aliases to the intended destination", () => {

@@ -30,9 +30,9 @@ describe("product capabilities", () => {
   });
 
   it("does not expose disabled products in enabled sidebar navigation", async () => {
-    const { sidebarPrimaryNav } = await import("@/components/layout/sidebar/config/nav.config");
+    const { IMPLEMENTED_NAVIGATION_CATALOG } = await import("@convex/navigation/catalog");
 
-    expect(sidebarPrimaryNav.some((item) => item.name === "time-tracking")).toBe(false);
+    expect(IMPLEMENTED_NAVIGATION_CATALOG.some((item) => String(item.id) === "time-tracking")).toBe(false);
   });
 
   it("prevents disabled alias pages from rendering synthetic screens", () => {

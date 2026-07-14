@@ -16,7 +16,16 @@ import {
   TrendingUp,
   Users,
   Plus,
+  FolderKanban,
+  LayoutDashboard,
+  Settings,
+  Plug,
+  CreditCard,
+  Activity,
+  ShieldCheck,
+  Workflow,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { useAuthSession } from "@/domains/auth";
 import { useDocsQuery } from "@/domains/docs/api/docs";
@@ -52,40 +61,56 @@ export function SidebarCalendarPanel() {
   );
 }
 
-export function SidebarClientsPanel() {
+export function SidebarProjectsPanel() {
+  const t = useTranslations("Sidebar.domainPanels");
   return (
-    <SidebarPanelLayout
-      title="Clients"
-      primaryAction={
-        <WorkspaceLink
-          href="/clients/create"
-          className="flex h-8 w-full items-center gap-2 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          New client
-        </WorkspaceLink>
-      }
-    >
+    <SidebarPanelLayout title={t("projects.title")}>
       <div className="flex flex-col gap-2">
-        <SidebarPanelLink href="/clients" icon={UserRound} label="All clients" clearParams={["filter", "sort"]} />
-        <SidebarPanelLink href="/clients?filter=active" icon={Users} label="Active clients" paramKey="filter" paramValue="active" />
-        <div className="mx-4 my-2 h-px bg-border/50" />
-        <SidebarPanelLink href="/clients?sort=recent" icon={Clock} label="Recent" paramKey="sort" paramValue="recent" />
+        <SidebarPanelLink href="/projects" icon={FolderKanban} label={t("projects.all")} />
+        <SidebarPanelLink href="/spaces" icon={LayoutDashboard} label={t("projects.bySpace")} />
       </div>
     </SidebarPanelLayout>
   );
 }
 
-export function SidebarDealsPanel() {
+export function SidebarCrmPanel() {
+  const t = useTranslations("Sidebar.domainPanels");
   return (
-    <SidebarPanelLayout title="Deals">
+    <SidebarPanelLayout title={t("crm.title")}>
       <div className="flex flex-col gap-2">
-        <SidebarPanelLink href="/deals" icon={BadgeDollarSign} label="All deals" clearParams={["filter", "sort"]} />
-        <SidebarPanelLink href="/deals?filter=active" icon={TrendingUp} label="Active deals" paramKey="filter" paramValue="active" />
-        <SidebarPanelLink href="/deals?filter=closed" icon={CheckCircle2} label="Closed" paramKey="filter" paramValue="closed" />
+        <SidebarPanelLink href="/clients" icon={UserRound} label={t("crm.clients")} />
+        <SidebarPanelLink href="/deals" icon={BadgeDollarSign} label={t("crm.deals")} />
+      </div>
+    </SidebarPanelLayout>
+  );
+}
+
+export function SidebarAutomationsPanel() {
+  const t = useTranslations("Sidebar.domainPanels");
+  return (
+    <SidebarPanelLayout title={t("automations.title")}>
+      <div className="flex flex-col gap-2">
+        <SidebarPanelLink href="/automations" icon={Workflow} label={t("automations.library")} />
+      </div>
+    </SidebarPanelLayout>
+  );
+}
+
+export function SidebarAdminPanel() {
+  const t = useTranslations("Sidebar.domainPanels");
+  return (
+    <SidebarPanelLayout title={t("admin.title")}>
+      <div className="flex flex-col gap-2">
+        <SidebarPanelLink href="/organization" icon={Settings} label={t("admin.organization")} />
+        <SidebarPanelLink href="/team" icon={Users} label={t("admin.members")} />
+        <SidebarPanelLink href="/organization/custom-permissions" icon={ShieldCheck} label={t("admin.permissions")} />
+        <SidebarPanelLink href="/organization/spaces" icon={LayoutDashboard} label={t("admin.spaces")} />
         <div className="mx-4 my-2 h-px bg-border/50" />
-        <SidebarPanelLink href="/deals?sort=value" icon={BadgeDollarSign} label="By value" paramKey="sort" paramValue="value" />
-        <SidebarPanelLink href="/deals?sort=date" icon={Clock} label="By date" paramKey="sort" paramValue="date" />
+        <SidebarPanelLink href="/web-apps" icon={Plug} label={t("admin.integrations")} />
+        <SidebarPanelLink href="/mcp" icon={Share2} label={t("admin.mcp")} />
+        <SidebarPanelLink href="/billing" icon={CreditCard} label={t("admin.billing")} />
+        <SidebarPanelLink href="/usage" icon={TrendingUp} label={t("admin.usage")} />
+        <SidebarPanelLink href="/activity" icon={Activity} label={t("admin.audit")} />
       </div>
     </SidebarPanelLayout>
   );

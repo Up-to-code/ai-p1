@@ -464,6 +464,12 @@
     "home": "Home",
     "inbox": "Inbox",
     "ai": "AI",
+    "crm": "CRM",
+    "delivery": "Delivery",
+    "resources": "Resources",
+    "finance": "Finance",
+    "reports": "Reports",
+    "admin": "Admin",
     "dashboard": "Dashboard",
     "spaces": "Spaces",
     "projects": "Projects",
@@ -496,8 +502,41 @@
     "settings": "Settings",
     "collapse": "Collapse",
     "expand": "Expand",
+    "openPanel": "Open sidebar",
+    "domainNavigation": "Workspace domains",
+    "compactRail": "Compact navigation",
+    "expandRail": "Expand navigation",
+    "resizePanel": "Resize sidebar",
     "defaultOrganizationName": "Organization",
     "workspaces": "Workspaces",
+    "domainPanels": {
+      "projects": {
+        "title": "Projects",
+        "all": "All projects",
+        "bySpace": "Projects by space"
+      },
+      "crm": {
+        "title": "CRM",
+        "clients": "Clients",
+        "deals": "Deals"
+      },
+      "automations": {
+        "title": "Automations",
+        "library": "Automation library"
+      },
+      "admin": {
+        "title": "Admin",
+        "organization": "Organization",
+        "members": "Members and teams",
+        "permissions": "Permissions",
+        "spaces": "Space administration",
+        "integrations": "Integrations",
+        "mcp": "MCP connections",
+        "billing": "Billing",
+        "usage": "Usage",
+        "audit": "Audit log"
+      }
+    },
     "threads": {
       "newThread": "New thread",
       "history": "History",

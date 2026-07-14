@@ -25,12 +25,12 @@ describe("web apps route aliases", () => {
   });
 
   it("keeps sidebar integrations route active and labeled by the Work OS module", () => {
-    const navConfig = readSource("src/components/layout/sidebar/config/nav.config.ts");
+    const adminPanel = readSource("src/components/layout/sidebar/components/sidebar-domain-panels.tsx");
     const searchConfig = readSource("src/components/layout/workspace-global-search/config/search-navigation.config.ts");
 
-    expect(navConfig).toContain('{ name: "integrations", icon: Plug }');
+    expect(adminPanel).toContain('href="/web-apps" icon={Plug}');
     expect(searchConfig).toContain('{ id: "integrations", label: labels.integrations, href: "/web-apps", icon: Plug }');
-    expect(navConfig).not.toContain('disabled: true, badge: "comingSoon"');
+    expect(adminPanel).not.toContain('disabled: true, badge: "comingSoon"');
     expect(readSource("messages/en.json")).toContain('"integrations": "Integrations"');
     expect(readSource("messages/ar.json")).toContain('"integrations": "تطبيقات الويب"');
   });

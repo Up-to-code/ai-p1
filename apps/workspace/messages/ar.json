@@ -476,6 +476,12 @@
     "conversations": "المحادثات",
     "inbox": "البريد الوارد",
     "ai": "الذكاء الاصطناعي",
+    "crm": "إدارة العملاء",
+    "delivery": "التسليم",
+    "resources": "الموارد",
+    "finance": "المالية",
+    "reports": "التقارير",
+    "admin": "الإدارة",
     "spaces": "المساحات",
     "theories": "النظريات",
     "automations": "الأتمتة",
@@ -492,8 +498,41 @@
     "settings": "الإعدادات",
     "collapse": "طوي",
     "expand": "توسيع",
+    "openPanel": "فتح الشريط الجانبي",
+    "domainNavigation": "مجالات مساحة العمل",
+    "compactRail": "تصغير شريط التنقل",
+    "expandRail": "توسيع شريط التنقل",
+    "resizePanel": "تغيير عرض الشريط الجانبي",
     "defaultOrganizationName": "المؤسسة",
     "workspaces": "مساحات العمل",
+    "domainPanels": {
+      "projects": {
+        "title": "المشاريع",
+        "all": "كل المشاريع",
+        "bySpace": "المشاريع حسب المساحة"
+      },
+      "crm": {
+        "title": "إدارة العملاء",
+        "clients": "العملاء",
+        "deals": "الصفقات"
+      },
+      "automations": {
+        "title": "الأتمتة",
+        "library": "مكتبة الأتمتة"
+      },
+      "admin": {
+        "title": "الإدارة",
+        "organization": "المؤسسة",
+        "members": "الأعضاء والفرق",
+        "permissions": "الصلاحيات",
+        "spaces": "إدارة المساحات",
+        "integrations": "التكاملات",
+        "mcp": "اتصالات MCP",
+        "billing": "الفوترة",
+        "usage": "الاستخدام",
+        "audit": "سجل التدقيق"
+      }
+    },
     "threads": {
       "newThread": "محادثة جديدة",
       "history": "السجل",

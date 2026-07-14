@@ -1,152 +1,120 @@
 "use client";
 
-import { usePathname } from "@/i18n/routing";
-
+import { ChevronsRight, PanelLeftClose, PanelRightOpen } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
-import { isRtlLocale } from "@/lib/i18n/locale";
-import { useAuthSession } from "@/domains/auth";
-import { ChevronsRight } from "lucide-react";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
-import {
-  sidebarComingSoonNav,
-  sidebarNavGroups,
-  sidebarPrimaryNav,
-  sidebarStaticNav,
-} from "../config/nav.config";
-import { NavTooltip } from "./nav-tooltip";
+import { useAuthSession } from "@/domains/auth";
+import { getRoutePathById } from "@/domains/navigation/route-catalog";
+import { usePathname } from "@/i18n/routing";
+import { isRtlLocale } from "@/lib/i18n/locale";
+import { cn } from "@/lib/utils";
+import { navigationIcon } from "../config/navigation-icon-registry";
+import { useSidebarRail } from "../sidebar-rail-context";
 import { IdentityAvatar } from "./identity-avatar";
-import { useSidebarRail, type RailItemId } from "../sidebar-rail-context";
+import { NavTooltip } from "./nav-tooltip";
 
 export function SidebarRail() {
   const t = useTranslations("Sidebar");
   const locale = useLocale();
-  const isRtl = isRtlLocale(locale);
   const pathname = usePathname();
   const session = useAuthSession();
-  const { activeRailItem, openRailItem, closeAll, toggleMain } = useSidebarRail();
+  const {
+    activeRailItem,
+    navigationProjection,
+    railMode,
+    openRailItem,
+    closeAll,
+    toggleMain,
+    setRailMode,
+  } = useSidebarRail();
+  const isExpanded = railMode === "expanded";
+  const isRtl = isRtlLocale(locale);
 
   return (
     <aside
+      data-rail-mode={railMode}
       className={cn(
-        "relative z-40 hidden h-screen w-12 shrink-0 flex-col overflow-hidden border-r border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-sidebar)] md:flex",
+        "relative z-40 hidden h-screen shrink-0 flex-col overflow-hidden border-r border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-sidebar)] transition-[width] duration-200 md:flex",
+        isExpanded ? "w-52" : "w-12",
         isRtl && "font-cairo",
       )}
     >
-      {/* Reopen control — shown at the top when the secondary panel is closed */}
-      {activeRailItem === null && (
+      {activeRailItem === null ? (
         <div className="flex flex-col gap-1 border-b border-sidebar-border p-1.5">
-          <NavTooltip label="Open sidebar">
+          <NavTooltip label={t("openPanel")}>
             <button
               type="button"
               onClick={toggleMain}
-              className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
-              aria-label="Open secondary panel"
+              className={cn(
+                "flex h-9 items-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground",
+                isExpanded ? "w-full gap-2 px-2" : "w-9 justify-center",
+              )}
+              aria-label={t("openPanel")}
             >
-              <ChevronsRight className="h-[18px] w-[18px] shrink-0" />
+              <ChevronsRight className="size-[18px] shrink-0 rtl:rotate-180" />
+              {isExpanded ? <span className="truncate text-sm">{t("openPanel")}</span> : null}
             </button>
           </NavTooltip>
         </div>
-      )}
+      ) : null}
 
-      {/* Level 1: Core Navigation */}
-      <div className="flex flex-col gap-1 border-b border-sidebar-border p-1.5">
-        {sidebarStaticNav.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href;
-          return (
-            <NavTooltip key={item.name} label={t(item.name)}>
+      <nav aria-label={t("domainNavigation")} className="flex-1 overflow-y-auto p-1.5">
+        <div className="flex flex-col gap-1">
+          {(navigationProjection?.domains ?? []).map((domain) => {
+            const Icon = navigationIcon(domain.iconId);
+            const href = getRoutePathById(domain.routeId);
+            const label = domain.labelOverride ?? t(domain.labelKey);
+            const isActive = activeRailItem === domain.id || pathname.startsWith(href);
+            const link = (
               <WorkspaceLink
-                href={item.href || "#"}
+                href={href}
+                aria-label={label}
+                aria-current={isActive ? "page" : undefined}
                 onClick={() => {
-                  if (item.opensPanel) {
-                    openRailItem(item.name as RailItemId);
-                  } else {
-                    closeAll();
-                  }
+                  if (domain.opensPanel) openRailItem(domain.id);
+                  else closeAll();
                 }}
                 className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-md transition-colors",
+                  "flex h-9 items-center rounded-md transition-colors",
+                  isExpanded ? "w-full gap-2.5 px-2" : "w-9 justify-center",
                   isActive
                     ? "bg-[var(--q-bg-tertiary)] text-foreground"
                     : "text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground",
                 )}
               >
-                <Icon className="h-[18px] w-[18px] shrink-0" />
+                <Icon className="size-[18px] shrink-0" />
+                {isExpanded ? <span className="min-w-0 truncate text-sm">{label}</span> : null}
               </WorkspaceLink>
-            </NavTooltip>
-          );
-        })}
-      </div>
-
-      {/* Level 2: Domain Navigation with Groups */}
-      <div className="flex-1 overflow-y-auto py-1.5">
-        {sidebarNavGroups.map((group, groupIndex) => (
-          <div key={group.id} className="flex flex-col gap-1 px-1.5">
-            {/* Divider between groups — skipped before the first group */}
-            {groupIndex > 0 && (
-              <div className="mx-auto my-1.5 h-px w-5 rounded-full bg-border" />
-            )}
-
-            {/* Group Items — icons only */}
-            {group.items.map((item) => {
-              const isActive = item.href ? pathname.startsWith(item.href) : false;
-              return (
-                <NavTooltip key={item.name} label={t(item.name)}>
-                  <WorkspaceLink
-                    href={item.href || "#"}
-                    onClick={() => {
-                      if (item.opensPanel) {
-                        openRailItem(item.name as RailItemId);
-                      } else {
-                        closeAll();
-                      }
-                    }}
-                    className={cn(
-                      "flex h-9 w-9 items-center justify-center rounded-md transition-colors",
-                      isActive
-                        ? "bg-[var(--q-bg-tertiary)] text-foreground"
-                        : "text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground",
-                    )}
-                  >
-                    {(() => {
-                      const Icon = item.icon;
-                      return <Icon className="h-[18px] w-[18px] shrink-0" />;
-                    })()}
-                  </WorkspaceLink>
-                </NavTooltip>
-              );
-            })}
-          </div>
-        ))}
-
-        {/* Level 3: Coming Soon — divider + disabled icons, no label */}
-        <div className="flex flex-col gap-1 px-1.5">
-          <div className="mx-auto my-1.5 h-px w-5 rounded-full bg-border" />
-          {sidebarComingSoonNav.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavTooltip key={item.name} label={`${t(item.name)} (Coming Soon)`}>
-                <button
-                  type="button"
-                  disabled
-                  className="flex h-9 w-9 cursor-not-allowed items-center justify-center rounded-md text-muted-foreground/30"
-                >
-                  <Icon className="h-[18px] w-[18px] shrink-0" />
-                </button>
-              </NavTooltip>
             );
+            return isExpanded
+              ? <div key={domain.id}>{link}</div>
+              : <NavTooltip key={domain.id} label={label}>{link}</NavTooltip>;
           })}
         </div>
-      </div>
+      </nav>
 
-      {/* Level 4: User Profile */}
       <div className="flex flex-col gap-1 border-t border-sidebar-border p-1.5">
+        <button
+          type="button"
+          onClick={() => void setRailMode(isExpanded ? "compact" : "expanded")}
+          aria-label={isExpanded ? t("compactRail") : t("expandRail")}
+          className={cn(
+            "flex h-9 items-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground",
+            isExpanded ? "w-full gap-2.5 px-2" : "w-9 justify-center",
+          )}
+        >
+          {isExpanded ? <PanelLeftClose className="size-[18px] shrink-0 rtl:rotate-180" /> : <PanelRightOpen className="size-[18px] shrink-0 rtl:rotate-180" />}
+          {isExpanded ? <span className="truncate text-sm">{t("compactRail")}</span> : null}
+        </button>
+
         <NavTooltip label={session.user.name}>
           <WorkspaceLink
             href="/profile"
             aria-label={session.user.name}
-            className="flex h-9 w-9 items-center justify-center rounded-md transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
+            className={cn(
+              "flex h-9 items-center rounded-md transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground",
+              isExpanded ? "w-full gap-2.5 px-2" : "w-9 justify-center",
+            )}
           >
             <IdentityAvatar
               image={session.user.image}
@@ -154,6 +122,7 @@ export function SidebarRail() {
               name={session.user.name}
               size="sm"
             />
+            {isExpanded ? <span className="min-w-0 truncate text-sm">{session.user.name}</span> : null}
           </WorkspaceLink>
         </NavTooltip>
       </div>

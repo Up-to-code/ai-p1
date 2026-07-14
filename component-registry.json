@@ -763,7 +763,8 @@
       "usedIn": [
         "components/layout/sidebar/components/sidebar-chat-panel",
         "components/layout/sidebar/components/sidebar-space-panel",
-        "components/layout/sidebar/components/sidebar-project-panel"
+        "components/layout/sidebar/components/sidebar-project-panel",
+        "components/layout/sidebar/components/sidebar-domain-panels"
       ],
       "props": [
         "title",
