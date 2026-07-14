@@ -10,6 +10,7 @@ import {
   projectInputValidator,
   projectValidator,
 } from "./validators";
+import { projectSearchProjection } from "../search/adapters/project";
 
 type ProjectInput = {
   name: string;
@@ -93,6 +94,7 @@ async function createProjectCore(
 
   const project = await ctx.db.get(id);
   if (!project) throw new Error("Project could not be created.");
+  await projectSearchProjection(ctx, project);
   return { presented: presentProject(project), now };
 }
 
@@ -123,6 +125,7 @@ async function updateProjectCore(
 
   const project = await ctx.db.get(args.projectId);
   if (!project) throw projectNotFoundError(args.organizationId, args.projectId);
+  await projectSearchProjection(ctx, project);
   return { presented: presentProject(project), now };
 }
 
@@ -145,6 +148,8 @@ async function deleteProjectCore(
     recordState: "deleted",
     updatedAt: now,
   });
+  const deleted = await ctx.db.get(args.projectId);
+  if (deleted) await projectSearchProjection(ctx, deleted);
   return { removed: true as const, now, name: existing.name };
 }
 

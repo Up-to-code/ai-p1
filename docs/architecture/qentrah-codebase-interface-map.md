@@ -6,8 +6,8 @@
 
 ## Inventory summary
 
-- Source files scanned: 1676
-- Files exposing interfaces: 1406
+- Source files scanned: 1679
+- Files exposing interfaces: 1409
 - Convex registered functions: 342
 - Application routes: 95
 - Hono/Convex HTTP registrations: 198
@@ -1259,6 +1259,9 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/schema/validators.ts` | value: workOsRecordResourceValidator<br>value: recordStateValidator<br>value: scopeTypeValidator<br>value: workspaceVisibilityValidator<br>value: viewTypeValidator<br>value: savedViewValueValidator<br>value: savedViewFilterValidator<br>value: savedViewColumnValidator<br>value: savedViewConfigValidator<br>value: workOsCustomFieldTypeValidator<br>value: workOsCustomFieldOptionValidator<br>value: workOsCustomFieldDefinitionValidator<br>value: workOsCustomFieldValueValidator |
 | `apps/workspace/convex/schema/views.ts` | value: viewTables |
 | `apps/workspace/convex/schema_utils.ts` | value: IndexPatterns<br>value: QueryOptimization<br>function: checkIndexCoverage<br>function: indexName |
+| `apps/workspace/convex/search/adapters/project.ts` | function: projectPrincipalKeys<br>function: projectSearchProjection |
+| `apps/workspace/convex/search/adapters/shared.ts` | function: searchLocale<br>function: normalizedKeywords |
+| `apps/workspace/convex/search/adapters/task.ts` | function: taskPrincipalKeys<br>function: taskSearchProjection |
 | `apps/workspace/convex/search/outbox.ts` | convex-internalMutation: claimNext<br>convex-internalQuery: loadProjection<br>convex-internalMutation: complete<br>convex-internalMutation: fail |
 | `apps/workspace/convex/search/outboxState.ts` | value: MAX_SEARCH_OUTBOX_ATTEMPTS<br>function: failedOutboxState |
 | `apps/workspace/convex/search/projection.ts` | function: writeSearchProjection |

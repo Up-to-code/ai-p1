@@ -4,6 +4,7 @@ import { internalMutation, mutation, type MutationCtx } from "../_generated/serv
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { consumeOrganizationEntitlement } from "../billing/access";
 import { orderedReachableActions } from "./graph";
+import { taskSearchProjection } from "../search/adapters/task";
 
 async function execute(
   ctx: MutationCtx,
@@ -39,6 +40,8 @@ async function execute(
           completedAt: nextStatus === "completed" ? Date.now() : undefined,
           updatedAt: Date.now(),
         });
+        const updatedTask = await ctx.db.get(normalizedTaskId);
+        if (updatedTask) await taskSearchProjection(ctx, updatedTask);
         message = `Task status updated to ${nextStatus}.`;
       }
 
@@ -60,6 +63,8 @@ async function execute(
           createdAt: now,
           updatedAt: now,
         });
+        const createdTask = await ctx.db.get(taskId);
+        if (createdTask) await taskSearchProjection(ctx, createdTask);
         message = `Task created: ${taskId}.`;
       }
 

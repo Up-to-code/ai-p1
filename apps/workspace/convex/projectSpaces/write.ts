@@ -5,6 +5,7 @@ import type { Id } from "../_generated/dataModel";
 import { ConvexError } from "convex/values";
 import { resolveProjectSpaceAccess } from "../access/projectSpace";
 import { projectSpaceInputValidator, projectSpaceValidator } from "./validators";
+import { projectSearchProjection } from "../search/adapters/project";
 
 async function clearExistingPrimary(
   ctx: MutationCtx,
@@ -86,6 +87,8 @@ export const createFromHono = mutation({
         message: "Project-space relationship could not be created.",
       });
     }
+    const project = await ctx.db.get(args.projectId);
+    if (project) await projectSearchProjection(ctx, project);
     return projectSpace;
   },
 });
@@ -162,6 +165,8 @@ export const updateFromHono = mutation({
         message: "Project-space relationship was not found.",
       });
     }
+    const project = await ctx.db.get(existing.projectId);
+    if (project) await projectSearchProjection(ctx, project);
     return projectSpace;
   },
 });
@@ -190,6 +195,8 @@ export const deleteFromHono = mutation({
 
     const now = Date.now();
     await ctx.db.patch(args.projectSpaceId, { deletedAt: now, recordState: "deleted" });
+    const project = await ctx.db.get(existing.projectId);
+    if (project) await projectSearchProjection(ctx, project);
 
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
