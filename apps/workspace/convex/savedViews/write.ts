@@ -9,6 +9,7 @@ import {
 } from "./validators";
 import { presentSavedView, scopeForInput } from "./data";
 import { assertOrganizationPermission } from "../organizations/profile/access";
+import { assertCanReadSavedViewScope } from "../access/savedView";
 
 export const create = mutation({
   args: { input: createUserTableViewInputValidator },
@@ -24,7 +25,7 @@ export const create = mutation({
       await assertOrganizationPermission(ctx, organizationId, "read");
     }
     const scope = scopeForInput(args.input);
-    await assertSavedViewScope(ctx, organizationId, scope);
+    await assertCanReadSavedViewScope(ctx, organizationId, scope);
 
     if (args.input.isDefault) {
       await clearDefaultFlags(ctx, userId, {
@@ -151,26 +152,7 @@ async function assertSavedViewOrganizationAccess(
 ) {
   if (!view.organizationId.startsWith("personal:")) {
     await assertOrganizationPermission(ctx, view.organizationId, "read");
-  }
-}
-
-export async function assertSavedViewScope(
-  ctx: MutationCtx,
-  organizationId: string,
-  scope: ReturnType<typeof scopeForInput>,
-) {
-  if (!scope.scopeId || scope.scopeType === "workspace") return;
-  const table = scope.scopeType === "project" ? "projects" : "spaces";
-  const recordId = ctx.db.normalizeId(table, scope.scopeId);
-  if (!recordId) throw new Error("Saved view scope is invalid.");
-  const record = await ctx.db.get(recordId);
-  if (
-    !record ||
-    record.organizationId !== organizationId ||
-    record.deletedAt ||
-    record.recordState === "deleted"
-  ) {
-    throw new Error("Saved view scope must reference an active record in this organization.");
+    await assertCanReadSavedViewScope(ctx, view.organizationId, view);
   }
 }
 

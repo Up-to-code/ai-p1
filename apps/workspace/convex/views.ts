@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { savedViewFilterValidator, savedViewColumnValidator, viewTypeValidator, workOsRecordResourceValidator } from "./schema/validators";
+import { assertCanReadSavedViewScope, filterReadableSavedViews } from "./access/savedView";
+import { assertOrganizationPermission } from "./organizations/profile/access";
 
 const legacyViewConfigValidator = v.object({
   type: viewTypeValidator,
@@ -26,6 +28,7 @@ export const createView = mutation({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Unauthorized");
+    await assertOrganizationPermission(ctx, args.organizationId, "read");
 
     const now = Date.now();
     const scope = args.projectId
@@ -33,6 +36,7 @@ export const createView = mutation({
       : args.spaceId
         ? { scopeType: "space" as const, scopeId: args.spaceId }
         : { scopeType: "workspace" as const, scopeId: undefined };
+    await assertCanReadSavedViewScope(ctx, args.organizationId, scope);
 
     return await ctx.db.insert("savedViews", {
       organizationId: args.organizationId,
@@ -77,6 +81,8 @@ export const updateView = mutation({
     if (view.ownerUserId !== identity.subject && view.createdByUserId !== identity.subject) {
       throw new Error("Unauthorized");
     }
+    await assertOrganizationPermission(ctx, view.organizationId, "read");
+    await assertCanReadSavedViewScope(ctx, view.organizationId, view);
 
     await ctx.db.patch(args.viewId, {
       viewType: args.viewConfig.type,
@@ -107,6 +113,8 @@ export const deleteView = mutation({
     if (view.ownerUserId !== identity.subject && view.createdByUserId !== identity.subject) {
       throw new Error("Unauthorized");
     }
+    await assertOrganizationPermission(ctx, view.organizationId, "read");
+    await assertCanReadSavedViewScope(ctx, view.organizationId, view);
 
     const now = Date.now();
     await ctx.db.patch(args.viewId, { recordState: "deleted", deletedAt: now, updatedAt: now });
@@ -125,6 +133,12 @@ export const getViews = query({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Unauthorized");
+    await assertOrganizationPermission(ctx, args.organizationId, "read");
+    await assertCanReadSavedViewScope(ctx, args.organizationId, args.projectId
+      ? { scopeType: "project", scopeId: args.projectId }
+      : args.spaceId
+        ? { scopeType: "space", scopeId: args.spaceId }
+        : { scopeType: "workspace" });
 
     const domain = args.domain;
     if (!domain) return [];
@@ -135,12 +149,13 @@ export const getViews = query({
       )
       .collect();
 
-    return views.filter((view) => {
+    const matching = views.filter((view) => {
       if (view.recordState !== "active") return false;
       if (args.projectId && (view.scopeType !== "project" || view.scopeId !== args.projectId)) return false;
       if (args.spaceId && (view.scopeType !== "space" || view.scopeId !== args.spaceId)) return false;
       return true;
     });
+    return filterReadableSavedViews(ctx, args.organizationId, matching);
   },
 });
 
@@ -153,6 +168,7 @@ export const getDefaultViews = query({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Unauthorized");
+    await assertOrganizationPermission(ctx, args.organizationId, "read");
 
     const views = await ctx.db
       .query("savedViews")
@@ -160,7 +176,8 @@ export const getDefaultViews = query({
         q.eq("organizationId", args.organizationId).eq("ownerUserId", identity.subject).eq("resourceType", args.domain),
       )
       .collect();
-    return views.filter((view) => view.recordState === "active" && view.isDefault);
+    const defaults = views.filter((view) => view.recordState === "active" && view.isDefault);
+    return filterReadableSavedViews(ctx, args.organizationId, defaults);
   },
 });
 
@@ -172,12 +189,15 @@ export const getWorkspaceSettings = query({
     defaultViews: v.optional(v.record(v.string(), v.array(viewTypeValidator))),
     updatedAt: v.number(),
   }),
-  handler: async (_ctx, args) => ({
-    organizationId: args.organizationId,
-    viewScope: "workspace" as const,
-    defaultViews: undefined,
-    updatedAt: 0,
-  }),
+  handler: async (ctx, args) => {
+    await assertOrganizationPermission(ctx, args.organizationId, "read");
+    return {
+      organizationId: args.organizationId,
+      viewScope: "workspace" as const,
+      defaultViews: undefined,
+      updatedAt: 0,
+    };
+  },
 });
 
 export const updateWorkspaceSettings = mutation({
@@ -187,5 +207,8 @@ export const updateWorkspaceSettings = mutation({
     defaultViews: v.optional(v.record(v.string(), v.array(viewTypeValidator))),
   },
   returns: v.null(),
-  handler: async () => null,
+  handler: async (ctx, args) => {
+    await assertOrganizationPermission(ctx, args.organizationId, "update");
+    return null;
+  },
 });

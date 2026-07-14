@@ -36,7 +36,7 @@ ownership or accepted decisions.
 | Module | Public Interface | Primary implementation | Adapters | Authorization and source of truth |
 |---|---|---|---|---|
 | Workspace Identity | Authenticated user, normalized Auth Context, and active Organization membership | `@qentrah/auth`; focused Better Auth composition in `apps/workspace/convex/auth` | Browser, Next.js request, Convex actor, mobile SecureStore, Eve channel | Better Auth identifies the user; server policy resolves membership |
-| Resource Access | Record-aware read/write decisions | `convex/access` | Workspace queries/writes, MCP, Eve | Organization → Space → Project; always derived server-side |
+| Resource Access | Record-aware read/write decisions, including saved-view parent scope | `convex/access` | Workspace queries/writes, saved views, MCP, Eve | Organization → Space → Project; always derived server-side; a saved view never widens parent access |
 | Platform Administration | Fail-closed cross-Organization operational access | `packages/auth/src/platform-admin.ts` | Next.js config, Convex platform access, Media visibility controls | Authenticated email must match the configured allowlist; Organization roles do not grant access |
 | Domain Contracts | Runtime inputs, outputs, patch shapes, inferred types | `packages/domain-contracts` plus focused Convex validators | Workspace forms, Hono, Convex, MCP, Eve | Contracts validate shape; access Modules authorize records |
 | Workspace Route Policy | Canonical routes, aliases, auth class, capability, locale | `src/domains/navigation`, `src/proxy.ts` | Next.js routes, sidebar, subdomain rewrite | Cookie classification is routing only; server Modules enforce access |

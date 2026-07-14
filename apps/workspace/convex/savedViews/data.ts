@@ -57,6 +57,21 @@ export async function listViewsForUser(
     spaceId?: string;
   },
 ) {
+  const records = await listViewRecordsForUser(ctx, userId, args);
+  return records.map(presentSavedView);
+}
+
+export async function listViewRecordsForUser(
+  ctx: QueryCtx | MutationCtx,
+  userId: string,
+  args?: {
+    resourceType?: Doc<"savedViews">["resourceType"];
+    viewType?: Doc<"savedViews">["viewType"];
+    organizationId?: string;
+    projectId?: string;
+    spaceId?: string;
+  },
+) {
   const organizationId = args?.organizationId;
   const resourceType = args?.resourceType;
   if (!organizationId || !resourceType) return [];
@@ -68,15 +83,13 @@ export async function listViewsForUser(
     )
     .collect();
 
-  return all
-    .filter((view) => {
-      if (view.recordState !== "active") return false;
-      if (args.viewType && view.viewType !== args.viewType) return false;
-      if (args.projectId && (view.scopeType !== "project" || view.scopeId !== args.projectId)) return false;
-      if (args.spaceId && (view.scopeType !== "space" || view.scopeId !== args.spaceId)) return false;
-      return true;
-    })
-    .map(presentSavedView);
+  return all.filter((view) => {
+    if (view.recordState !== "active") return false;
+    if (args.viewType && view.viewType !== args.viewType) return false;
+    if (args.projectId && (view.scopeType !== "project" || view.scopeId !== args.projectId)) return false;
+    if (args.spaceId && (view.scopeType !== "space" || view.scopeId !== args.spaceId)) return false;
+    return true;
+  });
 }
 
 export async function getDefaultView(

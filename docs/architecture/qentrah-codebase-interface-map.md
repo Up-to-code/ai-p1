@@ -6,8 +6,8 @@
 
 ## Inventory summary
 
-- Source files scanned: 1652
-- Files exposing interfaces: 1383
+- Source files scanned: 1653
+- Files exposing interfaces: 1384
 - Convex registered functions: 332
 - Application routes: 93
 - Hono/Convex HTTP registrations: 198
@@ -1060,6 +1060,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/access/document.ts` | type: DocumentAccessErrorCode<br>interface: DocumentAccess<br>function: resolveDocumentAccess |
 | `apps/workspace/convex/access/project.ts` | type: ProjectAccessErrorCode<br>interface: ProjectAccess<br>function: resolveProjectAccess |
 | `apps/workspace/convex/access/projectSpace.ts` | type: ProjectSpaceAccessErrorCode<br>interface: ProjectSpaceAccess<br>function: resolveProjectSpaceAccess |
+| `apps/workspace/convex/access/savedView.ts` | type: SavedViewScopeRef<br>function: assertCanReadSavedViewScope<br>function: filterReadableSavedViews |
 | `apps/workspace/convex/access/space.ts` | type: SpaceAccessErrorCode<br>interface: SpaceAccess<br>function: resolveSpaceAccess |
 | `apps/workspace/convex/access/task.ts` | type: TaskAccessErrorCode<br>interface: TaskAccess<br>type: TaskScopeInput<br>function: resolveTaskAccess |
 | `apps/workspace/convex/apiKeys.ts` | value: apiKeys |
@@ -1221,10 +1222,10 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/projects/validators.ts` | value: projectStatusValidator<br>value: projectHealthValidator<br>value: visibilityValidator<br>type: ProjectVisibility<br>type: StoredProjectVisibility<br>function: normalizeProjectVisibility<br>value: projectInputValidator<br>value: projectValidator |
 | `apps/workspace/convex/projects/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono<br>convex-internalMutation: createInternal<br>convex-internalMutation: updateInternal<br>convex-internalMutation: deleteInternal |
 | `apps/workspace/convex/requireAuth.ts` | function: requireAuth<br>function: getAuth |
-| `apps/workspace/convex/savedViews/data.ts` | function: scopeForInput<br>function: presentSavedView<br>function: listViewsForUser<br>function: getDefaultView |
+| `apps/workspace/convex/savedViews/data.ts` | function: scopeForInput<br>function: presentSavedView<br>function: listViewsForUser<br>function: listViewRecordsForUser<br>function: getDefaultView |
 | `apps/workspace/convex/savedViews/read.ts` | convex-query: list<br>convex-query: get<br>convex-query: getDefault |
 | `apps/workspace/convex/savedViews/validators.ts` | value: userTableViewScopeValidator<br>value: userTableViewConfigValidator<br>value: userTableViewValidator<br>value: createUserTableViewInputValidator<br>value: updateUserTableViewInputValidator |
-| `apps/workspace/convex/savedViews/write.ts` | convex-mutation: create<br>convex-mutation: update<br>convex-mutation: remove<br>convex-mutation: setDefault<br>function: assertSavedViewScope |
+| `apps/workspace/convex/savedViews/write.ts` | convex-mutation: create<br>convex-mutation: update<br>convex-mutation: remove<br>convex-mutation: setDefault |
 | `apps/workspace/convex/schema/automations.ts` | value: automationNodeValidator<br>value: automationEdgeValidator<br>value: automationViewportValidator<br>value: automationTables |
 | `apps/workspace/convex/schema/billing.ts` | value: billingTables |
 | `apps/workspace/convex/schema/custom_fields.ts` | value: customFieldTables |
