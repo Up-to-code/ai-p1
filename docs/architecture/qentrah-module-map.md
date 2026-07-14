@@ -40,6 +40,8 @@ ownership or accepted decisions.
 | Platform Administration | Fail-closed cross-Organization operational access | `packages/auth/src/platform-admin.ts` | Next.js config, Convex platform access, Media visibility controls | Authenticated email must match the configured allowlist; Organization roles do not grant access |
 | Domain Contracts | Runtime inputs, outputs, patch shapes, inferred types | `packages/domain-contracts` plus focused Convex validators | Workspace forms, Hono, Convex, MCP, Eve | Contracts validate shape; access Modules authorize records |
 | Workspace Route Policy | Canonical routes, aliases, auth class, capability, locale | `src/domains/navigation`, `src/proxy.ts` | Next.js routes, sidebar, subdomain rewrite | Cookie classification is routing only; server Modules enforce access |
+| Authorized Navigation Projection | Actor-specific domain tree, canonical route IDs, Organization defaults, and personal overlay | `convex/navigation` with contracts in `@qentrah/domain-contracts` | Workspace sidebar and future mobile navigation Adapters | Resource Access and entitlements filter the projection server-side; React never receives unauthorized nodes |
+| Search Projection | Versioned searchable candidate representation and indexing outbox | `convex/search` with per-domain projection Adapters | Meilisearch, command palette, Search Center, future semantic Adapter | External indexes are non-authoritative; Convex reauthorizes and hydrates every candidate |
 | Locale Registry | Locale, direction, font, fallback, messages, metadata | `src/i18n`, `src/lib/i18n` | Next.js layouts, OAuth, metadata, errors | Server-rendered; no DOM translation observer |
 | Resource Workspace | Persistent resource shell and routed view placement | `src/components/shared/resource-workspace` | Task, Client, and future resource route layouts | Convex remains source of truth for reactive reads |
 | Task Workspace | Scope, query state, commands, shared presentation | `src/domains/tasks` | Table, list, board, detail | Task access Module plus Task Mutation Module |
@@ -57,6 +59,7 @@ access, presentation, and tests local to that behavior.
 | Domain Module | Workspace owner | Convex/persistence owner | Routes and external Adapters | Verification focus |
 |---|---|---|---|---|
 | Activity | `src/domains/activity` | Organization audit and Inbox event reads | `/activity`, Organization aliases | canonical route, localized states, access |
+| Agency Delivery | `src/domains/delivery`; cross-runtime contracts in `@qentrah/domain-contracts` | `convex/delivery` | Engagement, Deliverable, Approval, Change Order, portal, MCP, and Eve Adapters | explicit lifecycle commands, Client access, audit, commercial-to-delivery continuity |
 | Auth | `@qentrah/auth`; `src/domains/auth`, `src/server/auth` runtime Adapters | focused Better Auth Modules under `convex/auth`, with `betterAuth.ts` binding | auth routes, organization creation/activation, business API, mobile SecureStore, Eve | canonical topology, credential parsing, Auth Context, scopes, guards; `organization-creation.ts` keeps non-unique display names separate from unique slugs; runtime Adapters resolve sessions and membership |
 | Automations | `src/domains/automations` | `convex/automations` | `/automations` | graph invariants, persistence, execution |
 | Billing | `src/domains/billing`; `@qentrah/domain-contracts/subscription-pricing` | `convex/billing` | `/billing`, signed Dodo webhook, Hono checkout, Eve hooks | canonical catalog, owner actions, status/access matrix, idempotent reconciliation, atomic credit reservations |
@@ -83,6 +86,7 @@ access, presentation, and tests local to that behavior.
 | Profile | `src/domains/profile` | `convex/userProfiles` | `/profile` | current actor only, notification settings |
 | Projects | `src/domains/projects` | `convex/projects`, `projectSpaces` | Project routes, MCP, Eve | relation access, visibility, dashboards |
 | Resources | `src/domains/resources` | record-specific owners | cross-resource pickers/links | no generic authorization bypass |
+| Search | `src/domains/search`; search contracts in `@qentrah/domain-contracts` | `convex/search` | Meilisearch worker, command palette, Search Center, extraction Adapters | policy-filtered projection, outbox idempotency, multilingual ranking, final record reauthorization |
 | Settings | `src/domains/settings` | owning domain Modules | `/settings` | route ownership and localized copy |
 | Spaces | `src/domains/spaces` | `convex/spaces` | Space routes, MCP, Eve | visibility, membership, Project junction |
 | Storage | `src/domains/storage` | IndexedDB only | draft/config Adapters | UI/draft data only, version ordering |
