@@ -3697,6 +3697,10 @@
     }
   },
   "Tasks": {
+    "views": {
+      "calendar": { "label": "Task calendar", "previous": "Previous month", "next": "Next month", "more": "+{count} more" },
+      "timeline": { "label": "Task timeline", "task": "Task", "due": "Due {date}", "range": "{start} – {end}", "emptyTitle": "No scheduled tasks", "emptyDescription": "Add a start or due date to place tasks on the timeline." }
+    },
     "from": "From",
     "to": "To",
     "me": "ME",

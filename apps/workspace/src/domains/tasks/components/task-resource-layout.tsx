@@ -2,6 +2,7 @@
 
 import {
   Columns3,
+  CalendarDays,
   GanttChart,
   LayoutDashboard,
   List,
@@ -36,6 +37,18 @@ const TASK_VIEWS = [
     href: "/tasks/list",
     icon: <List className="h-3.5 w-3.5" />,
   },
+  {
+    id: "calendar",
+    label: "Calendar",
+    href: "/tasks/calendar",
+    icon: <CalendarDays className="h-3.5 w-3.5" />,
+  },
+  {
+    id: "timeline",
+    label: "Timeline",
+    href: "/tasks/timeline",
+    icon: <GanttChart className="h-3.5 w-3.5" />,
+  },
 ] as const;
 
 const TASK_VIEW_CATALOG: ResourceViewCatalogItem[] = [
@@ -61,12 +74,18 @@ const TASK_VIEW_CATALOG: ResourceViewCatalogItem[] = [
     section: "popular",
   },
   {
+    id: "calendar",
+    label: "Calendar",
+    description: "Review task deadlines by month",
+    icon: <CalendarDays className="h-4 w-4" />,
+    section: "more",
+  },
+  {
     id: "timeline",
     label: "Timeline",
     description: "Plan work by start and due date",
     icon: <GanttChart className="h-4 w-4" />,
     section: "more",
-    disabled: true,
   },
   {
     id: "dashboard",
@@ -79,6 +98,8 @@ const TASK_VIEW_CATALOG: ResourceViewCatalogItem[] = [
 ];
 
 function activeTaskView(pathname: string) {
+  if (pathname.includes("/tasks/calendar")) return "calendar";
+  if (pathname.includes("/tasks/timeline")) return "timeline";
   if (pathname.includes("/tasks/board")) return "board";
   if (pathname.includes("/tasks/list")) return "list";
   return "table";
@@ -113,7 +134,7 @@ export function TaskResourceLayout({
     ],
     viewCatalog: TASK_VIEW_CATALOG,
     onAddView: (view) => {
-      if (view.id === "table" || view.id === "board" || view.id === "list")
+      if (["table", "board", "list", "calendar", "timeline"].includes(view.id))
         router.push(withViewState(`/tasks/${view.id}`));
     },
   };
