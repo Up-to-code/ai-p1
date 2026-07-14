@@ -3,64 +3,23 @@
 import { ArrowRight, Check } from "lucide-react";
 import { useLocale } from "next-intl";
 
-import { isLocale, marketingHero } from "@/lib/content";
+import { useMarketingContent } from "@/components/marketing/marketing-content-provider";
 import { getLocalizedWorkspaceUrl } from "@/lib/workspace-links";
-
-const heroDetails = {
-  en: {
-    title: "One workspace for every way your team works",
-    benefits: [
-      ["Organize everything.", "Spaces bring projects, tasks, docs, and teams into a clear structure."],
-      ["See the whole picture.", "Inbox, calendar, dashboards, and activity stay connected to the work."],
-      ["Work with AI safely.", "Scoped agents use live workspace context without crossing permissions."],
-    ],
-    note: "Free to start. No credit card required.",
-    modulesLabel: "BUILD YOUR WORKSPACE",
-    modules: ["Spaces", "Projects", "Tasks", "Docs", "Inbox", "Calendar", "Dashboards", "AI agents"],
-    imageAlt: "Connected workspace with spaces, projects, tasks, and team navigation",
-  },
-  ar: {
-    title: "مساحة عمل واحدة لكل أساليب عمل فريقك",
-    benefits: [
-      ["نظّم كل شيء.", "تجمع المساحات المشاريع والمهام والمستندات والفرق في هيكل واضح."],
-      ["شاهد الصورة كاملة.", "يبقى البريد الوارد والتقويم ولوحات المعلومات والنشاط مرتبطاً بالعمل."],
-      ["اعمل مع الذكاء بأمان.", "يستخدم الوكلاء سياق مساحة العمل المباشر دون تجاوز الصلاحيات."],
-    ],
-    note: "ابدأ مجاناً. لا تحتاج إلى بطاقة ائتمان.",
-    modulesLabel: "شكّل مساحة عملك",
-    modules: ["المساحات", "المشاريع", "المهام", "المستندات", "البريد الوارد", "التقويم", "لوحات المعلومات", "وكلاء الذكاء"],
-    imageAlt: "مساحة مشروع تعرض المهام والحالات والمسؤولين والتنقل",
-  },
-  fr: {
-    title: "Un espace pour toutes les façons de travailler",
-    benefits: [
-      ["Organisez tout.", "Les espaces structurent projets, tâches, documents et équipes."],
-      ["Voyez l’ensemble.", "Boîte de réception, calendrier, tableaux de bord et activité restent reliés au travail."],
-      ["Travaillez avec l’IA en sécurité.", "Les agents utilisent le contexte en direct sans dépasser leurs autorisations."],
-    ],
-    note: "Commencez gratuitement. Aucune carte bancaire requise.",
-    modulesLabel: "COMPOSEZ VOTRE ESPACE",
-    modules: ["Espaces", "Projets", "Tâches", "Documents", "Boîte de réception", "Calendrier", "Tableaux de bord", "Agents IA"],
-    imageAlt: "Espace projet avec tâches, statuts, responsables et navigation",
-  },
-} as const;
 
 export function AnimatedHomeHero() {
   const localeValue = useLocale();
-  const locale = isLocale(localeValue) ? localeValue : "en";
-  const hero = marketingHero[locale];
-  const details = heroDetails[locale];
-  const signUpUrl = getLocalizedWorkspaceUrl(locale, "sign-up");
+  const { assets, hero } = useMarketingContent();
+  const signUpUrl = getLocalizedWorkspaceUrl(localeValue, "sign-up");
 
   return (
     <section className="qh-home-hero">
       <div className="qh-home-hero__content">
         <div className="qh-home-hero__copy">
           <p className="qh-home-hero__eyebrow">{hero.eyebrow}</p>
-          <h1>{details.title}</h1>
+          <h1>{hero.title}</h1>
 
           <ul className="qh-home-hero__benefits">
-            {details.benefits.map(([title, body]) => (
+            {hero.benefits.map(([title, body]) => (
               <li key={title}>
                 <Check aria-hidden="true" />
                 <span><strong>{title}</strong> {body}</span>
@@ -70,21 +29,21 @@ export function AnimatedHomeHero() {
 
           <div className="qh-home-hero__actions">
             <a href={signUpUrl}>{hero.cta}<ArrowRight /></a>
-            <span>{details.note}</span>
+            <span>{hero.note}</span>
           </div>
 
           <div className="qh-home-hero__modules">
-            <p>{details.modulesLabel}</p>
-            <div>{details.modules.map((module) => <span key={module}>{module}</span>)}</div>
+            <p>{hero.modulesLabel}</p>
+            <div>{hero.modules.map((module) => <span key={module}>{module}</span>)}</div>
           </div>
 
         </div>
 
         <div className="qh-product-shot">
           <img
-            alt={details.imageAlt}
+            alt={hero.imageAlt}
             fetchPriority="high"
-            src="https://clickup.com/assets/home_2026/hero_projects.avif"
+            src={assets.homeHero}
           />
         </div>
       </div>

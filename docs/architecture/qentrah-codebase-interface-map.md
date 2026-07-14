@@ -6,18 +6,22 @@
 
 ## Inventory summary
 
-- Source files scanned: 1633
-- Files exposing interfaces: 1377
-- Convex registered functions: 321
-- Application routes: 92
-- Hono/Convex HTTP registrations: 196
+- Source files scanned: 1652
+- Files exposing interfaces: 1383
+- Convex registered functions: 332
+- Application routes: 93
+- Hono/Convex HTTP registrations: 198
 - Eve/MCP tool entries: 118
-- Package commands: 82
+- Package commands: 88
 
 ## Package commands
 
 | Package | Command | Implementation |
 | --- | --- | --- |
+| @qentrah/marketing | contentful:models | `node scripts/sync-contentful-models.mjs` |
+| @qentrah/marketing | contentful:audit | `node scripts/sync-contentful-models.mjs --audit` |
+| @qentrah/marketing | contentful:prune | `node scripts/sync-contentful-models.mjs --prune` |
+| @qentrah/marketing | contentful:seed-drafts | `node scripts/seed-contentful-drafts.mjs` |
 | @qentrah/marketing | dev | `next dev --port 3005` |
 | @qentrah/marketing | build | `next build` |
 | @qentrah/marketing | start | `next start --port 3005` |
@@ -46,7 +50,9 @@
 | @qentrah/workspace | dev:convex | `convex dev` |
 | @qentrah/workspace | dev:convex:once | `convex dev --once` |
 | @qentrah/workspace | codegen:convex | `convex codegen` |
+| @qentrah/workspace | prebuild | `node scripts/check-production-env.mjs` |
 | @qentrah/workspace | build | `npm --workspace @qentrah/location-map --include-workspace-root=false run build && npm --workspace @qentrah/mcp-contracts --include-workspace-root=false run build && npm --workspace @qentrah/our-platform-components --include-workspace-root=false run build && npm --workspace @qentrah/ui --include-workspace-root=false run build && next build && node scripts/ensure-vercel-manifest.mjs` |
+| @qentrah/workspace | check:production-env | `node scripts/check-production-env.mjs` |
 | @qentrah/workspace | start | `next start` |
 | @qentrah/workspace | typecheck | `tsc --noEmit` |
 | @qentrah/workspace | lint | `eslint` |
@@ -184,6 +190,7 @@
 | `/api/:[...route]` | handler | `apps/workspace/src/app/api/[[...route]]/route.ts` |
 | `/api/auth/:all*` | handler | `apps/workspace/src/app/api/auth/[...all]/route.ts` |
 | `/api/auth/jwks` | handler | `apps/workspace/src/app/api/auth/jwks/route.ts` |
+| `/api/contentful/revalidate` | handler | `apps/marketing/app/api/contentful/revalidate/route.ts` |
 | `/api/mcp` | handler | `apps/workspace/src/app/api/mcp/route.ts` |
 | `/billing` | page | `apps/marketing/app/(site)/billing/page.tsx` |
 | `/dashboard` | page | `apps/marketing/app/(site)/dashboard/page.tsx` |
@@ -206,12 +213,10 @@ fully composed path.
 
 | Method | Registered path | Source |
 | --- | --- | --- |
-| POST | `/dodopayments-webhook` | `apps/workspace/convex/billing/webhooks.ts` |
 | POST | `/dodopayments-webhook` | `apps/workspace/convex/http.ts` |
 | POST | `/resend-webhook` | `apps/workspace/convex/http.ts` |
 | ALL | `/uploadthing` | `apps/workspace/src/server/app/app.ts` |
 | MOUNT | `/v1` | `apps/workspace/src/server/app/app.ts` |
-| POST | `/dodo/webhook` | `apps/workspace/src/server/domains/billing/routing.ts` |
 | GET | `/:organizationId/custom-fields/definitions` | `apps/workspace/src/server/domains/custom-fields/routing/router.ts` |
 | POST | `/:organizationId/custom-fields/definitions` | `apps/workspace/src/server/domains/custom-fields/routing/router.ts` |
 | PATCH | `/:organizationId/custom-fields/definitions/:fieldId` | `apps/workspace/src/server/domains/custom-fields/routing/router.ts` |
@@ -222,8 +227,12 @@ fully composed path.
 | GET | `/:organizationId/custom-fields/values/:recordType` | `apps/workspace/src/server/domains/custom-fields/routing/router.ts` |
 | GET | `/:organizationId/custom-fields/values/:recordType/:recordId` | `apps/workspace/src/server/domains/custom-fields/routing/router.ts` |
 | DELETE | `/:organizationId/custom-fields/values/:valueId` | `apps/workspace/src/server/domains/custom-fields/routing/router.ts` |
+| POST | `/:organizationId/billing/cancellation` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
 | POST | `/:organizationId/billing/checkout` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
+| POST | `/:organizationId/billing/credits/checkout` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
+| POST | `/:organizationId/billing/customer-portal` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
 | GET | `/:organizationId/billing/payments/:orderId` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
+| POST | `/:organizationId/billing/scheduled-plan` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
 | GET | `/:organizationId/billing/subscription` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
 | GET | `/:organizationId/billing/usage` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
 | POST | `/:organizationId/calendar-events` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
@@ -417,6 +426,14 @@ fully composed path.
 | mutation | `save` | `apps/workspace/convex/automations/write.ts` |
 | mutation | `saveLayout` | `apps/workspace/convex/automations/write.ts` |
 | mutation | `setEnabled` | `apps/workspace/convex/automations/write.ts` |
+| mutation | `assertEntitlementForAuthorizedRequest` | `apps/workspace/convex/billing/access.ts` |
+| internalMutation | `consumeApiCallFromMcp` | `apps/workspace/convex/billing/access.ts` |
+| query | `getOrganizationEntitlements` | `apps/workspace/convex/billing/access.ts` |
+| query | `getCreditLedger` | `apps/workspace/convex/billing/credits.ts` |
+| mutation | `recordAiStepUsage` | `apps/workspace/convex/billing/credits.ts` |
+| mutation | `releaseAiCredits` | `apps/workspace/convex/billing/credits.ts` |
+| mutation | `reserveAiCredits` | `apps/workspace/convex/billing/credits.ts` |
+| mutation | `settleAiCredits` | `apps/workspace/convex/billing/credits.ts` |
 | internalQuery | `getByAuthId` | `apps/workspace/convex/billing/customers.ts` |
 | internalQuery | `getByDodoCustomerId` | `apps/workspace/convex/billing/customers.ts` |
 | query | `getCurrentUserCustomer` | `apps/workspace/convex/billing/customers.ts` |
@@ -428,15 +445,18 @@ fully composed path.
 | query | `getSubscriptionOverview` | `apps/workspace/convex/billing/read.ts` |
 | query | `getUsageOverview` | `apps/workspace/convex/billing/read.ts` |
 | query | `listPayments` | `apps/workspace/convex/billing/read.ts` |
-| internalMutation | `recordPayment` | `apps/workspace/convex/billing/webhookMutations.ts` |
-| internalMutation | `recordPaymentFailure` | `apps/workspace/convex/billing/webhookMutations.ts` |
-| internalMutation | `recordSubscription` | `apps/workspace/convex/billing/webhookMutations.ts` |
+| internalMutation | `reconcilePayment` | `apps/workspace/convex/billing/webhookMutations.ts` |
+| internalMutation | `reconcileRefund` | `apps/workspace/convex/billing/webhookMutations.ts` |
+| internalMutation | `reconcileSubscription` | `apps/workspace/convex/billing/webhookMutations.ts` |
 | mutation | `attachCheckoutFromHono` | `apps/workspace/convex/billing/write.ts` |
+| mutation | `authorizeBillingManagement` | `apps/workspace/convex/billing/write.ts` |
+| mutation | `createPendingCreditPurchaseFromHono` | `apps/workspace/convex/billing/write.ts` |
 | mutation | `createPendingPaymentFromHono` | `apps/workspace/convex/billing/write.ts` |
 | mutation | `ensureCreditBalanceForOrganization` | `apps/workspace/convex/billing/write.ts` |
 | mutation | `markPaymentFailedFromHono` | `apps/workspace/convex/billing/write.ts` |
-| mutation | `markPaymentStatusFromWebhook` | `apps/workspace/convex/billing/write.ts` |
 | mutation | `recordAgentCreditUsage` | `apps/workspace/convex/billing/write.ts` |
+| mutation | `setScheduledCancellationFromHono` | `apps/workspace/convex/billing/write.ts` |
+| mutation | `setScheduledPlanFromHono` | `apps/workspace/convex/billing/write.ts` |
 | query | `get` | `apps/workspace/convex/calendar/read.ts` |
 | query | `list` | `apps/workspace/convex/calendar/read.ts` |
 | query | `listByProject` | `apps/workspace/convex/calendar/read.ts` |
@@ -883,6 +903,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/marketing/app/(site)/partners/page.tsx` | function: PartnersRedirectPage |
 | `apps/marketing/app/(site)/privacy/page.tsx` | function: PrivacyRedirectPage |
 | `apps/marketing/app/(site)/terms/page.tsx` | function: TermsRedirectPage |
+| `apps/marketing/app/api/contentful/revalidate/route.ts` | function: POST |
 | `apps/marketing/app/layout.tsx` | value: metadata<br>function: RootLayout |
 | `apps/marketing/app/manifest.ts` | function: manifest |
 | `apps/marketing/app/robots.ts` | function: robots |
@@ -1056,17 +1077,19 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/automations/write.ts` | convex-mutation: create<br>convex-mutation: save<br>convex-mutation: saveLayout<br>convex-mutation: setEnabled<br>convex-mutation: remove |
 | `apps/workspace/convex/betterAuth.ts` | value: betterAuthClient |
 | `apps/workspace/convex/betterAuthLocal/schema.ts` | value: tables |
+| `apps/workspace/convex/billing/access.ts` | function: resolveOrganizationEntitlements<br>function: assertOrganizationEntitlement<br>function: countActiveProjects<br>function: countOrganizationMembers<br>function: consumeOrganizationEntitlement<br>convex-query: getOrganizationEntitlements<br>convex-mutation: assertEntitlementForAuthorizedRequest<br>convex-internalMutation: consumeApiCallFromMcp |
 | `apps/workspace/convex/billing/creditSurface.ts` | type: StoredCreditBalance<br>type: StoredCreditLedger<br>type: CreditUsageSummary<br>function: includedCreditsForBillingPlan<br>function: creditUsageSummary<br>function: applyCreditUsageToBalance<br>function: calculateAgentRunCredits |
+| `apps/workspace/convex/billing/credits.ts` | convex-mutation: reserveAiCredits<br>convex-mutation: settleAiCredits<br>convex-mutation: recordAiStepUsage<br>convex-mutation: releaseAiCredits<br>convex-query: getCreditLedger |
 | `apps/workspace/convex/billing/customers.ts` | convex-internalQuery: getByAuthId<br>convex-query: getCurrentUserCustomer<br>convex-mutation: upsertCustomer<br>convex-internalQuery: getByDodoCustomerId |
-| `apps/workspace/convex/billing/data.ts` | type: PaymentStatus<br>type: SubscriptionStatus<br>type: StoredPayment<br>type: StoredSubscription<br>type: StoredOrganizationProfile<br>function: getBillingPlan<br>function: getBillingPlanAccess<br>function: billableMemberUnitsForPlan<br>function: canCreateAiCardForPlan<br>function: canUseEnterpriseControlsForPlan<br>function: presentPayment<br>function: presentSubscription |
-| `apps/workspace/convex/billing/dodo.ts` | value: dodo<br>value: PRICING_PLANS |
+| `apps/workspace/convex/billing/data.ts` | type: BillingPlanId<br>type: BillingPlanAccess<br>type: BillingPlan<br>value: BILLING_PLANS<br>type: PaymentStatus<br>type: StoredPayment<br>type: StoredSubscription<br>type: StoredOrganizationProfile<br>function: getBillingPlan<br>function: getBillingPlanAccess<br>function: billableMemberUnitsForPlan<br>function: canCreateAiCardForPlan<br>function: canUseEnterpriseControlsForPlan<br>function: presentPayment<br>function: presentSubscription |
+| `apps/workspace/convex/billing/dodo.ts` | value: dodo |
 | `apps/workspace/convex/billing/payments.ts` | convex-action: createCheckout<br>convex-action: getCustomerPortal<br>convex-action: listPlans |
 | `apps/workspace/convex/billing/read.ts` | convex-query: getSubscriptionOverview<br>convex-query: listPayments<br>convex-query: getUsageOverview<br>convex-query: getPaymentByOrder |
 | `apps/workspace/convex/billing/readSurface.ts` | function: latestPayment<br>function: billingSubscriptionOverview |
-| `apps/workspace/convex/billing/validators.ts` | value: billingPlanIdValidator<br>value: subscriptionStatusValidator<br>value: paymentStatusValidator<br>value: billingPlanValidator<br>value: organizationSubscriptionValidator<br>value: paymentValidator<br>value: billingOverviewValidator<br>value: billingCreditUsageValidator<br>value: billingUsageOverviewValidator<br>value: checkoutContextValidator |
-| `apps/workspace/convex/billing/webhookMutations.ts` | convex-internalMutation: recordPayment<br>convex-internalMutation: recordPaymentFailure<br>convex-internalMutation: recordSubscription |
-| `apps/workspace/convex/billing/webhookProcessing.ts` | function: acceptDodoWebhook<br>function: markDodoWebhookFailed<br>function: markPaymentStatusFromWebhookEvent |
-| `apps/workspace/convex/billing/write.ts` | convex-mutation: ensureCreditBalanceForOrganization<br>convex-mutation: recordAgentCreditUsage<br>convex-mutation: createPendingPaymentFromHono<br>convex-mutation: attachCheckoutFromHono<br>convex-mutation: markPaymentFailedFromHono<br>convex-mutation: markPaymentStatusFromWebhook |
+| `apps/workspace/convex/billing/storage.ts` | function: assertOrganizationStorageAvailable |
+| `apps/workspace/convex/billing/validators.ts` | value: billingPlanIdValidator<br>value: subscriptionStatusValidator<br>value: paymentStatusValidator<br>value: enterpriseOverridesValidator<br>value: organizationEntitlementsValidator<br>value: billingPlanValidator<br>value: organizationSubscriptionValidator<br>value: paymentValidator<br>value: billingOverviewValidator<br>value: billingCreditUsageValidator<br>value: billingUsageOverviewValidator<br>value: checkoutContextValidator |
+| `apps/workspace/convex/billing/webhookMutations.ts` | convex-internalMutation: reconcilePayment<br>convex-internalMutation: reconcileSubscription<br>convex-internalMutation: reconcileRefund |
+| `apps/workspace/convex/billing/write.ts` | convex-mutation: ensureCreditBalanceForOrganization<br>convex-mutation: authorizeBillingManagement<br>convex-mutation: setScheduledCancellationFromHono<br>convex-mutation: setScheduledPlanFromHono<br>convex-mutation: recordAgentCreditUsage<br>convex-mutation: createPendingPaymentFromHono<br>convex-mutation: createPendingCreditPurchaseFromHono<br>convex-mutation: attachCheckoutFromHono<br>convex-mutation: markPaymentFailedFromHono |
 | `apps/workspace/convex/calendar/lifecycle.ts` | type: CalendarEventInput<br>type: CalendarEventPatch<br>function: createCalendarEvent<br>function: updateCalendarEvent<br>function: deleteCalendarEvent |
 | `apps/workspace/convex/calendar/presentation.ts` | function: presentCalendarEvent |
 | `apps/workspace/convex/calendar/read.ts` | convex-query: list<br>convex-query: listRange<br>convex-query: listUpcoming<br>convex-query: listByProject<br>convex-query: get<br>convex-query: listBySpace<br>convex-query: statsInRange |
@@ -1169,7 +1192,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/organizations/inviteLinks/read.ts` | convex-query: listPending<br>convex-query: countPendingByRole<br>convex-query: getByTokenHash |
 | `apps/workspace/convex/organizations/inviteLinks/validators.ts` | value: organizationInviteLinkStatusValidator<br>value: organizationInviteLinkValidator<br>value: createOrganizationInviteLinkInputValidator<br>value: createOrganizationInviteLinkFromTokenInputValidator |
 | `apps/workspace/convex/organizations/inviteLinks/write.ts` | convex-mutation: createInviteLinkFromHono<br>convex-mutation: createInviteLinkFromToken<br>convex-mutation: acceptInviteLinkFromHono<br>convex-mutation: cancelInviteLinkFromHono |
-| `apps/workspace/convex/organizations/profile/access.ts` | function: assertOrganizationPermission<br>function: assertOrganizationResourcePermission<br>function: canUseOrganizationResourceAction<br>convex-query: canUpdateProfile<br>convex-query: canUseResourceAction<br>convex-query: getCapabilities |
+| `apps/workspace/convex/organizations/profile/access.ts` | function: assertOrganizationPermission<br>function: assertOrganizationOwner<br>function: assertOrganizationResourcePermission<br>function: canUseOrganizationResourceAction<br>convex-query: canUpdateProfile<br>convex-query: canUseResourceAction<br>convex-query: getCapabilities |
 | `apps/workspace/convex/organizations/profile/data.ts` | function: findOrganizationProfile |
 | `apps/workspace/convex/organizations/profile/read.ts` | convex-query: getProfile |
 | `apps/workspace/convex/organizations/profile/validators.ts` | value: organizationProfileValidator<br>value: updateOrganizationProfileInputValidator<br>value: emptyOrganizationProfile |
@@ -1552,10 +1575,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/auth/components/verify-email-client.tsx` | function: VerifyEmailClient |
 | `apps/workspace/src/domains/auth/hooks/use-account-context.ts` | function: AccountProvider<br>function: useAccountContext<br>function: useOptionalAccountContext<br>function: useOrgId<br>function: useUserId |
 | `apps/workspace/src/domains/auth/hooks/use-auth-flow.ts` | type: AuthFlowPhase<br>type: SocialProvider<br>function: useAuthFlow |
-| `apps/workspace/src/domains/auth/hooks/use-organization-entry.ts` | type: UserOrganizationInvitation<br>function: organizationSlugFromName<br>function: useOrganizationEntry |
+| `apps/workspace/src/domains/auth/hooks/use-organization-entry.ts` | type: UserOrganizationInvitation<br>function: useOrganizationEntry |
 | `apps/workspace/src/domains/auth/lib/account-normalizers.ts` | type: AccountContextValue<br>value: defaultAccountNotifications<br>function: accountInitials |
 | `apps/workspace/src/domains/auth/lib/auth-error-utils.ts` | type: SocialProvider<br>value: socialProviderStrategies<br>value: socialRedirectFallbackMs<br>type: AuthErrorMessageKey<br>type: ExternalVerification<br>function: externalVerificationRedirectUrl<br>function: assignExternalRedirect<br>function: localizedAuthError<br>function: isAlreadySignedInError<br>function: toLocalizedPath<br>function: toRouterHref |
 | `apps/workspace/src/domains/auth/organization-context.ts` | interface: OrganizationContext<br>function: OrganizationProvider<br>function: useOrganizationContext<br>function: useOptionalOrganizationContext<br>function: useOrgId |
+| `apps/workspace/src/domains/auth/organization-creation.ts` | function: organizationSlugFromName<br>function: organizationSlugCandidate<br>function: isOrganizationSlugConflict<br>function: createOrganizationWithUniqueSlug |
 | `apps/workspace/src/domains/auth/organization-selection.ts` | type: OrganizationSelection<br>type: AuthResult<br>function: requireOrganizationResult<br>function: selectExistingOrganization<br>function: createAndSelectOrganization<br>function: completeOrganizationEntry |
 | `apps/workspace/src/domains/auth/server-auth-routing.ts` | function: redirectAuthenticatedUserFromAuthEntry<br>function: redirectInvalidChooseOrganizationAccess |
 | `apps/workspace/src/domains/auth/utils/auth-callback-url.ts` | function: createLocaleAuthCallbackUrl<br>function: resolveAuthEntryCallbackUrl |
@@ -1573,9 +1597,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/automations/types.ts` | type: AutomationNodeKind<br>type: AutomationNodeType<br>type: AutomationNodeData<br>type: AutomationRecord<br>type: AutomationPersistenceStatus |
 | `apps/workspace/src/domains/billing/api/billing-requests.ts` | function: getBillingOverviewRequest<br>function: getBillingUsageRequest<br>function: createCheckoutRequest<br>function: getPaymentStatusRequest |
 | `apps/workspace/src/domains/billing/components/billing-metric-pill.tsx` | function: BillingMetricPill |
-| `apps/workspace/src/domains/billing/config/plans.config.ts` | value: DEFAULT_BILLING_PLAN_ID<br>value: LEGACY_QENTRAH_PLAN_ID<br>value: DODO_PRODUCT_GOOD_MONTHLY<br>value: DODO_PRODUCT_GOOD_YEARLY<br>value: DODO_PRODUCT_BETTER_MONTHLY<br>value: DODO_PRODUCT_BETTER_YEARLY<br>value: PLAN_CURRENCY<br>type: BillingPlanId<br>type: BillingPlan<br>type: BillingPlanAccess<br>value: GOOD_MONTHLY_PLAN<br>value: GOOD_YEARLY_PLAN<br>value: BETTER_MONTHLY_PLAN<br>value: BETTER_YEARLY_PLAN<br>value: CUSTOM_MONTHLY_PLAN<br>value: CUSTOM_YEARLY_PLAN<br>value: QENTRAH_PLAN_ID<br>value: DODO_PRODUCT_ID<br>value: PRICE_PER_SEAT<br>value: QENTRAH_PLAN<br>value: BILLING_PLANS<br>type: BillingSubscription<br>type: Payment<br>type: BillingOverview<br>type: OrganizationBillingUsage<br>type: BillingUsageState |
+| `apps/workspace/src/domains/billing/components/billing-screen.tsx` | function: BillingScreen |
+| `apps/workspace/src/domains/billing/config/plans.config.ts` | value: DEFAULT_BILLING_PLAN_ID<br>value: LEGACY_QENTRAH_PLAN_ID<br>value: DODO_PRODUCT_GOOD_MONTHLY<br>value: DODO_PRODUCT_GOOD_YEARLY<br>value: DODO_PRODUCT_BETTER_MONTHLY<br>value: DODO_PRODUCT_BETTER_YEARLY<br>value: PLAN_CURRENCY<br>type: BillingPlanId<br>type: BillingPlanAccess<br>type: BillingPlan<br>value: FREE_PLAN<br>value: GOOD_MONTHLY_PLAN<br>value: GOOD_YEARLY_PLAN<br>value: BETTER_MONTHLY_PLAN<br>value: BETTER_YEARLY_PLAN<br>value: CUSTOM_MONTHLY_PLAN<br>value: CUSTOM_YEARLY_PLAN<br>value: QENTRAH_PLAN_ID<br>value: DODO_PRODUCT_ID<br>value: PRICE_PER_SEAT<br>value: QENTRAH_PLAN<br>value: BILLING_PLANS<br>type: BillingSubscription<br>type: Payment<br>type: BillingOverview<br>type: OrganizationBillingUsage<br>type: BillingUsageState |
 | `apps/workspace/src/domains/billing/hooks/use-billing-checkout.ts` | function: useBillingCheckout |
 | `apps/workspace/src/domains/billing/hooks/use-billing-queries.ts` | function: useBillingOverview<br>function: useBillingUsage |
+| `apps/workspace/src/domains/billing/hooks/use-organization-entitlements.ts` | function: useOrganizationEntitlements |
 | `apps/workspace/src/domains/billing/lib/billing-formatters.ts` | type: BillingLocale<br>function: billingDateLabel<br>function: subscriptionTone<br>function: billingPriceLabel<br>function: seatTotalLabel<br>function: billingPricePerSeatLabel |
 | `apps/workspace/src/domains/billing/lib/billing-helpers.ts` | function: normalizePlanId<br>function: getPlanById<br>function: isYearlyPlan<br>function: isContactSales<br>function: planDisplayName<br>function: getPlanAccess<br>function: canInviteMember<br>function: canCreateAiCard<br>function: canUseEnterpriseControls<br>function: billableMemberUnits<br>function: subscriptionTotalForMembers<br>function: totalPriceForSeats<br>function: fallbackBillingOverview<br>function: fallbackBillingUsage |
 | `apps/workspace/src/domains/cache/hooks/use-optimistic-invalidation.ts` | type: ResourceType<br>type: InvalidationTarget<br>function: useOptimisticInvalidation |
@@ -1991,11 +2017,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/server/auth/auth-request.ts` | type: AuthRequestSession<br>type: AuthRequestContext<br>function: runWithAuthHeaders<br>function: getRequestHeaders<br>value: authRequestStore<br>function: isAuthenticated<br>function: getConvexToken<br>function: fetchAuthenticatedQuery<br>function: fetchAuthenticatedMutation<br>function: fetchAuthenticatedAction<br>function: callBetterAuth<br>function: getAuthRequestSession<br>function: getSessionUserId |
 | `apps/workspace/src/server/config/agent-runtime.ts` | function: normalizeOpenRouterModelId<br>function: parseOpenRouterModelList<br>function: getOpenRouterModelCandidates<br>value: agentRuntimeConfig |
 | `apps/workspace/src/server/convex/http-client.ts` | value: convexHttp<br>value: convexCalls |
-| `apps/workspace/src/server/domains/billing/handlers/billing.ts` | function: handleGetBillingSubscription<br>function: handleGetBillingUsage<br>function: handleCreateCheckout<br>function: handleGetPaymentStatus<br>function: handleDodoWebhook |
+| `apps/workspace/src/server/domains/billing/handlers/billing.ts` | function: handleGetBillingSubscription<br>function: handleSchedulePlanChange<br>function: handleSubscriptionCancellation<br>function: handleCreateCustomerPortal<br>function: handleCreateCreditCheckout<br>function: handleGetBillingUsage<br>function: handleCreateCheckout<br>function: handleGetPaymentStatus |
 | `apps/workspace/src/server/domains/billing/routing.ts` | value: billingRouter |
 | `apps/workspace/src/server/domains/billing/services/billing-period.ts` | function: nextBillingPeriod |
-| `apps/workspace/src/server/domains/billing/services/billing.ts` | type: OrganizationBillingUsage<br>function: getBillingSubscription<br>function: getBillingUsage<br>function: recordAgentCreditUsage<br>function: createBillingCheckout<br>function: getBillingPaymentStatus<br>function: processDodoWebhook |
-| `apps/workspace/src/server/domains/billing/validation/billing.schema.ts` | value: billingCheckoutSchema<br>value: dodoWebhookSchema<br>type: BillingCheckoutPayload<br>type: DodoWebhookPayload |
+| `apps/workspace/src/server/domains/billing/services/billing.ts` | function: getBillingSubscription<br>function: getBillingUsage<br>function: recordAgentCreditUsage<br>function: createBillingCheckout<br>function: getBillingPaymentStatus<br>function: createCreditPurchaseCheckout<br>function: createCustomerPortal<br>function: setSubscriptionCancellation<br>function: scheduleSubscriptionPlan<br>function: syncSubscriptionSeats |
+| `apps/workspace/src/server/domains/billing/validation/billing.schema.ts` | value: billingCheckoutSchema<br>value: billingCreditCheckoutSchema<br>value: billingCancellationSchema<br>value: billingPlanChangeSchema<br>type: BillingCheckoutPayload<br>type: BillingCreditCheckoutPayload |
 | `apps/workspace/src/server/domains/calendar/handlers/calendar-read.ts` | function: handleReadCalendarEvents<br>function: handleReadCalendarStats<br>function: handleReadCalendarIndex<br>function: handleReadUpcomingCalendarEvents |
 | `apps/workspace/src/server/domains/calendar/validation/calendar.schema.ts` | value: calendarEventPayloadSchema<br>type: CalendarEventPayload<br>function: floatingDateTimeToTimestamp |
 | `apps/workspace/src/server/domains/clientFollowUps/handlers/follow-ups.ts` | function: handleMarkFollowUpComplete |
@@ -2170,8 +2196,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/domain-contracts/src/deals.ts` | value: dealStageSchema<br>value: dealStatusSchema<br>value: dealPrioritySchema<br>value: dealInputSchema<br>value: dealRecordSchema<br>type: DealStage<br>type: DealStatus<br>type: DealPriority<br>type: DealInput<br>type: DealRecord<br>type: DealSummary<br>type: DealStats<br>value: crmDealStageSchema<br>value: crmDealRelationTypeSchema<br>value: crmClientPreviewSchema<br>value: crmBrokerPreviewSchema<br>value: crmProjectPreviewSchema<br>value: crmDealInputSchema<br>value: crmUpdateDealInputSchema<br>value: crmUpdateDealStageInputSchema<br>value: crmUpdateDealNotesInputSchema<br>value: crmUpdateDealFollowUpInputSchema<br>value: crmAddDealDocumentInputSchema<br>value: crmAssetDealsInputSchema<br>value: crmArchiveDealInputSchema<br>type: CrmDealInput<br>type: CrmUpdateDealInput<br>type: CrmUpdateDealStageInput<br>type: CrmUpdateDealNotesInput<br>type: CrmUpdateDealFollowUpInput<br>type: CrmAddDealDocumentInput<br>type: CrmAssetDealsInput<br>type: CrmArchiveDealInput<br>type: CrmDealRelationType<br>type: CrmClientPreview<br>type: CrmBrokerPreview<br>type: CrmProjectPreview |
 | `packages/domain-contracts/src/projects.ts` | value: projectStatusSchema<br>value: projectHealthSchema<br>value: projectVisibilitySchema<br>value: projectInputSchema<br>value: projectRecordSchema<br>type: ProjectStatus<br>type: ProjectHealth<br>type: ProjectVisibility<br>type: ProjectInput<br>type: ProjectRecord<br>type: ProjectSummary |
 | `packages/domain-contracts/src/spaces.ts` | value: spaceVisibilitySchema<br>value: spaceProjectVisibilitySchema<br>value: spaceInputSchema<br>value: spaceRecordSchema<br>type: SpaceVisibility<br>type: SpaceProjectVisibility<br>type: SpaceInput<br>type: SpaceRecord |
-| `packages/domain-contracts/src/subscriptionPricing.ts` | type: SubscriptionPlanId<br>type: BillingCycle<br>type: CreditPackId<br>type: AiModelClass<br>type: UsageMeterKind<br>type: BillingProviderId<br>type: SubscriptionEntitlements<br>type: GlobalSubscriptionPlan<br>type: MarketBillingVariant<br>type: CreditPack<br>type: AiCreditCalculationInput<br>type: AiCreditCalculation<br>type: CreditBalance<br>type: AppliedCreditUsage<br>value: DEFAULT_SUBSCRIPTION_PLAN_ID<br>value: DEFAULT_BILLING_CYCLE<br>function: getGlobalPlan<br>function: listGlobalPlans<br>function: getMarketPricing<br>function: getCreditPack<br>function: listCreditPacks<br>function: includedCreditCardsForPlan<br>function: canAddCreditCardsToPlan<br>function: listAddOnCreditCards<br>function: resolveSubscriptionEntitlements<br>function: normalizeBillingSelection<br>function: billingSelectionKey<br>function: aiModelClass<br>function: calculateAiCredits<br>function: applyUsageToCreditBalance |
-| `packages/domain-contracts/src/subscriptionPricingConfig.ts` | value: CREDIT_PACKS<br>value: MODEL_CLASS_CONFIG<br>value: FALLBACK_MODEL_CREDIT_MULTIPLIER<br>value: CREDIT_CARD_UNIT_SIZE |
+| `packages/domain-contracts/src/subscriptionPricing.ts` | type: SubscriptionPlanId<br>type: BillingCycle<br>type: BillingPlanKey<br>type: CreditPackId<br>type: AiModelClass<br>type: UsageMeterKind<br>type: BillingProviderId<br>type: SubscriptionStatus<br>type: EntitlementKey<br>type: SubscriptionEntitlements<br>type: EnterpriseEntitlementOverrides<br>type: OrganizationEntitlements<br>type: EntitlementDecision<br>type: GlobalSubscriptionPlan<br>type: MarketBillingVariant<br>type: CreditPack<br>type: CreditPurchase<br>type: CreditReservation<br>type: AiCreditCalculationInput<br>type: AiCreditCalculation<br>type: CreditBalance<br>type: AppliedCreditUsage<br>value: DEFAULT_SUBSCRIPTION_PLAN_ID<br>value: DEFAULT_BILLING_CYCLE<br>function: getGlobalPlan<br>function: listGlobalPlans<br>function: getMarketPricing<br>function: getCreditPack<br>function: listCreditPacks<br>function: includedCreditCardsForPlan<br>function: canAddCreditCardsToPlan<br>function: listAddOnCreditCards<br>function: resolveSubscriptionEntitlements<br>function: resolveOrganizationEntitlements<br>function: decideEntitlement<br>function: normalizeBillingSelection<br>function: normalizeBillingPlanKey<br>function: subscriptionPlanIdForBillingKey<br>function: billingCycleForKey<br>function: billingSelectionKey<br>function: aiModelClass<br>function: calculateAiCredits<br>function: creditsForProviderCost<br>function: customCreditPurchase<br>function: applyUsageToCreditBalance |
+| `packages/domain-contracts/src/subscriptionPricingConfig.ts` | value: CREDIT_PACKS<br>value: MODEL_CLASS_CONFIG<br>value: FALLBACK_MODEL_CREDIT_MULTIPLIER<br>value: CREDIT_CARD_UNIT_SIZE<br>value: CREDITS_PER_USD<br>value: MIN_CUSTOM_CREDIT_PURCHASE_USD<br>value: MAX_CUSTOM_CREDIT_PURCHASE_USD |
 | `packages/domain-contracts/src/tasks.ts` | value: taskPrioritySchema<br>value: taskStatusSchema<br>type: TaskVisibility<br>function: defaultTaskVisibility<br>value: checklistItemSchema<br>value: taskInputObjectSchema<br>value: taskInputSchema<br>value: taskPatchObjectSchema<br>value: taskPatchSchema<br>value: taskRecordSchema<br>type: TaskStatus<br>type: TaskPriority<br>type: ChecklistItem<br>type: TaskInput<br>type: TaskPatch<br>type: TaskRecord<br>type: TaskSummary |
 | `packages/location-map/src/react/LocationPicker.tsx` | function: LocationPicker |
 | `packages/location-map/src/react/LocationPreview.tsx` | function: LocationPreview |

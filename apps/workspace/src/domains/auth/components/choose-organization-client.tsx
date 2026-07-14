@@ -7,6 +7,7 @@ import {
   Plus,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { BrandMark } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,7 +70,7 @@ export function ChooseOrganizationClient({
     selectOrganization,
     acceptInvitation,
     createOrganization,
-    useAnotherAccount,
+    useAnotherAccount: switchAccount,
   } = useOrganizationEntry({ callbackURL, locale });
 
   return (
@@ -92,7 +93,7 @@ export function ChooseOrganizationClient({
             label={t("useAnotherAccount")}
             loading={busyAction === "sign-out"}
             loadingLabel={t("signingOut")}
-            onClick={() => void useAnotherAccount()}
+            onClick={() => void switchAccount()}
             user={session?.user}
           />
         </header>
@@ -166,10 +167,13 @@ export function ChooseOrganizationClient({
                     {isBusy ? (
                       <Loader2 className="size-5 animate-spin" />
                     ) : org.logo ? (
-                      <img
+                      <Image
                         alt=""
                         className="size-full object-cover"
+                        height={40}
                         src={org.logo}
+                        unoptimized
+                        width={40}
                       />
                     ) : (
                       <BrandMark className="size-7" />
@@ -227,8 +231,11 @@ export function ChooseOrganizationClient({
               placeholder={t("createNamePlaceholder")}
               value={organizationName}
             />
-            <p className="mt-3 rounded-md bg-muted/60 px-3 py-3 text-xs text-muted-foreground">
-              {organizationSlug || "workspace-slug"}
+            <p className="mt-3 rounded-md bg-muted/60 px-3 py-3 font-mono text-xs text-muted-foreground" dir="ltr">
+              qentrah.com/{organizationSlug}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              {t("createSlugHint")}
             </p>
           </div>
           <div className="mt-8 flex items-center justify-end gap-2">

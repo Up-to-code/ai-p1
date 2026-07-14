@@ -18,7 +18,6 @@ import {
   MessageSquare,
   Sparkles,
   Target,
-  Users,
   X,
 } from "lucide-react";
 import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-loading";
@@ -66,15 +65,6 @@ const featureOptions = [
   { id: "chat", icon: MessageSquare },
 ] as const;
 
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 48);
-}
-
 function isEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
@@ -110,7 +100,7 @@ export default function OnboardingPage() {
   const [inviteInput, setInviteInput] = useState("");
   const [invites, setInvites] = useState<string[]>([]);
   const [features, setFeatures] = useState<string[]>(["tasks"]);
-  const [workspaceName, setWorkspaceName] = useState("");
+  const [workspaceNameOverride, setWorkspaceNameOverride] = useState<string>();
   const [isFinishing, setIsFinishing] = useState(false);
   const [error, setError] = useState("");
   const [orgLoadTimedOut, setOrgLoadTimedOut] = useState(false);
@@ -119,6 +109,7 @@ export default function OnboardingPage() {
   const isLoaded = !sessionPending && !activeOrgPending;
   const currentStep = steps[stepIndex];
   const progress = ((stepIndex + 1) / steps.length) * 100;
+  const workspaceName = workspaceNameOverride ?? activeOrg?.name ?? "";
 
   useEffect(() => {
     if (isLoaded || orgLoadTimedOut) return;
@@ -135,11 +126,6 @@ export default function OnboardingPage() {
       router.replace("/choose-org");
     }
   }, [orgLoadTimedOut, isLoaded, router]);
-
-  useEffect(() => {
-    if (!activeOrg?.name || workspaceName) return;
-    setWorkspaceName(activeOrg.name);
-  }, [activeOrg?.name, workspaceName]);
 
   const canGoNext = useMemo(() => {
     if (currentStep === "purpose") return Boolean(purpose);
@@ -174,7 +160,6 @@ export default function OnboardingPage() {
     try {
       await updateAuthOrganization(activeOrg.id, {
         name: workspaceName.trim(),
-        slug: slugify(workspaceName) || undefined,
         metadata: { onboarding: { purpose, manage, features } },
       });
       await Promise.allSettled(
@@ -361,7 +346,7 @@ export default function OnboardingPage() {
               <StepBlock title={t("nameTitle")}>
                 <Input
                   value={workspaceName}
-                  onChange={(event) => setWorkspaceName(event.target.value)}
+                  onChange={(event) => setWorkspaceNameOverride(event.target.value)}
                   className="h-12 max-w-3xl rounded-lg border-white/20 bg-transparent text-sm text-white placeholder:text-white/35 focus-visible:ring-white/20"
                 />
                 <p className="mt-4 text-xs font-semibold text-white/30">

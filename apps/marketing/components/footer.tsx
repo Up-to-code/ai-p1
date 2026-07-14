@@ -1,12 +1,11 @@
 "use client";
 
 import { ArrowUpRight } from "lucide-react";
-import { useLocale } from "next-intl";
 
 import { Link } from "@/i18n/routing";
 import { Logo } from "@/components/logo";
 import { publicSeoLinks } from "@/lib/public-links";
-import { marketingFooter, isLocale } from "@/lib/content";
+import { useMarketingContent } from "@/components/marketing/marketing-content-provider";
 
 const footerGroups = [
   {
@@ -30,9 +29,7 @@ const footerGroups = [
 ] as const;
 
 export default function Footer() {
-  const localeRaw = useLocale();
-  const locale = isLocale(localeRaw) ? localeRaw : "en";
-  const footer = marketingFooter[locale];
+  const { footer } = useMarketingContent();
 
   return (
     <footer className="border-t bg-[var(--marketing-section)]/95" style={{ borderColor: "var(--q-border)" }}>
@@ -56,13 +53,17 @@ export default function Footer() {
                   {group.title === "platform" ? footer.platform : group.title === "workspace" ? footer.workspace : footer.legal}
                 </h3>
                 <ul className="space-y-3">
-                  {group.links.map((link) => (
+                  {group.links.map((link, index) => (
                     <li key={link.href}>
                       <Link
                         className="inline-flex items-center gap-2 text-sm font-bold text-[var(--q-text-primary)] transition hover:text-[var(--q-accent)]"
                         href={link.href}
                       >
-                        {"labels" in link ? link.labels[locale] : footer[link.label as keyof typeof footer]}
+                        {group.title === "platform"
+                          ? footer.platformLinkLabels[index]
+                          : group.title === "workspace"
+                            ? footer.workspaceLinkLabels[index]
+                            : footer.legalLinkLabels[index]}
                         <ArrowUpRight className="h-3 w-3 opacity-45 rtl:-rotate-90" />
                       </Link>
                     </li>

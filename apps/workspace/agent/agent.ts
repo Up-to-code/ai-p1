@@ -8,5 +8,6 @@ export default defineAgent({
   modelContextWindowTokens: 128000,
   limits: {
     maxSubagentDepth: 2,
+    maxOutputTokensPerSession: 32_000,
   },
 });

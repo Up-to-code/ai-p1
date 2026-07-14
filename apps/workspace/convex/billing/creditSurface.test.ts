@@ -23,9 +23,9 @@ function balance(input: Partial<StoredCreditBalance>): StoredCreditBalance {
 
 describe("billing credit surface", () => {
   it("maps billing plans through subscription entitlements", () => {
-    expect(includedCreditsForBillingPlan("qentrah_workspace")).toBe(12000);
-    expect(includedCreditsForBillingPlan("better_monthly")).toBe(50000);
-    expect(includedCreditsForBillingPlan("custom_monthly")).toBe(250000);
+    expect(includedCreditsForBillingPlan("qentrah_workspace")).toBe(3000);
+    expect(includedCreditsForBillingPlan("better_monthly")).toBe(10000);
+    expect(includedCreditsForBillingPlan("custom_monthly")).toBe(0);
   });
 
   it("builds zero-safe usage summaries when no balance exists", () => {
@@ -36,6 +36,7 @@ describe("billing credit surface", () => {
       addOnCreditsGranted: 0,
       addOnCreditsUsed: 0,
       addOnCreditsRemaining: 0,
+      reservedCredits: 0,
       currentPeriodStartAt: undefined,
       currentPeriodEndAt: undefined,
     });

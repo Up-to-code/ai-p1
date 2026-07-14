@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
 import { getAuthUser } from "../../auth";
 import { assertOrganizationResourcePermission } from "../profile/access";
+import { assertOrganizationEntitlement, countOrganizationMembers } from "../../billing/access";
 import { findInviteLinkByTokenHash, toPublicInviteLink } from "./data";
 import {
   createOrganizationInviteLinkInputValidator,
@@ -26,6 +27,12 @@ export const createInviteLinkFromHono = mutation({
   handler: async (ctx, args) => {
     const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
+    const memberCount = await countOrganizationMembers(ctx, args.organizationId);
+    await assertOrganizationEntitlement(ctx, {
+      organizationId: args.organizationId,
+      key: "member",
+      used: memberCount,
+    });
 
     const existing = await findInviteLinkByTokenHash(ctx, args.input.tokenHash);
     if (existing) {
@@ -77,6 +84,12 @@ export const createInviteLinkFromToken = mutation({
     const tokenHash = await hashInviteToken(token);
     const user = await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
+    const memberCount = await countOrganizationMembers(ctx, args.organizationId);
+    await assertOrganizationEntitlement(ctx, {
+      organizationId: args.organizationId,
+      key: "member",
+      used: memberCount,
+    });
 
     const existing = await findInviteLinkByTokenHash(ctx, tokenHash);
     if (existing) {

@@ -1,17 +1,25 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const envPath = resolve(process.cwd(), ".env.production");
-const text = readFileSync(envPath, "utf8");
 const env = Object.create(null);
+const isVercelProduction = process.env.VERCEL_ENV === "production";
 
-for (const line of text.split(/\r?\n/u)) {
-  const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)=(.*)$/u);
-  if (!match) continue;
-  env[match[1]] = stripCopiedEnvQuotes(match[2]);
+if (isVercelProduction) {
+  Object.assign(env, process.env);
+} else if (existsSync(envPath)) {
+  const text = readFileSync(envPath, "utf8");
+  for (const line of text.split(/\r?\n/u)) {
+    const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)=(.*)$/u);
+    if (!match) continue;
+    env[match[1]] = stripCopiedEnvQuotes(match[2]);
+  }
+} else {
+  console.log("Production env check skipped outside Vercel: .env.production is not present.");
+  process.exit(0);
 }
 
-const required = [
+const deploymentRequired = [
   "NEXT_PUBLIC_SITE_URL",
   "SITE_URL",
   "NEXT_PUBLIC_API_URL",
@@ -20,18 +28,30 @@ const required = [
   "CONVEX_URL",
   "NEXT_PUBLIC_CONVEX_SITE_URL",
   "CONVEX_SITE_URL",
-  "BETTER_AUTH_SECRET",
   "QENTRAH_WORKSPACE_URL",
   "NEXT_PUBLIC_APP_URL",
+];
+
+const vercelRuntimeRequired = [
+  ...deploymentRequired,
+  "BETTER_AUTH_SECRET",
   "ADMIN_CONVEX_SERVICE_TOKEN",
   "WORKSPACE_ADMIN_SERVICE_TOKEN",
   "WORKSPACE_CONVEX_BRIDGE_SECRET",
   "PARTNER_WEBHOOK_SECRET_ENCRYPTION_KEY",
   "ORGANIZATION_DATA_ENCRYPTION_KEY",
-  "RESEND_API_KEY",
-  "RESEND_FROM_EMAIL",
-  "RESEND_TEST_MODE",
+  "OPENROUTER_API_KEY",
+  "OPENROUTER_MODEL",
+  "DODO_PAYMENTS_API_KEY",
+  "DODO_PAYMENTS_ENVIRONMENT",
+  "DODO_PRODUCT_GOOD_MONTHLY",
+  "DODO_PRODUCT_GOOD_YEARLY",
+  "DODO_PRODUCT_BETTER_MONTHLY",
+  "DODO_PRODUCT_BETTER_YEARLY",
+  "DODO_PRODUCT_AI_CREDITS_USD",
 ];
+
+const required = isVercelProduction ? vercelRuntimeRequired : deploymentRequired;
 
 const expected = {
   NEXT_PUBLIC_SITE_URL: "https://app.qentrah.com",
@@ -44,9 +64,6 @@ const expected = {
   CONVEX_SITE_URL: "https://focused-shepherd-801.convex.site",
   QENTRAH_WORKSPACE_URL: "https://app.qentrah.com",
   NEXT_PUBLIC_APP_URL: "https://app.qentrah.com",
-  PARTNER_OAUTH_ISSUER: "https://app.qentrah.com",
-  PARTNER_OAUTH_AUDIENCE: "https://app.qentrah.com/api/v1/partner",
-  RESEND_TEST_MODE: "false",
 };
 
 const removedWorkspaceVariables = [
@@ -151,6 +168,13 @@ for (const key of strongSecretKeys) {
   }
 }
 
+if (
+  env.DODO_PAYMENTS_ENVIRONMENT &&
+  !["test_mode", "live_mode"].includes(env.DODO_PAYMENTS_ENVIRONMENT)
+) {
+  failures.push("DODO_PAYMENTS_ENVIRONMENT must be test_mode or live_mode");
+}
+
 for (const [key, value] of Object.entries(expected)) {
   if (env[key] !== value) failures.push(`${key} should be ${value}`);
 }
@@ -184,4 +208,8 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("Production env shape looks ready.");
+console.log(
+  isVercelProduction
+    ? "Vercel production environment looks ready."
+    : "Local production endpoint template looks ready.",
+);

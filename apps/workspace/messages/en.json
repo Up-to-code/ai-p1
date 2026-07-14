@@ -4327,12 +4327,13 @@
     "createTitle": "Create organization",
     "createDesc": "Start a new workspace.",
     "createModalTitle": "Create workspace",
-    "createModalDesc": "Name the workspace. You can update the details later.",
+    "createModalDesc": "Choose a display name. Qentrah will reserve a unique workspace URL automatically.",
     "createHelp": "Create a new organization only if you are not joining an existing team.",
     "createNew": "Create new",
     "hideCreate": "Cancel",
     "createNameLabel": "Organization Name",
     "createNamePlaceholder": "e.g. Acme Workspace",
+    "createSlugHint": "Workspace names may repeat. The URL is unique and can be changed later in organization settings.",
     "createBtn": "Create",
     "creating": "Creating...",
     "invitedTitle": "Invitations",
@@ -4358,14 +4359,13 @@
     "journeyTitle": "Setup journey",
     "journeyCreate": "Create your organization record",
     "journeyActivate": "Make it the active workspace",
-    "journeyOnboarding": "Continue to onboarding",
+    "journeyOnboarding": "Open the workspace",
     "existingTitle": "Organizations",
     "nameRequired": "Enter an organization name first.",
     "inviteRequired": "Paste an invite link or token first.",
     "errorTitle": "Organization setup failed",
     "errorDesc": "Could not complete this organization action.",
-    "organizationsDisabled": "Organizations are not enabled for this instance. Enable organizations in Better Auth, then create the workspace again.",
-    "slugsDisabled": "Organization slugs are disabled in Better Auth. The workspace will be created without a custom slug."
+    "organizationsDisabled": "Organizations are not enabled for this instance. Enable organizations in Better Auth, then create the workspace again."
   },
   "VerifyEmail": {
     "eyebrow": "Email verification",
@@ -4388,6 +4388,11 @@
     "description": "You need a workspace to access the dashboard. Create one now or wait for an invitation from your team.",
     "nameLabel": "Organization Name",
     "namePlaceholder": "e.g. Acme Workspace",
+    "slugLabel": "Workspace URL",
+    "slugHint": "Names do not need to be unique. If this URL is taken, Qentrah adds the next available number automatically.",
+    "journeyCreate": "Create",
+    "journeyActivate": "Activate",
+    "journeyOpen": "Open workspace",
     "createBtn": "Create Workspace",
     "creating": "Creating...",
     "or": "or",
@@ -4395,8 +4400,7 @@
     "invitationDesc": "Ask your organization admin to send you an invite link. Once you accept, you will automatically join their workspace.",
     "nameRequired": "Enter an organization name first.",
     "errorDesc": "Could not create the organization.",
-    "organizationsDisabled": "Organizations are not enabled for this instance. Enable organizations in Better Auth, then try again.",
-    "slugsDisabled": "Organization slugs are disabled in Better Auth. The workspace will be created without a custom slug."
+    "organizationsDisabled": "Organizations are not enabled for this instance. Enable organizations in Better Auth, then try again."
   },
   "Widgets": {
     "taskTable": {

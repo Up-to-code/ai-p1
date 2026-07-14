@@ -10,6 +10,7 @@ import {
 } from "./validators";
 import { assertConvexBridgeToken } from "../serviceTokens";
 import { revealOrganizationJson } from "../security/organizationData";
+import { assertOrganizationEntitlement } from "../billing/access";
 import { assertSafeWebhookUrl } from "./webhookUrlSafety";
 import {
   buildWebhookSignature,
@@ -39,12 +40,22 @@ export const createEndpointFromHono = mutation({
   handler: async (ctx, args) => {
     await getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "oauthApp", "update");
+    const endpointCount = (await ctx.db
+      .query("partnerWebhookEndpoints")
+      .withIndex("by_organization", (q) => q.eq("organizationId", args.organizationId))
+      .take(11)).length;
+    await assertOrganizationEntitlement(ctx, {
+      organizationId: args.organizationId,
+      key: "webhook",
+      used: endpointCount,
+      requestedUnits: 1,
+    });
     assertSafeWebhookUrl(args.input.url);
 
     const now = Date.now();
     const endpointId = await ctx.db.insert("partnerWebhookEndpoints", {
       partnerAppId: args.partnerAppId,
-      organizationId: args.input.organizationId ?? args.organizationId,
+      organizationId: args.organizationId,
       url: args.input.url,
       signingSecret: await protectWebhookSecret(randomWebhookSecret()),
       events: args.input.events,
@@ -67,6 +78,7 @@ export const acceptInboundFromHono = mutation({
   returns: v.any(),
   handler: async (ctx, args) => {
     assertConvexBridgeToken(args.serverToken);
+    await assertOrganizationEntitlement(ctx, { organizationId: args.organizationId, key: "webhook" });
     const duplicate = await findDuplicateInboundEvent(ctx, {
       partnerAppId: args.partnerAppId,
       eventId: args.input.eventId,

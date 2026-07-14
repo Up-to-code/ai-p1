@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { AlertCircle, ArrowRight, Loader2, Mail } from "lucide-react";
+import { useMutation } from "convex/react";
+import { AlertCircle, ArrowRight, Check, Globe2, Loader2, Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { api } from "@convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +17,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { authClient } from "@/lib/auth-client";
+import { writeAuthHandoff } from "@/domains/auth/auth-handoff";
+import { completeOrganizationEntry } from "../organization-selection";
+import {
+  createOrganizationWithUniqueSlug,
+  organizationSlugFromName,
+} from "../organization-creation";
 
 export function NoOrganizationModal() {
   const t = useTranslations("NoOrganizationModal");
@@ -22,8 +30,12 @@ export function NoOrganizationModal() {
   const [organizationName, setOrganizationName] = useState("");
   const [busyAction, setBusyAction] = useState<"create" | "">("");
   const [error, setError] = useState("");
+  const seedWorkspaceDefaults = useMutation(
+    api.modelization.write.seedWorkspaceDefaults,
+  );
 
   const isBusy = busyAction !== "";
+  const organizationSlug = organizationSlugFromName(organizationName);
 
   async function createOrganization() {
     const name = organizationName.trim();
@@ -35,11 +47,23 @@ export function NoOrganizationModal() {
     setBusyAction("create");
     setError("");
     try {
-      const slug = name.toLowerCase().replace(/\s+/g, "-");
-      const result = await authClient.organization.create({ name, slug });
-      if (!result.data?.id) throw new Error(t("errorDesc"));
-      await authClient.organization.setActive({ organizationId: result.data.id });
-      router.replace("/onboarding");
+      const organization = await createOrganizationWithUniqueSlug({
+        name,
+        checkSlug: (input) => authClient.organization.checkSlug(input),
+        create: (input) => authClient.organization.create(input),
+      });
+      if (!organization.id) throw new Error(t("errorDesc"));
+
+      await completeOrganizationEntry({
+        organizationId: organization.id,
+        setActive: authClient.organization.setActive,
+        writeHandoff: writeAuthHandoff,
+        seedWorkspace: (organizationId) =>
+          seedWorkspaceDefaults({ organizationId }),
+        navigate: (href) => router.replace(href),
+        nextHref: "/ws",
+        errorMessage: t("errorDesc"),
+      });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : t("errorDesc"));
     } finally {
@@ -88,6 +112,32 @@ export function NoOrganizationModal() {
               placeholder={t("namePlaceholder")}
               value={organizationName}
             />
+          </div>
+
+          <div className="rounded-md border border-border bg-muted/35 p-3">
+            <div className="flex items-center gap-2 text-xs font-medium text-foreground">
+              <Globe2 className="h-4 w-4 text-muted-foreground" />
+              <span>{t("slugLabel")}</span>
+            </div>
+            <p className="mt-2 truncate rounded bg-background px-2.5 py-2 font-mono text-xs text-muted-foreground" dir="ltr">
+              qentrah.com/{organizationSlug}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              {t("slugHint")}
+            </p>
+          </div>
+
+          <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
+            {[t("journeyCreate"), t("journeyActivate"), t("journeyOpen")].map(
+              (label) => (
+                <div className="flex items-center gap-2" key={label}>
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-foreground text-background">
+                    <Check className="size-3" />
+                  </span>
+                  <span>{label}</span>
+                </div>
+              ),
+            )}
           </div>
 
           <Button

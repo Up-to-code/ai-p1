@@ -32,6 +32,7 @@ export const organizationTables = {
     createdAt: v.number(),
   })
     .index("by_organization_id", ["organizationId"])
+    .index("by_organization_created", ["organizationId", "createdAt"])
     .index("by_created", ["createdAt"]),
 
   organizationSecurityUpdates: defineTable({

@@ -2,6 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { internalMutation, mutation, type MutationCtx } from "../_generated/server";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import { consumeOrganizationEntitlement } from "../billing/access";
 import { orderedReachableActions } from "./graph";
 
 async function execute(
@@ -11,6 +12,11 @@ async function execute(
   payload: Record<string, string> = {},
 ) {
   const startedAt = Date.now();
+  await consumeOrganizationEntitlement(ctx, {
+    organizationId: automation.organizationId,
+    key: "automation_run",
+    now: startedAt,
+  });
   let message = "Workflow completed without actions.";
   let status: "success" | "failed" = "success";
 

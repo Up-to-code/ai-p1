@@ -3,6 +3,7 @@ import { internalMutation, mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
 import { resolveProjectAccess } from "../access/project";
+import { assertOrganizationEntitlement, countActiveProjects } from "../billing/access";
 import { presentWorkspaceRecord, stripDeletedFields } from "../shared/present";
 import {
   normalizeProjectVisibility,
@@ -72,6 +73,12 @@ async function createProjectCore(
   ctx: MutationCtx,
   args: { organizationId: string; input: ProjectInput; actorUserId: string },
 ) {
+  const currentProjects = await countActiveProjects(ctx, args.organizationId);
+  await assertOrganizationEntitlement(ctx, {
+    organizationId: args.organizationId,
+    key: "project",
+    used: currentProjects,
+  });
   const now = Date.now();
   const id = await ctx.db.insert("projects", {
     organizationId: args.organizationId,

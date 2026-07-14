@@ -12,6 +12,12 @@ export type Plan = {
   ctaHref: string;
   highlight: boolean;
   contactSales: boolean;
+  sectionHeader: string;
+  features: string[];
+  moreLabel: string;
+  monthlyUnitLabel: string;
+  yearlyUnitLabel: string;
+  customPriceLabel: string;
 };
 
 export type FeatureRow = {

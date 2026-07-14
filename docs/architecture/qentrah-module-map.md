@@ -46,6 +46,7 @@ ownership or accepted decisions.
 | MCP Execution | OAuth bearer identity, grant-filtered tool contract, scope, dispatch, audit | workspace `/api/mcp` Adapter and `src/server/protocols/mcp`; `convex/mcp`; `@qentrah/mcp-contracts` | Stateless Streamable HTTP, Convex executor, and domain operation Adapters | `@qentrah/auth` verifies the token; Convex derives live grant and record scope on every invocation |
 | Eve Execution | Authenticated actor, planning, tools, presentation | `agent`, `src/domains/eve` | Eve channel and domain operation Adapters | Same resource access and lifecycle invariants as MCP |
 | Shared UI | Proven cross-domain rendered behavior | `packages/our-platform-components`, `src/components/shared` | Registered consumers in `component-registry.json` | UI capability state is informative, never authoritative |
+| Marketing Content | Localized public presentation and editor-friendly typed blocks with repository fallback | `apps/marketing/lib/contentful-marketing-site.ts`, `contentful-landing-page.ts`, `contentful-payload.ts`, `content.ts` | Contentful linked-entry delivery Adapter, locale layout, client presentation context, metadata, revalidation webhook | CMS inputs and references cover active Home, Pricing, Legal, Navigation, Footer, brand, SEO, and assets; canonical commercial facts, server-only credentials, and repository fallback remain code-owned |
 
 ## Domain ownership matrix
 
@@ -56,9 +57,9 @@ access, presentation, and tests local to that behavior.
 | Domain Module | Workspace owner | Convex/persistence owner | Routes and external Adapters | Verification focus |
 |---|---|---|---|---|
 | Activity | `src/domains/activity` | Organization audit and Inbox event reads | `/activity`, Organization aliases | canonical route, localized states, access |
-| Auth | `@qentrah/auth`; `src/domains/auth`, `src/server/auth` runtime Adapters | focused Better Auth Modules under `convex/auth`, with `betterAuth.ts` binding | auth routes, business API, mobile SecureStore, Eve | canonical topology, credential parsing, Auth Context, scopes, guards; runtime Adapters resolve sessions and membership |
+| Auth | `@qentrah/auth`; `src/domains/auth`, `src/server/auth` runtime Adapters | focused Better Auth Modules under `convex/auth`, with `betterAuth.ts` binding | auth routes, organization creation/activation, business API, mobile SecureStore, Eve | canonical topology, credential parsing, Auth Context, scopes, guards; `organization-creation.ts` keeps non-unique display names separate from unique slugs; runtime Adapters resolve sessions and membership |
 | Automations | `src/domains/automations` | `convex/automations` | `/automations` | graph invariants, persistence, execution |
-| Billing | `src/domains/billing` | `convex/billing` | `/billing`, provider webhooks | idempotency, signatures, credit surface |
+| Billing | `src/domains/billing`; `@qentrah/domain-contracts/subscription-pricing` | `convex/billing` | `/billing`, signed Dodo webhook, Hono checkout, Eve hooks | canonical catalog, owner actions, status/access matrix, idempotent reconciliation, atomic credit reservations |
 | Cache | `src/domains/cache` | none | Workspace hooks | invalidation without duplicate truth |
 | Calendar | `src/domains/calendar`; `@qentrah/domain-contracts/calendar` | `convex/calendar/lifecycle.ts` with validators and presentation | `/calendar`, Hono, MCP, Eve adapters | tenant links, interval ordering, reminder replacement, audit parity |
 | Capabilities | `src/domains/capabilities` | Organization capability reads | navigation and gated routes | truthful enabled/disabled behavior |
@@ -72,6 +73,7 @@ access, presentation, and tests local to that behavior.
 | Inbox | `src/domains/inbox` | `convex/inbox` | `/inbox`; Channels remain separate | message/thread compound access |
 | Integrations | `src/domains/integrations` | partner/integration records | `/integrations`, partner Adapters | credentials via backend write gateway |
 | MCP | `src/domains/mcp`; workspace MCP protocol Adapter | `convex/mcp` | `/mcp` grant-management UI, `/api/mcp` OAuth resource | catalog/handler parity, bearer-only transport, dynamic scope, rate limit, audit |
+| Marketing Content | `apps/marketing/lib/content.ts`, `landing-page-content.ts`, `contentful-marketing-site.ts`, `contentful-landing-page.ts`, `contentful-payload.ts` | Contentful linked page/block/card/SEO/asset delivery; repository fallback | localized Marketing layout, active Home/Pricing/Legal routes, metadata, `/api/contentful/revalidate` | locale parity, input-only model, reference resolution, known-shape presentation overlay, canonical pricing facts, cache invalidation, secret isolation, provider-failure fallback |
 | Media | `src/domains/media` | `convex/media` | resource upload/browser Adapters | durable URLs, ownership, cleanup |
 | Navigation | `src/domains/navigation` | none | proxy, layouts, sidebar | route-policy completeness |
 | Notifications | `src/domains/notifications` | `convex/notifications` | Inbox, push, Eve | retry, audit, token removal |

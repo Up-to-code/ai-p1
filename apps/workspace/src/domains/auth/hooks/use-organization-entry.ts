@@ -10,6 +10,10 @@ import { acceptOrganizationInvitation } from "@/domains/organization/api";
 import { authClient } from "@/lib/auth-client";
 import { resolveAuthEntryCallbackUrl } from "../utils/auth-callback-url";
 import { completeOrganizationEntry } from "../organization-selection";
+import {
+  createOrganizationWithUniqueSlug,
+  organizationSlugFromName,
+} from "../organization-creation";
 
 export type UserOrganizationInvitation = {
   id: string;
@@ -54,30 +58,6 @@ function isOrganizationsDisabledError(error: unknown) {
       message.includes("not enabled") ||
       message.includes("plugin"))
   );
-}
-
-function isOrganizationSlugsDisabledError(error: unknown) {
-  const message = authErrorText(error);
-  return (
-    message.includes("slug") &&
-    (message.includes("disabled") || message.includes("not enabled"))
-  );
-}
-
-function createOrganizationWithoutSlug(name: string) {
-  const create = authClient.organization.create as unknown as (input: {
-    name: string;
-  }) => ReturnType<typeof authClient.organization.create>;
-  return create({ name });
-}
-
-export function organizationSlugFromName(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 48);
 }
 
 function toRouterPath(locale: string, localizedHref: string) {
@@ -244,29 +224,22 @@ export function useOrganizationEntry({
     setBusyAction("create");
     setError("");
     try {
-      let result = await authClient.organization.create({
+      const organization = await createOrganizationWithUniqueSlug({
         name,
-        slug: organizationSlug || `workspace-${Date.now()}`,
+        checkSlug: (input) => authClient.organization.checkSlug(input),
+        create: (input) => authClient.organization.create(input),
       });
-      if (result.error && isOrganizationSlugsDisabledError(result.error)) {
-        result = await createOrganizationWithoutSlug(name);
-      }
-      if (result.error) {
-        if (isOrganizationsDisabledError(result.error)) {
-          throw new Error(t("organizationsDisabled"));
-        }
-        if (isOrganizationSlugsDisabledError(result.error)) {
-          throw new Error(t("slugsDisabled"));
-        }
-        throw new Error(authErrorMessage(result.error, t("errorDesc")));
-      }
-      if (!result.data?.id) {
+      if (!organization.id) {
         throw new Error(t("errorDesc"));
       }
 
-      await finishOrganizationSelection(result.data.id, "/onboarding");
+      await finishOrganizationSelection(organization.id, "/ws");
       setCreateOpen(false);
     } catch (caught) {
+      if (isOrganizationsDisabledError(caught)) {
+        setError(t("organizationsDisabled"));
+        return;
+      }
       setError(authErrorMessage(caught, t("errorDesc")));
     } finally {
       setBusyAction("");

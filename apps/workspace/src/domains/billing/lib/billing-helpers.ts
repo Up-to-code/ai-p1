@@ -1,6 +1,7 @@
 import {
   BILLING_PLANS,
   DEFAULT_BILLING_PLAN_ID,
+  FREE_PLAN,
   QENTRAH_PLAN,
   QENTRAH_PLAN_ID,
   type BillingOverview,
@@ -65,16 +66,10 @@ export function totalPriceForSeats(seats: number): number {
 }
 
 export function fallbackBillingOverview(organizationId: string): BillingOverview {
+  void organizationId;
   return {
-    plan: QENTRAH_PLAN,
-    subscription: {
-      organizationId,
-      planId: QENTRAH_PLAN_ID,
-      seatCount: 1,
-      status: "inactive",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    },
+    plan: FREE_PLAN,
+    subscription: null,
     latestPayment: null,
   };
 }

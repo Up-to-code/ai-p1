@@ -1,6 +1,22 @@
 {
   "components": [
     {
+      "name": "CmsLegalPage",
+      "path": "apps/marketing/components/marketing/cms-legal-page.tsx",
+      "kind": "domain-shared",
+      "summary": "Renders typed Contentful or repository legal-page sections with paragraphs and optional bullet inputs.",
+      "usedIn": [
+        "app/(site)/[locale]/privacy",
+        "app/(site)/[locale]/terms",
+        "app/(site)/[locale]/legal"
+      ],
+      "props": [
+        "content"
+      ],
+      "createdAt": "2026-07-14",
+      "notes": "Contentful owns only editable presentation; the route keeps its repository fallback when no complete CMS page is available."
+    },
+    {
       "name": "AutomationCanvas",
       "path": "apps/workspace/src/domains/automations/components/automations-screen.tsx",
       "kind": "domain-shared",

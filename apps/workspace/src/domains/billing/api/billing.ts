@@ -44,3 +44,4 @@ export {
 } from "../api/billing-requests";
 
 export { useBillingOverview, useBillingUsage } from "../hooks/use-billing-queries";
+export { useOrganizationEntitlements } from "../hooks/use-organization-entitlements";

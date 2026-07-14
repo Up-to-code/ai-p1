@@ -1,7 +1,7 @@
 import { getRequestConfig } from "next-intl/server";
 
 import { routing } from "@/i18n/routing";
-import { getMarketingMessages } from "@/lib/content";
+import { getMarketingContent } from "@/lib/contentful";
 
 type Locale = (typeof routing.locales)[number];
 
@@ -17,9 +17,10 @@ export default getRequestConfig(async ({ requestLocale }) => {
   }
 
   const resolvedLocale = locale as Locale;
+  const content = await getMarketingContent(resolvedLocale);
 
   return {
     locale: resolvedLocale,
-    messages: getMarketingMessages(resolvedLocale),
+    messages: content.messages,
   };
 });

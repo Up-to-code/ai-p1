@@ -2,7 +2,7 @@
 
 ## Core Concepts
 
-- **Organization** — top-level tenant. All data belongs to an organization.
+- **Organization** — top-level tenant. All data belongs to an organization. Its `name` is a non-unique display label; its `slug` is the globally unique workspace URL identity, generated independently at creation and editable later without renaming the organization.
 - **Space** — a first-class organization-level grouping entity with its own name, slug, color, visibility settings, and members. Owned by the `domains/spaces/` module. Linked to projects via the many-to-many `projectSpaces` junction table. The deepened module provides `useActiveSpace()`, `useWorkspaceSpacesQuery()`, CRUD requests, and UI components (SpaceList, SpaceCreateForm, SpaceSettings, SpaceSwitcher) through a single barrel at `domains/spaces/`.
 - **Project** — a container for tasks, docs, calendar events, and team collaboration.
 - **Task** — a unit of work with status, priority, assignee, pipeline order, tags, and custom fields. Unscoped Tasks are visible and editable across their Organization by default. Explicit private Tasks remain limited to their creator and assignees; Space/Project Tasks inherit their team scope unless visibility is explicitly narrowed.
@@ -15,6 +15,9 @@
 - **Organization API Key** — an organization-owned secret credential with explicit permissions, expiry, quota, rotation, revocation, and last-use tracking. Secret material is owned by the Convex API-key Adapter; Qentrah stores only lifecycle metadata.
 - **Push Notification** — a user-targeted mobile delivery request. Device-token registration and provider delivery are owned by the Convex Expo Push Adapter; Qentrah owns schedules, retry state, and audit metadata.
 - **Platform Administration** — cross-Organization operational access granted only to identities on the configured email allowlist. It is distinct from Organization ownership and fails closed for missing or non-allowlisted identities.
+- **Organization Entitlements** — the effective plan-access snapshot derived from the canonical subscription catalog, verified provider state, grace/trial dates, and optional Enterprise overrides. Existing records survive plan fallback; only capacity-increasing or paid-only operations are blocked.
+- **AI Credit** — one thousandth of one measured US dollar of provider LLM cost. Subscription credits reset monthly, purchased credits never expire, and an Eve turn must reserve credits before generation.
+- **Marketing Content** — public localized Marketing presentation delivered from Contentful through editor-friendly page, block, card, SEO, and asset references. It covers the active Home, Pricing, Legal, Navigation, Footer, brand, and metadata surfaces. Repository-owned typed copy is the fail-safe baseline; resolved CMS fields may override only known, type-compatible presentation fields and never become a dependency of Workspace runtime behavior.
 
 ## Deepened Modules
 
@@ -26,6 +29,9 @@
 - **Organization API Key** — `convex/organizationApiKeyLifecycle.ts` with the concrete Adapter in `convex/apiKeys.ts`. The lifecycle seam owns creation, validation, rotation, revocation, expiry, quota reservation, and metadata reconciliation across frontend, Hono, and Convex callers.
 - **Push Notification** — `convex/notifications/` with the concrete Adapter in `convex/notifications/push.ts`. The notification seam owns device registration, scheduled dispatch, retry state, provider delivery, and token removal for mobile and workspace callers.
 - **Platform Administration** — pure allowlist policy in `@qentrah/auth` (`packages/auth/src/platform-admin.ts`) with Next.js configuration and Convex access Adapters. The policy normalizes configured identities once; adapters resolve the authenticated identity and deny by default. Organization roles never imply Platform Administration.
+- **Organization Billing** — canonical catalog and pure decisions in `@qentrah/domain-contracts/subscription-pricing`; durable subscription, entitlement usage, payment reconciliation, and credit ledgers in `apps/workspace/convex/billing`. Hono creates owner-authorized checkouts, the signed Convex Dodo webhook is the only provider ingress, and Eve lifecycle hooks reserve and settle AI spend.
+- **Organization Creation** — `apps/workspace/src/domains/auth/organization-creation.ts` derives a URL-safe slug from the requested display name, asks Better Auth for availability, and deterministically retries suffixes without treating the display name as unique. Auth entry Adapters activate, seed, and open the new workspace only after creation succeeds.
+- **Marketing Content** — `apps/marketing/lib/contentful.ts` is the server delivery Adapter; `contentful-marketing-site.ts` and `contentful-landing-page.ts` resolve linked editor inputs into typed presentation contracts; `contentful-payload.ts` owns the known-shape overlay policy. The locale layout supplies the resolved snapshot to server translations and a narrow client context. Contentful webhooks invalidate the shared delivery cache; missing credentials, provider failures, incomplete Legal entries, and invalid fields fall back to repository copy.
 
 ## Architecture Decisions
 

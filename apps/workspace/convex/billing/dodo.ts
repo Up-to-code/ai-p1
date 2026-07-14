@@ -32,26 +32,3 @@ export const dodo = new DodoPayments(components.dodopayments, {
 } as DodoPaymentsClientConfig);
 
 export const { checkout, customerPortal } = dodo.api();
-
-export const PRICING_PLANS = {
-  good_monthly: {
-    id: "good_monthly",
-    name: "Unlimited",
-    billingPeriod: "monthly",
-    pricePerUser: 7,
-    currency: "USD",
-    dodoProductId: process.env.DODO_PRODUCT_GOOD_MONTHLY ?? "",
-    features: [
-      "Project, asset & client workspace",
-      "Standard workspace apps",
-      "1 agent link",
-      "Standard support",
-    ],
-  },
-  good_yearly: { id: "good_yearly", name: "Unlimited Annual", billingPeriod: "yearly", pricePerUser: 70, currency: "USD", dodoProductId: process.env.DODO_PRODUCT_GOOD_YEARLY ?? "", features: [] },
-  better_monthly: { id: "better_monthly", name: "Business", billingPeriod: "monthly", pricePerUser: 19, currency: "USD", dodoProductId: process.env.DODO_PRODUCT_BETTER_MONTHLY ?? "", features: [] },
-  better_yearly: { id: "better_yearly", name: "Business Annual", billingPeriod: "yearly", pricePerUser: 190, currency: "USD", dodoProductId: process.env.DODO_PRODUCT_BETTER_YEARLY ?? "", features: [] },
-  qentrah_workspace: { id: "qentrah_workspace", name: "Qentrah Workspace", billingPeriod: "monthly", pricePerUser: 7, currency: "USD", dodoProductId: process.env.DODO_PRODUCT_GOOD_MONTHLY ?? "", features: [] },
-  custom_monthly: { id: "custom_monthly", name: "Custom", billingPeriod: "monthly", pricePerUser: null as null, currency: "USD", dodoProductId: "", features: [] },
-  custom_yearly:  { id: "custom_yearly",  name: "Custom Annual", billingPeriod: "yearly",  pricePerUser: null as null, currency: "USD", dodoProductId: "", features: [] },
-};

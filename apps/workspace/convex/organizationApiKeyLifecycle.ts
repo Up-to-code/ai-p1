@@ -1,6 +1,7 @@
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { apiKeys } from "./apiKeys";
+import { assertOrganizationEntitlement, consumeOrganizationEntitlement } from "./billing/access";
 import { getAuthUser } from "./auth";
 import { assertOrganizationResourcePermission } from "./organizations/profile/access";
 
@@ -108,6 +109,7 @@ export async function createOrganizationApiKey(
 ) {
   const user = await getAuthUser(ctx);
   await assertApiKeyManagementPermission(ctx, args.organizationId, "create");
+  await assertOrganizationEntitlement(ctx, { organizationId: args.organizationId, key: "api_call" });
   await assertDelegatedPermissions(ctx, args.organizationId, args.input.permissions);
 
   const now = Date.now();
@@ -267,6 +269,12 @@ export async function validateAndReserveOrganizationApiKey(
   if (!hasPermission(key.permissions, args.resource, args.action)) {
     return { ok: false, reason: "permission_denied" };
   }
+
+  await consumeOrganizationEntitlement(ctx, {
+    organizationId: args.organizationId,
+    key: "api_call",
+    units: 1,
+  });
 
   const now = Date.now();
   const windowStartedAt = key.quotaWindowStartedAt ?? now;

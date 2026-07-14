@@ -5,109 +5,23 @@ import { ArrowRight, Check, Gauge, LockKeyhole, ShieldCheck, Sparkles, Users, Wo
 
 import { Link } from "@/i18n/routing";
 import { PublicSection } from "@/components/landing/public-landing-kit";
-
-const copy = {
-  en: {
-    solutionsTitle: "One workspace for every team and workflow",
-    solutionsBody: "Move between spaces, projects, tasks, and AI without rebuilding context.",
-    solution: {
-      kicker: "CONNECTED WORKSPACE",
-      title: "Plan, execute, and understand work from one operating system.",
-      body: "Qentrah gives every person and agent the same live context across spaces, projects, tasks, documents, and activity.",
-      bullets: ["Structure work with spaces and projects", "Surface priorities, risks, and blocked tasks", "Keep knowledge and execution connected"],
-      agents: ["Planning agent turns goals into next steps", "Assignment agent suggests owners", "Progress agent tracks blockers and milestones", "Answers agent finds the latest context"],
-    },
-    outcomesTitle: "More momentum, without adding more tools",
-    outcomesKicker: "CONNECTED IMPACT",
-    outcomesBody: "A connected operating layer reduces the invisible work between requests, decisions, and delivery.",
-    outcomes: [
-      ["Less switching", "Spaces, projects, tasks, documents, messages, and AI live in one operating context."],
-      ["Faster handoffs", "Ownership, history, and the next action travel together."],
-      ["Clearer scope", "People and agents see only the spaces and work they are allowed to access."],
-      ["Reusable systems", "Turn recurring delivery patterns into templates, automations, and agent workflows."],
-    ],
-    storiesTitle: "Built around the work every team repeats",
-    storiesBody: "Connected operating loops, one shared source of truth.",
-    stories: [
-      ["Client intake", "Turn a request into a structured brief, linked client record, and ready-to-plan project."],
-      ["Active delivery", "Keep tasks, decisions, files, approvals, and team communication beside the work."],
-      ["Review and handoff", "Package the latest context for the client, the next owner, or a scoped AI agent."],
-    ],
-    explore: "Explore the workspace",
-  },
-  ar: {
-    solutionsTitle: "مساحة واحدة لكل فريق ومسار عمل",
-    solutionsBody: "تنقل بين المساحات والمشاريع والمهام والذكاء دون إعادة بناء السياق.",
-    solution: { kicker: "مساحة عمل مترابطة", title: "خطط ونفّذ وافهم العمل من نظام تشغيل واحد.", body: "تمنح قنترة كل شخص ووكيل نفس السياق المباشر عبر المساحات والمشاريع والمهام والمستندات والنشاط.", bullets: ["نظّم العمل بالمساحات والمشاريع", "اكشف الأولويات والمخاطر والمهام المتعطلة", "اربط المعرفة بالتنفيذ"], agents: ["وكيل التخطيط يحول الأهداف إلى خطوات", "وكيل التعيين يقترح المسؤولين", "وكيل التقدم يتابع العوائق والمراحل", "وكيل الإجابات يجد أحدث سياق"] },
-    outcomesTitle: "زخم أكبر، دون أدوات أكثر",
-    outcomesKicker: "أثر العمل المترابط",
-    outcomesBody: "تقلل طبقة التشغيل المترابطة العمل الخفي بين الطلبات والقرارات والتسليم.",
-    outcomes: [["تنقل أقل", "المشاريع والعملاء والمستندات والرسائل والذكاء في سياق واحد."], ["تسليم أسرع", "تنتقل الملكية والسجل والخطوة التالية معاً."], ["نطاق أوضح", "يرى الأشخاص والوكلاء فقط المساحات والعمل المسموح لهم به."], ["أنظمة قابلة للتكرار", "حوّل أنماط التسليم المتكررة إلى قوالب وأتمتة ومسارات وكلاء."]],
-    storiesTitle: "مصمم حول العمل الذي يكرره كل فريق",
-    storiesBody: "حلقات تشغيل مترابطة ومصدر حقيقة واحد.",
-    stories: [["استقبال العميل", "حوّل الطلب إلى ملخص منظم وسجل عميل ومشروع جاهز للتخطيط."], ["التسليم النشط", "اجمع المهام والقرارات والملفات والموافقات والتواصل بجانب العمل."], ["المراجعة والتسليم", "جهز أحدث سياق للعميل أو المسؤول التالي أو وكيل ذكاء محدد النطاق."]],
-    explore: "استكشف مساحة العمل",
-  },
-  fr: {
-    solutionsTitle: "Un espace pour chaque équipe et processus",
-    solutionsBody: "Passez des espaces aux projets, tâches et agents sans reconstruire le contexte.",
-    solution: { kicker: "ESPACE CONNECTÉ", title: "Planifiez, exécutez et comprenez le travail dans un seul système.", body: "Qentrah donne aux personnes et aux agents le même contexte en direct sur les espaces, projets, tâches, documents et activités.", bullets: ["Structurer le travail par espaces et projets", "Détecter priorités, risques et blocages", "Relier connaissance et exécution"], agents: ["L’agent de planification transforme les objectifs", "L’agent d’affectation propose les responsables", "L’agent de suivi surveille les blocages", "L’agent de réponses retrouve le contexte"] },
-    outcomesTitle: "Plus d’élan, sans ajouter d’outils",
-    outcomesKicker: "IMPACT CONNECTÉ",
-    outcomesBody: "Une couche opérationnelle connectée réduit le travail invisible entre demande, décision et livraison.",
-    outcomes: [["Moins de bascule", "Projets, clients, documents, messages et IA partagent un contexte."], ["Relais plus rapides", "Responsabilité, historique et prochaine action restent ensemble."], ["Périmètre clair", "Personnes et agents ne voient que les espaces autorisés."], ["Systèmes réutilisables", "Transformez les routines en modèles, automatisations et agents."]],
-    storiesTitle: "Conçu autour du travail répété chaque semaine",
-    storiesBody: "Trois boucles opérationnelles, une source de vérité.",
-    stories: [["Intake client", "Transformez une demande en brief, fiche client et projet prêt à planifier."], ["Livraison active", "Gardez tâches, décisions, fichiers, validations et échanges avec le travail."], ["Revue et relais", "Préparez le contexte pour le client, le prochain responsable ou un agent cadré."]],
-    explore: "Découvrir l’espace",
-  },
-} as const;
+import { useMarketingContent } from "@/components/marketing/marketing-content-provider";
 
 const solutionTabs = [
-  { labels: ["Projects", "المشاريع", "Projets"], icon: Gauge },
-  { labels: ["Team spaces", "مساحات الفريق", "Espaces d’équipe"], icon: Users },
-  { labels: ["Tasks", "المهام", "Tâches"], icon: Check },
-  { labels: ["Automations", "الأتمتة", "Automatisations"], icon: Workflow },
-  { labels: ["Insights", "الرؤى", "Analyses"], icon: Sparkles },
+  { icon: Gauge },
+  { icon: Users },
+  { icon: Check },
+  { icon: Workflow },
+  { icon: Sparkles },
 ] as const;
 
-const trustCopy = {
-  en: {
-    kicker: "Security",
-    title: "Security & privacy, built into the workspace",
-    body: "Qentrah keeps people, projects, and AI actions inside explicit workspace boundaries so every handoff stays controlled and understandable.",
-    items: [
-      ["Your workspace stays yours", "Space, project, task, and document context remains attached to the organization it belongs to."],
-      ["Permission-aware access", "People and agents see only the spaces, projects, and resources their role permits."],
-      ["Scoped agent execution", "AI actions run within deliberately granted tools and boundaries instead of unrestricted access."],
-    ],
-    assurance: "Qentrah is designed around explicit ownership, permissions, and scoped execution.",
-    marks: ["Role-based", "Scoped AI"],
-  },
-  ar: {
-    kicker: "الأمان",
-    title: "الأمان والخصوصية مدمجان في مساحة العمل",
-    body: "تبقي قنترة الأشخاص والمشاريع وإجراءات الذكاء داخل حدود واضحة، لتظل كل عملية تسليم مفهومة وتحت السيطرة.",
-    items: [["مساحة عملك تبقى لك", "يبقى سياق المساحة والمشروع والمهمة والمستند مرتبطاً بالمؤسسة التي ينتمي إليها."], ["وصول مدرك للصلاحيات", "لا يرى الأشخاص والوكلاء إلا المساحات والمشاريع والموارد المسموحة لأدوارهم."], ["تنفيذ وكلاء محدد النطاق", "تعمل إجراءات الذكاء ضمن أدوات وحدود ممنوحة بوضوح، لا بوصول غير مقيد."]],
-    assurance: "صُممت قنترة حول الملكية الواضحة والصلاحيات والتنفيذ محدد النطاق.",
-    marks: ["حسب الدور", "ذكاء محدد النطاق"],
-  },
-  fr: {
-    kicker: "Sécurité",
-    title: "Sécurité et confidentialité intégrées à l’espace de travail",
-    body: "Qentrah maintient personnes, projets et actions IA dans des limites explicites pour garder chaque relais contrôlé et compréhensible.",
-    items: [["Votre espace reste le vôtre", "Le contexte des espaces, projets, tâches et documents reste lié à son organisation."], ["Accès selon les permissions", "Personnes et agents ne voient que les espaces, projets et ressources autorisés par leur rôle."], ["Exécution IA cadrée", "Les actions IA s’exécutent uniquement avec les outils et limites explicitement accordés."]],
-    assurance: "Qentrah repose sur une propriété explicite, des permissions claires et une exécution cadrée.",
-    marks: ["Selon le rôle", "IA cadrée"],
-  },
-} as const;
-
-export function AiOutcomesSections({ locale }: { locale: string }) {
-  const current = copy[locale === "ar" ? "ar" : locale === "fr" ? "fr" : "en"];
-  const trust = trustCopy[locale === "ar" ? "ar" : locale === "fr" ? "fr" : "en"];
-  const labelIndex = locale === "ar" ? 1 : locale === "fr" ? 2 : 0;
+export function AiOutcomesSections() {
+  const { assets, landingPage } = useMarketingContent();
+  const current = landingPage.aiOutcomes;
+  const trust = landingPage.trust;
+  const support = landingPage.support;
   const [activeSolution, setActiveSolution] = useState(0);
-  const activeLabel = solutionTabs[activeSolution].labels[labelIndex];
+  const activeLabel = support.solutionTabs[activeSolution];
 
   return (
     <>
@@ -116,17 +30,17 @@ export function AiOutcomesSections({ locale }: { locale: string }) {
           <span className="qao-explorer__eyebrow"><i />{current.solution.kicker}</span>
           <div className="qao-explorer__heading"><h2>{current.solutionsTitle}</h2><p>{current.solutionsBody}</p></div>
           <div className="qao-explorer__tabs" role="tablist" aria-label={current.solutionsTitle}>
-            {solutionTabs.map(({ labels, icon: Icon }, index) => (
-              <button key={labels[0]} type="button" role="tab" aria-selected={activeSolution === index} onClick={() => setActiveSolution(index)}>
-                <Icon />{labels[labelIndex]}
+            {solutionTabs.map(({ icon: Icon }, index) => (
+              <button key={support.solutionTabs[index]} type="button" role="tab" aria-selected={activeSolution === index} onClick={() => setActiveSolution(index)}>
+                <Icon />{support.solutionTabs[index]}
               </button>
             ))}
           </div>
           <figure className="qao-showcase">
             <div className="qao-showcase__media">
               <img
-                alt="Connected workspace with projects, tasks, owners, and team navigation"
-                src="https://clickup.com/assets/home_2026/hero_projects.avif"
+                alt={support.showcaseImageAlt}
+                src={assets.solutionsShowcase}
               />
               <span>{activeLabel}</span>
             </div>
@@ -149,7 +63,7 @@ export function AiOutcomesSections({ locale }: { locale: string }) {
                 <img
                   alt=""
                   aria-hidden="true"
-                  src={index === 0 ? "/security/workspace-data.webp" : index === 1 ? "/security/permission-lock.webp" : "/security/scoped-integration.webp"}
+                  src={assets.security[index]}
                 />
               </article>
             ))}

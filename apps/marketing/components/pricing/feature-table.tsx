@@ -46,25 +46,27 @@ export function FeatureTable({
   sections,
   billing,
   highlightIndex = 1,
-  isAr = false,
+  heading,
+  ariaLabel,
 }: {
   plans: Plan[];
   sections: FeatureSection[];
   billing: BillingCycle;
   highlightIndex?: number;
-  isAr?: boolean;
+  heading: string;
+  ariaLabel: string;
 }) {
   return (
     <div className="feature-table-wrapper">
       {/* Section anchor header */}
       <div className="feature-table-anchor" id="compare">
         <span className="feature-table-anchor-label">
-          {isAr ? "مقارنة الميزات" : "Compare all features"}
+          {heading}
         </span>
         <span className="feature-table-anchor-line" aria-hidden />
       </div>
 
-      <div className="feature-table-scroll" tabIndex={0} aria-label={isAr ? "جدول مقارنة الميزات" : "Feature comparison table. Scroll horizontally to compare every plan."}>
+      <div className="feature-table-scroll" tabIndex={0} aria-label={ariaLabel}>
         <table
           className={cn(
             "feature-table",

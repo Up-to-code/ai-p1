@@ -1,5 +1,7 @@
 import { LegalArticle, LegalBlock } from "@/components/design-system";
 import { brandDomainUrl } from "@qentrah/brand-identity";
+import { CmsLegalPage } from "@/components/marketing/cms-legal-page";
+import type { MarketingLegalPageContent } from "@/lib/content";
 
 function en() {
   const rootDomain = brandDomainUrl("root").replace("https://", "");
@@ -57,7 +59,8 @@ function ar() {
   };
 }
 
-export default function TermsPage({ locale }: { locale: string }) {
+export default function TermsPage({ locale, content }: { locale: string; content?: MarketingLegalPageContent }) {
+  if (content) return <CmsLegalPage content={content} />;
   const c = locale === "ar" ? ar() : en();
 
   return (

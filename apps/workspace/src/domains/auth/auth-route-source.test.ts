@@ -58,7 +58,7 @@ describe("Workspace auth route source", () => {
     expect(convexAuth).not.toContain("authUser =");
   });
 
-  it("keeps organization creation name-only and routes new workspaces through onboarding", () => {
+  it("keeps display names separate from unique slugs and opens the workspace", () => {
     const chooseOrgClient = readSource("src/domains/auth/components/choose-organization-client.tsx");
     const organizationEntry = readSource("src/domains/auth/hooks/use-organization-entry.ts");
     const enMessages = readSource("messages/en.json");
@@ -70,22 +70,20 @@ describe("Workspace auth route source", () => {
       expect(arMessages).not.toContain(term);
     }
     expect(chooseOrgClient).toContain("useOrganizationEntry");
-    expect(organizationEntry).toContain('finishOrganizationSelection(result.data.id, "/onboarding")');
+    expect(organizationEntry).toContain('finishOrganizationSelection(organization.id, "/ws")');
+    expect(organizationEntry).toContain("createOrganizationWithUniqueSlug");
+    expect(organizationEntry).toContain("authClient.organization.checkSlug");
     expect(organizationEntry).toContain("resolvedCallbackURL");
     expect(organizationEntry).toContain("api.modelization.write.seedWorkspaceDefaults");
   });
 
   it("handles Better Auth organization setup errors", () => {
-    const chooseOrgClient = readSource("src/domains/auth/components/choose-organization-client.tsx");
     const organizationEntry = readSource("src/domains/auth/hooks/use-organization-entry.ts");
     const enMessages = readSource("messages/en.json");
 
     expect(organizationEntry).toContain("isOrganizationsDisabledError");
     expect(organizationEntry).toContain("organizationsDisabled");
-    expect(organizationEntry).toContain("isOrganizationSlugsDisabledError");
-    expect(organizationEntry).toContain("slugsDisabled");
-    expect(organizationEntry).not.toContain("slugify" + "Organization" + "Name");
-    expect(organizationEntry).not.toContain("slug: " + "slugify");
+    expect(organizationEntry).not.toContain("isOrganizationSlugsDisabledError");
     expect(enMessages).toContain("Organizations are not enabled");
   });
 });

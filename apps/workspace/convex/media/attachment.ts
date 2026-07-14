@@ -19,6 +19,7 @@ import type {
   createMediaFolderInputValidator,
   updateMediaInputValidator,
 } from "./validators";
+import { assertOrganizationStorageAvailable } from "../billing/storage";
 
 type AttachMediaInput = typeof attachMediaInputValidator.type;
 type UpdateMediaInput = typeof updateMediaInputValidator.type;
@@ -49,6 +50,7 @@ export async function attachMediaToResource(
 ): Promise<Doc<"mediaAssets">> {
   await assertMediaPermission(ctx, args.organizationId, args.input.resourceType, "update");
   await assertMediaResourceExists(ctx, args.organizationId, args.input.resourceType, args.input.resourceId);
+  await assertOrganizationStorageAvailable(ctx, args.organizationId, args.input.size);
 
   const now = Date.now();
   if (args.input.folderId) {

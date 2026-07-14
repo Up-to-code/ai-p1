@@ -7,6 +7,14 @@ import {
 
 import workspaceAr from "../../workspace/messages/ar.json";
 import workspaceEn from "../../workspace/messages/en.json";
+import {
+  getRepositoryLandingPageContent,
+  type LandingPageContent,
+} from "./landing-page-content";
+import {
+  getRepositoryPricingPageContent,
+  type PricingPageContent,
+} from "./pricing-page-content";
 
 export const locales = ["en", "ar", "fr"] as const;
 export type Locale = (typeof locales)[number];
@@ -61,6 +69,12 @@ export type MarketingHeroContent = {
   cta: string;
   secondary: string;
   words: string[];
+  title: string;
+  benefits: Array<[string, string]>;
+  note: string;
+  modulesLabel: string;
+  modules: string[];
+  imageAlt: string;
 };
 
 export type Testimonial = {
@@ -83,6 +97,29 @@ export type MarketingNavContent = {
   signIn: string;
   openMenu: string;
   closeMenu: string;
+  announcement: string;
+  platform: string;
+  ai: string;
+  solutions: string;
+  resources: string;
+  pricing: string;
+  enterprise: string;
+  explore: string;
+  structure: string;
+  coordinate: string;
+  intelligence: string;
+  signUp: string;
+  sales: string;
+  platformItems: Array<{ label: string; description: string }>;
+  mainNavigation: string;
+};
+
+export type MarketingBrandContent = {
+  displayName: string;
+  accessibleName: string;
+  markLight: string;
+  markDark: string;
+  accentColor: string;
 };
 
 export type MarketingFooterContent = {
@@ -91,11 +128,75 @@ export type MarketingFooterContent = {
   platform: string;
   workspace: string;
   legal: string;
-  dashboard: string;
   contact: string;
   privacy: string;
   terms: string;
   copyright: string;
+  platformLinkLabels: string[];
+  workspaceLinkLabels: string[];
+  legalLinkLabels: string[];
+};
+
+export type MarketingLegalPageKey = "privacy" | "terms" | "legal";
+
+export type MarketingLegalPageContent = {
+  pageKey: MarketingLegalPageKey;
+  eyebrow: string;
+  title: string;
+  updated: string;
+  sections: Array<{ title: string; body: string; bulletItems: string[] }>;
+};
+
+export type MarketingSeoEntry = {
+  pageKey: string;
+  title: string;
+  description: string;
+  keywords: string[];
+  socialImage: string;
+  socialImageAlt: string;
+};
+
+export type MarketingAssetContent = {
+  homeHero: string;
+  contextStory: string;
+  solutionsShowcase: string;
+  agentCapabilities: [string, string, string];
+  security: [string, string, string];
+};
+
+export type MarketingPresentation = {
+  brand: MarketingBrandContent;
+  hero: MarketingHeroContent;
+  testimonials: Testimonial[];
+  navigation: MarketingNavContent;
+  footer: MarketingFooterContent;
+  assets: MarketingAssetContent;
+  landingPage: LandingPageContent;
+  pricingPage: PricingPageContent;
+  legalPages: MarketingLegalPageContent[];
+  seoEntries: MarketingSeoEntry[];
+};
+
+const marketingAssets: MarketingAssetContent = {
+  homeHero: "/landing-images/task-section.png",
+  contextStory: "/landing-images/problem-section.png",
+  solutionsShowcase: "/landing-images/solution-section.png",
+  agentCapabilities: [
+    "/landing-images/agent-capability-1.png",
+    "/landing-images/agent-capability-2.png",
+    "/landing-images/agent-capability-3.png",
+  ],
+  security: [
+    "/security/workspace-data.webp",
+    "/security/permission-lock.webp",
+    "/security/scoped-integration.webp",
+  ],
+};
+
+const marketingBrand: Record<Locale, MarketingBrandContent> = {
+  en: { displayName: "Qentrah", accessibleName: "Qentrah home", markLight: "/logo-derk-color.svg", markDark: "/logo-dark-mood.svg", accentColor: "#555555" },
+  ar: { displayName: "قنترة", accessibleName: "الصفحة الرئيسية لقنترة", markLight: "/logo-derk-color.svg", markDark: "/logo-dark-mood.svg", accentColor: "#555555" },
+  fr: { displayName: "Qentrah", accessibleName: "Accueil Qentrah", markLight: "/logo-derk-color.svg", markDark: "/logo-dark-mood.svg", accentColor: "#555555" },
 };
 
 const marketingHero: Record<Locale, MarketingHeroContent> = {
@@ -107,6 +208,16 @@ const marketingHero: Record<Locale, MarketingHeroContent> = {
     cta: "Start free",
     secondary: "Explore pricing",
     words: ["together", "clearly", "with AI", "from one place"],
+    title: "One workspace for every way your team works",
+    benefits: [
+      ["Organize everything.", "Spaces bring projects, tasks, docs, and teams into a clear structure."],
+      ["See the whole picture.", "Inbox, calendar, dashboards, and activity stay connected to the work."],
+      ["Work with AI safely.", "Scoped agents use live workspace context without crossing permissions."],
+    ],
+    note: "Free to start. No credit card required.",
+    modulesLabel: "BUILD YOUR WORKSPACE",
+    modules: ["Spaces", "Projects", "Tasks", "Docs", "Inbox", "Calendar", "Dashboards", "AI agents"],
+    imageAlt: "Connected workspace with spaces, projects, tasks, and team navigation",
   },
   ar: {
     eyebrow: "مساحة واحدة. لكل فريق.",
@@ -116,6 +227,16 @@ const marketingHero: Record<Locale, MarketingHeroContent> = {
     cta: "ابدأ مجاناً",
     secondary: "اطّلع على الأسعار",
     words: ["معاً", "بوضوح", "بذكاء", "من مكان واحد"],
+    title: "مساحة عمل واحدة لكل أساليب عمل فريقك",
+    benefits: [
+      ["نظّم كل شيء.", "تجمع المساحات المشاريع والمهام والمستندات والفرق في هيكل واضح."],
+      ["شاهد الصورة كاملة.", "يبقى البريد الوارد والتقويم ولوحات المعلومات والنشاط مرتبطاً بالعمل."],
+      ["اعمل مع الذكاء بأمان.", "يستخدم الوكلاء سياق مساحة العمل المباشر دون تجاوز الصلاحيات."],
+    ],
+    note: "ابدأ مجاناً. لا تحتاج إلى بطاقة ائتمان.",
+    modulesLabel: "شكّل مساحة عملك",
+    modules: ["المساحات", "المشاريع", "المهام", "المستندات", "البريد الوارد", "التقويم", "لوحات المعلومات", "وكلاء الذكاء"],
+    imageAlt: "مساحة مشروع تعرض المهام والحالات والمسؤولين والتنقل",
   },
   fr: {
     eyebrow: "UN ESPACE. TOUTES LES ÉQUIPES.",
@@ -125,6 +246,16 @@ const marketingHero: Record<Locale, MarketingHeroContent> = {
     cta: "Commencer gratuitement",
     secondary: "Voir les tarifs",
     words: ["ensemble", "clairement", "avec l’IA", "au même endroit"],
+    title: "Un espace pour toutes les façons de travailler",
+    benefits: [
+      ["Organisez tout.", "Les espaces structurent projets, tâches, documents et équipes."],
+      ["Voyez l’ensemble.", "Boîte de réception, calendrier, tableaux de bord et activité restent reliés au travail."],
+      ["Travaillez avec l’IA en sécurité.", "Les agents utilisent le contexte en direct sans dépasser leurs autorisations."],
+    ],
+    note: "Commencez gratuitement. Aucune carte bancaire requise.",
+    modulesLabel: "COMPOSEZ VOTRE ESPACE",
+    modules: ["Espaces", "Projets", "Tâches", "Documents", "Boîte de réception", "Calendrier", "Tableaux de bord", "Agents IA"],
+    imageAlt: "Espace projet avec tâches, statuts, responsables et navigation",
   },
 };
 
@@ -246,6 +377,31 @@ const marketingNav: Record<Locale, MarketingNavContent> = {
     signIn: "Sign in",
     openMenu: "Open menu",
     closeMenu: "Close menu",
+    announcement: "NEW: Scoped AI agents that work inside your workspace context",
+    platform: "Platform",
+    ai: "AI Agents",
+    solutions: "Solutions",
+    resources: "Resources",
+    pricing: "Pricing",
+    enterprise: "Enterprise",
+    explore: "Explore the platform",
+    structure: "Structure work",
+    coordinate: "Coordinate teams",
+    intelligence: "AI and context",
+    signUp: "Start free",
+    sales: "Talk to sales",
+    platformItems: [
+      { label: "Spaces", description: "Organize teams and related work" },
+      { label: "Projects", description: "Plan outcomes, owners, and progress" },
+      { label: "Tasks", description: "Move work from idea to done" },
+      { label: "Docs", description: "Keep knowledge beside the work" },
+      { label: "Inbox", description: "See updates that need attention" },
+      { label: "Calendar", description: "Coordinate time and deadlines" },
+      { label: "Scoped AI agents", description: "Delegate work within permissions" },
+      { label: "Automations", description: "Run repeatable workflows" },
+      { label: "Permissions", description: "Control access at every level" },
+    ],
+    mainNavigation: "Main navigation",
   },
   ar: {
     brand: brandLabel("ar"),
@@ -259,6 +415,31 @@ const marketingNav: Record<Locale, MarketingNavContent> = {
     signIn: "تسجيل الدخول",
     openMenu: "فتح القائمة",
     closeMenu: "إغلاق القائمة",
+    announcement: "جديد: وكلاء ذكاء يعملون داخل سياق مساحة عملك",
+    platform: "المنصة",
+    ai: "وكلاء الذكاء",
+    solutions: "الحلول",
+    resources: "المصادر",
+    pricing: "التسعير",
+    enterprise: "للمؤسسات",
+    explore: "استكشف المنصة",
+    structure: "نظّم العمل",
+    coordinate: "نسّق الفريق",
+    intelligence: "الذكاء والسياق",
+    signUp: "ابدأ مجاناً",
+    sales: "تحدث إلى المبيعات",
+    platformItems: [
+      { label: "المساحات", description: "نظّم الفرق والعمل المرتبط" },
+      { label: "المشاريع", description: "خطط للنتائج والمسؤولين والتقدم" },
+      { label: "المهام", description: "حرّك العمل من الفكرة إلى الإنجاز" },
+      { label: "المستندات", description: "احتفظ بالمعرفة بجانب العمل" },
+      { label: "البريد الوارد", description: "تابع التحديثات التي تحتاج انتباهك" },
+      { label: "التقويم", description: "نسّق الوقت والمواعيد النهائية" },
+      { label: "وكلاء ذكاء ضمن النطاق", description: "فوّض العمل ضمن الصلاحيات" },
+      { label: "الأتمتة", description: "شغّل مسارات العمل المتكررة" },
+      { label: "الصلاحيات", description: "تحكم في الوصول على كل مستوى" },
+    ],
+    mainNavigation: "التنقل الرئيسي",
   },
   fr: {
     brand: brandLabel("en"),
@@ -272,6 +453,31 @@ const marketingNav: Record<Locale, MarketingNavContent> = {
     signIn: "Connexion",
     openMenu: "Ouvrir le menu",
     closeMenu: "Fermer le menu",
+    announcement: "Nouveau : des agents IA qui travaillent dans le contexte de votre espace",
+    platform: "Plateforme",
+    ai: "Agents IA",
+    solutions: "Solutions",
+    resources: "Ressources",
+    pricing: "Tarifs",
+    enterprise: "Entreprise",
+    explore: "Découvrir la plateforme",
+    structure: "Structurer le travail",
+    coordinate: "Coordonner l’équipe",
+    intelligence: "IA et contexte",
+    signUp: "Commencer",
+    sales: "Demander une démo",
+    platformItems: [
+      { label: "Espaces", description: "Organiser les équipes et le travail associé" },
+      { label: "Projets", description: "Planifier résultats, responsables et progression" },
+      { label: "Tâches", description: "Faire avancer le travail jusqu’à sa réalisation" },
+      { label: "Documents", description: "Garder la connaissance près du travail" },
+      { label: "Boîte de réception", description: "Voir les mises à jour qui demandent votre attention" },
+      { label: "Calendrier", description: "Coordonner le temps et les échéances" },
+      { label: "Agents IA cadrés", description: "Déléguer dans les limites des permissions" },
+      { label: "Automatisations", description: "Exécuter les processus récurrents" },
+      { label: "Autorisations", description: "Contrôler l’accès à chaque niveau" },
+    ],
+    mainNavigation: "Navigation principale",
   },
 };
 
@@ -283,11 +489,13 @@ const marketingFooter: Record<Locale, MarketingFooterContent> = {
     platform: "Platform",
     workspace: "Workspace",
     legal: "Legal",
-    dashboard: "Dashboard",
     contact: "Contact",
     privacy: "Privacy",
     terms: "Terms",
     copyright: `© ${new Date().getFullYear()} Qentrah. All rights reserved.`,
+    platformLinkLabels: ["Home", "Pricing", "Docs"],
+    workspaceLinkLabels: ["Dashboard"],
+    legalLinkLabels: ["Privacy", "Terms", "Legal"],
   },
   ar: {
     tagline: "منصة تشغيل ذكية",
@@ -296,11 +504,13 @@ const marketingFooter: Record<Locale, MarketingFooterContent> = {
     platform: "المنصة",
     workspace: "مساحة العمل",
     legal: "قانوني",
-    dashboard: "لوحة التحكم",
     contact: "اتصل بنا",
     privacy: "الخصوصية",
     terms: "الشروط",
     copyright: `© ${new Date().getFullYear()} كانترا. جميع الحقوق محفوظة.`,
+    platformLinkLabels: ["الرئيسية", "الأسعار", "التوثيق"],
+    workspaceLinkLabels: ["لوحة التحكم"],
+    legalLinkLabels: ["الخصوصية", "الشروط", "قانوني"],
   },
   fr: {
     tagline: "WORK OS PILOTÉ PAR L'IA",
@@ -309,11 +519,13 @@ const marketingFooter: Record<Locale, MarketingFooterContent> = {
     platform: "Plateforme",
     workspace: "Espace de travail",
     legal: "Mentions légales",
-    dashboard: "Tableau de bord",
     contact: "Contact",
     privacy: "Confidentialité",
     terms: "Conditions",
     copyright: `© ${new Date().getFullYear()} Qentrah. Tous droits réservés.`,
+    platformLinkLabels: ["Accueil", "Tarifs", "Documentation"],
+    workspaceLinkLabels: ["Tableau de bord"],
+    legalLinkLabels: ["Confidentialité", "Conditions", "Mentions légales"],
   },
 };
 
@@ -758,6 +970,23 @@ const content = {
 
 export function getContent(locale: Locale) {
   return content[locale];
+}
+
+export function getRepositoryMarketingPresentation(
+  locale: Locale,
+): MarketingPresentation {
+  return {
+    brand: marketingBrand[locale],
+    hero: marketingHero[locale],
+    testimonials: testimonials[locale],
+    navigation: marketingNav[locale],
+    footer: marketingFooter[locale],
+    assets: marketingAssets,
+    landingPage: getRepositoryLandingPageContent(locale),
+    pricingPage: getRepositoryPricingPageContent(locale),
+    legalPages: [],
+    seoEntries: [],
+  };
 }
 
 export { marketingHero, testimonials, marketingNav, marketingFooter };

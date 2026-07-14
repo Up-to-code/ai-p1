@@ -28,28 +28,32 @@ describe("billing read surface", () => {
     expect(latestPayment([])).toBeNull();
   });
 
-  it("composes subscription overview with inactive fallback plan", () => {
+  it("composes subscription overview with the Free fallback plan", () => {
     expect(billingSubscriptionOverview(null, null)).toEqual({
       plan: {
-        id: "good_monthly",
+        id: "free",
         dodoProductId: "",
-        name: "Unlimited",
-        amount: 7,
+        name: "Free Forever",
+        amount: 0,
         currency: "USD",
         periodDays: 30,
-        checkoutMode: "provider",
-        trialDays: 7,
+        checkoutMode: "contact_sales",
+        trialDays: 0,
         includedMemberCount: 3,
-        additionalMemberAmount: 7,
+        additionalMemberAmount: null,
         access: {
-          memberLimit: null,
-          aiCreditLimit: 12000,
-          aiCardLimit: 3,
-          automationRuns: 1000,
-          auditLogDays: 7,
+          memberLimit: 3,
+          projectLimit: 5,
+          storageBytesLimit: 60 * 1024 * 1024,
+          guestLimit: 0,
+          webhookLimit: 0,
+          aiCreditLimit: 0,
+          aiCardLimit: 0,
+          automationRuns: 0,
+          auditLogDays: 0,
           customRoles: false,
           sso: false,
-          support: "email",
+          support: "community",
         },
       },
       subscription: null,
