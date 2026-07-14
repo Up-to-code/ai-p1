@@ -29,4 +29,24 @@ export const searchTables = {
     extractor: v.union(v.literal("tika"), v.literal("tesseract")), extractorVersion: v.string(), ocrLanguages: v.array(v.string()),
     attempts: v.number(), nextAttemptAt: v.number(), failureReason: v.optional(v.string()), createdAt: v.number(), updatedAt: v.number(),
   }).index("by_status_attempt", ["status", "nextAttemptAt"]).index("by_media", ["organizationId", "mediaId"]),
+  searchIndexStates: defineTable({
+    indexName: v.string(),
+    settingsVersion: v.number(),
+    configuredAt: v.number(),
+  }).index("by_index_name", ["indexName"]),
+  searchReindexJobs: defineTable({
+    organizationId: v.string(),
+    resourceType: v.union(v.literal("project"), v.literal("task")),
+    status: v.union(v.literal("pending"), v.literal("running"), v.literal("completed"), v.literal("failed")),
+    cursor: v.optional(v.string()),
+    processed: v.number(),
+    error: v.optional(v.string()),
+    requestedByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_status_updated", ["status", "updatedAt"])
+    .index("by_organization_status", ["organizationId", "status"])
+    .index("by_organization_resource_status", ["organizationId", "resourceType", "status"]),
 };

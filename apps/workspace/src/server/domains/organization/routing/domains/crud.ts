@@ -35,6 +35,7 @@ import {
   handleUpdateChannel,
   handleUpdateMessage,
 } from "@/server/domains/inbox/handlers/inbox";
+import { handleSearch } from "@/server/domains/search/handlers/search";
 
 export const crudSubRouter = new Hono();
 
@@ -81,6 +82,7 @@ crudSubRouter.get("/:organizationId/read/activity/index", handleReadActivityInde
 
 crudSubRouter.get("/:organizationId/read/dashboard", handleReadDashboardOverview);
 crudSubRouter.get("/:organizationId/read/dashboard/index", handleReadDashboardIndex);
+crudSubRouter.get("/:organizationId/read/search", handleSearch);
 
 crudSubRouter.post("/:organizationId/opportunities", retiredOpportunityWrite);
 crudSubRouter.patch("/:organizationId/opportunities/:opportunityId", retiredOpportunityWrite);

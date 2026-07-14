@@ -10,4 +10,18 @@ crons.interval(
   {},
 );
 
+crons.interval(
+  "process search indexing outbox",
+  { minutes: 1 },
+  internal.search.worker.processBatch,
+  {},
+);
+
+crons.interval(
+  "process search reindex jobs",
+  { minutes: 1 },
+  internal.search.reindex.processNextBatch,
+  {},
+);
+
 export default crons;

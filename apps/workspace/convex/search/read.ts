@@ -4,6 +4,7 @@ import { assertOrganizationPermission } from "../organizations/profile/access";
 
 export const health = query({
   args: { organizationId: v.string() },
+  returns: v.object({ pendingCount: v.number(), deadLetterCount: v.number(), oldestPendingAt: v.union(v.number(), v.null()) }),
   handler: async (ctx, args) => {
     await assertOrganizationPermission(ctx, args.organizationId, "update");
     const [pending, processing, deadLetters] = await Promise.all([

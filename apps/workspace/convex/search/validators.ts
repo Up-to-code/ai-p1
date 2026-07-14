@@ -15,3 +15,62 @@ export const searchProjectionFields = {
   sensitivity: searchSensitivityValidator, sourceUpdatedAt: v.number(), version: v.number(), deletedAt: v.optional(v.number()),
 };
 export const searchProjectionInputValidator = v.object(searchProjectionFields);
+export const searchProjectionValidator = v.object({
+  _id: v.id("searchProjections"),
+  _creationTime: v.number(),
+  ...searchProjectionFields,
+});
+export const searchOutboxEventValidator = v.object({
+  _id: v.id("searchOutboxEvents"),
+  _creationTime: v.number(),
+  organizationId: v.string(),
+  resourceType: searchResourceTypeValidator,
+  resourceId: v.string(),
+  projectionVersion: v.number(),
+  operation: v.union(v.literal("upsert"), v.literal("delete")),
+  status: searchOutboxStatusValidator,
+  attempts: v.number(),
+  nextAttemptAt: v.number(),
+  claimedAt: v.optional(v.number()),
+  completedAt: v.optional(v.number()),
+  lastError: v.optional(v.string()),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+});
+export const searchPolicyValidator = v.object({
+  _id: v.id("searchPolicies"),
+  _creationTime: v.number(),
+  organizationId: v.string(),
+  enabledResourceTypes: v.array(searchResourceTypeValidator),
+  attachmentExtractionEnabled: v.boolean(),
+  ocrEnabled: v.boolean(),
+  externallyIndexRestricted: v.boolean(),
+  externallyIndexConfidential: v.boolean(),
+  allowedMimeTypes: v.array(v.string()),
+  defaultLocale: v.string(),
+  fallbackLocales: v.array(v.string()),
+  version: v.number(),
+  updatedByUserId: v.string(),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+});
+export const searchCandidateInputValidator = v.object({
+  resourceType: searchResourceTypeValidator,
+  resourceId: v.string(),
+  version: v.number(),
+  score: v.number(),
+});
+
+export const hydratedSearchResultValidator = v.object({
+  resourceType: searchResourceTypeValidator,
+  resourceId: v.string(),
+  title: v.string(),
+  subtitle: v.optional(v.string()),
+  route: v.string(),
+  score: v.number(),
+  capabilities: v.object({
+    canRead: v.boolean(),
+    canUpdate: v.boolean(),
+    canDelete: v.boolean(),
+  }),
+});

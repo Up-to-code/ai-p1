@@ -53,10 +53,23 @@ export type SearchPolicy = z.infer<typeof searchPolicySchema>;
 export interface SearchCandidate {
   resourceType: SearchResourceType;
   resourceId: string;
+  version: number;
   score: number;
   titleSnippet?: string;
   textSnippet?: string;
 }
+
+export const hydratedSearchResultSchema = z.object({
+  resourceType: searchResourceTypeSchema,
+  resourceId: z.string().min(1),
+  title: z.string(),
+  subtitle: z.string().optional(),
+  route: z.string().min(1),
+  score: z.number(),
+  capabilities: z.object({ canRead: z.boolean(), canUpdate: z.boolean(), canDelete: z.boolean() }),
+});
+
+export type HydratedSearchResult = z.infer<typeof hydratedSearchResultSchema>;
 
 export interface SearchQuery {
   organizationId: string;

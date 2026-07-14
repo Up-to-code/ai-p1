@@ -5,7 +5,3 @@ export type { SearchCandidate, SearchProvider, SearchQuery } from "@qentrah/doma
 export function searchDocumentKey(organizationId: string, resourceType: string, resourceId: string) {
   return `${organizationId}:${resourceType}:${resourceId}`;
 }
-
-export interface SearchProviderFactory {
-  create(): SearchProvider;
-}

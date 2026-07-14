@@ -1,4 +1,5 @@
-import { Building2, UserRound } from "lucide-react";
+import { Building2, ListTodo, UserRound } from "lucide-react";
+import type { HydratedSearchResult } from "@qentrah/domain-contracts";
 import type { Client } from "@/domains/clients/store/clients.types";
 import type { Project } from "@/domains/projects/store/projects.types";
 import type { GlobalSearchNavigationAction, GlobalSearchResult } from "../config/search-navigation.config";
@@ -38,5 +39,17 @@ export function toClientSearchResult(client: Client): GlobalSearchResult {
       .join(" · "),
     href: `/clients/${client.id}`,
     icon: UserRound,
+  };
+}
+
+export function toAuthorizedSearchResult(result: HydratedSearchResult): GlobalSearchResult | null {
+  if (result.resourceType !== "project" && result.resourceType !== "task") return null;
+  return {
+    id: `${result.resourceType}:${result.resourceId}`,
+    type: result.resourceType,
+    title: result.title,
+    description: result.subtitle ?? "",
+    href: result.route,
+    icon: result.resourceType === "task" ? ListTodo : Building2,
   };
 }

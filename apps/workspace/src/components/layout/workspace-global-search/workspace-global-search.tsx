@@ -17,6 +17,7 @@ import { buildGlobalSearchNavigationActions, globalSearchPageSize } from "./conf
 import {
   matchesNavigationAction,
   normalizeSearchText,
+  toAuthorizedSearchResult,
   toClientSearchResult,
   toProjectSearchResult,
 } from "./lib/search-utils";
@@ -27,6 +28,7 @@ import { SearchFilterTabs, type FilterTab } from "./components/search-filter-tab
 import { SearchResultsSkeleton } from "./components/search-results-skeleton";
 import { InlineAiAnswer } from "./components/inline-ai-answer";
 import { useQuickChat } from "@/components/layout/quick-chat-context";
+import { useAuthorizedSearchQuery } from "@/domains/search";
 
 const AI_TRIGGER_DELAY_MS = 2500;
 
@@ -58,6 +60,11 @@ export function WorkspaceGlobalSearch() {
   const projectsQuery = useProjectsPagedQuery(
     activeTab === "all" ? searchOrgId : undefined,
     { search: debouncedQuery },
+  );
+  const authorizedSearch = useAuthorizedSearchQuery(
+    activeTab === "all" || activeTab === "tasks" ? searchOrgId : undefined,
+    debouncedQuery,
+    activeTab === "tasks" ? ["task"] : ["project", "task"],
   );
   const clientsQuery = useClientsPagedQuery(
     (activeTab === "all" || activeTab === "clients") ? searchOrgId : undefined,
@@ -94,12 +101,30 @@ export function WorkspaceGlobalSearch() {
     return navigationActions.filter((a) => matchesNavigationAction(a, q));
   }, [navigationActions, query, activeTab]);
 
-  const projectResults = useMemo(
-    () =>
-      activeTab === "all"
-        ? (projectsQuery.results as Project[]).slice(0, globalSearchPageSize).map(toProjectSearchResult)
-        : [],
-    [projectsQuery.results, activeTab],
+  const authorizedResults = useMemo(
+    () => (authorizedSearch.data ?? [])
+      .map(toAuthorizedSearchResult)
+      .filter((result): result is NonNullable<typeof result> => result !== null),
+    [authorizedSearch.data],
+  );
+
+  const projectResults = useMemo(() => {
+    if (activeTab !== "all") return [];
+    const indexed = authorizedResults
+      .filter((result) => result.type === "project")
+      .slice(0, globalSearchPageSize);
+    return indexed.length || authorizedSearch.queryStatus === "success"
+      ? indexed
+      : (projectsQuery.results as Project[])
+          .slice(0, globalSearchPageSize)
+          .map(toProjectSearchResult);
+  }, [activeTab, authorizedResults, authorizedSearch.queryStatus, projectsQuery.results]);
+
+  const taskResults = useMemo(
+    () => (activeTab === "all" || activeTab === "tasks")
+      ? authorizedResults.filter((result) => result.type === "task").slice(0, globalSearchPageSize)
+      : [],
+    [activeTab, authorizedResults],
   );
 
   const clientResults = useMemo(
@@ -121,8 +146,12 @@ export function WorkspaceGlobalSearch() {
   // ── Loading / error state — scoped to active tab's queries ───────────────
   const relevantStatuses: string[] = [];
   if (activeTab === "all") {
-    relevantStatuses.push(projectsQuery.queryStatus, clientsQuery.queryStatus);
+    relevantStatuses.push(
+      authorizedSearch.queryStatus === "error" ? projectsQuery.queryStatus : authorizedSearch.queryStatus,
+      clientsQuery.queryStatus,
+    );
   }
+  if (activeTab === "tasks") relevantStatuses.push(authorizedSearch.queryStatus);
   if (activeTab === "clients") relevantStatuses.push(clientsQuery.queryStatus);
   if (activeTab === "all" || activeTab === "documents") {
     if (docsQuery.isLoading) relevantStatuses.push("loading");
@@ -133,6 +162,7 @@ export function WorkspaceGlobalSearch() {
   const hasResults =
     filteredNav.length > 0 ||
     projectResults.length > 0 ||
+    taskResults.length > 0 ||
     clientResults.length > 0 ||
     docResults.length > 0;
 
@@ -341,6 +371,23 @@ export function WorkspaceGlobalSearch() {
                   </section>
                 )}
 
+                {taskResults.length > 0 && (
+                  <section className="pb-2">
+                    <p className="px-3 pb-1.5 pt-2 text-[10px] font-black uppercase tracking-[0.18em] text-text-muted">
+                      {t("searchTasks")}
+                    </p>
+                    {taskResults.map((result) => (
+                      <CmdRow
+                        key={result.id}
+                        icon={result.icon}
+                        label={result.title}
+                        hint={result.description}
+                        onClick={() => goTo(result.href)}
+                      />
+                    ))}
+                  </section>
+                )}
+
                 {/* Clients */}
                 {clientResults.length > 0 && (
                   <section className="pb-2">
@@ -358,16 +405,13 @@ export function WorkspaceGlobalSearch() {
             {/* Tab-specific stubs for unimplemented tabs */}
             {showStub && (
               <>
-                {activeTab === "tasks" && (
-                  <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">Tasks search coming soon</p>
-                )}
                 {activeTab === "calendar" && (
                   <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">Calendar search coming soon</p>
                 )}
                 {activeTab === "files" && (
                   <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">Files search coming soon</p>
                 )}
-                {(activeTab === "all" || activeTab === "documents" || activeTab === "clients") && (
+                {(activeTab === "all" || activeTab === "documents" || activeTab === "clients" || activeTab === "tasks") && (
                   <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">{t("searchNoResults")}</p>
                 )}
               </>
