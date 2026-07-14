@@ -22,9 +22,9 @@ describe("authorized search service", () => {
       .mockResolvedValueOnce([{ resourceType: "task", resourceId: "task_1", title: "Live title", route: "/tasks/task_1", score: 0.8, capabilities: { canRead: true, canUpdate: false, canDelete: false } }]);
     vi.mocked(provider.search).mockResolvedValueOnce([{ resourceType: "task", resourceId: "task_1", version: 4, score: 0.8, titleSnippet: "Untrusted external title" }]);
 
-    const result = await searchAuthorizedResources(provider, "org_1", { search: "مشروع", resourceTypes: ["task", "project"], limit: 10 });
+    const result = await searchAuthorizedResources(provider, "org_1", { search: "مشروع", resourceTypes: ["task", "project"], scopeTypes: ["project"], projectIds: ["project_1"], limit: 10 });
 
-    expect(provider.search).toHaveBeenCalledWith(expect.objectContaining({ organizationId: "org_1", resourceTypes: ["task"], principalKeys: ["user:user_1"], locales: ["ar", "en"] }));
+    expect(provider.search).toHaveBeenCalledWith(expect.objectContaining({ organizationId: "org_1", resourceTypes: ["task"], principalKeys: ["user:user_1"], locales: ["ar", "en"], scopeTypes: ["project"], projectIds: ["project_1"] }));
     expect(query).toHaveBeenLastCalledWith("search.hydrate", { organizationId: "org_1", candidates: [{ resourceType: "task", resourceId: "task_1", version: 4, score: 0.8 }] });
     expect(result[0]?.title).toBe("Live title");
     expect(JSON.stringify(result)).not.toContain("Untrusted external title");

@@ -10,6 +10,19 @@ export async function handleSearch(c: Context) {
   const parsed = searchGatewayQuerySchema.safeParse({
     search: c.req.query("search"),
     resourceTypes: c.req.query("resourceTypes"),
+    scopeTypes: c.req.query("scopeTypes"),
+    sensitivity: c.req.query("sensitivity"),
+    locales: c.req.query("locales"),
+    spaceIds: c.req.query("spaceIds"),
+    projectIds: c.req.query("projectIds"),
+    ownerIds: c.req.query("ownerIds"),
+    assigneeIds: c.req.query("assigneeIds"),
+    clientIds: c.req.query("clientIds"),
+    statuses: c.req.query("statuses"),
+    tagIds: c.req.query("tagIds"),
+    dateFrom: c.req.query("dateFrom"),
+    dateTo: c.req.query("dateTo"),
+    offset: c.req.query("offset"),
     limit: c.req.query("limit"),
   });
   if (!parsed.success) {

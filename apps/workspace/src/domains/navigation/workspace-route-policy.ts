@@ -28,6 +28,7 @@ const protectedSegments = new Set([
   "organization",
   "profile",
   "projects",
+  "search",
   "settings",
   "spaces",
   "tasks",

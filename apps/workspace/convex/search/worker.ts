@@ -4,10 +4,10 @@ import { internal } from "../_generated/api";
 import type { SearchPolicy, SearchProjection } from "@qentrah/domain-contracts";
 import { searchIndexName, shouldExternallyIndex } from "./indexPolicy";
 
-const SETTINGS_VERSION = 1;
+const SETTINGS_VERSION = 2;
 const MAX_BATCH_SIZE = 25;
 const SEARCHABLE_ATTRIBUTES = ["title", "subtitle", "identifier", "searchText", "keywords"];
-const FILTERABLE_ATTRIBUTES = ["organizationId", "resourceType", "scopeType", "spaceIds", "projectIds", "principalKeys", "sensitivity", "locale"];
+const FILTERABLE_ATTRIBUTES = ["organizationId", "resourceType", "scopeType", "spaceIds", "projectIds", "principalKeys", "sensitivity", "locale", "ownerIds", "assigneeIds", "clientIds", "statuses", "tagIds", "dateValue"];
 
 function runtimeConfig() {
   const baseUrl = process.env.MEILISEARCH_URL?.trim() ?? "";

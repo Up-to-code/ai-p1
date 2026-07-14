@@ -14,6 +14,8 @@ describe("route catalog", () => {
   it("matches nested canonical routes and locale-prefixed routes", () => {
     expect(getRouteId("/tasks/123")).toBe("tasks");
     expect(getRouteId("/ar/projects/123/overview")).toBe("projects");
+    expect(getRouteId("/en/search")).toBe("search");
+    expect(getActiveRailItem("/en/search")).toBe("home");
     expect(getRouteId("/organization-extra")).toBeNull();
   });
 

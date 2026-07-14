@@ -8,10 +8,28 @@ export const searchResourceTypeValidator = v.union(
 export const searchScopeTypeValidator = v.union(v.literal("organization"), v.literal("space"), v.literal("project"), v.literal("private"));
 export const searchSensitivityValidator = v.union(v.literal("standard"), v.literal("restricted"), v.literal("confidential"));
 export const searchOutboxStatusValidator = v.union(v.literal("pending"), v.literal("processing"), v.literal("completed"), v.literal("dead_letter"));
+export const searchQueryConfigurationValidator = v.object({
+  search: v.string(),
+  resourceTypes: v.optional(v.array(searchResourceTypeValidator)),
+  scopeTypes: v.optional(v.array(searchScopeTypeValidator)),
+  sensitivity: v.optional(v.array(searchSensitivityValidator)),
+  locales: v.optional(v.array(v.string())),
+  spaceIds: v.optional(v.array(v.string())),
+  projectIds: v.optional(v.array(v.string())),
+  ownerIds: v.optional(v.array(v.string())),
+  assigneeIds: v.optional(v.array(v.string())),
+  clientIds: v.optional(v.array(v.string())),
+  statuses: v.optional(v.array(v.string())),
+  tagIds: v.optional(v.array(v.string())),
+  dateFrom: v.optional(v.number()),
+  dateTo: v.optional(v.number()),
+});
 export const searchProjectionFields = {
   organizationId: v.string(), resourceType: searchResourceTypeValidator, resourceId: v.string(), route: v.string(),
   title: v.string(), subtitle: v.optional(v.string()), identifier: v.optional(v.string()), searchText: v.string(), keywords: v.array(v.string()),
   locale: v.string(), scopeType: searchScopeTypeValidator, spaceIds: v.array(v.string()), projectIds: v.array(v.string()), principalKeys: v.array(v.string()),
+  ownerIds: v.optional(v.array(v.string())), assigneeIds: v.optional(v.array(v.string())), clientIds: v.optional(v.array(v.string())),
+  statuses: v.optional(v.array(v.string())), tagIds: v.optional(v.array(v.string())), dateValue: v.optional(v.number()),
   sensitivity: searchSensitivityValidator, sourceUpdatedAt: v.number(), version: v.number(), deletedAt: v.optional(v.number()),
 };
 export const searchProjectionInputValidator = v.object(searchProjectionFields);

@@ -214,6 +214,7 @@ import type * as search_outboxState from "../search/outboxState.js";
 import type * as search_projection from "../search/projection.js";
 import type * as search_read from "../search/read.js";
 import type * as search_reindex from "../search/reindex.js";
+import type * as search_savedQueries from "../search/savedQueries.js";
 import type * as search_validators from "../search/validators.js";
 import type * as search_worker from "../search/worker.js";
 import type * as search_write from "../search/write.js";
@@ -457,6 +458,7 @@ declare const fullApi: ApiFromModules<{
   "search/projection": typeof search_projection;
   "search/read": typeof search_read;
   "search/reindex": typeof search_reindex;
+  "search/savedQueries": typeof search_savedQueries;
   "search/validators": typeof search_validators;
   "search/worker": typeof search_worker;
   "search/write": typeof search_write;

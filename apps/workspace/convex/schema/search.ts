@@ -1,6 +1,6 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
-import { searchOutboxStatusValidator, searchProjectionFields, searchResourceTypeValidator, searchSensitivityValidator } from "../search/validators";
+import { searchOutboxStatusValidator, searchProjectionFields, searchQueryConfigurationValidator, searchResourceTypeValidator } from "../search/validators";
 
 export const searchTables = {
   searchProjections: defineTable(searchProjectionFields)
@@ -49,4 +49,37 @@ export const searchTables = {
     .index("by_status_updated", ["status", "updatedAt"])
     .index("by_organization_status", ["organizationId", "status"])
     .index("by_organization_resource_status", ["organizationId", "resourceType", "status"]),
+  searchSavedQueries: defineTable({
+    organizationId: v.string(),
+    ownerUserId: v.string(),
+    name: v.string(),
+    query: searchQueryConfigurationValidator,
+    revision: v.number(),
+    recordState: v.union(v.literal("active"), v.literal("deleted")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_owner_updated", ["organizationId", "ownerUserId", "recordState", "updatedAt"]),
+  searchRecentQueries: defineTable({
+    organizationId: v.string(),
+    ownerUserId: v.string(),
+    fingerprint: v.string(),
+    query: searchQueryConfigurationValidator,
+    useCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_owner_fingerprint", ["organizationId", "ownerUserId", "fingerprint"])
+    .index("by_owner_updated", ["organizationId", "ownerUserId", "updatedAt"]),
+  searchAnalyticsEvents: defineTable({
+    organizationId: v.string(),
+    actorUserId: v.string(),
+    eventType: v.union(v.literal("query_submitted"), v.literal("result_opened")),
+    queryLength: v.number(),
+    resourceType: v.optional(searchResourceTypeValidator),
+    resultCount: v.optional(v.number()),
+    filterCount: v.number(),
+    createdAt: v.number(),
+  }).index("by_organization_created", ["organizationId", "createdAt"]),
 };

@@ -1,7 +1,7 @@
 import type { Doc } from "../../_generated/dataModel";
 import type { MutationCtx } from "../../_generated/server";
 import { writeSearchProjection } from "../projection";
-import { normalizedKeywords, searchLocale } from "./shared";
+import { normalizedKeywords, searchDateValue, searchLocale } from "./shared";
 
 export function projectPrincipalKeys(project: Pick<Doc<"projects">, "_id" | "organizationId" | "ownerUserId" | "createdByUserId" | "visibility">, spaceIds: string[]) {
   const visibility = project.visibility ?? "space_members";
@@ -22,6 +22,8 @@ export async function projectSearchProjection(ctx: MutationCtx, project: Doc<"pr
     title: project.name, subtitle: project.description, identifier: String(project._id), searchText: [project.name, project.description, ...(project.tags ?? [])].filter(Boolean).join("\n"),
     keywords: normalizedKeywords([project.name, ...(project.tags ?? [])]), locale: await searchLocale(ctx, project.organizationId),
     scopeType: spaceIds.length ? "space" : visibility === "private" ? "private" : "organization", spaceIds, projectIds: [String(project._id)], principalKeys,
+    ownerIds: [project.ownerUserId], clientIds: project.clientId ? [String(project.clientId)] : [], statuses: [project.status, project.health],
+    tagIds: project.tags ?? [], dateValue: searchDateValue(project.endDate, project.startDate),
     sensitivity: "standard", sourceUpdatedAt: project.updatedAt, version: 1, deletedAt: project.deletedAt,
   });
 }

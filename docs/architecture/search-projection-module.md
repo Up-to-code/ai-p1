@@ -6,6 +6,7 @@
 - Source projections, policy, outbox, hydration, reindex, and workers: `apps/workspace/convex/search`
 - Search-provider gateway Adapter: `apps/workspace/src/server/domains/search`
 - Command-palette Adapter: `apps/workspace/src/components/layout/workspace-global-search`
+- Search Center, saved/recent query UI, and URL state: `apps/workspace/src/domains/search`
 
 Convex is authoritative. Meilisearch stores replaceable lexical candidates and
 never decides whether an actor can read a record.
@@ -34,6 +35,18 @@ never decides whether an actor can read a record.
 5. React receives live titles, routes, and authorized capabilities from Convex;
    external snippets are not trusted as record presentation.
 
+The Search Center route is `/search`. Its filter state is canonical URL state,
+so a filtered query remains bookmarkable without granting access. Project and
+Task projections currently expose resource type, scope, Space, Project, owner,
+assignee, Client, status, tag, locale, sensitivity, and relevant-date facets.
+Filters for future domain projections are not rendered until those Adapters
+produce the corresponding indexed fields.
+
+Saved and recent searches are private, server-synced user records in the Search
+Module. Search analytics retain query length, filter count, result count, and
+opened resource type rather than duplicating query text into analytics events;
+the user-visible recent-search record is the only durable copy of its query.
+
 ## Configuration
 
 Both the Workspace gateway and Convex worker require server-side
@@ -54,5 +67,7 @@ Task search.
 - Membership changes affect candidate filters through semantic principal keys
   without rewriting every projection.
 - Every external hit must match the current Convex projection version.
+- Meilisearch filterable-attribute changes increment a durable settings version
+  before new facet fields are relied on.
 - Embeddings remain an unimplemented contract seam; the active implementation
   is lexical only.

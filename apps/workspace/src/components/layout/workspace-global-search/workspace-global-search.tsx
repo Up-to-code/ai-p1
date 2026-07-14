@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, FileText, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { isRtlLocale } from "@/lib/i18n/locale";
@@ -46,12 +46,13 @@ export function WorkspaceGlobalSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
-  const [aiQuery, setAiQuery] = useState<string | null>(null);
+  const [aiRequest, setAiRequest] = useState<{ query: string; tab: FilterTab } | null>(null);
   const [aiMode, setAiMode] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const debouncedQuery = useDebouncedValue(query.trim(), 300);
+  const aiQuery = aiRequest?.query === debouncedQuery && aiRequest.tab === activeTab ? aiRequest.query : null;
   const hasQuery = debouncedQuery.length > 0;
   // ── Data queries — only fire when relevant tab is active ─────────────────
   const searchOrgId = hasQuery ? organizationId : undefined;
@@ -168,48 +169,43 @@ export function WorkspaceGlobalSearch() {
 
   // ── AI trigger: 2.5s delay after no-results, reset on every query change ─
   useEffect(() => {
-    if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
-    setAiQuery(null);
-  }, [debouncedQuery, activeTab]);
-
-  useEffect(() => {
     if (!hasQuery || isLoading || hasResults || hasError || aiQuery) return;
-    aiTimerRef.current = setTimeout(() => setAiQuery(debouncedQuery), AI_TRIGGER_DELAY_MS);
+    aiTimerRef.current = setTimeout(() => setAiRequest({ query: debouncedQuery, tab: activeTab }), AI_TRIGGER_DELAY_MS);
     return () => { if (aiTimerRef.current) clearTimeout(aiTimerRef.current); };
-  }, [hasQuery, isLoading, hasResults, hasError, aiQuery, debouncedQuery]);
+  }, [hasQuery, isLoading, hasResults, hasError, aiQuery, debouncedQuery, activeTab]);
 
   // ── Shortcuts & focus ────────────────────────────────────────────────────
   useGlobalSearchShortcuts(open, () => setOpen((v) => !v), () => setOpen(true));
   useGlobalSearchFocus(open, inputRef);
 
   // ── Helpers ──────────────────────────────────────────────────────────────
-  const goTo = useCallback((href: string) => {
+  function goTo(href: string) {
     setOpen(false);
     setQuery("");
     router.push(href);
-  }, [router]);
+  }
 
-  const closeDialog = useCallback(() => {
+  function closeDialog() {
     setOpen(false);
     setQuery("");
-    setAiQuery(null);
+    setAiRequest(null);
     setActiveTab("all");
     setAiMode(false);
-  }, []);
+  }
 
-  const handleAskAi = useCallback(() => {
+  function handleAskAi() {
     setAiMode(true);
-    if (query.trim()) setAiQuery(query.trim());
-  }, [query]);
+    if (query.trim()) setAiRequest({ query: query.trim(), tab: activeTab });
+  }
 
-  const handleContinueWithAi = useCallback((q: string) => {
+  function handleContinueWithAi(q: string) {
     closeDialog();
     router.push(`/ai?q=${encodeURIComponent(q)}`);
-  }, [closeDialog, router]);
+  }
 
-  const handleOpenAiPanel = useCallback(() => {
+  function handleOpenAiPanel() {
     toggleQuickChat();
-  }, [toggleQuickChat]);
+  }
 
   // ── Render logic ─────────────────────────────────────────────────────────
   const showInlineAi = Boolean(aiQuery);
@@ -288,7 +284,7 @@ export function WorkspaceGlobalSearch() {
             onChange={(tab) => {
               setActiveTab(tab);
               setAiMode(false);
-              setAiQuery(null);
+              setAiRequest(null);
             }}
           />
 
@@ -433,7 +429,13 @@ export function WorkspaceGlobalSearch() {
               <kbd className="ml-1 rounded border border-border bg-[var(--q-sidebar)] px-1 py-0.5 font-mono">Esc</kbd>
               <span>to close</span>
             </div>
-            <span>Search your Qentrah workspace</span>
+            <button
+              type="button"
+              onClick={() => goTo(query.trim() ? `/search?q=${encodeURIComponent(query.trim())}` : "/search")}
+              className="rounded px-2 py-1 font-semibold text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Advanced search
+            </button>
           </div>
         </DialogContent>
       </Dialog>

@@ -24,6 +24,12 @@ export const searchProjectionSchema = z.object({
   spaceIds: z.array(z.string()),
   projectIds: z.array(z.string()),
   principalKeys: z.array(z.string()),
+  ownerIds: z.array(z.string()).optional(),
+  assigneeIds: z.array(z.string()).optional(),
+  clientIds: z.array(z.string()).optional(),
+  statuses: z.array(z.string()).optional(),
+  tagIds: z.array(z.string()).optional(),
+  dateValue: z.number().nonnegative().optional(),
   sensitivity: searchSensitivitySchema,
   sourceUpdatedAt: z.number().nonnegative(),
   version: z.number().int().positive(),
@@ -71,6 +77,23 @@ export const hydratedSearchResultSchema = z.object({
 
 export type HydratedSearchResult = z.infer<typeof hydratedSearchResultSchema>;
 
+export interface SearchFilterConfiguration {
+  search: string;
+  resourceTypes?: SearchResourceType[];
+  scopeTypes?: SearchScopeType[];
+  sensitivity?: SearchSensitivity[];
+  locales?: string[];
+  spaceIds?: string[];
+  projectIds?: string[];
+  ownerIds?: string[];
+  assigneeIds?: string[];
+  clientIds?: string[];
+  statuses?: string[];
+  tagIds?: string[];
+  dateFrom?: number;
+  dateTo?: number;
+}
+
 export interface SearchQuery {
   organizationId: string;
   text: string;
@@ -78,6 +101,16 @@ export interface SearchQuery {
   resourceTypes?: SearchResourceType[];
   locales: string[];
   sensitivity: SearchSensitivity[];
+  scopeTypes?: SearchScopeType[];
+  spaceIds?: string[];
+  projectIds?: string[];
+  ownerIds?: string[];
+  assigneeIds?: string[];
+  clientIds?: string[];
+  statuses?: string[];
+  tagIds?: string[];
+  dateFrom?: number;
+  dateTo?: number;
   limit: number;
   offset?: number;
 }

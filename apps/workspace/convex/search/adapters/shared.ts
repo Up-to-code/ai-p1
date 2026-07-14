@@ -8,3 +8,12 @@ export async function searchLocale(ctx: MutationCtx, organizationId: string) {
 export function normalizedKeywords(values: Array<string | undefined>) {
   return [...new Set(values.flatMap((value) => value?.split(/[\s,]+/) ?? []).map((value) => value.trim()).filter(Boolean))];
 }
+
+export function searchDateValue(...values: Array<string | undefined>) {
+  for (const value of values) {
+    if (!value) continue;
+    const parsed = Date.parse(value);
+    if (Number.isFinite(parsed) && parsed >= 0) return parsed;
+  }
+  return undefined;
+}

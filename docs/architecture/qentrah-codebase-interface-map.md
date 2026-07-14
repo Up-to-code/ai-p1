@@ -6,10 +6,10 @@
 
 ## Inventory summary
 
-- Source files scanned: 1693
-- Files exposing interfaces: 1422
-- Convex registered functions: 354
-- Application routes: 95
+- Source files scanned: 1698
+- Files exposing interfaces: 1427
+- Convex registered functions: 360
+- Application routes: 96
 - Hono/Convex HTTP registrations: 199
 - Eve/MCP tool entries: 118
 - Package commands: 88
@@ -160,6 +160,7 @@
 | `/:locale/privacy` | page | `apps/marketing/app/(site)/[locale]/privacy/page.tsx` |
 | `/:locale/profile` | page | `apps/workspace/src/app/[locale]/(app)/profile/page.tsx` |
 | `/:locale/projects` | page | `apps/workspace/src/app/[locale]/(app)/projects/page.tsx` |
+| `/:locale/search` | page | `apps/workspace/src/app/[locale]/(app)/search/page.tsx` |
 | `/:locale/settings` | page | `apps/workspace/src/app/[locale]/(app)/settings/page.tsx` |
 | `/:locale/settings/:section` | page | `apps/workspace/src/app/[locale]/(app)/settings/[section]/page.tsx` |
 | `/:locale/sign-in` | page | `apps/workspace/src/app/[locale]/(auth)/sign-in/page.tsx` |
@@ -730,6 +731,12 @@ fully composed path.
 | internalMutation | `processNextBatch` | `apps/workspace/convex/search/reindex.ts` |
 | mutation | `retryDeadLetters` | `apps/workspace/convex/search/reindex.ts` |
 | mutation | `start` | `apps/workspace/convex/search/reindex.ts` |
+| query | `listRecent` | `apps/workspace/convex/search/savedQueries.ts` |
+| query | `listSaved` | `apps/workspace/convex/search/savedQueries.ts` |
+| mutation | `recordRecent` | `apps/workspace/convex/search/savedQueries.ts` |
+| mutation | `recordResultOpened` | `apps/workspace/convex/search/savedQueries.ts` |
+| mutation | `remove` | `apps/workspace/convex/search/savedQueries.ts` |
+| mutation | `save` | `apps/workspace/convex/search/savedQueries.ts` |
 | internalAction | `processBatch` | `apps/workspace/convex/search/worker.ts` |
 | mutation | `rebuildProjection` | `apps/workspace/convex/search/write.ts` |
 | mutation | `updatePolicy` | `apps/workspace/convex/search/write.ts` |
@@ -1276,7 +1283,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/schema_utils.ts` | value: IndexPatterns<br>value: QueryOptimization<br>function: checkIndexCoverage<br>function: indexName |
 | `apps/workspace/convex/search/accessContext.ts` | convex-query: resolve |
 | `apps/workspace/convex/search/adapters/project.ts` | function: projectPrincipalKeys<br>function: projectSearchProjection |
-| `apps/workspace/convex/search/adapters/shared.ts` | function: searchLocale<br>function: normalizedKeywords |
+| `apps/workspace/convex/search/adapters/shared.ts` | function: searchLocale<br>function: normalizedKeywords<br>function: searchDateValue |
 | `apps/workspace/convex/search/adapters/task.ts` | function: taskPrincipalKeys<br>function: taskSearchProjection |
 | `apps/workspace/convex/search/hydrate.ts` | function: highestScoringCandidates<br>function: isCurrentSearchCandidate<br>convex-query: candidates |
 | `apps/workspace/convex/search/indexPolicy.ts` | function: shouldExternallyIndex<br>function: searchIndexName |
@@ -1285,7 +1292,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/search/projection.ts` | function: writeSearchProjection |
 | `apps/workspace/convex/search/read.ts` | convex-query: health |
 | `apps/workspace/convex/search/reindex.ts` | convex-mutation: start<br>convex-internalMutation: processNextBatch<br>convex-mutation: retryDeadLetters |
-| `apps/workspace/convex/search/validators.ts` | value: searchResourceTypeValidator<br>value: searchScopeTypeValidator<br>value: searchSensitivityValidator<br>value: searchOutboxStatusValidator<br>value: searchProjectionFields<br>value: searchProjectionInputValidator<br>value: searchProjectionValidator<br>value: searchOutboxEventValidator<br>value: searchPolicyValidator<br>value: searchCandidateInputValidator<br>value: hydratedSearchResultValidator |
+| `apps/workspace/convex/search/savedQueries.ts` | convex-query: listSaved<br>convex-query: listRecent<br>convex-mutation: save<br>convex-mutation: remove<br>convex-mutation: recordRecent<br>convex-mutation: recordResultOpened<br>function: normalizeSearchConfiguration<br>function: searchConfigurationFingerprint<br>function: searchConfigurationFilterCount |
+| `apps/workspace/convex/search/validators.ts` | value: searchResourceTypeValidator<br>value: searchScopeTypeValidator<br>value: searchSensitivityValidator<br>value: searchOutboxStatusValidator<br>value: searchQueryConfigurationValidator<br>value: searchProjectionFields<br>value: searchProjectionInputValidator<br>value: searchProjectionValidator<br>value: searchOutboxEventValidator<br>value: searchPolicyValidator<br>value: searchCandidateInputValidator<br>value: hydratedSearchResultValidator |
 | `apps/workspace/convex/search/worker.ts` | convex-internalAction: processBatch |
 | `apps/workspace/convex/search/write.ts` | convex-mutation: rebuildProjection<br>convex-mutation: updatePolicy |
 | `apps/workspace/convex/security/backfill.ts` | convex-query: listDataSecurityBackfillJobs<br>convex-mutation: startDataSecurityBackfill<br>convex-internalQuery: readBatch<br>convex-internalAction: runBackfillBatch<br>convex-internalMutation: applyBatch<br>convex-mutation: runDataSecurityBackfill |
@@ -1354,6 +1362,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/layout.tsx` | function: ProjectLayout |
 | `apps/workspace/src/app/[locale]/(app)/projects/layout.tsx` | function: ProjectsLayout |
 | `apps/workspace/src/app/[locale]/(app)/projects/page.tsx` | function: ProjectsPage |
+| `apps/workspace/src/app/[locale]/(app)/search/page.tsx` | function: SearchCenterPage |
 | `apps/workspace/src/app/[locale]/(app)/settings/[section]/page.tsx` | function: SettingsSectionPage |
 | `apps/workspace/src/app/[locale]/(app)/settings/page.tsx` | function: SettingsIndexPage |
 | `apps/workspace/src/app/[locale]/(app)/spaces/page.tsx` | function: SpacesRoute |
@@ -1950,8 +1959,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/resources/resource-api-factory.ts` | type: ResourceApiConfig<br>type: ResourceApi<br>function: createResourceApi |
 | `apps/workspace/src/domains/resources/routing.ts` | function: organizationApiPath |
 | `apps/workspace/src/domains/resources/types.ts` | type: WorkspaceResourceFilters |
+| `apps/workspace/src/domains/search/api/saved-searches.ts` | type: SavedSearch<br>type: RecentSearch<br>function: useSavedSearches<br>function: useRecentSearches<br>function: useSavedSearchCommands |
 | `apps/workspace/src/domains/search/api/search.ts` | function: useAuthorizedSearchQuery |
+| `apps/workspace/src/domains/search/components/search-center-screen.tsx` | function: SearchCenterScreen |
 | `apps/workspace/src/domains/search/normalization.ts` | function: normalizeSearchText |
+| `apps/workspace/src/domains/search/search-center-state.ts` | function: searchConfigurationFromParams<br>function: paramsFromSearchConfiguration<br>function: searchFilterCount<br>function: dateInputValue |
 | `apps/workspace/src/domains/settings/components/workspace-settings-screen.tsx` | function: WorkspaceSettingsScreen |
 | `apps/workspace/src/domains/settings/config/settings-navigation.ts` | value: SETTINGS_SECTIONS<br>type: SettingsSectionId<br>function: isSettingsSection |
 | `apps/workspace/src/domains/spaces/api/spaces.ts` | interface: Space<br>function: useWorkspaceSpacesQuery<br>function: useSpaceOptionsQuery<br>function: useSpaceQuery<br>function: createSpaceRequest<br>function: updateSpaceRequest<br>function: deleteSpaceRequest |
@@ -2258,7 +2270,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/domain-contracts/src/deals.ts` | value: dealStageSchema<br>value: dealStatusSchema<br>value: dealPrioritySchema<br>value: dealInputSchema<br>value: dealRecordSchema<br>type: DealStage<br>type: DealStatus<br>type: DealPriority<br>type: DealInput<br>type: DealRecord<br>type: DealSummary<br>type: DealStats<br>value: crmDealStageSchema<br>value: crmDealRelationTypeSchema<br>value: crmClientPreviewSchema<br>value: crmBrokerPreviewSchema<br>value: crmProjectPreviewSchema<br>value: crmDealInputSchema<br>value: crmUpdateDealInputSchema<br>value: crmUpdateDealStageInputSchema<br>value: crmUpdateDealNotesInputSchema<br>value: crmUpdateDealFollowUpInputSchema<br>value: crmAddDealDocumentInputSchema<br>value: crmAssetDealsInputSchema<br>value: crmArchiveDealInputSchema<br>type: CrmDealInput<br>type: CrmUpdateDealInput<br>type: CrmUpdateDealStageInput<br>type: CrmUpdateDealNotesInput<br>type: CrmUpdateDealFollowUpInput<br>type: CrmAddDealDocumentInput<br>type: CrmAssetDealsInput<br>type: CrmArchiveDealInput<br>type: CrmDealRelationType<br>type: CrmClientPreview<br>type: CrmBrokerPreview<br>type: CrmProjectPreview |
 | `packages/domain-contracts/src/navigation.ts` | value: navigationDomainIdSchema<br>value: navigationRailModeSchema<br>value: navigationNodeTypeSchema<br>value: navigationNodeSchema<br>value: navigationDomainSchema<br>value: authorizedNavigationProjectionSchema<br>value: navigationOverlayInputSchema<br>type: NavigationDomainId<br>type: NavigationRailMode<br>type: NavigationNodeType<br>type: NavigationDomain<br>type: AuthorizedNavigationProjection<br>type: NavigationOverlayInput<br>interface: NavigationNode |
 | `packages/domain-contracts/src/projects.ts` | value: projectStatusSchema<br>value: projectHealthSchema<br>value: projectVisibilitySchema<br>value: projectInputSchema<br>value: projectRecordSchema<br>type: ProjectStatus<br>type: ProjectHealth<br>type: ProjectVisibility<br>type: ProjectInput<br>type: ProjectRecord<br>type: ProjectSummary |
-| `packages/domain-contracts/src/search.ts` | value: searchResourceTypeSchema<br>value: searchScopeTypeSchema<br>value: searchSensitivitySchema<br>value: searchOutboxStatusSchema<br>value: searchProjectionSchema<br>value: searchPolicySchema<br>type: SearchResourceType<br>type: SearchScopeType<br>type: SearchSensitivity<br>type: SearchOutboxStatus<br>type: SearchProjection<br>type: SearchPolicy<br>interface: SearchCandidate<br>value: hydratedSearchResultSchema<br>type: HydratedSearchResult<br>interface: SearchQuery<br>interface: SearchProvider<br>interface: EmbeddingAdapter |
+| `packages/domain-contracts/src/search.ts` | value: searchResourceTypeSchema<br>value: searchScopeTypeSchema<br>value: searchSensitivitySchema<br>value: searchOutboxStatusSchema<br>value: searchProjectionSchema<br>value: searchPolicySchema<br>type: SearchResourceType<br>type: SearchScopeType<br>type: SearchSensitivity<br>type: SearchOutboxStatus<br>type: SearchProjection<br>type: SearchPolicy<br>interface: SearchCandidate<br>value: hydratedSearchResultSchema<br>type: HydratedSearchResult<br>interface: SearchFilterConfiguration<br>interface: SearchQuery<br>interface: SearchProvider<br>interface: EmbeddingAdapter |
 | `packages/domain-contracts/src/spaces.ts` | value: spaceVisibilitySchema<br>value: spaceProjectVisibilitySchema<br>value: spaceInputSchema<br>value: spaceRecordSchema<br>type: SpaceVisibility<br>type: SpaceProjectVisibility<br>type: SpaceInput<br>type: SpaceRecord |
 | `packages/domain-contracts/src/subscriptionPricing.ts` | type: SubscriptionPlanId<br>type: BillingCycle<br>type: BillingPlanKey<br>type: CreditPackId<br>type: AiModelClass<br>type: UsageMeterKind<br>type: BillingProviderId<br>type: SubscriptionStatus<br>type: EntitlementKey<br>type: SubscriptionEntitlements<br>type: EnterpriseEntitlementOverrides<br>type: OrganizationEntitlements<br>type: EntitlementDecision<br>type: GlobalSubscriptionPlan<br>type: MarketBillingVariant<br>type: CreditPack<br>type: CreditPurchase<br>type: CreditReservation<br>type: AiCreditCalculationInput<br>type: AiCreditCalculation<br>type: CreditBalance<br>type: AppliedCreditUsage<br>value: DEFAULT_SUBSCRIPTION_PLAN_ID<br>value: DEFAULT_BILLING_CYCLE<br>function: getGlobalPlan<br>function: listGlobalPlans<br>function: getMarketPricing<br>function: getCreditPack<br>function: listCreditPacks<br>function: includedCreditCardsForPlan<br>function: canAddCreditCardsToPlan<br>function: listAddOnCreditCards<br>function: resolveSubscriptionEntitlements<br>function: resolveOrganizationEntitlements<br>function: decideEntitlement<br>function: normalizeBillingSelection<br>function: normalizeBillingPlanKey<br>function: subscriptionPlanIdForBillingKey<br>function: billingCycleForKey<br>function: billingSelectionKey<br>function: aiModelClass<br>function: calculateAiCredits<br>function: creditsForProviderCost<br>function: customCreditPurchase<br>function: applyUsageToCreditBalance |
 | `packages/domain-contracts/src/subscriptionPricingConfig.ts` | value: CREDIT_PACKS<br>value: MODEL_CLASS_CONFIG<br>value: FALLBACK_MODEL_CREDIT_MULTIPLIER<br>value: CREDIT_CARD_UNIT_SIZE<br>value: CREDITS_PER_USD<br>value: MIN_CUSTOM_CREDIT_PURCHASE_USD<br>value: MAX_CUSTOM_CREDIT_PURCHASE_USD |
