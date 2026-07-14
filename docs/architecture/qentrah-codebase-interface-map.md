@@ -6,10 +6,10 @@
 
 ## Inventory summary
 
-- Source files scanned: 1661
-- Files exposing interfaces: 1392
-- Convex registered functions: 335
-- Application routes: 93
+- Source files scanned: 1676
+- Files exposing interfaces: 1406
+- Convex registered functions: 342
+- Application routes: 95
 - Hono/Convex HTTP registrations: 198
 - Eve/MCP tool entries: 118
 - Package commands: 88
@@ -169,8 +169,10 @@
 | `/:locale/tasks` | page | `apps/workspace/src/app/[locale]/(app)/tasks/page.tsx` |
 | `/:locale/tasks/:id` | page | `apps/workspace/src/app/[locale]/(app)/tasks/[id]/page.tsx` |
 | `/:locale/tasks/board` | page | `apps/workspace/src/app/[locale]/(app)/tasks/board/page.tsx` |
+| `/:locale/tasks/calendar` | page | `apps/workspace/src/app/[locale]/(app)/tasks/calendar/page.tsx` |
 | `/:locale/tasks/list` | page | `apps/workspace/src/app/[locale]/(app)/tasks/list/page.tsx` |
 | `/:locale/tasks/table` | page | `apps/workspace/src/app/[locale]/(app)/tasks/table/page.tsx` |
+| `/:locale/tasks/timeline` | page | `apps/workspace/src/app/[locale]/(app)/tasks/timeline/page.tsx` |
 | `/:locale/team` | page | `apps/workspace/src/app/[locale]/(app)/team/page.tsx` |
 | `/:locale/terms` | page | `apps/marketing/app/(site)/[locale]/terms/page.tsx` |
 | `/:locale/theories` | page | `apps/workspace/src/app/[locale]/(app)/theories/page.tsx` |
@@ -711,6 +713,13 @@ fully composed path.
 | mutation | `remove` | `apps/workspace/convex/savedViews/write.ts` |
 | mutation | `setDefault` | `apps/workspace/convex/savedViews/write.ts` |
 | mutation | `update` | `apps/workspace/convex/savedViews/write.ts` |
+| internalMutation | `claimNext` | `apps/workspace/convex/search/outbox.ts` |
+| internalMutation | `complete` | `apps/workspace/convex/search/outbox.ts` |
+| internalMutation | `fail` | `apps/workspace/convex/search/outbox.ts` |
+| internalQuery | `loadProjection` | `apps/workspace/convex/search/outbox.ts` |
+| query | `health` | `apps/workspace/convex/search/read.ts` |
+| mutation | `rebuildProjection` | `apps/workspace/convex/search/write.ts` |
+| mutation | `updatePolicy` | `apps/workspace/convex/search/write.ts` |
 | internalMutation | `applyBatch` | `apps/workspace/convex/security/backfill.ts` |
 | query | `listDataSecurityBackfillJobs` | `apps/workspace/convex/security/backfill.ts` |
 | internalQuery | `readBatch` | `apps/workspace/convex/security/backfill.ts` |
@@ -1244,11 +1253,18 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/schema/navigation.ts` | value: navigationTables |
 | `apps/workspace/convex/schema/organization.ts` | value: organizationTables |
 | `apps/workspace/convex/schema/partner.ts` | value: partnerTables |
+| `apps/workspace/convex/schema/search.ts` | value: searchTables |
 | `apps/workspace/convex/schema/theories.ts` | value: theoriesTables |
 | `apps/workspace/convex/schema/users.ts` | value: userTables |
 | `apps/workspace/convex/schema/validators.ts` | value: workOsRecordResourceValidator<br>value: recordStateValidator<br>value: scopeTypeValidator<br>value: workspaceVisibilityValidator<br>value: viewTypeValidator<br>value: savedViewValueValidator<br>value: savedViewFilterValidator<br>value: savedViewColumnValidator<br>value: savedViewConfigValidator<br>value: workOsCustomFieldTypeValidator<br>value: workOsCustomFieldOptionValidator<br>value: workOsCustomFieldDefinitionValidator<br>value: workOsCustomFieldValueValidator |
 | `apps/workspace/convex/schema/views.ts` | value: viewTables |
 | `apps/workspace/convex/schema_utils.ts` | value: IndexPatterns<br>value: QueryOptimization<br>function: checkIndexCoverage<br>function: indexName |
+| `apps/workspace/convex/search/outbox.ts` | convex-internalMutation: claimNext<br>convex-internalQuery: loadProjection<br>convex-internalMutation: complete<br>convex-internalMutation: fail |
+| `apps/workspace/convex/search/outboxState.ts` | value: MAX_SEARCH_OUTBOX_ATTEMPTS<br>function: failedOutboxState |
+| `apps/workspace/convex/search/projection.ts` | function: writeSearchProjection |
+| `apps/workspace/convex/search/read.ts` | convex-query: health |
+| `apps/workspace/convex/search/validators.ts` | value: searchResourceTypeValidator<br>value: searchScopeTypeValidator<br>value: searchSensitivityValidator<br>value: searchOutboxStatusValidator<br>value: searchProjectionFields<br>value: searchProjectionInputValidator |
+| `apps/workspace/convex/search/write.ts` | convex-mutation: rebuildProjection<br>convex-mutation: updatePolicy |
 | `apps/workspace/convex/security/backfill.ts` | convex-query: listDataSecurityBackfillJobs<br>convex-mutation: startDataSecurityBackfill<br>convex-internalQuery: readBatch<br>convex-internalAction: runBackfillBatch<br>convex-internalMutation: applyBatch<br>convex-mutation: runDataSecurityBackfill |
 | `apps/workspace/convex/security/backfillTargets.ts` | value: BACKFILL_TARGETS<br>type: BackfillTarget<br>type: BackfillPatch<br>type: BackfillPatchResult<br>function: createBackfillPatchesForTarget<br>function: readBackfillTargetPage<br>function: normalizeBackfillTargetId |
 | `apps/workspace/convex/security/clientPii.ts` | type: ClientPiiInput<br>function: protectClientPii<br>function: protectClientPiiPatch<br>function: revealClientPii |
@@ -1320,11 +1336,13 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/spaces/page.tsx` | function: SpacesRoute |
 | `apps/workspace/src/app/[locale]/(app)/tasks/[id]/page.tsx` | function: TaskDetailsPage |
 | `apps/workspace/src/app/[locale]/(app)/tasks/board/page.tsx` | function: TaskBoardPage |
+| `apps/workspace/src/app/[locale]/(app)/tasks/calendar/page.tsx` | function: TaskCalendarPage |
 | `apps/workspace/src/app/[locale]/(app)/tasks/layout.tsx` | function: TasksLayout |
 | `apps/workspace/src/app/[locale]/(app)/tasks/list/page.tsx` | function: TaskListPage |
 | `apps/workspace/src/app/[locale]/(app)/tasks/loading.tsx` | function: TasksViewLoading |
 | `apps/workspace/src/app/[locale]/(app)/tasks/page.tsx` | function: TasksPage |
 | `apps/workspace/src/app/[locale]/(app)/tasks/table/page.tsx` | function: TaskTablePage |
+| `apps/workspace/src/app/[locale]/(app)/tasks/timeline/page.tsx` | function: TaskTimelinePage |
 | `apps/workspace/src/app/[locale]/(app)/team/page.tsx` | function: TeamPage |
 | `apps/workspace/src/app/[locale]/(app)/theories/page.tsx` | function: TheoriesPage |
 | `apps/workspace/src/app/[locale]/(app)/time-tracking/page.tsx` | function: TimeTrackingPage |
@@ -1881,9 +1899,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/projects/components/projects-page-skeleton.tsx` | function: ProjectsPageSkeleton |
 | `apps/workspace/src/domains/projects/components/projects-router.tsx` | function: ProjectsRouter |
 | `apps/workspace/src/domains/projects/components/views/shared.ts` | value: STATUS_COLORS<br>value: PRIORITY_COLORS<br>function: statusStyleFor<br>function: priorityStyleFor<br>value: COUNTRY_FLAGS |
-| `apps/workspace/src/domains/projects/components/views/task-calendar-view.tsx` | function: TaskCalendarView |
 | `apps/workspace/src/domains/projects/components/views/task-map-view.tsx` | function: TaskMapView |
-| `apps/workspace/src/domains/projects/components/views/task-timeline-view.tsx` | function: TaskTimelineView |
 | `apps/workspace/src/domains/projects/components/widgets/assignee-widget.tsx` | function: AssigneeWidget |
 | `apps/workspace/src/domains/projects/components/widgets/bookmarks-widget.tsx` | function: BookmarksWidget |
 | `apps/workspace/src/domains/projects/components/widgets/budget-chart-widget.tsx` | function: BudgetChartWidget |
@@ -1911,6 +1927,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/resources/resource-api-factory.ts` | type: ResourceApiConfig<br>type: ResourceApi<br>function: createResourceApi |
 | `apps/workspace/src/domains/resources/routing.ts` | function: organizationApiPath |
 | `apps/workspace/src/domains/resources/types.ts` | type: WorkspaceResourceFilters |
+| `apps/workspace/src/domains/search/normalization.ts` | function: normalizeSearchText |
 | `apps/workspace/src/domains/settings/components/workspace-settings-screen.tsx` | function: WorkspaceSettingsScreen |
 | `apps/workspace/src/domains/settings/config/settings-navigation.ts` | value: SETTINGS_SECTIONS<br>type: SettingsSectionId<br>function: isSettingsSection |
 | `apps/workspace/src/domains/spaces/api/spaces.ts` | interface: Space<br>function: useWorkspaceSpacesQuery<br>function: useSpaceOptionsQuery<br>function: useSpaceQuery<br>function: createSpaceRequest<br>function: updateSpaceRequest<br>function: deleteSpaceRequest |
@@ -1940,7 +1957,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/tasks/components/task-list-skeleton.tsx` | function: TaskListSkeleton |
 | `apps/workspace/src/domains/tasks/components/task-pickers.tsx` | function: StatusPicker<br>function: PriorityPicker<br>function: AssigneePicker<br>type: ProjectOption<br>function: ProjectPicker |
 | `apps/workspace/src/domains/tasks/components/task-resource-layout.tsx` | function: TaskResourceLayout |
-| `apps/workspace/src/domains/tasks/components/task-route-adapters.tsx` | function: TaskBoardRouteAdapter<br>function: TaskListRouteAdapter<br>function: TaskTableRouteAdapter |
+| `apps/workspace/src/domains/tasks/components/task-route-adapters.tsx` | function: TaskBoardRouteAdapter<br>function: TaskListRouteAdapter<br>function: TaskTableRouteAdapter<br>function: TaskCalendarRouteAdapter<br>function: TaskTimelineRouteAdapter |
 | `apps/workspace/src/domains/tasks/components/task-table-fields-panel.tsx` | function: TaskTableFieldsPanel |
 | `apps/workspace/src/domains/tasks/components/task-table-filter-rules.tsx` | type: FilterField<br>type: FilterOperator<br>interface: FilterRule<br>function: FilterRulesEditor<br>function: applyFilterRules |
 | `apps/workspace/src/domains/tasks/components/task-table-skeleton.tsx` | function: TaskTableSkeleton |
@@ -1948,9 +1965,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/tasks/components/task-timeline-skeleton.tsx` | function: TaskTimelineSkeleton |
 | `apps/workspace/src/domains/tasks/components/task-workspace-provider.tsx` | function: TaskWorkspaceProvider<br>function: useTaskWorkspace |
 | `apps/workspace/src/domains/tasks/components/views/task-board-view.tsx` | function: TaskBoardView |
+| `apps/workspace/src/domains/tasks/components/views/task-calendar-workspace-view.tsx` | function: TaskCalendarWorkspaceView |
 | `apps/workspace/src/domains/tasks/components/views/task-list-view.tsx` | function: TaskListView |
 | `apps/workspace/src/domains/tasks/components/views/task-route-shared.tsx` | function: TaskRouteState<br>function: TaskRoutePagination |
 | `apps/workspace/src/domains/tasks/components/views/task-table-view.tsx` | function: TaskTableView |
+| `apps/workspace/src/domains/tasks/components/views/task-timeline-workspace-view.tsx` | function: TaskTimelineWorkspaceView |
 | `apps/workspace/src/domains/tasks/components/views/task-view-frame.tsx` | function: TaskViewFrame |
 | `apps/workspace/src/domains/tasks/hooks/use-task-mention-options.ts` | function: useTaskMentionOptions<br>function: useMemberOptions |
 | `apps/workspace/src/domains/tasks/hooks/use-task-mutations.ts` | interface: CreateTaskInput<br>function: patchTaskInListData<br>function: useTaskMutations |
@@ -1962,6 +1981,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/tasks/tasks.types.ts` | type: TaskVisibility<br>type: TaskRecord<br>type: TaskFormValues<br>type: TaskStats |
 | `apps/workspace/src/domains/tasks/workspace/task-bulk.ts` | type: TaskBulkAction<br>type: TaskBulkFailureReason<br>interface: TaskBulkOutcome<br>interface: TaskBulkResult<br>type: TaskBulkCommand |
 | `apps/workspace/src/domains/tasks/workspace/task-quick-create.ts` | interface: TaskQuickCreateDraft<br>interface: TaskQuickCreateResult<br>type: TaskQuickCreateCommand<br>function: normalizeTaskQuickCreateDraft<br>function: runTaskQuickCreate |
+| `apps/workspace/src/domains/tasks/workspace/task-schedule.ts` | type: ScheduledTask<br>function: dateKey<br>function: scheduleTasks<br>function: timelineRange<br>function: timelinePosition |
 | `apps/workspace/src/domains/tasks/workspace/task-workspace-state.ts` | type: TaskWorkspaceState<br>function: resolveTaskWorkspaceState |
 | `apps/workspace/src/domains/tasks/workspace/task-workspace-view-state.ts` | value: taskWorkspaceFilters<br>type: TaskWorkspaceGroup<br>type: TaskWorkspaceSort<br>type: TaskWorkspaceDirection<br>interface: TaskWorkspaceViewState<br>value: defaultTaskWorkspaceViewState<br>function: parseTaskWorkspaceViewState<br>function: writeTaskWorkspaceViewState<br>function: resolveTaskWorkspaceViewHref<br>function: taskWorkspaceStateToSavedView<br>function: taskWorkspaceStateFromSavedView<br>function: selectTaskWorkspaceRecords |
 | `apps/workspace/src/domains/team/components/TeamPageRedesigned.tsx` | type: TeamSurfaceState<br>value: teamAvailableViews<br>value: teamHeaderActions<br>function: buildTeamRows<br>function: getTeamSurfaceState<br>function: normalizeTeamRole<br>function: teamPermissionState<br>function: teamRolePresentation<br>function: TeamPageRedesigned |
@@ -2120,6 +2140,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/server/domains/projects/handlers/projects-read.ts` | function: handleReadProjects<br>function: handleReadProjectStats<br>function: handleReadProjectsIndex<br>function: handleReadProjectOptions<br>function: handleReadProject<br>function: handleReadProjectTaskCounts |
 | `apps/workspace/src/server/domains/projects/services/project-business-rules.ts` | value: projectBusinessRules |
 | `apps/workspace/src/server/domains/projects/validation/project.schema.ts` | value: projectPayloadSchema<br>type: ProjectPayload |
+| `apps/workspace/src/server/domains/search/meilisearch-adapter.ts` | class: MeilisearchSearchAdapter |
+| `apps/workspace/src/server/domains/search/search-provider.ts` | function: searchDocumentKey<br>interface: SearchProviderFactory |
 | `apps/workspace/src/server/domains/spaces/handlers/spaces-junction.ts` | function: handleReadSpaces<br>function: handleReadSpace |
 | `apps/workspace/src/server/domains/spaces/handlers/spaces-read.ts` | function: handleReadSpaceOptions |
 | `apps/workspace/src/server/domains/spaces/handlers/spaces.ts` | function: handleCreateSpace<br>function: handleUpdateSpace<br>function: handleDeleteSpace |
@@ -2207,6 +2229,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/domain-contracts/src/deals.ts` | value: dealStageSchema<br>value: dealStatusSchema<br>value: dealPrioritySchema<br>value: dealInputSchema<br>value: dealRecordSchema<br>type: DealStage<br>type: DealStatus<br>type: DealPriority<br>type: DealInput<br>type: DealRecord<br>type: DealSummary<br>type: DealStats<br>value: crmDealStageSchema<br>value: crmDealRelationTypeSchema<br>value: crmClientPreviewSchema<br>value: crmBrokerPreviewSchema<br>value: crmProjectPreviewSchema<br>value: crmDealInputSchema<br>value: crmUpdateDealInputSchema<br>value: crmUpdateDealStageInputSchema<br>value: crmUpdateDealNotesInputSchema<br>value: crmUpdateDealFollowUpInputSchema<br>value: crmAddDealDocumentInputSchema<br>value: crmAssetDealsInputSchema<br>value: crmArchiveDealInputSchema<br>type: CrmDealInput<br>type: CrmUpdateDealInput<br>type: CrmUpdateDealStageInput<br>type: CrmUpdateDealNotesInput<br>type: CrmUpdateDealFollowUpInput<br>type: CrmAddDealDocumentInput<br>type: CrmAssetDealsInput<br>type: CrmArchiveDealInput<br>type: CrmDealRelationType<br>type: CrmClientPreview<br>type: CrmBrokerPreview<br>type: CrmProjectPreview |
 | `packages/domain-contracts/src/navigation.ts` | value: navigationDomainIdSchema<br>value: navigationRailModeSchema<br>value: navigationNodeTypeSchema<br>value: navigationNodeSchema<br>value: navigationDomainSchema<br>value: authorizedNavigationProjectionSchema<br>value: navigationOverlayInputSchema<br>type: NavigationDomainId<br>type: NavigationRailMode<br>type: NavigationNodeType<br>type: NavigationDomain<br>type: AuthorizedNavigationProjection<br>type: NavigationOverlayInput<br>interface: NavigationNode |
 | `packages/domain-contracts/src/projects.ts` | value: projectStatusSchema<br>value: projectHealthSchema<br>value: projectVisibilitySchema<br>value: projectInputSchema<br>value: projectRecordSchema<br>type: ProjectStatus<br>type: ProjectHealth<br>type: ProjectVisibility<br>type: ProjectInput<br>type: ProjectRecord<br>type: ProjectSummary |
+| `packages/domain-contracts/src/search.ts` | value: searchResourceTypeSchema<br>value: searchScopeTypeSchema<br>value: searchSensitivitySchema<br>value: searchOutboxStatusSchema<br>value: searchProjectionSchema<br>value: searchPolicySchema<br>type: SearchResourceType<br>type: SearchScopeType<br>type: SearchSensitivity<br>type: SearchOutboxStatus<br>type: SearchProjection<br>type: SearchPolicy<br>interface: SearchCandidate<br>interface: SearchQuery<br>interface: SearchProvider<br>interface: EmbeddingAdapter |
 | `packages/domain-contracts/src/spaces.ts` | value: spaceVisibilitySchema<br>value: spaceProjectVisibilitySchema<br>value: spaceInputSchema<br>value: spaceRecordSchema<br>type: SpaceVisibility<br>type: SpaceProjectVisibility<br>type: SpaceInput<br>type: SpaceRecord |
 | `packages/domain-contracts/src/subscriptionPricing.ts` | type: SubscriptionPlanId<br>type: BillingCycle<br>type: BillingPlanKey<br>type: CreditPackId<br>type: AiModelClass<br>type: UsageMeterKind<br>type: BillingProviderId<br>type: SubscriptionStatus<br>type: EntitlementKey<br>type: SubscriptionEntitlements<br>type: EnterpriseEntitlementOverrides<br>type: OrganizationEntitlements<br>type: EntitlementDecision<br>type: GlobalSubscriptionPlan<br>type: MarketBillingVariant<br>type: CreditPack<br>type: CreditPurchase<br>type: CreditReservation<br>type: AiCreditCalculationInput<br>type: AiCreditCalculation<br>type: CreditBalance<br>type: AppliedCreditUsage<br>value: DEFAULT_SUBSCRIPTION_PLAN_ID<br>value: DEFAULT_BILLING_CYCLE<br>function: getGlobalPlan<br>function: listGlobalPlans<br>function: getMarketPricing<br>function: getCreditPack<br>function: listCreditPacks<br>function: includedCreditCardsForPlan<br>function: canAddCreditCardsToPlan<br>function: listAddOnCreditCards<br>function: resolveSubscriptionEntitlements<br>function: resolveOrganizationEntitlements<br>function: decideEntitlement<br>function: normalizeBillingSelection<br>function: normalizeBillingPlanKey<br>function: subscriptionPlanIdForBillingKey<br>function: billingCycleForKey<br>function: billingSelectionKey<br>function: aiModelClass<br>function: calculateAiCredits<br>function: creditsForProviderCost<br>function: customCreditPurchase<br>function: applyUsageToCreditBalance |
 | `packages/domain-contracts/src/subscriptionPricingConfig.ts` | value: CREDIT_PACKS<br>value: MODEL_CLASS_CONFIG<br>value: FALLBACK_MODEL_CREDIT_MULTIPLIER<br>value: CREDIT_CARD_UNIT_SIZE<br>value: CREDITS_PER_USD<br>value: MIN_CUSTOM_CREDIT_PURCHASE_USD<br>value: MAX_CUSTOM_CREDIT_PURCHASE_USD |

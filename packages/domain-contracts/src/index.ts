@@ -5,4 +5,5 @@ export * from "./projects";
 export * from "./spaces";
 export * from "./tasks";
 export * from "./navigation";
+export * from "./search";
 export * from "./subscriptionPricing";
