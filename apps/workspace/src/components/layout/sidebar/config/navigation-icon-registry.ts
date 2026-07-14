@@ -18,6 +18,10 @@ import {
   UserRoundX,
   UsersRound,
   Workflow,
+  Tags,
+  ChartNoAxesCombined,
+  Boxes,
+  Truck,
 } from "lucide-react";
 import {
   CalendarIcon,
@@ -39,6 +43,8 @@ const navigationIcons: Readonly<Record<string, NavigationIcon>> = {
   docs: DocumentLinesIcon,
   calendar: CalendarIcon,
   crm: UsersRound,
+  delivery: Truck,
+  resources: Boxes,
   automations: Workflow,
   ai: Bot,
   admin: Settings,
@@ -62,6 +68,8 @@ const navigationIcons: Readonly<Record<string, NavigationIcon>> = {
   mcp: Link2,
   billing: BriefcaseBusiness,
   usage: LayoutGrid,
+  tags: Tags,
+  reports: ChartNoAxesCombined,
 };
 
 export function navigationIcon(iconId: string): NavigationIcon {

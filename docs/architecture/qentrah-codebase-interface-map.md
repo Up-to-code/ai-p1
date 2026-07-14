@@ -6,10 +6,10 @@
 
 ## Inventory summary
 
-- Source files scanned: 1728
-- Files exposing interfaces: 1457
-- Convex registered functions: 402
-- Application routes: 103
+- Source files scanned: 1738
+- Files exposing interfaces: 1467
+- Convex registered functions: 418
+- Application routes: 104
 - Hono/Convex HTTP registrations: 199
 - Eve/MCP tool entries: 118
 - Package commands: 88
@@ -167,6 +167,7 @@
 | `/:locale/privacy` | page | `apps/marketing/app/(site)/[locale]/privacy/page.tsx` |
 | `/:locale/profile` | page | `apps/workspace/src/app/[locale]/(app)/profile/page.tsx` |
 | `/:locale/projects` | page | `apps/workspace/src/app/[locale]/(app)/projects/page.tsx` |
+| `/:locale/resources` | page | `apps/workspace/src/app/[locale]/(app)/resources/page.tsx` |
 | `/:locale/search` | page | `apps/workspace/src/app/[locale]/(app)/search/page.tsx` |
 | `/:locale/settings` | page | `apps/workspace/src/app/[locale]/(app)/settings/page.tsx` |
 | `/:locale/settings/:section` | page | `apps/workspace/src/app/[locale]/(app)/settings/[section]/page.tsx` |
@@ -744,6 +745,22 @@ fully composed path.
 | mutation | `createFromHono` | `apps/workspace/convex/projectSpaces/write.ts` |
 | mutation | `deleteFromHono` | `apps/workspace/convex/projectSpaces/write.ts` |
 | mutation | `updateFromHono` | `apps/workspace/convex/projectSpaces/write.ts` |
+| mutation | `addRateCardEntry` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `allocateResource` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `assignSkill` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `cancelAllocation` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `createContractor` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `createHiringDemand` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `createRateCard` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `createScenario` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `createSkill` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `decideLeave` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `requestLeave` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `setCapacity` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| query | `catalog` | `apps/workspace/convex/resourcePlanning/read.ts` |
+| query | `overview` | `apps/workspace/convex/resourcePlanning/read.ts` |
+| query | `principalAvailability` | `apps/workspace/convex/resourcePlanning/read.ts` |
+| query | `schedule` | `apps/workspace/convex/resourcePlanning/read.ts` |
 | query | `get` | `apps/workspace/convex/savedViews/read.ts` |
 | query | `getDefault` | `apps/workspace/convex/savedViews/read.ts` |
 | query | `list` | `apps/workspace/convex/savedViews/read.ts` |
@@ -1321,6 +1338,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/projects/validators.ts` | value: projectStatusValidator<br>value: projectHealthValidator<br>value: visibilityValidator<br>type: ProjectVisibility<br>type: StoredProjectVisibility<br>function: normalizeProjectVisibility<br>value: projectInputValidator<br>value: projectValidator |
 | `apps/workspace/convex/projects/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono<br>convex-internalMutation: createInternal<br>convex-internalMutation: updateInternal<br>convex-internalMutation: deleteInternal |
 | `apps/workspace/convex/requireAuth.ts` | function: requireAuth<br>function: getAuth |
+| `apps/workspace/convex/resourcePlanning/access.ts` | function: resourcePlanningAccess |
+| `apps/workspace/convex/resourcePlanning/capacity.ts` | type: IntervalAmount<br>function: assertInterval<br>function: overlapRatio<br>function: proratedMinutes<br>function: capacitySummary |
+| `apps/workspace/convex/resourcePlanning/commands.ts` | convex-mutation: createSkill<br>convex-mutation: createContractor<br>convex-mutation: assignSkill<br>convex-mutation: setCapacity<br>convex-mutation: allocateResource<br>convex-mutation: requestLeave<br>convex-mutation: cancelAllocation<br>convex-mutation: decideLeave<br>convex-mutation: createRateCard<br>convex-mutation: addRateCardEntry<br>convex-mutation: createHiringDemand<br>convex-mutation: createScenario |
+| `apps/workspace/convex/resourcePlanning/read.ts` | convex-query: catalog<br>convex-query: schedule<br>convex-query: principalAvailability<br>convex-query: overview |
+| `apps/workspace/convex/resourcePlanning/validators.ts` | value: principalTypeValidator<br>value: allocationStatusValidator<br>value: leaveStatusValidator<br>value: contractorStatusValidator<br>value: demandStatusValidator<br>value: scenarioStatusValidator<br>value: rateCardScopeValidator<br>value: skillValidator<br>value: contractorValidator<br>value: capacityPeriodValidator<br>value: allocationValidator<br>value: leavePeriodValidator<br>value: rateCardValidator<br>value: hiringDemandValidator<br>value: scenarioValidator |
 | `apps/workspace/convex/savedViews/data.ts` | function: scopeForInput<br>function: presentSavedView<br>function: listViewsForUser<br>function: listViewRecordsForUser<br>function: getDefaultView |
 | `apps/workspace/convex/savedViews/read.ts` | convex-query: list<br>convex-query: get<br>convex-query: getDefault<br>convex-query: listGrants |
 | `apps/workspace/convex/savedViews/validators.ts` | value: userTableViewScopeValidator<br>value: userTableViewConfigValidator<br>value: savedViewSharingModeValidator<br>value: savedViewGrantInputValidator<br>value: savedViewGrantValidator<br>value: userTableViewValidator<br>value: createUserTableViewInputValidator<br>value: updateUserTableViewInputValidator |
@@ -1337,6 +1359,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/schema/navigation.ts` | value: navigationTables |
 | `apps/workspace/convex/schema/organization.ts` | value: organizationTables |
 | `apps/workspace/convex/schema/partner.ts` | value: partnerTables |
+| `apps/workspace/convex/schema/resourcePlanning.ts` | value: resourcePlanningTables |
 | `apps/workspace/convex/schema/search.ts` | value: searchTables |
 | `apps/workspace/convex/schema/theories.ts` | value: theoriesTables |
 | `apps/workspace/convex/schema/users.ts` | value: userTables |
@@ -1435,6 +1458,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/layout.tsx` | function: ProjectLayout |
 | `apps/workspace/src/app/[locale]/(app)/projects/layout.tsx` | function: ProjectsLayout |
 | `apps/workspace/src/app/[locale]/(app)/projects/page.tsx` | function: ProjectsPage |
+| `apps/workspace/src/app/[locale]/(app)/resources/page.tsx` | function: ResourcesPage |
 | `apps/workspace/src/app/[locale]/(app)/search/page.tsx` | function: SearchCenterPage |
 | `apps/workspace/src/app/[locale]/(app)/settings/[section]/page.tsx` | function: SettingsSectionPage |
 | `apps/workspace/src/app/[locale]/(app)/settings/page.tsx` | function: SettingsIndexPage |
@@ -1538,7 +1562,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/components/layout/sidebar/components/identity-avatar.tsx` | function: IdentityAvatar |
 | `apps/workspace/src/components/layout/sidebar/components/nav-tooltip.tsx` | function: NavTooltip |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-chat-panel.tsx` | function: SidebarChatPanel |
-| `apps/workspace/src/components/layout/sidebar/components/sidebar-domain-panels.tsx` | function: SidebarTasksPanel<br>function: SidebarCalendarPanel<br>function: SidebarProjectsPanel<br>function: SidebarCrmPanel<br>function: SidebarDeliveryPanel<br>function: SidebarAutomationsPanel<br>function: SidebarAdminPanel<br>function: SidebarDocsPanel |
+| `apps/workspace/src/components/layout/sidebar/components/sidebar-domain-panels.tsx` | function: SidebarTasksPanel<br>function: SidebarCalendarPanel<br>function: SidebarProjectsPanel<br>function: SidebarCrmPanel<br>function: SidebarDeliveryPanel<br>function: SidebarResourcesPanel<br>function: SidebarAutomationsPanel<br>function: SidebarAdminPanel<br>function: SidebarDocsPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel.tsx` | function: SidebarInboxPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel/channel-filter.ts` | function: filterChannelsByScope<br>function: groupInboxChannels |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel/channel-section.tsx` | function: ChannelSection |
@@ -2030,6 +2054,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/projects/lib/project-view-model.ts` | value: projectFilters<br>value: projectViews<br>value: monthFormatter<br>value: weekdayFormatter<br>function: toggleProjectAssetType<br>function: matchesProjectSearch<br>function: projectFormDefaults<br>function: parseIsoDate<br>function: projectDateDisplayLabel<br>function: nextProjectCalendarMonth<br>function: projectWeekdayLabels<br>function: formatIsoDate<br>function: calendarDaysForMonth<br>function: statusTone<br>function: projectDocumentAssets<br>function: projectLocationLabel<br>function: projectInventoryMetrics<br>function: projectMovementWidth<br>function: compactProjectDetailRows |
 | `apps/workspace/src/domains/projects/store/projects.types.ts` | type: Project |
 | `apps/workspace/src/domains/projects/validation/project.schema.ts` | value: projectStatuses<br>value: projectHealths<br>value: projectSchema<br>type: ProjectFormValues |
+| `apps/workspace/src/domains/resource-planning/components/resource-planning-command-panel.tsx` | function: ResourcePlanningCommandPanel |
+| `apps/workspace/src/domains/resource-planning/components/resource-planning-screen.tsx` | function: ResourcePlanningScreen |
 | `apps/workspace/src/domains/resources/fetch.ts` | function: workspaceFetch<br>function: workspaceMutation |
 | `apps/workspace/src/domains/resources/hooks.ts` | function: useWorkspacePagedResource<br>function: useWorkspaceIndexedResource<br>function: useWorkspaceResource<br>function: useWorkspaceResourceResult |
 | `apps/workspace/src/domains/resources/resource-api-factory.ts` | type: ResourceApiConfig<br>type: ResourceApi<br>function: createResourceApi |
@@ -2349,6 +2375,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/domain-contracts/src/delivery.ts` | value: commercialModelSchema<br>value: proposalStatusSchema<br>value: contractStatusSchema<br>value: engagementStatusSchema<br>value: deliveryHealthSchema<br>value: deliverableStatusSchema<br>value: approvalStatusSchema<br>value: changeOrderStatusSchema<br>value: concernTypeSchema<br>value: concernSeveritySchema<br>value: concernStatusSchema<br>value: proposalInputSchema<br>value: contractTermsSchema<br>value: deliverableInputSchema<br>value: changeOrderInputSchema<br>type: CommercialModel<br>type: ProposalStatus<br>type: ContractStatus<br>type: EngagementStatus<br>type: DeliveryHealth<br>type: DeliverableStatus<br>type: ApprovalStatus<br>type: ChangeOrderStatus<br>type: ProposalInput<br>type: ContractTerms<br>type: DeliverableInput<br>type: ChangeOrderInput |
 | `packages/domain-contracts/src/navigation.ts` | value: navigationDomainIdSchema<br>value: navigationRailModeSchema<br>value: navigationNodeTypeSchema<br>value: navigationNodeSchema<br>value: navigationDomainSchema<br>value: authorizedNavigationProjectionSchema<br>value: navigationOverlayInputSchema<br>type: NavigationDomainId<br>type: NavigationRailMode<br>type: NavigationNodeType<br>type: NavigationDomain<br>type: AuthorizedNavigationProjection<br>type: NavigationOverlayInput<br>interface: NavigationNode |
 | `packages/domain-contracts/src/projects.ts` | value: projectStatusSchema<br>value: projectHealthSchema<br>value: projectVisibilitySchema<br>value: projectInputSchema<br>value: projectRecordSchema<br>type: ProjectStatus<br>type: ProjectHealth<br>type: ProjectVisibility<br>type: ProjectInput<br>type: ProjectRecord<br>type: ProjectSummary |
+| `packages/domain-contracts/src/resource-planning.ts` | value: resourcePrincipalTypeSchema<br>value: resourceAllocationStatusSchema<br>value: resourceLeaveStatusSchema<br>value: resourceSkillLevelSchema<br>value: resourceIntervalSchema<br>value: resourceAllocationInputSchema<br>type: ResourcePrincipalType<br>type: ResourceAllocationStatus<br>type: ResourceLeaveStatus<br>type: ResourceAllocationInput |
 | `packages/domain-contracts/src/search.ts` | value: searchResourceTypeSchema<br>value: searchScopeTypeSchema<br>value: searchSensitivitySchema<br>value: searchOutboxStatusSchema<br>value: searchProjectionSchema<br>value: searchPolicySchema<br>type: SearchResourceType<br>type: SearchScopeType<br>type: SearchSensitivity<br>type: SearchOutboxStatus<br>type: SearchProjection<br>type: SearchPolicy<br>interface: SearchCandidate<br>value: hydratedSearchResultSchema<br>type: HydratedSearchResult<br>interface: SearchFilterConfiguration<br>interface: SearchQuery<br>interface: SearchProvider<br>interface: EmbeddingAdapter<br>type: MalwareVerdict<br>interface: MalwareScanAdapter<br>interface: ContentExtractionAdapter |
 | `packages/domain-contracts/src/spaces.ts` | value: spaceVisibilitySchema<br>value: spaceProjectVisibilitySchema<br>value: spaceInputSchema<br>value: spaceRecordSchema<br>type: SpaceVisibility<br>type: SpaceProjectVisibility<br>type: SpaceInput<br>type: SpaceRecord |
 | `packages/domain-contracts/src/subscriptionPricing.ts` | type: SubscriptionPlanId<br>type: BillingCycle<br>type: BillingPlanKey<br>type: CreditPackId<br>type: AiModelClass<br>type: UsageMeterKind<br>type: BillingProviderId<br>type: SubscriptionStatus<br>type: EntitlementKey<br>type: SubscriptionEntitlements<br>type: EnterpriseEntitlementOverrides<br>type: OrganizationEntitlements<br>type: EntitlementDecision<br>type: GlobalSubscriptionPlan<br>type: MarketBillingVariant<br>type: CreditPack<br>type: CreditPurchase<br>type: CreditReservation<br>type: AiCreditCalculationInput<br>type: AiCreditCalculation<br>type: CreditBalance<br>type: AppliedCreditUsage<br>value: DEFAULT_SUBSCRIPTION_PLAN_ID<br>value: DEFAULT_BILLING_CYCLE<br>function: getGlobalPlan<br>function: listGlobalPlans<br>function: getMarketPricing<br>function: getCreditPack<br>function: listCreditPacks<br>function: includedCreditCardsForPlan<br>function: canAddCreditCardsToPlan<br>function: listAddOnCreditCards<br>function: resolveSubscriptionEntitlements<br>function: resolveOrganizationEntitlements<br>function: decideEntitlement<br>function: normalizeBillingSelection<br>function: normalizeBillingPlanKey<br>function: subscriptionPlanIdForBillingKey<br>function: billingCycleForKey<br>function: billingSelectionKey<br>function: aiModelClass<br>function: calculateAiCredits<br>function: creditsForProviderCost<br>function: customCreditPurchase<br>function: applyUsageToCreditBalance |

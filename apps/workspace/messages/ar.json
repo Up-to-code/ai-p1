@@ -578,7 +578,21 @@
       "mcpConnections": "اتصالات MCP",
       "billing": "الفوترة",
       "usage": "الاستخدام",
-      "searchPolicy": "سياسة البحث"
+      "searchPolicy": "سياسة البحث",
+      "resourceOverview": "نظرة عامة على الموارد",
+      "people": "الأشخاص",
+      "teams": "الفرق",
+      "contractors": "المتعاقدون",
+      "skills": "المهارات",
+      "capacity": "الطاقة الاستيعابية",
+      "allocations": "التخصيصات",
+      "workload": "عبء العمل",
+      "availability": "التوفر",
+      "leave": "الإجازات",
+      "hiringDemand": "احتياج التوظيف",
+      "scenarios": "السيناريوهات",
+      "rateCards": "بطاقات الأسعار",
+      "resourceReports": "تقارير الموارد"
     },
     "threads": {
       "newThread": "محادثة جديدة",
@@ -4702,6 +4716,21 @@
     "linkedProjects": "المشاريع المرتبطة", "selectProject": "اختر مشروعاً", "linkProject": "ربط المشروع", "deliverables": "المُسلَّمات", "deliverableName": "اسم المُسلَّم", "submit": "إرسال", "milestones": "معالم المشاريع", "noMilestones": "لا توجد معالم في المشاريع المرتبطة.", "approvals": "موافقات العميل", "approve": "موافقة", "reject": "رفض", "noApprovals": "لا توجد موافقات معلقة.",
     "changeOrders": "أوامر التغيير", "changeTitle": "عنوان أمر التغيير", "changeReason": "السبب التجاري", "scopeDelta": "تغيير النطاق", "amountDelta": "تغيير المبلغ", "create": "إنشاء",
     "risks": "المخاطر والمشكلات", "noRisks": "لم تُسجل مخاطر أو مشكلات."
+  },
+  "ResourcePlanning": {
+    "eyebrow": "تخطيط الموارد",
+    "description": "خطط للأعضاء والمتعاقدين الفعليين مقابل احتياج المشاريع والارتباطات دون تكرار الهوية أو عضوية الوصول.",
+    "loading": "جارٍ تحميل خطة الموارد…",
+    "views": { "overview": "نظرة عامة على الموارد", "people": "الأشخاص", "teams": "الفرق", "contractors": "المتعاقدون", "skills": "المهارات", "capacity": "الطاقة الاستيعابية", "allocations": "التخصيصات", "workload": "عبء العمل", "availability": "التوفر", "leave": "الإجازات", "hiring": "احتياج التوظيف", "scenarios": "السيناريوهات", "rate-cards": "بطاقات الأسعار", "reports": "تقارير الموارد" },
+    "metrics": { "people": "الأشخاص", "capacity": "الطاقة الاستيعابية", "allocated": "المخصص", "utilization": "الاستغلال", "demand": "الاحتياج المفتوح", "leave": "الإجازات المعلقة" },
+    "teamsTitle": "تظل الفرق جهات صلاحية حية",
+    "teamsDescription": "تُدار عضوية الفريق مرة واحدة في إدارة المؤسسة وتُقيّم مباشرةً للصلاحيات. يستخدم تخطيط الموارد هذه الفرق دون نسخ أعضائها.",
+    "openTeams": "فتح إدارة الفرق",
+    "reportsTitle": "إسقاط تقارير الموارد",
+    "reportsDescription": "الطاقة والتخصيص والاحتياج والاستغلال بيانات أساسية هنا. تكتمل التقارير المجدولة العابرة للمجالات في حزمة التقارير.",
+    "member": "عضو المؤسسة", "contractor": "متعاقد", "week": "أسبوع", "uncategorized": "دون تصنيف", "billable": "قابل للفوترة", "nonBillable": "غير قابل للفوترة",
+    "emptyPeople": "لا يوجد أشخاص متاحون.", "emptyContractors": "لا يوجد متعاقدون بعد.", "emptySkills": "لا توجد مهارات بعد.", "emptyRateCards": "لا توجد بطاقات أسعار بعد.", "emptyScenarios": "لا توجد سيناريوهات تخطيط بعد.", "emptyLeave": "لا توجد إجازات معتمدة في هذه الفترة.", "emptyDemand": "لا يوجد احتياج توظيف مفتوح في هذه الفترة.", "emptyAllocations": "لا توجد تخصيصات مؤكدة في هذه الفترة.",
+    "activeAllocations": "التخصيصات النشطة", "approvedLeave": "فترات الإجازة المعتمدة", "openDemand": "احتياجات التوظيف المفتوحة", "emptyCapacity": "لا توجد فترات طاقة في هذا النطاق.", "netCapacity": "الطاقة الصافية", "available": "المتاح", "utilization": "الاستغلال", "approve": "موافقة", "reject": "رفض", "cancelAllocation": "إلغاء التخصيص"
   },
   "NotFound": {
     "metadataTitle": "الصفحة غير موجودة",

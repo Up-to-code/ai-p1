@@ -582,7 +582,21 @@
       "mcpConnections": "MCP connections",
       "billing": "Billing",
       "usage": "Usage",
-      "searchPolicy": "Search policy"
+      "searchPolicy": "Search policy",
+      "resourceOverview": "Resource overview",
+      "people": "People",
+      "teams": "Teams",
+      "contractors": "Contractors",
+      "skills": "Skills",
+      "capacity": "Capacity",
+      "allocations": "Allocations",
+      "workload": "Workload",
+      "availability": "Availability",
+      "leave": "Leave",
+      "hiringDemand": "Hiring demand",
+      "scenarios": "Scenarios",
+      "rateCards": "Rate cards",
+      "resourceReports": "Resource reports"
     },
     "threads": {
       "newThread": "New thread",
@@ -4720,6 +4734,21 @@
     "linkedProjects": "Linked projects", "selectProject": "Select a project", "linkProject": "Link project", "deliverables": "Deliverables", "deliverableName": "Deliverable name", "submit": "Submit", "milestones": "Project milestones", "noMilestones": "No milestones on linked projects.", "approvals": "Client approvals", "approve": "Approve", "reject": "Reject", "noApprovals": "No approvals are waiting.",
     "changeOrders": "Change orders", "changeTitle": "Change order title", "changeReason": "Commercial reason", "scopeDelta": "Scope change", "amountDelta": "Amount change", "create": "Create",
     "risks": "Risks and issues", "noRisks": "No risks or issues recorded."
+  },
+  "ResourcePlanning": {
+    "eyebrow": "Resource planning",
+    "description": "Plan live members and contractors against Project and Engagement demand without duplicating identity or access membership.",
+    "loading": "Loading resource plan…",
+    "views": { "overview": "Resource overview", "people": "People", "teams": "Teams", "contractors": "Contractors", "skills": "Skills", "capacity": "Capacity", "allocations": "Allocations", "workload": "Workload", "availability": "Availability", "leave": "Leave", "hiring": "Hiring demand", "scenarios": "Scenarios", "rate-cards": "Rate cards", "reports": "Resource reports" },
+    "metrics": { "people": "People", "capacity": "Capacity", "allocated": "Allocated", "utilization": "Utilization", "demand": "Open demand", "leave": "Pending leave" },
+    "teamsTitle": "Teams remain live access principals",
+    "teamsDescription": "Team membership is managed once in Organization administration and is evaluated live for grants. Resource Planning uses those Teams without copying their members.",
+    "openTeams": "Open Team administration",
+    "reportsTitle": "Resource reporting projection",
+    "reportsDescription": "Capacity, allocation, demand, and utilization are authoritative here. Cross-domain scheduled reporting is completed in the Reports packet.",
+    "member": "Organization member", "contractor": "Contractor", "week": "week", "uncategorized": "Uncategorized", "billable": "Billable", "nonBillable": "Non-billable",
+    "emptyPeople": "No people are available.", "emptyContractors": "No contractors yet.", "emptySkills": "No skills yet.", "emptyRateCards": "No rate cards yet.", "emptyScenarios": "No planning scenarios yet.", "emptyLeave": "No approved leave in this period.", "emptyDemand": "No open hiring demand in this period.", "emptyAllocations": "No confirmed allocations in this period.",
+    "activeAllocations": "Active allocations", "approvedLeave": "Approved leave periods", "openDemand": "Open hiring demands", "emptyCapacity": "No capacity periods in this range.", "netCapacity": "Net capacity", "available": "Available", "utilization": "Utilization", "approve": "Approve", "reject": "Reject", "cancelAllocation": "Cancel allocation"
   },
   "NotFound": {
     "metadataTitle": "Page not found",

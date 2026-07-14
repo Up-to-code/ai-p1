@@ -38,6 +38,10 @@ export function SidebarDeliveryPanel() {
   return <ProjectedDomainPanel domainId="delivery" />;
 }
 
+export function SidebarResourcesPanel() {
+  return <ProjectedDomainPanel domainId="resources" />;
+}
+
 export function SidebarAutomationsPanel() {
   return <ProjectedDomainPanel domainId="automations" />;
 }
