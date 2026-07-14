@@ -36,7 +36,7 @@ ownership or accepted decisions.
 | Module | Public Interface | Primary implementation | Adapters | Authorization and source of truth |
 |---|---|---|---|---|
 | Workspace Identity | Authenticated user, normalized Auth Context, and active Organization membership | `@qentrah/auth`; focused Better Auth composition in `apps/workspace/convex/auth` | Browser, Next.js request, Convex actor, mobile SecureStore, Eve channel | Better Auth identifies the user; server policy resolves membership |
-| Resource Access | Record-aware read/write decisions, including saved-view parent scope | `convex/access` | Workspace queries/writes, saved views, MCP, Eve | Organization → Space → Project; always derived server-side; a saved view never widens parent access |
+| Resource Access | Record-aware read/write decisions, including saved-view parent scope and live Team principals | `convex/access` | Workspace queries/writes, saved views, MCP, Eve | Organization → Space → Project; always derived server-side; Team membership is evaluated live and a saved view never widens parent access |
 | Platform Administration | Fail-closed cross-Organization operational access | `packages/auth/src/platform-admin.ts` | Next.js config, Convex platform access, Media visibility controls | Authenticated email must match the configured allowlist; Organization roles do not grant access |
 | Domain Contracts | Runtime inputs, outputs, patch shapes, inferred types | `packages/domain-contracts` plus focused Convex validators | Workspace forms, Hono, Convex, MCP, Eve | Contracts validate shape; access Modules authorize records |
 | Workspace Route Policy | Canonical routes, aliases, auth class, capability, locale | `src/domains/navigation`, `src/proxy.ts` | Next.js routes, sidebar, subdomain rewrite | Cookie classification is routing only; server Modules enforce access |
@@ -87,11 +87,12 @@ access, presentation, and tests local to that behavior.
 | Projects | `src/domains/projects` | `convex/projects`, `projectSpaces` | Project routes, MCP, Eve | relation access, visibility, dashboards |
 | Resources | `src/domains/resources` | record-specific owners | cross-resource pickers/links | no generic authorization bypass |
 | Search | `src/domains/search`; search contracts in `@qentrah/domain-contracts` | `convex/search` | Meilisearch worker, command palette, Search Center, extraction Adapters | policy-filtered projection, outbox idempotency, multilingual ranking, final record reauthorization |
+| Saved Views | Task-facing Adapter in `src/domains/tasks`; reusable persistence contract in `convex/savedViews` | `convex/savedViews`, `savedViewGrants`; access in `convex/access/savedView*.ts` | Task workspace view menu; future domain view Adapters | live user/Team grants, parent-scope reauthorization, personal/shared/protected behavior, revision and audit; sharing never grants record access |
 | Settings | `src/domains/settings` | owning domain Modules | `/settings` | route ownership and localized copy |
 | Spaces | `src/domains/spaces` | `convex/spaces` | Space routes, MCP, Eve | visibility, membership, Project junction |
 | Storage | `src/domains/storage` | IndexedDB only | draft/config Adapters | UI/draft data only, version ordering |
 | Tasks | `src/domains/tasks`; `@qentrah/domain-contracts/tasks` | Convex lifecycle/assignments/access, `TaskQuickCreateCommand`, TaskWorkspace view state/provider, presentation | Server route pages → client view adapters, Project views, Hono, MCP, Eve | organization-visible default, explicit private participant boundary, one-write capture, URL-addressable identity, normalized assignment membership, exact ownership cursors, one reactive read source, saved-view reproducibility, rollups/reminders |
-| Team | `src/domains/team` | Organization membership | `/team`, Organization settings | Better Auth roles and truthful states |
+| Team | `src/domains/team` | Better Auth Team and Team membership | `/team`, Organization settings, live resource-grant principal Adapter | Better Auth roles, live membership revocation, and truthful states; never copy Team members into grants |
 | Theories | `src/domains/theories` | `convex/theories` | theory UI and future agent promotion | creator privacy and explicit promotion |
 | Time Tracking | `src/domains/time-tracking` | canonical TimeEntry pending | task/project UI, MCP, Eve | one active timer, persisted economics |
 | Usage | `src/domains/usage` | billing/usage reads | `/usage` | scoped aggregation and formatting |

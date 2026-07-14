@@ -57,6 +57,12 @@ export interface SavedViewRecord {
   spaceId?: string
   config: SavedViewConfig
   isDefault?: boolean
+  sharingMode: "personal" | "shared" | "protected"
+  revision: number
+  canConfigure: boolean
+  canShare: boolean
+  canDelete: boolean
+  canSetDefault: boolean
   createdAt: number
   updatedAt: number
 }
@@ -119,6 +125,7 @@ export interface CreateSavedViewInput {
   spaceId?: string
   config: SavedViewConfig
   isDefault?: boolean
+  sharingMode?: SavedViewRecord["sharingMode"]
 }
 
 export function useCreateSavedViewMutation() {
@@ -136,6 +143,17 @@ export interface UpdateSavedViewInput {
   isDefault?: boolean
 }
 
+export interface SavedViewGrant {
+  principalType: "user" | "team"
+  principalId: string
+  access: "read" | "configure"
+}
+
+export function useSavedViewGrantsQuery(viewId?: Id<"savedViews">) {
+  const data = useQuery(api.savedViews.read.listGrants, viewId ? { viewId } : "skip")
+  return { data: data as SavedViewGrant[] | undefined, isLoading: Boolean(viewId) && data === undefined }
+}
+
 export function useUpdateSavedViewMutation() {
   const mutation = useMutation(api.savedViews.write.update)
   return useTrackedMutation(async (input: UpdateSavedViewInput) =>
@@ -151,4 +169,20 @@ export function useDeleteSavedViewMutation() {
 export function useSetDefaultSavedViewMutation() {
   const mutation = useMutation(api.savedViews.write.setDefault)
   return useTrackedMutation((viewId: Id<"savedViews">) => mutation({ viewId }))
+}
+
+export function useShareSavedViewMutation() {
+  const mutation = useMutation(api.savedViews.write.share)
+  return useTrackedMutation((input: {
+    viewId: Id<"savedViews">
+    sharingMode: "shared" | "protected"
+    grants: SavedViewGrant[]
+  }) => mutation(input) as Promise<SavedViewRecord>)
+}
+
+export function useMakeSavedViewPersonalMutation() {
+  const mutation = useMutation(api.savedViews.write.makePersonal)
+  return useTrackedMutation((viewId: Id<"savedViews">) =>
+    mutation({ viewId }) as Promise<SavedViewRecord>,
+  )
 }

@@ -3,6 +3,9 @@ import { mutation, query } from "./_generated/server";
 import { savedViewFilterValidator, savedViewColumnValidator, viewTypeValidator, workOsRecordResourceValidator } from "./schema/validators";
 import { assertCanReadSavedViewScope, filterReadableSavedViews } from "./access/savedView";
 import { assertOrganizationPermission } from "./organizations/profile/access";
+import { requireServerActor } from "./access/actor";
+import { assertSavedViewGrantAction, resolveSavedViewGrantAccess } from "./access/savedViewGrant";
+import { listViewRecordsForUser } from "./savedViews/data";
 
 const legacyViewConfigValidator = v.object({
   type: viewTypeValidator,
@@ -26,8 +29,7 @@ export const createView = mutation({
   },
   returns: v.id("savedViews"),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    const actor = await requireServerActor(ctx);
     await assertOrganizationPermission(ctx, args.organizationId, "read");
 
     const now = Date.now();
@@ -43,10 +45,12 @@ export const createView = mutation({
       resourceType: args.domain,
       viewType: args.viewConfig.type,
       name: args.viewConfig.label,
-      ownerUserId: identity.subject,
+      ownerUserId: actor.userId,
       scopeType: scope.scopeType,
       scopeId: scope.scopeId,
       visibility: "private",
+      sharingMode: "personal",
+      revision: 1,
       config: {
         filters: args.viewConfig.filters,
         sortBy: args.viewConfig.sortBy,
@@ -59,7 +63,7 @@ export const createView = mutation({
       isSystemDefault: false,
       isRemovable: true,
       recordState: "active",
-      createdByUserId: identity.subject,
+      createdByUserId: actor.userId,
       createdAt: now,
       updatedAt: now,
     });
@@ -73,16 +77,13 @@ export const updateView = mutation({
   },
   returns: v.id("savedViews"),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    await requireServerActor(ctx);
 
     const view = await ctx.db.get(args.viewId);
     if (!view) throw new Error("View not found");
-    if (view.ownerUserId !== identity.subject && view.createdByUserId !== identity.subject) {
-      throw new Error("Unauthorized");
-    }
     await assertOrganizationPermission(ctx, view.organizationId, "read");
     await assertCanReadSavedViewScope(ctx, view.organizationId, view);
+    await assertSavedViewGrantAction(ctx, view, "canConfigure");
 
     await ctx.db.patch(args.viewId, {
       viewType: args.viewConfig.type,
@@ -96,6 +97,7 @@ export const updateView = mutation({
         density: args.viewConfig.density,
       },
       updatedAt: Date.now(),
+      revision: (view.revision ?? 1) + 1,
     });
     return args.viewId;
   },
@@ -105,16 +107,13 @@ export const deleteView = mutation({
   args: { viewId: v.id("savedViews") },
   returns: v.id("savedViews"),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    await requireServerActor(ctx);
 
     const view = await ctx.db.get(args.viewId);
     if (!view) throw new Error("View not found");
-    if (view.ownerUserId !== identity.subject && view.createdByUserId !== identity.subject) {
-      throw new Error("Unauthorized");
-    }
     await assertOrganizationPermission(ctx, view.organizationId, "read");
     await assertCanReadSavedViewScope(ctx, view.organizationId, view);
+    await assertSavedViewGrantAction(ctx, view, "canDelete");
 
     const now = Date.now();
     await ctx.db.patch(args.viewId, { recordState: "deleted", deletedAt: now, updatedAt: now });
@@ -131,8 +130,7 @@ export const getViews = query({
   },
   returns: v.array(v.any()),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    const actor = await requireServerActor(ctx);
     await assertOrganizationPermission(ctx, args.organizationId, "read");
     await assertCanReadSavedViewScope(ctx, args.organizationId, args.projectId
       ? { scopeType: "project", scopeId: args.projectId }
@@ -142,12 +140,7 @@ export const getViews = query({
 
     const domain = args.domain;
     if (!domain) return [];
-    const views = await ctx.db
-      .query("savedViews")
-      .withIndex("by_owner_resource", (q) =>
-        q.eq("organizationId", args.organizationId).eq("ownerUserId", identity.subject).eq("resourceType", domain),
-      )
-      .collect();
+    const views = await listViewRecordsForUser(ctx, actor.userId, { organizationId: args.organizationId, resourceType: domain, projectId: args.projectId, spaceId: args.spaceId, includeAdministered: true });
 
     const matching = views.filter((view) => {
       if (view.recordState !== "active") return false;
@@ -155,7 +148,9 @@ export const getViews = query({
       if (args.spaceId && (view.scopeType !== "space" || view.scopeId !== args.spaceId)) return false;
       return true;
     });
-    return filterReadableSavedViews(ctx, args.organizationId, matching);
+    const scoped = await filterReadableSavedViews(ctx, args.organizationId, matching);
+    const decisions = await Promise.all(scoped.map(async (view) => (await resolveSavedViewGrantAccess(ctx, view)).canRead ? view : null));
+    return decisions.filter((view): view is NonNullable<typeof view> => view !== null);
   },
 });
 
@@ -166,18 +161,14 @@ export const getDefaultViews = query({
   },
   returns: v.array(v.any()),
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    const actor = await requireServerActor(ctx);
     await assertOrganizationPermission(ctx, args.organizationId, "read");
 
-    const views = await ctx.db
-      .query("savedViews")
-      .withIndex("by_owner_resource", (q) =>
-        q.eq("organizationId", args.organizationId).eq("ownerUserId", identity.subject).eq("resourceType", args.domain),
-      )
-      .collect();
+    const views = await listViewRecordsForUser(ctx, actor.userId, { organizationId: args.organizationId, resourceType: args.domain });
     const defaults = views.filter((view) => view.recordState === "active" && view.isDefault);
-    return filterReadableSavedViews(ctx, args.organizationId, defaults);
+    const scoped = await filterReadableSavedViews(ctx, args.organizationId, defaults);
+    const decisions = await Promise.all(scoped.map(async (view) => (await resolveSavedViewGrantAccess(ctx, view)).canRead ? view : null));
+    return decisions.filter((view): view is NonNullable<typeof view> => view !== null);
   },
 });
 

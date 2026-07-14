@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { Bookmark, BookmarkPlus, Check, ChevronDown, Loader2, Star, Trash2 } from "lucide-react"
+import { Bookmark, BookmarkPlus, Check, ChevronDown, Loader2, Share2, Star, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -22,6 +22,7 @@ import {
   type SavedViewResourceType,
   type SavedViewType,
 } from "@/domains/tasks/api/saved-views"
+import { SavedViewSharingDialog } from "./saved-view-sharing-dialog"
 
 export interface SavedViewsDropdownProps {
   resourceType: SavedViewResourceType
@@ -47,6 +48,7 @@ export function SavedViewsDropdown({
   const [open, setOpen] = useState(false)
   const [naming, setNaming] = useState(false)
   const [draftName, setDraftName] = useState("")
+  const [sharingView, setSharingView] = useState<SavedViewRecord | null>(null)
 
   const { data: views = [], isLoading } = useSavedViewsQuery({
     resourceType,
@@ -102,7 +104,8 @@ export function SavedViewsDropdown({
   )
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         className={cn(
           "inline-flex items-center gap-1.5 h-7 px-2.5 text-[11px] font-medium rounded-md border border-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -216,40 +219,68 @@ export function SavedViewsDropdown({
                         .join(" • ") || "default"}
                     </p>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleUpdateExisting(view)}
-                    title="Overwrite with current"
-                    className="h-6 w-6 inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100"
-                  >
-                    <Check className="h-3 w-3" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void setDefault.mutateAsync(view._id)}
-                    title={view.isDefault ? "Default" : "Set as default"}
-                    className={cn(
-                      "h-6 w-6 inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted",
-                      view.isDefault && "opacity-100 text-warning",
-                      !view.isDefault && "opacity-0 group-hover:opacity-100",
-                    )}
-                  >
-                    <Star className="h-3 w-3" fill={view.isDefault ? "currentColor" : "none"} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void deleteView.mutateAsync(view._id)}
-                    title="Delete view"
-                    className="h-6 w-6 inline-flex items-center justify-center rounded text-muted-foreground hover:text-error hover:bg-muted opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
+                  {view.canConfigure ? (
+                    <button
+                      type="button"
+                      onClick={() => void handleUpdateExisting(view)}
+                      title="Overwrite with current"
+                      className="h-6 w-6 inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                    >
+                      <Check className="h-3 w-3" />
+                    </button>
+                  ) : null}
+                  {view.canShare && organizationId ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSharingView(view)
+                        setOpen(false)
+                      }}
+                      title="Share view"
+                      className="h-6 w-6 inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                    >
+                      <Share2 className="h-3 w-3" />
+                    </button>
+                  ) : null}
+                  {view.canSetDefault ? (
+                    <button
+                      type="button"
+                      onClick={() => void setDefault.mutateAsync(view._id)}
+                      title={view.isDefault ? "Default" : "Set as default"}
+                      className={cn(
+                        "h-6 w-6 inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:opacity-100",
+                        view.isDefault && "opacity-100 text-warning",
+                        !view.isDefault && "opacity-0 group-hover:opacity-100",
+                      )}
+                    >
+                      <Star className="h-3 w-3" fill={view.isDefault ? "currentColor" : "none"} />
+                    </button>
+                  ) : null}
+                  {view.canDelete ? (
+                    <button
+                      type="button"
+                      onClick={() => void deleteView.mutateAsync(view._id)}
+                      title="Delete view"
+                      className="h-6 w-6 inline-flex items-center justify-center rounded text-muted-foreground hover:text-error hover:bg-muted opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  ) : null}
                 </li>
               ))}
             </ul>
           )}
         </div>
       </PopoverContent>
-    </Popover>
+      </Popover>
+      <SavedViewSharingDialog
+        view={sharingView}
+        organizationId={organizationId}
+        open={Boolean(sharingView)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) setSharingView(null)
+        }}
+      />
+    </>
   )
 }

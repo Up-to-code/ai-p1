@@ -6,9 +6,9 @@
 
 ## Inventory summary
 
-- Source files scanned: 1690
-- Files exposing interfaces: 1419
-- Convex registered functions: 351
+- Source files scanned: 1693
+- Files exposing interfaces: 1422
+- Convex registered functions: 354
 - Application routes: 95
 - Hono/Convex HTTP registrations: 199
 - Eve/MCP tool entries: 118
@@ -710,9 +710,12 @@ fully composed path.
 | query | `get` | `apps/workspace/convex/savedViews/read.ts` |
 | query | `getDefault` | `apps/workspace/convex/savedViews/read.ts` |
 | query | `list` | `apps/workspace/convex/savedViews/read.ts` |
+| query | `listGrants` | `apps/workspace/convex/savedViews/read.ts` |
 | mutation | `create` | `apps/workspace/convex/savedViews/write.ts` |
+| mutation | `makePersonal` | `apps/workspace/convex/savedViews/write.ts` |
 | mutation | `remove` | `apps/workspace/convex/savedViews/write.ts` |
 | mutation | `setDefault` | `apps/workspace/convex/savedViews/write.ts` |
+| mutation | `share` | `apps/workspace/convex/savedViews/write.ts` |
 | mutation | `update` | `apps/workspace/convex/savedViews/write.ts` |
 | query | `resolve` | `apps/workspace/convex/search/accessContext.ts` |
 | query | `candidates` | `apps/workspace/convex/search/hydrate.ts` |
@@ -1083,8 +1086,10 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/access/project.ts` | type: ProjectAccessErrorCode<br>interface: ProjectAccess<br>function: resolveProjectAccess |
 | `apps/workspace/convex/access/projectSpace.ts` | type: ProjectSpaceAccessErrorCode<br>interface: ProjectSpaceAccess<br>function: resolveProjectSpaceAccess |
 | `apps/workspace/convex/access/savedView.ts` | type: SavedViewScopeRef<br>function: assertCanReadSavedViewScope<br>function: filterReadableSavedViews |
+| `apps/workspace/convex/access/savedViewGrant.ts` | type: SavedViewAccessDecision<br>function: resolveSavedViewGrantAccess<br>function: assertSavedViewGrantAction |
 | `apps/workspace/convex/access/space.ts` | type: SpaceAccessErrorCode<br>interface: SpaceAccess<br>function: resolveSpaceAccess |
 | `apps/workspace/convex/access/task.ts` | type: TaskAccessErrorCode<br>interface: TaskAccess<br>type: TaskScopeInput<br>function: resolveTaskAccess |
+| `apps/workspace/convex/access/team.ts` | function: resolveActorTeamIds<br>function: assertTeamInOrganization |
 | `apps/workspace/convex/apiKeys.ts` | value: apiKeys |
 | `apps/workspace/convex/auth.ts` | value: createAuth<br>function: getAuthUser<br>function: safeGetAuthUser<br>convex-internalAction: rotateKeys |
 | `apps/workspace/convex/auth/email.ts` | function: createEmailAndPasswordOptions<br>function: createEmailOtpPlugin |
@@ -1250,9 +1255,9 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/projects/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono<br>convex-internalMutation: createInternal<br>convex-internalMutation: updateInternal<br>convex-internalMutation: deleteInternal |
 | `apps/workspace/convex/requireAuth.ts` | function: requireAuth<br>function: getAuth |
 | `apps/workspace/convex/savedViews/data.ts` | function: scopeForInput<br>function: presentSavedView<br>function: listViewsForUser<br>function: listViewRecordsForUser<br>function: getDefaultView |
-| `apps/workspace/convex/savedViews/read.ts` | convex-query: list<br>convex-query: get<br>convex-query: getDefault |
-| `apps/workspace/convex/savedViews/validators.ts` | value: userTableViewScopeValidator<br>value: userTableViewConfigValidator<br>value: userTableViewValidator<br>value: createUserTableViewInputValidator<br>value: updateUserTableViewInputValidator |
-| `apps/workspace/convex/savedViews/write.ts` | convex-mutation: create<br>convex-mutation: update<br>convex-mutation: remove<br>convex-mutation: setDefault |
+| `apps/workspace/convex/savedViews/read.ts` | convex-query: list<br>convex-query: get<br>convex-query: getDefault<br>convex-query: listGrants |
+| `apps/workspace/convex/savedViews/validators.ts` | value: userTableViewScopeValidator<br>value: userTableViewConfigValidator<br>value: savedViewSharingModeValidator<br>value: savedViewGrantInputValidator<br>value: savedViewGrantValidator<br>value: userTableViewValidator<br>value: createUserTableViewInputValidator<br>value: updateUserTableViewInputValidator |
+| `apps/workspace/convex/savedViews/write.ts` | convex-mutation: create<br>convex-mutation: update<br>convex-mutation: remove<br>convex-mutation: setDefault<br>convex-mutation: share<br>convex-mutation: makePersonal |
 | `apps/workspace/convex/schema/automations.ts` | value: automationNodeValidator<br>value: automationEdgeValidator<br>value: automationViewportValidator<br>value: automationTables |
 | `apps/workspace/convex/schema/billing.ts` | value: billingTables |
 | `apps/workspace/convex/schema/custom_fields.ts` | value: customFieldTables |
@@ -1965,8 +1970,9 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/storage/use-indexeddb-config.ts` | interface: UseIndexedDbConfigOptions<br>function: useIndexedDbConfig |
 | `apps/workspace/src/domains/storage/use-local-config.ts` | function: useLocalConfig |
 | `apps/workspace/src/domains/tasks/api/fields.ts` | type: WorkOsCustomFieldType<br>interface: CustomFieldOption<br>interface: CustomFieldDefinition<br>value: POPULAR_FIELD_TYPES<br>value: ALL_FIELD_TYPES<br>function: useFieldDefinitionsQuery<br>function: useFieldValuesQuery<br>function: createCustomFieldRequest<br>function: updateCustomFieldDisplayRequest<br>function: deleteCustomFieldRequest<br>function: setCustomFieldValueRequest |
-| `apps/workspace/src/domains/tasks/api/saved-views.ts` | type: SavedViewResourceType<br>type: SavedViewType<br>type: SavedViewFilterValue<br>interface: SavedViewConfig<br>type: SavedViewScope<br>interface: SavedViewRecord<br>interface: ListSavedViewsArgs<br>function: useSavedViewsQuery<br>function: useDefaultSavedViewQuery<br>interface: CreateSavedViewInput<br>function: useCreateSavedViewMutation<br>interface: UpdateSavedViewInput<br>function: useUpdateSavedViewMutation<br>function: useDeleteSavedViewMutation<br>function: useSetDefaultSavedViewMutation |
+| `apps/workspace/src/domains/tasks/api/saved-views.ts` | type: SavedViewResourceType<br>type: SavedViewType<br>type: SavedViewFilterValue<br>interface: SavedViewConfig<br>type: SavedViewScope<br>interface: SavedViewRecord<br>interface: ListSavedViewsArgs<br>function: useSavedViewsQuery<br>function: useDefaultSavedViewQuery<br>interface: CreateSavedViewInput<br>function: useCreateSavedViewMutation<br>interface: UpdateSavedViewInput<br>interface: SavedViewGrant<br>function: useSavedViewGrantsQuery<br>function: useUpdateSavedViewMutation<br>function: useDeleteSavedViewMutation<br>function: useSetDefaultSavedViewMutation<br>function: useShareSavedViewMutation<br>function: useMakeSavedViewPersonalMutation |
 | `apps/workspace/src/domains/tasks/api/tasks.ts` | type: GroupBy<br>function: readPersistedGroupBy<br>function: writePersistedGroupBy<br>function: useTasksQuery<br>function: useTaskWorkspaceQuery<br>function: useTasksGroupedQuery<br>function: useTaskStatsQuery<br>function: useTaskQuery<br>function: taskPayloadFromForm<br>function: taskFormValuesFromRecord<br>value: taskApi<br>value: createTaskRequest<br>value: updateTaskRequest<br>value: deleteTaskRequest<br>function: assignTasksToProjectRequest<br>function: bulkTasksRequest |
+| `apps/workspace/src/domains/tasks/components/saved-view-sharing-dialog.tsx` | function: SavedViewSharingDialog |
 | `apps/workspace/src/domains/tasks/components/saved-views-dropdown.tsx` | interface: SavedViewsDropdownProps<br>function: SavedViewsDropdown |
 | `apps/workspace/src/domains/tasks/components/slash-command-menu.tsx` | interface: SlashMenuItem<br>function: SlashCommandMenu<br>function: getSlashCommandItems |
 | `apps/workspace/src/domains/tasks/components/task-calendar-skeleton.tsx` | function: TaskCalendarSkeleton |
