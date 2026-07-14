@@ -22,9 +22,9 @@ never decides whether an actor can read a record.
    upserts or removes the external document.
 4. Failures use bounded exponential backoff and eventually enter dead-letter
    state. Administrators can explicitly retry dead letters.
-5. Durable reindex jobs rebuild existing Project, Task, Proposal, Contract,
-   Engagement, or Deliverable projections in small cursor-owned batches without
-   loading an Organization dataset into a client.
+5. Durable reindex jobs rebuild existing Project, Task, Lead, Company, Contact,
+   Proposal, Contract, Engagement, or Deliverable projections in small
+   cursor-owned batches without loading an Organization dataset into a client.
 
 ## Attachment extraction flow
 

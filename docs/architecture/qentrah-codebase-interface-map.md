@@ -6,10 +6,10 @@
 
 ## Inventory summary
 
-- Source files scanned: 1717
-- Files exposing interfaces: 1446
-- Convex registered functions: 393
-- Application routes: 100
+- Source files scanned: 1728
+- Files exposing interfaces: 1457
+- Convex registered functions: 402
+- Application routes: 103
 - Hono/Convex HTTP registrations: 199
 - Eve/MCP tool entries: 118
 - Package commands: 88
@@ -128,7 +128,10 @@
 | `/:locale/clients/:id` | page | `apps/workspace/src/app/[locale]/(app)/clients/[id]/page.tsx` |
 | `/:locale/clients/:id/edit` | page | `apps/workspace/src/app/[locale]/(app)/clients/[id]/edit/page.tsx` |
 | `/:locale/clients/create` | page | `apps/workspace/src/app/[locale]/(app)/clients/create/page.tsx` |
+| `/:locale/crm/companies` | page | `apps/workspace/src/app/[locale]/(app)/crm/companies/page.tsx` |
+| `/:locale/crm/contacts` | page | `apps/workspace/src/app/[locale]/(app)/crm/contacts/page.tsx` |
 | `/:locale/crm/contracts` | page | `apps/workspace/src/app/[locale]/(app)/crm/contracts/page.tsx` |
+| `/:locale/crm/leads` | page | `apps/workspace/src/app/[locale]/(app)/crm/leads/page.tsx` |
 | `/:locale/crm/proposals` | page | `apps/workspace/src/app/[locale]/(app)/crm/proposals/page.tsx` |
 | `/:locale/dashboard` | page | `apps/marketing/app/(site)/[locale]/dashboard/page.tsx` |
 | `/:locale/deals` | page | `apps/workspace/src/app/[locale]/(app)/deals/page.tsx` |
@@ -529,6 +532,15 @@ fully composed path.
 | internalMutation | `deleteInternal` | `apps/workspace/convex/clientTasks/write.ts` |
 | mutation | `updateFromHono` | `apps/workspace/convex/clientTasks/write.ts` |
 | internalMutation | `updateInternal` | `apps/workspace/convex/clientTasks/write.ts` |
+| mutation | `convertLead` | `apps/workspace/convex/crm/lifecycle.ts` |
+| mutation | `createCompany` | `apps/workspace/convex/crm/lifecycle.ts` |
+| mutation | `createContact` | `apps/workspace/convex/crm/lifecycle.ts` |
+| mutation | `createLead` | `apps/workspace/convex/crm/lifecycle.ts` |
+| mutation | `updateLeadStatus` | `apps/workspace/convex/crm/lifecycle.ts` |
+| query | `listCompanies` | `apps/workspace/convex/crm/read.ts` |
+| query | `listContacts` | `apps/workspace/convex/crm/read.ts` |
+| query | `listLeads` | `apps/workspace/convex/crm/read.ts` |
+| query | `overview` | `apps/workspace/convex/crm/read.ts` |
 | query | `listByOrganization` | `apps/workspace/convex/customFields/read.ts` |
 | query | `listByOrganizationForTable` | `apps/workspace/convex/customFields/read.ts` |
 | query | `listByOrganization` | `apps/workspace/convex/customFields/values_read.ts` |
@@ -1189,6 +1201,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/clients/read.ts` | convex-query: list<br>convex-query: listPaged<br>convex-query: stats<br>convex-query: options<br>convex-query: get |
 | `apps/workspace/convex/clients/validators.ts` | value: clientTypeValidator<br>value: clientStatusValidator<br>value: clientPriorityValidator<br>value: storedClientPriorityValidator<br>type: ClientPriority<br>function: normalizeClientPriority<br>value: visibilityValidator<br>value: clientPipelineStageValidator<br>type: ClientPipelineStage<br>function: resolveClientPipelineStage<br>value: clientInputValidator<br>value: clientPatchValidator<br>value: clientValidator |
 | `apps/workspace/convex/clients/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono<br>convex-internalMutation: createInternal<br>convex-internalMutation: updateInternal<br>convex-internalMutation: deleteInternal |
+| `apps/workspace/convex/crm/identity.ts` | function: normalizeCompanyKey<br>function: assertLeadConvertible |
+| `apps/workspace/convex/crm/lifecycle.ts` | convex-mutation: createLead<br>convex-mutation: updateLeadStatus<br>convex-mutation: createCompany<br>convex-mutation: createContact<br>convex-mutation: convertLead |
+| `apps/workspace/convex/crm/read.ts` | convex-query: listLeads<br>convex-query: listCompanies<br>convex-query: listContacts<br>convex-query: overview |
+| `apps/workspace/convex/crm/search.ts` | function: leadSearchProjection<br>function: companySearchProjection<br>function: contactSearchProjection |
+| `apps/workspace/convex/crm/validators.ts` | value: leadStatusValidator<br>value: leadValidator<br>value: companyValidator<br>value: contactValidator |
 | `apps/workspace/convex/customFields/access.ts` | function: customFieldPermissionResource<br>function: assertCustomFieldTargetPermission |
 | `apps/workspace/convex/customFields/read.ts` | convex-query: listByOrganization<br>convex-query: listByOrganizationForTable |
 | `apps/workspace/convex/customFields/values_read.ts` | convex-query: listByRecord<br>convex-query: listByOrganization |
@@ -1197,7 +1214,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/dashboard/read.ts` | convex-query: overview |
 | `apps/workspace/convex/deals/read.ts` | convex-query: list<br>convex-query: get<br>convex-query: options<br>convex-query: stats |
 | `apps/workspace/convex/deals/validators.ts` | value: dealStageValidator<br>value: dealStatusValidator<br>value: dealPriorityValidator<br>value: dealInputValidator<br>value: dealValidator |
-| `apps/workspace/convex/deals/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono<br>convex-internalMutation: createInternal<br>convex-internalMutation: updateInternal<br>convex-internalMutation: deleteInternal |
+| `apps/workspace/convex/deals/write.ts` | type: DealInput<br>function: createDealFromDomainCommand<br>convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono<br>convex-internalMutation: createInternal<br>convex-internalMutation: updateInternal<br>convex-internalMutation: deleteInternal |
 | `apps/workspace/convex/delivery/lifecycle.ts` | convex-mutation: createProposal<br>convex-mutation: sendProposal<br>convex-mutation: acceptProposal<br>convex-mutation: sendContract<br>convex-mutation: signContract<br>convex-mutation: activateEngagement<br>convex-mutation: linkProject<br>convex-mutation: createDeliverable<br>convex-mutation: submitDeliverable<br>convex-mutation: decideApproval<br>convex-mutation: createChangeOrder<br>convex-mutation: submitChangeOrder<br>convex-mutation: recordConcern<br>convex-mutation: updateConcern<br>convex-mutation: invitePortalIdentity<br>convex-mutation: grantPortalAccess |
 | `apps/workspace/convex/delivery/read.ts` | convex-query: listProposals<br>convex-query: listContracts<br>convex-query: listEngagements<br>convex-query: engagementDetail |
 | `apps/workspace/convex/delivery/search.ts` | function: proposalSearchProjection<br>function: contractSearchProjection<br>function: engagementSearchProjection<br>function: deliverableSearchProjection |
@@ -1310,6 +1327,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/savedViews/write.ts` | convex-mutation: create<br>convex-mutation: update<br>convex-mutation: remove<br>convex-mutation: setDefault<br>convex-mutation: share<br>convex-mutation: makePersonal |
 | `apps/workspace/convex/schema/automations.ts` | value: automationNodeValidator<br>value: automationEdgeValidator<br>value: automationViewportValidator<br>value: automationTables |
 | `apps/workspace/convex/schema/billing.ts` | value: billingTables |
+| `apps/workspace/convex/schema/crm.ts` | value: crmTables |
 | `apps/workspace/convex/schema/custom_fields.ts` | value: customFieldTables |
 | `apps/workspace/convex/schema/delivery.ts` | value: deliveryTables |
 | `apps/workspace/convex/schema/docs.ts` | value: docsTables |
@@ -1347,7 +1365,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/security/backfill.ts` | convex-query: listDataSecurityBackfillJobs<br>convex-mutation: startDataSecurityBackfill<br>convex-internalQuery: readBatch<br>convex-internalAction: runBackfillBatch<br>convex-internalMutation: applyBatch<br>convex-mutation: runDataSecurityBackfill |
 | `apps/workspace/convex/security/backfillTargets.ts` | value: BACKFILL_TARGETS<br>type: BackfillTarget<br>type: BackfillPatch<br>type: BackfillPatchResult<br>function: createBackfillPatchesForTarget<br>function: readBackfillTargetPage<br>function: normalizeBackfillTargetId |
 | `apps/workspace/convex/security/clientPii.ts` | type: ClientPiiInput<br>function: protectClientPii<br>function: protectClientPiiPatch<br>function: revealClientPii |
-| `apps/workspace/convex/security/organizationData.ts` | function: redactSensitiveText<br>function: encryptedPlaceholder<br>function: protectOrganizationText<br>function: revealOrganizationText<br>function: protectOrganizationJson<br>function: revealOrganizationJson |
+| `apps/workspace/convex/security/organizationData.ts` | function: redactSensitiveText<br>function: encryptedPlaceholder<br>function: protectOrganizationText<br>function: organizationLookupFingerprint<br>function: revealOrganizationText<br>function: protectOrganizationJson<br>function: revealOrganizationJson |
 | `apps/workspace/convex/serviceTokens.ts` | function: configuredServiceToken<br>function: timingSafeEqualStrings<br>function: assertWorkspaceServiceToken<br>function: assertConvexBridgeToken<br>function: assertAdminConvexServiceToken |
 | `apps/workspace/convex/shared/present.ts` | function: presentWorkspaceRecord<br>function: timestampMilliseconds<br>function: isoDate<br>function: isoTime<br>function: stripDeletedFields<br>function: presentBaseRecord |
 | `apps/workspace/convex/shared/softDelete.ts` | function: isActive<br>function: filterActive<br>function: activeRows<br>function: sortByUpdated<br>function: sortByCreated<br>function: paginateActive |
@@ -1381,7 +1399,10 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/clients/create/page.tsx` | function: CreateClientPage |
 | `apps/workspace/src/app/[locale]/(app)/clients/layout.tsx` | function: ClientsLayout |
 | `apps/workspace/src/app/[locale]/(app)/clients/page.tsx` | function: ClientsPage |
+| `apps/workspace/src/app/[locale]/(app)/crm/companies/page.tsx` | function: CompaniesPage |
+| `apps/workspace/src/app/[locale]/(app)/crm/contacts/page.tsx` | function: ContactsPage |
 | `apps/workspace/src/app/[locale]/(app)/crm/contracts/page.tsx` | function: ContractsPage |
+| `apps/workspace/src/app/[locale]/(app)/crm/leads/page.tsx` | function: LeadsPage |
 | `apps/workspace/src/app/[locale]/(app)/crm/proposals/page.tsx` | function: ProposalsPage |
 | `apps/workspace/src/app/[locale]/(app)/deals/[id]/page.tsx` | function: DealDetailPage |
 | `apps/workspace/src/app/[locale]/(app)/deals/page.tsx` | function: DealsPage |
@@ -1769,6 +1790,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/clients/store/client-invoices.types.ts` | type: ClientInvoiceStatus<br>interface: ClientInvoicePayload<br>interface: ClientInvoice |
 | `apps/workspace/src/domains/clients/store/clients.types.ts` | type: Priority<br>type: PipelineStage<br>type: ClientAssetLinkStatus<br>interface: ClientAssetLink<br>type: ClientTaskStatus<br>interface: ClientTask |
 | `apps/workspace/src/domains/clients/validation/client.schema.ts` | value: clientSchema<br>interface: ClientFormValues |
+| `apps/workspace/src/domains/crm/components/crm-directory-screen.tsx` | function: CrmDirectoryScreen |
 | `apps/workspace/src/domains/custom-fields/api/custom-fields.ts` | type: CustomFieldDefinition<br>type: CustomFieldValue<br>function: useCustomFieldDefinitionsQuery<br>function: useCustomFieldDefinitionsForTableQuery<br>function: useCustomFieldValuesQuery<br>function: useAllCustomFieldValuesQuery<br>function: useCreateCustomFieldDefinitionMutation<br>function: useUpdateCustomFieldDefinitionMutation<br>function: useDeleteCustomFieldDefinitionMutation<br>function: useUpsertCustomFieldValueMutation<br>function: useDeleteCustomFieldValueMutation |
 | `apps/workspace/src/domains/custom-fields/components/custom-fields-settings.tsx` | function: CustomFieldsSettings |
 | `apps/workspace/src/domains/custom-fields/config/field-types.config.ts` | value: CUSTOM_FIELD_TYPES<br>value: CUSTOM_FIELD_RECORD_TYPES |
@@ -2322,6 +2344,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/brand-identity/src/index.ts` | type: BrandLocale<br>type: BrandProduct<br>type: BrandRoute<br>value: brandIdentity<br>function: brandLabel<br>function: brandProductName<br>function: brandEnvName<br>function: brandRouteSlug<br>function: brandRoutePath<br>function: brandDomainUrl<br>function: readBrandEnv<br>function: brandCssVariables |
 | `packages/domain-contracts/src/calendar.ts` | value: calendarEventTypeSchema<br>value: calendarEventStatusSchema<br>value: calendarEventInputObjectSchema<br>value: calendarEventInputSchema<br>value: calendarEventPatchObjectSchema<br>value: calendarEventPatchSchema<br>type: CalendarEventInput<br>type: CalendarEventPatch<br>type: CalendarEventType<br>type: CalendarEventStatus |
 | `packages/domain-contracts/src/clients.ts` | value: clientTypeSchema<br>value: clientStatusSchema<br>value: clientPrioritySchema<br>value: clientPipelineStageSchema<br>value: visibilitySchema<br>value: clientInputSchema<br>value: clientPatchObjectSchema<br>value: clientPatchSchema<br>value: clientRecordSchema<br>type: ClientType<br>type: ClientStatus<br>type: ClientPriority<br>type: ClientPipelineStage<br>type: Visibility<br>type: ClientInput<br>type: ClientPatch<br>type: ClientRecord<br>type: ClientSummary |
+| `packages/domain-contracts/src/crm.ts` | value: leadStatusSchema<br>value: leadInputSchema<br>value: companyInputSchema<br>value: contactInputSchema<br>type: LeadStatus<br>type: LeadInput<br>type: CompanyInput<br>type: ContactInput |
 | `packages/domain-contracts/src/deals.ts` | value: dealStageSchema<br>value: dealStatusSchema<br>value: dealPrioritySchema<br>value: dealInputSchema<br>value: dealRecordSchema<br>type: DealStage<br>type: DealStatus<br>type: DealPriority<br>type: DealInput<br>type: DealRecord<br>type: DealSummary<br>type: DealStats<br>value: crmDealStageSchema<br>value: crmDealRelationTypeSchema<br>value: crmClientPreviewSchema<br>value: crmBrokerPreviewSchema<br>value: crmProjectPreviewSchema<br>value: crmDealInputSchema<br>value: crmUpdateDealInputSchema<br>value: crmUpdateDealStageInputSchema<br>value: crmUpdateDealNotesInputSchema<br>value: crmUpdateDealFollowUpInputSchema<br>value: crmAddDealDocumentInputSchema<br>value: crmAssetDealsInputSchema<br>value: crmArchiveDealInputSchema<br>type: CrmDealInput<br>type: CrmUpdateDealInput<br>type: CrmUpdateDealStageInput<br>type: CrmUpdateDealNotesInput<br>type: CrmUpdateDealFollowUpInput<br>type: CrmAddDealDocumentInput<br>type: CrmAssetDealsInput<br>type: CrmArchiveDealInput<br>type: CrmDealRelationType<br>type: CrmClientPreview<br>type: CrmBrokerPreview<br>type: CrmProjectPreview |
 | `packages/domain-contracts/src/delivery.ts` | value: commercialModelSchema<br>value: proposalStatusSchema<br>value: contractStatusSchema<br>value: engagementStatusSchema<br>value: deliveryHealthSchema<br>value: deliverableStatusSchema<br>value: approvalStatusSchema<br>value: changeOrderStatusSchema<br>value: concernTypeSchema<br>value: concernSeveritySchema<br>value: concernStatusSchema<br>value: proposalInputSchema<br>value: contractTermsSchema<br>value: deliverableInputSchema<br>value: changeOrderInputSchema<br>type: CommercialModel<br>type: ProposalStatus<br>type: ContractStatus<br>type: EngagementStatus<br>type: DeliveryHealth<br>type: DeliverableStatus<br>type: ApprovalStatus<br>type: ChangeOrderStatus<br>type: ProposalInput<br>type: ContractTerms<br>type: DeliverableInput<br>type: ChangeOrderInput |
 | `packages/domain-contracts/src/navigation.ts` | value: navigationDomainIdSchema<br>value: navigationRailModeSchema<br>value: navigationNodeTypeSchema<br>value: navigationNodeSchema<br>value: navigationDomainSchema<br>value: authorizedNavigationProjectionSchema<br>value: navigationOverlayInputSchema<br>type: NavigationDomainId<br>type: NavigationRailMode<br>type: NavigationNodeType<br>type: NavigationDomain<br>type: AuthorizedNavigationProjection<br>type: NavigationOverlayInput<br>interface: NavigationNode |

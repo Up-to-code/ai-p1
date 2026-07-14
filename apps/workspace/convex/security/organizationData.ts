@@ -58,6 +58,17 @@ export async function protectOrganizationText(organizationId: string, purpose: s
   return `org-aesgcm:v1:${bytesToHex(iv)}:${bytesToHex(new Uint8Array(ciphertext))}`;
 }
 
+/** Stable, non-reversible Organization-scoped lookup key for normalized PII. */
+export async function organizationLookupFingerprint(organizationId: string, purpose: string, value: string) {
+  const secret = organizationDataSecret();
+  if (secret.length < 32) {
+    throw new Error("ORGANIZATION_DATA_ENCRYPTION_KEY must be configured before fingerprinting sensitive organization data.");
+  }
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${organizationId}:${purpose}:v1:${value}`));
+  return `org-hmac:v1:${bytesToHex(new Uint8Array(signature))}`;
+}
+
 export async function revealOrganizationText(organizationId: string, purpose: string, stored: string | undefined, fallback = "") {
   if (!stored) return fallback;
   if (!stored.startsWith("org-aesgcm:")) return stored;

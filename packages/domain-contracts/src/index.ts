@@ -7,4 +7,5 @@ export * from "./tasks";
 export * from "./navigation";
 export * from "./search";
 export * from "./delivery";
+export * from "./crm";
 export * from "./subscriptionPricing";

@@ -275,6 +275,9 @@
     "welcome": "Welcome back",
     "stats": {
       "clients": "Clients",
+      "leads": "Leads",
+      "contacts": "Contacts",
+      "companies": "Companies",
       "projects": "Projects",
       "assets": "Assets",
       "events": "Events"
@@ -4654,7 +4657,7 @@
     "recentSearches": "Recent searches",
     "noRecent": "No recent searches yet.",
     "usedCount": "Used {count, plural, one {once} other {# times}}",
-    "types": { "project": "Project", "task": "Task", "attachment": "Attachment", "proposal": "Proposal", "contract": "Contract", "engagement": "Engagement", "deliverable": "Deliverable" },
+    "types": { "project": "Project", "task": "Task", "attachment": "Attachment", "lead": "Lead", "company": "Company", "contact": "Contact", "proposal": "Proposal", "contract": "Contract", "engagement": "Engagement", "deliverable": "Deliverable" },
     "scopes": { "organization": "Organization", "space": "Space", "project": "Project", "private": "Private" },
     "sensitivityValues": { "standard": "Standard", "restricted": "Restricted", "confidential": "Confidential" }
   },
@@ -4670,7 +4673,7 @@
     "quarantined": "{count, plural, one {# quarantined file} other {# quarantined files}}",
     "resourceTypes": "Indexed resource types",
     "resourceTypesDescription": "These controls permit projection; record authorization is still checked when results are returned.",
-    "types": { "project": "Projects", "task": "Tasks", "attachment": "Attachments", "proposal": "Proposals", "contract": "Contracts", "engagement": "Engagements", "deliverable": "Deliverables" },
+    "types": { "project": "Projects", "task": "Tasks", "attachment": "Attachments", "lead": "Leads", "company": "Companies", "contact": "Contacts", "proposal": "Proposals", "contract": "Contracts", "engagement": "Engagements", "deliverable": "Deliverables" },
     "contentProcessing": "Attachment processing",
     "enableExtraction": "Extract text from clean supported attachments",
     "enableOcr": "Run OCR for clean supported images",
@@ -4687,6 +4690,9 @@
     "retryExtraction": "Retry scan and extraction dead letters",
     "reindexProjects": "Reindex projects",
     "reindexTasks": "Reindex tasks",
+    "reindexLeads": "Reindex leads",
+    "reindexCompanies": "Reindex companies",
+    "reindexContacts": "Reindex contacts",
     "reindexProposals": "Reindex proposals",
     "reindexContracts": "Reindex contracts",
     "reindexEngagements": "Reindex engagements",
@@ -4703,10 +4709,15 @@
     "billingTerms": "Billing terms", "createContract": "Accept and create contract", "cancel": "Cancel", "empty": "No records yet.",
     "models": { "fixed_scope": "Fixed scope", "retainer": "Retainer", "time_and_materials": "Time and materials" }
   },
+  "CrmDirectory": {
+    "eyebrow": "CRM directory", "leads": "Leads", "companies": "Companies", "contacts": "Contacts", "loading": "Loading CRM directory…",
+    "leadsDescription": "Qualify incoming demand and convert it once into canonical Client and Deal records.", "companiesDescription": "Organization accounts shared by Clients and Contacts.", "contactsDescription": "People linked to Companies and canonical Clients.",
+    "name": "Name", "email": "Email", "phone": "Phone", "companyName": "Company name", "source": "Lead source", "website": "Website", "industry": "Industry", "jobTitle": "Job title", "noCompany": "No company", "create": "Create", "qualify": "Qualify", "convert": "Convert to Client and Deal", "noDetails": "No additional details"
+  },
   "Delivery": {
     "title": "Delivery", "description": "Contract-facing engagements, deliverables, approvals, change orders, and risks.", "loading": "Loading delivery…",
     "empty": "No active engagements.", "selectEngagement": "Select an engagement to inspect its delivery state.", "unavailable": "This engagement is unavailable.",
-    "linkedProjects": "Linked projects", "selectProject": "Select a project", "linkProject": "Link project", "deliverables": "Deliverables", "deliverableName": "Deliverable name", "submit": "Submit", "approvals": "Client approvals", "approve": "Approve", "reject": "Reject", "noApprovals": "No approvals are waiting.",
+    "linkedProjects": "Linked projects", "selectProject": "Select a project", "linkProject": "Link project", "deliverables": "Deliverables", "deliverableName": "Deliverable name", "submit": "Submit", "milestones": "Project milestones", "noMilestones": "No milestones on linked projects.", "approvals": "Client approvals", "approve": "Approve", "reject": "Reject", "noApprovals": "No approvals are waiting.",
     "changeOrders": "Change orders", "changeTitle": "Change order title", "changeReason": "Commercial reason", "scopeDelta": "Scope change", "amountDelta": "Amount change", "create": "Create",
     "risks": "Risks and issues", "noRisks": "No risks or issues recorded."
   },

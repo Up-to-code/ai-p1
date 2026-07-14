@@ -14,6 +14,7 @@ import { automationTables } from "./schema/automations";
 import { navigationTables } from "./schema/navigation";
 import { searchTables } from "./schema/search";
 import { deliveryTables } from "./schema/delivery";
+import { crmTables } from "./schema/crm";
 
 // App tables are organization-scoped so user identity never owns business data directly.
 export default defineSchema({
@@ -32,4 +33,5 @@ export default defineSchema({
   ...navigationTables,
   ...searchTables,
   ...deliveryTables,
+  ...crmTables,
 });

@@ -276,6 +276,9 @@
     "welcome": "مرحباً بعودتك",
     "stats": {
       "clients": "العملاء",
+      "leads": "العملاء المحتملون",
+      "contacts": "جهات الاتصال",
+      "companies": "الشركات",
       "projects": "المشاريع",
       "assets": "الأصول",
       "events": "الفعاليات"
@@ -4636,7 +4639,7 @@
     "recentSearches": "عمليات البحث الأخيرة",
     "noRecent": "لا توجد عمليات بحث أخيرة بعد.",
     "usedCount": "استُخدم {count, plural, one {مرة واحدة} two {مرتين} few {# مرات} other {# مرة}}",
-    "types": { "project": "مشروع", "task": "مهمة", "attachment": "مرفق", "proposal": "عرض", "contract": "عقد", "engagement": "ارتباط", "deliverable": "مُسلَّم" },
+    "types": { "project": "مشروع", "task": "مهمة", "attachment": "مرفق", "lead": "عميل محتمل", "company": "شركة", "contact": "جهة اتصال", "proposal": "عرض", "contract": "عقد", "engagement": "ارتباط", "deliverable": "مُسلَّم" },
     "scopes": { "organization": "المؤسسة", "space": "المساحة", "project": "المشروع", "private": "خاص" },
     "sensitivityValues": { "standard": "قياسي", "restricted": "مقيد", "confidential": "سري" }
   },
@@ -4652,7 +4655,7 @@
     "quarantined": "{count, plural, one {ملف واحد معزول} two {ملفان معزولان} few {# ملفات معزولة} other {# ملفاً معزولاً}}",
     "resourceTypes": "أنواع الموارد المفهرسة",
     "resourceTypesDescription": "تسمح هذه الضوابط بإنشاء إسقاط البحث، مع إعادة التحقق من صلاحيات السجل عند إرجاع النتائج.",
-    "types": { "project": "المشاريع", "task": "المهام", "attachment": "المرفقات", "proposal": "العروض", "contract": "العقود", "engagement": "الارتباطات", "deliverable": "المُسلَّمات" },
+    "types": { "project": "المشاريع", "task": "المهام", "attachment": "المرفقات", "lead": "العملاء المحتملون", "company": "الشركات", "contact": "جهات الاتصال", "proposal": "العروض", "contract": "العقود", "engagement": "الارتباطات", "deliverable": "المُسلَّمات" },
     "contentProcessing": "معالجة المرفقات",
     "enableExtraction": "استخراج النص من المرفقات النظيفة والمدعومة",
     "enableOcr": "تشغيل OCR للصور النظيفة والمدعومة",
@@ -4669,6 +4672,9 @@
     "retryExtraction": "إعادة محاولة أخطاء الفحص والاستخراج",
     "reindexProjects": "إعادة فهرسة المشاريع",
     "reindexTasks": "إعادة فهرسة المهام",
+    "reindexLeads": "إعادة فهرسة العملاء المحتملين",
+    "reindexCompanies": "إعادة فهرسة الشركات",
+    "reindexContacts": "إعادة فهرسة جهات الاتصال",
     "reindexProposals": "إعادة فهرسة العروض",
     "reindexContracts": "إعادة فهرسة العقود",
     "reindexEngagements": "إعادة فهرسة الارتباطات",
@@ -4685,10 +4691,15 @@
     "billingTerms": "شروط الفوترة", "createContract": "القبول وإنشاء العقد", "cancel": "إلغاء", "empty": "لا توجد سجلات بعد.",
     "models": { "fixed_scope": "نطاق ثابت", "retainer": "اتفاق مستمر", "time_and_materials": "الوقت والمواد" }
   },
+  "CrmDirectory": {
+    "eyebrow": "دليل إدارة العملاء", "leads": "العملاء المحتملون", "companies": "الشركات", "contacts": "جهات الاتصال", "loading": "جارٍ تحميل دليل العملاء…",
+    "leadsDescription": "أهل الطلبات الواردة وحولها مرة واحدة إلى سجلات العميل والصفقة الأساسية.", "companiesDescription": "حسابات المؤسسات المشتركة بين العملاء وجهات الاتصال.", "contactsDescription": "الأشخاص المرتبطون بالشركات والعملاء الأساسيين.",
+    "name": "الاسم", "email": "البريد الإلكتروني", "phone": "الهاتف", "companyName": "اسم الشركة", "source": "مصدر العميل المحتمل", "website": "الموقع", "industry": "القطاع", "jobTitle": "المسمى الوظيفي", "noCompany": "دون شركة", "create": "إنشاء", "qualify": "تأهيل", "convert": "التحويل إلى عميل وصفقة", "noDetails": "لا توجد تفاصيل إضافية"
+  },
   "Delivery": {
     "title": "التسليم", "description": "الارتباطات التعاقدية والمُسلَّمات والموافقات وأوامر التغيير والمخاطر.", "loading": "جارٍ تحميل التسليم…",
     "empty": "لا توجد ارتباطات نشطة.", "selectEngagement": "اختر ارتباطاً لمراجعة حالة التسليم.", "unavailable": "هذا الارتباط غير متاح.",
-    "linkedProjects": "المشاريع المرتبطة", "selectProject": "اختر مشروعاً", "linkProject": "ربط المشروع", "deliverables": "المُسلَّمات", "deliverableName": "اسم المُسلَّم", "submit": "إرسال", "approvals": "موافقات العميل", "approve": "موافقة", "reject": "رفض", "noApprovals": "لا توجد موافقات معلقة.",
+    "linkedProjects": "المشاريع المرتبطة", "selectProject": "اختر مشروعاً", "linkProject": "ربط المشروع", "deliverables": "المُسلَّمات", "deliverableName": "اسم المُسلَّم", "submit": "إرسال", "milestones": "معالم المشاريع", "noMilestones": "لا توجد معالم في المشاريع المرتبطة.", "approvals": "موافقات العميل", "approve": "موافقة", "reject": "رفض", "noApprovals": "لا توجد موافقات معلقة.",
     "changeOrders": "أوامر التغيير", "changeTitle": "عنوان أمر التغيير", "changeReason": "السبب التجاري", "scopeDelta": "تغيير النطاق", "amountDelta": "تغيير المبلغ", "create": "إنشاء",
     "risks": "المخاطر والمشكلات", "noRisks": "لم تُسجل مخاطر أو مشكلات."
   },

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const searchResourceTypeSchema = z.enum([
   "space", "project", "task", "document", "attachment", "comment", "message",
-  "client", "contact", "company", "deal", "proposal", "contract",
+  "lead", "client", "contact", "company", "deal", "proposal", "contract",
   "engagement", "deliverable", "approval", "invoice", "expense", "payment",
 ]);
 export const searchScopeTypeSchema = z.enum(["organization", "space", "project", "private"]);

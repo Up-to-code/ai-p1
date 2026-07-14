@@ -2,7 +2,7 @@ import { v } from "convex/values";
 
 export const searchResourceTypeValidator = v.union(
   v.literal("space"), v.literal("project"), v.literal("task"), v.literal("document"), v.literal("attachment"), v.literal("comment"), v.literal("message"),
-  v.literal("client"), v.literal("contact"), v.literal("company"), v.literal("deal"), v.literal("proposal"), v.literal("contract"),
+  v.literal("lead"), v.literal("client"), v.literal("contact"), v.literal("company"), v.literal("deal"), v.literal("proposal"), v.literal("contract"),
   v.literal("engagement"), v.literal("deliverable"), v.literal("approval"), v.literal("invoice"), v.literal("expense"), v.literal("payment"),
 );
 export const searchScopeTypeValidator = v.union(v.literal("organization"), v.literal("space"), v.literal("project"), v.literal("private"));

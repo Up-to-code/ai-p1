@@ -67,6 +67,7 @@ access, presentation, and tests local to that behavior.
 | Calendar | `src/domains/calendar`; `@qentrah/domain-contracts/calendar` | `convex/calendar/lifecycle.ts` with validators and presentation | `/calendar`, Hono, MCP, Eve adapters | tenant links, interval ordering, reminder replacement, audit parity |
 | Capabilities | `src/domains/capabilities` | Organization capability reads | navigation and gated routes | truthful enabled/disabled behavior |
 | Clients | `src/domains/clients`; `@qentrah/domain-contracts/clients` | `convex/clients/lifecycle.ts` with focused validators and presentation | `/clients`, Hono, MCP, Eve adapters | patch omission, PII, tenant access, audit/webhook parity |
+| CRM Identity | `src/domains/crm`; `@qentrah/domain-contracts/crm` | `convex/crm`; canonical Client and Deal lifecycle calls | `/crm/leads`, `/crm/companies`, `/crm/contacts`, Search Projection | idempotent qualified-Lead conversion, one canonical Client/Deal, Organization-scoped HMAC PII lookup, restricted external indexing |
 | Convex client | `src/domains/convex` | generated/runtime bindings | provider Adapter | authentication and typed calls |
 | Custom Fields | `src/domains/custom-fields` | `convex/customFields` | Task/Doc/Client Adapters | typed values and resource ownership |
 | Dashboard | `src/domains/dashboard` | `convex/dashboard`, `convex/workspace` | `/ws`, project dashboards | personalized reads, honest states |

@@ -43,6 +43,8 @@ copied into an Engagement.
 
 - Deliverables move through planned/in-progress, submitted, and an explicit
   Approval decision. Submission creates a durable Approval record.
+- Milestones remain Project-owned; an Engagement reads milestones from its live
+  `engagementProjects` links instead of copying them into Delivery.
 - Change Orders use the same approval seam and alter commercial value only when
   approved.
 - Critical Risks/Issues block Engagement health; high-severity records move an

@@ -30,6 +30,9 @@ export const ROUTE_IDS = [
   "delivery",
   "proposals",
   "contracts",
+  "leads",
+  "companies",
+  "contacts",
 ] as const;
 
 export type RouteId = (typeof ROUTE_IDS)[number];
@@ -72,6 +75,9 @@ export const ROUTE_CATALOG: readonly RouteCatalogEntry[] = [
   { id: "searchPolicy", path: "/organization/search-policy", persistentParams: [], railItem: "admin" },
   { id: "proposals", path: "/crm/proposals", persistentParams: [], railItem: "crm" },
   { id: "contracts", path: "/crm/contracts", persistentParams: [], railItem: "crm" },
+  { id: "leads", path: "/crm/leads", persistentParams: [], railItem: "crm" },
+  { id: "companies", path: "/crm/companies", persistentParams: [], railItem: "crm" },
+  { id: "contacts", path: "/crm/contacts", persistentParams: [], railItem: "crm" },
   { id: "delivery", path: "/delivery", persistentParams: [], railItem: "delivery" },
 ];
 

@@ -6,8 +6,9 @@ import { assertOrganizationPermission } from "../organizations/profile/access";
 import { projectSearchProjection } from "./adapters/project";
 import { taskSearchProjection } from "./adapters/task";
 import { contractSearchProjection, deliverableSearchProjection, engagementSearchProjection, proposalSearchProjection } from "../delivery/search";
+import { companySearchProjection, contactSearchProjection, leadSearchProjection } from "../crm/search";
 
-const reindexResourceValidator = v.union(v.literal("project"), v.literal("task"), v.literal("proposal"), v.literal("contract"), v.literal("engagement"), v.literal("deliverable"));
+const reindexResourceValidator = v.union(v.literal("project"), v.literal("task"), v.literal("lead"), v.literal("company"), v.literal("contact"), v.literal("proposal"), v.literal("contract"), v.literal("engagement"), v.literal("deliverable"));
 
 export const start = mutation({
   args: { organizationId: v.string(), resourceType: reindexResourceValidator },
@@ -61,6 +62,21 @@ export const processNextBatch = internalMutation({
       if (job.resourceType === "proposal") {
         const page = await ctx.db.query("proposals").withIndex("by_org_state_updated", (q) => q.eq("organizationId", job.organizationId).eq("recordState", "active")).paginate({ cursor: job.cursor ?? null, numItems: 25 });
         for (const proposal of page.page) await proposalSearchProjection(ctx, proposal);
+        return finishPage(ctx, job, page);
+      }
+      if (job.resourceType === "lead") {
+        const page = await ctx.db.query("crmLeads").withIndex("by_org_status_updated", (q) => q.eq("organizationId", job.organizationId)).paginate({ cursor: job.cursor ?? null, numItems: 25 });
+        for (const lead of page.page.filter((record) => record.recordState === "active")) await leadSearchProjection(ctx, lead);
+        return finishPage(ctx, job, page);
+      }
+      if (job.resourceType === "company") {
+        const page = await ctx.db.query("crmCompanies").withIndex("by_org_state_updated", (q) => q.eq("organizationId", job.organizationId).eq("recordState", "active")).paginate({ cursor: job.cursor ?? null, numItems: 25 });
+        for (const company of page.page) await companySearchProjection(ctx, company);
+        return finishPage(ctx, job, page);
+      }
+      if (job.resourceType === "contact") {
+        const page = await ctx.db.query("crmContacts").withIndex("by_org_state_updated", (q) => q.eq("organizationId", job.organizationId).eq("recordState", "active")).paginate({ cursor: job.cursor ?? null, numItems: 25 });
+        for (const contact of page.page) await contactSearchProjection(ctx, contact);
         return finishPage(ctx, job, page);
       }
       if (job.resourceType === "contract") {

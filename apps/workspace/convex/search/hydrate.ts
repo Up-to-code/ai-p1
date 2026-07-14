@@ -40,13 +40,15 @@ export const candidates = query({
     if (args.candidates.length > MAX_CANDIDATES) {
       throw new ConvexError({ code: "SEARCH_CANDIDATE_LIMIT", message: `Search accepts at most ${MAX_CANDIDATES} candidates.` });
     }
-    const [projectAccess, taskAccess, spaceAccess, deliveryAccess, canReadDeals, canUpdateDeals] = await Promise.all([
+    const [projectAccess, taskAccess, spaceAccess, deliveryAccess, canReadDeals, canUpdateDeals, canReadClients, canUpdateClients] = await Promise.all([
       resolveProjectAccess(ctx, args.organizationId),
       resolveTaskAccess(ctx, args.organizationId),
       resolveSpaceAccess(ctx, args.organizationId),
       resolveDeliveryAccess(ctx, args.organizationId),
       canUseOrganizationResourceAction(ctx, args.organizationId, "deal", "read"),
       canUseOrganizationResourceAction(ctx, args.organizationId, "deal", "update"),
+      canUseOrganizationResourceAction(ctx, args.organizationId, "client", "read"),
+      canUseOrganizationResourceAction(ctx, args.organizationId, "client", "update"),
     ]);
     const uniqueCandidates = highestScoringCandidates(args.candidates);
     const hydrated = await Promise.all(uniqueCandidates.map(async (candidate) => {
@@ -93,6 +95,24 @@ export const candidates = query({
         const proposal = id ? await ctx.db.get(id) : null;
         if (!canReadDeals || !activeOrganizationRecord(proposal, args.organizationId)) return null;
         return presentCommercial(proposal, candidate.score, projection.route, canUpdateDeals);
+      }
+      if (candidate.resourceType === "lead") {
+        const id = ctx.db.normalizeId("crmLeads", candidate.resourceId);
+        const lead = id ? await ctx.db.get(id) : null;
+        if (!canReadDeals || !activeOrganizationRecord(lead, args.organizationId)) return null;
+        return { resourceType: "lead" as const, resourceId: String(lead._id), title: lead.name, subtitle: [lead.companyName, lead.status].filter(Boolean).join(" · "), route: projection.route, score: candidate.score, capabilities: { canRead: true, canUpdate: canUpdateDeals, canDelete: false } };
+      }
+      if (candidate.resourceType === "company") {
+        const id = ctx.db.normalizeId("crmCompanies", candidate.resourceId);
+        const company = id ? await ctx.db.get(id) : null;
+        if (!canReadClients || !activeOrganizationRecord(company, args.organizationId)) return null;
+        return { resourceType: "company" as const, resourceId: String(company._id), title: company.name, subtitle: company.industry, route: projection.route, score: candidate.score, capabilities: { canRead: true, canUpdate: canUpdateClients, canDelete: false } };
+      }
+      if (candidate.resourceType === "contact") {
+        const id = ctx.db.normalizeId("crmContacts", candidate.resourceId);
+        const contact = id ? await ctx.db.get(id) : null;
+        if (!canReadClients || !activeOrganizationRecord(contact, args.organizationId)) return null;
+        return { resourceType: "contact" as const, resourceId: String(contact._id), title: contact.name, subtitle: contact.title, route: projection.route, score: candidate.score, capabilities: { canRead: true, canUpdate: canUpdateClients, canDelete: false } };
       }
       if (candidate.resourceType === "contract") {
         const id = ctx.db.normalizeId("contracts", candidate.resourceId);

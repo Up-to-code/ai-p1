@@ -19,7 +19,7 @@ import { logger } from "@/lib/logger"
 import { useAuthorizedSearchQuery, useRecentSearches, useSavedSearchCommands, useSavedSearches } from "../index"
 import { dateInputValue, paramsFromSearchConfiguration, searchConfigurationFromParams, searchFilterCount } from "../search-center-state"
 
-const searchableTypes = ["project", "task", "attachment", "proposal", "contract", "engagement", "deliverable"] as const satisfies readonly SearchResourceType[]
+const searchableTypes = ["project", "task", "attachment", "lead", "company", "contact", "proposal", "contract", "engagement", "deliverable"] as const satisfies readonly SearchResourceType[]
 
 export function SearchCenterScreen() {
   const t = useTranslations("SearchCenter")
@@ -229,6 +229,6 @@ function option(id: string, label: string): [string, string] {
 
 function SearchTypeLabel({ type }: { type: SearchResourceType }) {
   const t = useTranslations("SearchCenter.types")
-  if (type === "project" || type === "task" || type === "attachment" || type === "proposal" || type === "contract" || type === "engagement" || type === "deliverable") return t(type)
+  if (type === "project" || type === "task" || type === "attachment" || type === "lead" || type === "company" || type === "contact" || type === "proposal" || type === "contract" || type === "engagement" || type === "deliverable") return t(type)
   return type
 }

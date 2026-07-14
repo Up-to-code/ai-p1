@@ -92,7 +92,10 @@ export const IMPLEMENTED_NAVIGATION_CATALOG: readonly NavigationCatalogDomain[] 
   {
     id: "crm", labelKey: "crm", iconId: "crm", routeId: "clients", required: true, opensPanel: true, readResources: ["client", "deal"], accessMode: "any",
     nodes: [
+      node("crm", "crm.leads", "leads", "attention", "leads", { required: true }),
       node("crm", "crm.clients", "clients", "clients", "clients", { required: true }),
+      node("crm", "crm.contacts", "contacts", "members", "contacts"),
+      node("crm", "crm.companies", "companies", "organization", "companies"),
       node("crm", "crm.deals", "deals", "deals", "deals", { required: true }),
       node("crm", "crm.proposals", "proposals", "docs", "proposals"),
       node("crm", "crm.contracts", "contracts", "docs", "contracts"),
