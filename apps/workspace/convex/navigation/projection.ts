@@ -45,6 +45,7 @@ export function buildAuthorizedNavigationProjection(input: {
   catalog: readonly NavigationCatalogDomain[];
   organizationLayout?: NavigationLayoutLayer;
   userOverlay?: NavigationLayoutLayer;
+  deniedNodeIds?: ReadonlySet<string>;
 }): AuthorizedNavigationProjection {
   const allowed = input.catalog.filter((domain) => input.allowedDomainIds.has(domain.id));
   const ordered = orderedDomains(allowed, [
@@ -68,6 +69,7 @@ export function buildAuthorizedNavigationProjection(input: {
     required: domain.required,
     opensPanel: domain.opensPanel,
     nodes: domain.nodes
+      .filter((navigationNode) => !input.deniedNodeIds?.has(navigationNode.id))
       .filter((navigationNode) => navigationNode.required || !hiddenOptionalNodeIds.has(navigationNode.id))
       .map((navigationNode) => ({
         ...navigationNode,

@@ -62,4 +62,16 @@ describe("Authorized Navigation Projection", () => {
     expect(nodes.some((node) => node.id === "tasks.mine")).toBe(false);
     expect(nodes.find((node) => node.id === "tasks.overdue")?.labelOverride).toBe("Late work");
   });
+
+  it("omits source-denied nodes even when product-required", () => {
+    const result = buildAuthorizedNavigationProjection({
+      organizationId: "org_1",
+      allowedDomainIds: new Set(["reports"]),
+      catalog: IMPLEMENTED_NAVIGATION_CATALOG,
+      deniedNodeIds: new Set(["reports.executive", "reports.finance"]),
+    });
+    const nodeIds = result.domains[0]?.nodes.map((node) => node.id) ?? [];
+    expect(nodeIds).not.toContain("reports.executive");
+    expect(nodeIds).not.toContain("reports.finance");
+  });
 });

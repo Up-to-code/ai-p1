@@ -1416,7 +1416,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/projects/rollup.ts` | function: validateStrictTaskDates<br>function: updateProjectRollup |
 | `apps/workspace/convex/projects/validators.ts` | value: projectStatusValidator<br>value: projectHealthValidator<br>value: visibilityValidator<br>type: ProjectVisibility<br>type: StoredProjectVisibility<br>function: normalizeProjectVisibility<br>value: projectInputValidator<br>value: projectValidator |
 | `apps/workspace/convex/projects/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono<br>convex-internalMutation: createInternal<br>convex-internalMutation: updateInternal<br>convex-internalMutation: deleteInternal |
-| `apps/workspace/convex/reports/access.ts` | function: assertReportSourceAccess<br>function: assertReportScopeAccess<br>function: assertReportRead<br>function: assertReportManage |
+| `apps/workspace/convex/reports/access.ts` | function: reportSourceResources<br>function: canReadReportSource<br>function: assertReportSourceAccess<br>function: assertReportScopeAccess<br>function: assertReportRead<br>function: assertReportManage |
 | `apps/workspace/convex/reports/commands.ts` | convex-mutation: createReport<br>convex-mutation: updateReport<br>convex-mutation: setReportGrants<br>convex-mutation: scheduleReport |
 | `apps/workspace/convex/reports/read.ts` | convex-query: list<br>convex-query: overview<br>convex-query: schedules |
 | `apps/workspace/convex/reports/validators.ts` | value: reportSourceValidator<br>value: reportVisibilityValidator<br>value: reportScopeValidator<br>value: reportCadenceValidator |

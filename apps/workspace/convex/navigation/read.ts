@@ -7,6 +7,13 @@ import { canPerformOrganizationAction, getOrganizationRole } from "../permission
 import { IMPLEMENTED_NAVIGATION_CATALOG } from "./catalog";
 import { buildAuthorizedNavigationProjection } from "./projection";
 import { authorizedNavigationProjectionValidator } from "./validators";
+import { canReadReportSource } from "../reports/access";
+import type { Doc } from "../_generated/dataModel";
+
+const reportSources = new Set<Doc<"reportDefinitions">["source"]>([
+  "executive", "sales", "pipeline", "delivery", "resource_utilization", "capacity",
+  "project_profitability", "client_profitability", "finance", "tax",
+]);
 
 export const getAuthorizedProjection = query({
   args: { organizationId: v.string() },
@@ -62,6 +69,19 @@ export const getAuthorizedProjection = query({
       accessDecisions.filter(([, allowed]) => allowed).map(([id]) => id),
     );
     const organizationLayout = roleLayout ?? defaultLayout ?? undefined;
+    const reportDomain = IMPLEMENTED_NAVIGATION_CATALOG.find((domain) => domain.id === "reports");
+    const reportNodeDecisions = await Promise.all((reportDomain?.nodes ?? []).map(async (node) => {
+      const source = node.params?.view;
+      if (!source || !reportSources.has(source as Doc<"reportDefinitions">["source"])) return [node.id, true] as const;
+      return [node.id, await canReadReportSource(
+        ctx,
+        args.organizationId,
+        source as Doc<"reportDefinitions">["source"],
+      )] as const;
+    }));
+    const deniedNodeIds = new Set(
+      reportNodeDecisions.filter(([, allowed]) => !allowed).map(([nodeId]) => nodeId),
+    );
 
     return buildAuthorizedNavigationProjection({
       organizationId: args.organizationId,
@@ -69,6 +89,7 @@ export const getAuthorizedProjection = query({
       catalog: IMPLEMENTED_NAVIGATION_CATALOG,
       organizationLayout,
       userOverlay: userOverlay ?? undefined,
+      deniedNodeIds,
     });
   },
 });

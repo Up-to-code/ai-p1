@@ -47,4 +47,17 @@ describe("sidebar source", () => {
       expect(arSidebar[key], `ar:${key}`).toEqual(expect.any(String));
     }
   });
+
+  it("localizes every projected node label in English and Arabic", () => {
+    const catalog = readSource("convex/navigation/catalog.ts");
+    const labelKeys = [...catalog.matchAll(/node\([^,]+,[^,]+,\s*"([^"]+)"/g)]
+      .map((match) => match[1]);
+    const enNodes = JSON.parse(readSource("messages/en.json"))["Sidebar"]["nodes"];
+    const arNodes = JSON.parse(readSource("messages/ar.json"))["Sidebar"]["nodes"];
+
+    for (const key of new Set(labelKeys)) {
+      expect(enNodes[key], `en:Sidebar.nodes.${key}`).toEqual(expect.any(String));
+      expect(arNodes[key], `ar:Sidebar.nodes.${key}`).toEqual(expect.any(String));
+    }
+  });
 });

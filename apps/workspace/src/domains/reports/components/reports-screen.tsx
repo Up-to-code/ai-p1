@@ -22,7 +22,8 @@ export function ReportsScreen() {
   const overview = useQuery(api.reports.read.overview, organizationId && mode === "overview" ? { organizationId, source, startAt, endAt } : "skip");
   const saved = useQuery(api.reports.read.list, organizationId && mode !== "overview" ? { organizationId } : "skip");
   const schedules = useQuery(api.reports.read.schedules, organizationId && mode === "scheduled" ? { organizationId } : "skip");
-  if (!organizationId || (mode === "overview" ? !overview : !saved)) return <div className="flex min-h-72 items-center justify-center text-sm text-muted-foreground"><Loader2 className="me-2 size-4 animate-spin" />{t("loading")}</div>;
+  if (!organizationId || (mode === "overview" ? overview === undefined : saved === undefined)) return <div className="flex min-h-72 items-center justify-center text-sm text-muted-foreground"><Loader2 className="me-2 size-4 animate-spin" />{t("loading")}</div>;
+  if (mode === "overview" && overview === null) return <div className="flex min-h-72 items-center justify-center px-6 text-center text-sm text-muted-foreground">{t("denied")}</div>;
   const metrics = overview?.metrics ?? [], savedReports = saved ?? [];
   return <main className="min-h-0 flex-1 overflow-y-auto bg-background px-5 py-6 text-foreground sm:px-7"><div className="mx-auto max-w-7xl">
     <header><p className="text-xs font-semibold uppercase tracking-[.16em] text-muted-foreground">{t("eyebrow")}</p><h1 className="mt-1 text-2xl font-semibold tracking-tight">{t(`views.${requested}`)}</h1><p className="mt-1 max-w-3xl text-sm text-muted-foreground">{t("description")}</p></header>

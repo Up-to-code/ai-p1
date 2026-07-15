@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { requireServerActor } from "../access/actor";
-import { assertReportRead, assertReportSourceAccess } from "./access";
+import { assertReportRead, canReadReportSource } from "./access";
 import { reportSourceValidator } from "./validators";
 
 const metric = v.object({ id: v.string(), value: v.number(), amountMinor: v.optional(v.number()), currency: v.optional(v.string()) });
@@ -23,9 +23,9 @@ export const list = query({
 
 export const overview = query({
   args: { organizationId: v.string(), source: reportSourceValidator, startAt: v.number(), endAt: v.number() },
-  returns: v.object({ source: reportSourceValidator, metrics: v.array(metric) }),
+  returns: v.union(v.null(), v.object({ source: reportSourceValidator, metrics: v.array(metric) })),
   handler: async (ctx, args) => {
-    await assertReportSourceAccess(ctx, args.organizationId, args.source);
+    if (!await canReadReportSource(ctx, args.organizationId, args.source)) return null;
     if (args.endAt <= args.startAt) throw new Error("Report end must be after start.");
     if (args.source === "sales" || args.source === "pipeline") {
       const [clients, deals] = await Promise.all([

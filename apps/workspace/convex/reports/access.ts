@@ -8,14 +8,31 @@ import { resolveProjectAccess } from "../access/project";
 
 type Ctx = QueryCtx | MutationCtx;
 
-export async function assertReportSourceAccess(ctx: Ctx, organizationId: string, source: Doc<"reportDefinitions">["source"]) {
-  await assertOrganizationResourcePermission(ctx, organizationId, "report", "read");
-  const resources = source === "sales" || source === "pipeline" ? ["client", "deal"] as const
+export function reportSourceResources(source: Doc<"reportDefinitions">["source"]) {
+  return source === "sales" || source === "pipeline" ? ["client", "deal"] as const
     : source === "finance" || source === "tax" || source.includes("profitability") ? ["finance"] as const
       : source === "resource_utilization" || source === "capacity" ? ["team", "project"] as const
         : source === "delivery" ? ["project"] as const : ["organization"] as const;
-  const allowed = await Promise.all(resources.map((resource) => canUseOrganizationResourceAction(ctx, organizationId, resource, "read")));
-  if (!allowed.every(Boolean)) throw new Error("Report source access denied.");
+}
+
+export async function canReadReportSource(
+  ctx: Ctx,
+  organizationId: string,
+  source: Doc<"reportDefinitions">["source"],
+) {
+  if (!await canUseOrganizationResourceAction(ctx, organizationId, "report", "read")) return false;
+  const allowed = await Promise.all(
+    reportSourceResources(source).map((resource) =>
+      canUseOrganizationResourceAction(ctx, organizationId, resource, "read"),
+    ),
+  );
+  return allowed.every(Boolean);
+}
+
+export async function assertReportSourceAccess(ctx: Ctx, organizationId: string, source: Doc<"reportDefinitions">["source"]) {
+  if (!await canReadReportSource(ctx, organizationId, source)) {
+    throw new Error("Report source access denied.");
+  }
 }
 
 export async function assertReportScopeAccess(ctx: Ctx, report: Pick<Doc<"reportDefinitions">, "organizationId" | "scopeType" | "scopeId">) {
