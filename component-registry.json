@@ -593,17 +593,28 @@
       "kind": "shared-ui",
       "summary": "Generic modal for viewing/editing a single record.",
       "usedIn": [
-        "domains/clients/client-picker-modal",
-        "domains/projects/project-picker"
+        "domains/projects/create-project-form",
+        "domains/projects/edit-project-form"
       ],
       "props": [
-        "open",
+        "isOpen",
         "onClose",
-        "record",
-        "fields"
+        "title",
+        "description",
+        "actionLabel",
+        "onAction",
+        "isSaving",
+        "isUnsaved",
+        "defaultWidth",
+        "defaultHeight",
+        "minWidth",
+        "maxWidth",
+        "minHeight",
+        "maxHeight",
+        "children"
       ],
       "createdAt": "2026-03-01",
-      "notes": "Not to be confused with form modals — this is for record selection."
+      "notes": "Resizable record editor shell. Callers own form state, validation, and writes; optional dimensions preserve the shared defaults while allowing dense record forms to request a larger canvas."
     },
     {
       "name": "AddMenu",

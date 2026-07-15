@@ -22,4 +22,5 @@ export const projectSchema = z.object({
   teamMemberIds: z.array(z.string()).optional(),
 });
 
-export type ProjectFormValues = z.infer<typeof projectSchema>;
+export type ProjectFormInput = z.input<typeof projectSchema>;
+export type ProjectFormValues = z.output<typeof projectSchema>;

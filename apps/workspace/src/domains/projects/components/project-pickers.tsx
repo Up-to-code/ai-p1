@@ -56,11 +56,13 @@ export function ProjectStatusPicker({
   onChange,
   labels,
   tooltip,
+  className,
 }: {
   value: string;
   onChange: (v: string) => void;
   labels?: Partial<Record<string, string>>;
   tooltip?: string;
+  className?: string;
 }) {
   const resolvedLabels = { ...STATUS_LABELS, ...labels };
 
@@ -68,7 +70,7 @@ export function ProjectStatusPicker({
     <Select value={value} onValueChange={(v: string | null) => v && onChange(v)}>
       <Tooltip>
         <TooltipTrigger render={<span className="inline-flex" />}>
-          <SelectTrigger className="h-9 w-auto rounded-xl border border-border bg-background/50 px-3 text-sm font-semibold focus:ring-1 focus:ring-ring dark:border-white/10 dark:bg-white/5">
+          <SelectTrigger className={cn("h-9 w-auto rounded-lg border border-border bg-background px-3 text-sm font-semibold focus:ring-1 focus:ring-ring", className)}>
             <SelectValue>
               <span className="flex items-center gap-2">
                 <ColorDot dotClassName={STATUS_COLORS[value] ?? STATUS_COLORS.planned} size="sm" />
@@ -100,11 +102,13 @@ export function ProjectHealthPicker({
   onChange,
   labels,
   tooltip,
+  className,
 }: {
   value: string;
   onChange: (v: string) => void;
   labels?: Partial<Record<string, string>>;
   tooltip?: string;
+  className?: string;
 }) {
   const resolvedLabels = { ...HEALTH_LABELS, ...labels };
 
@@ -112,7 +116,7 @@ export function ProjectHealthPicker({
     <Select value={value} onValueChange={(v: string | null) => v && onChange(v)}>
       <Tooltip>
         <TooltipTrigger render={<span className="inline-flex" />}>
-          <SelectTrigger className="h-9 w-auto rounded-xl border border-border bg-background/50 px-3 text-sm font-semibold focus:ring-1 focus:ring-ring dark:border-white/10 dark:bg-white/5">
+          <SelectTrigger className={cn("h-9 w-auto rounded-lg border border-border bg-background px-3 text-sm font-semibold focus:ring-1 focus:ring-ring", className)}>
             <SelectValue>
               <span className="flex items-center gap-2">
                 <ColorDot dotClassName={HEALTH_COLORS[value] ?? HEALTH_COLORS.onTrack} size="sm" />
@@ -149,6 +153,7 @@ export function ClientInlinePicker({
   searchPlaceholder = "Search...",
   noResultsText = "No results found",
   tooltip,
+  className,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -157,6 +162,7 @@ export function ClientInlinePicker({
   searchPlaceholder?: string;
   noResultsText?: string;
   tooltip?: string;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -180,7 +186,7 @@ export function ClientInlinePicker({
               render={
                 <button
                   type="button"
-                  className="inline-flex h-9 items-center gap-2 rounded-xl border border-border bg-background/50 px-3 text-sm font-semibold text-foreground hover:bg-muted/50 transition-colors dark:border-white/10 dark:bg-white/5"
+                  className={cn("inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted/50", className)}
                 >
                   <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   {selected?.name ?? (
