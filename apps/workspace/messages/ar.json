@@ -593,6 +593,7 @@
       "scenarios": "السيناريوهات",
       "rateCards": "بطاقات الأسعار",
       "resourceReports": "تقارير الموارد"
+      ,"financeOverview": "نظرة عامة على المالية", "projectBudgets": "ميزانيات المشاريع", "engagementBudgets": "ميزانيات الارتباطات", "estimates": "التقديرات", "expenses": "المصروفات", "invoices": "الفواتير", "payments": "المدفوعات", "retainers": "الدفعات المقدمة", "accountsReceivable": "الحسابات المدينة", "accountsPayable": "الحسابات الدائنة", "vendors": "الموردون", "banking": "الخدمات المصرفية", "reconciliation": "التسوية", "chartOfAccounts": "دليل الحسابات", "journalEntries": "قيود اليومية", "generalLedger": "دفتر الأستاذ العام", "tax": "الضرائب", "periodClose": "إقفال الفترة", "financialReports": "التقارير المالية"
     },
     "threads": {
       "newThread": "محادثة جديدة",
@@ -4653,7 +4654,7 @@
     "recentSearches": "عمليات البحث الأخيرة",
     "noRecent": "لا توجد عمليات بحث أخيرة بعد.",
     "usedCount": "استُخدم {count, plural, one {مرة واحدة} two {مرتين} few {# مرات} other {# مرة}}",
-    "types": { "project": "مشروع", "task": "مهمة", "attachment": "مرفق", "lead": "عميل محتمل", "company": "شركة", "contact": "جهة اتصال", "proposal": "عرض", "contract": "عقد", "engagement": "ارتباط", "deliverable": "مُسلَّم" },
+    "types": { "project": "مشروع", "task": "مهمة", "attachment": "مرفق", "lead": "عميل محتمل", "company": "شركة", "contact": "جهة اتصال", "proposal": "عرض", "contract": "عقد", "engagement": "ارتباط", "deliverable": "مُسلَّم", "invoice": "فاتورة", "expense": "مصروف", "payment": "دفعة" },
     "scopes": { "organization": "المؤسسة", "space": "المساحة", "project": "المشروع", "private": "خاص" },
     "sensitivityValues": { "standard": "قياسي", "restricted": "مقيد", "confidential": "سري" }
   },
@@ -4669,7 +4670,7 @@
     "quarantined": "{count, plural, one {ملف واحد معزول} two {ملفان معزولان} few {# ملفات معزولة} other {# ملفاً معزولاً}}",
     "resourceTypes": "أنواع الموارد المفهرسة",
     "resourceTypesDescription": "تسمح هذه الضوابط بإنشاء إسقاط البحث، مع إعادة التحقق من صلاحيات السجل عند إرجاع النتائج.",
-    "types": { "project": "المشاريع", "task": "المهام", "attachment": "المرفقات", "lead": "العملاء المحتملون", "company": "الشركات", "contact": "جهات الاتصال", "proposal": "العروض", "contract": "العقود", "engagement": "الارتباطات", "deliverable": "المُسلَّمات" },
+    "types": { "project": "المشاريع", "task": "المهام", "attachment": "المرفقات", "lead": "العملاء المحتملون", "company": "الشركات", "contact": "جهات الاتصال", "proposal": "العروض", "contract": "العقود", "engagement": "الارتباطات", "deliverable": "المُسلَّمات", "invoice": "الفواتير", "expense": "المصروفات", "payment": "المدفوعات" },
     "contentProcessing": "معالجة المرفقات",
     "enableExtraction": "استخراج النص من المرفقات النظيفة والمدعومة",
     "enableOcr": "تشغيل OCR للصور النظيفة والمدعومة",
@@ -4693,6 +4694,9 @@
     "reindexContracts": "إعادة فهرسة العقود",
     "reindexEngagements": "إعادة فهرسة الارتباطات",
     "reindexDeliverables": "إعادة فهرسة المُسلَّمات",
+    "reindexInvoices": "إعادة فهرسة الفواتير",
+    "reindexExpenses": "إعادة فهرسة المصروفات",
+    "reindexPayments": "إعادة فهرسة المدفوعات",
     "save": "حفظ السياسة",
     "completed": "اكتملت العملية.",
     "failed": "فشلت العملية. راجع سجلات الخدمة."
@@ -4731,6 +4735,12 @@
     "member": "عضو المؤسسة", "contractor": "متعاقد", "week": "أسبوع", "uncategorized": "دون تصنيف", "billable": "قابل للفوترة", "nonBillable": "غير قابل للفوترة",
     "emptyPeople": "لا يوجد أشخاص متاحون.", "emptyContractors": "لا يوجد متعاقدون بعد.", "emptySkills": "لا توجد مهارات بعد.", "emptyRateCards": "لا توجد بطاقات أسعار بعد.", "emptyScenarios": "لا توجد سيناريوهات تخطيط بعد.", "emptyLeave": "لا توجد إجازات معتمدة في هذه الفترة.", "emptyDemand": "لا يوجد احتياج توظيف مفتوح في هذه الفترة.", "emptyAllocations": "لا توجد تخصيصات مؤكدة في هذه الفترة.",
     "activeAllocations": "التخصيصات النشطة", "approvedLeave": "فترات الإجازة المعتمدة", "openDemand": "احتياجات التوظيف المفتوحة", "emptyCapacity": "لا توجد فترات طاقة في هذا النطاق.", "netCapacity": "الطاقة الصافية", "available": "المتاح", "utilization": "الاستغلال", "approve": "موافقة", "reject": "رفض", "cancelAllocation": "إلغاء التخصيص"
+  },
+  "Finance": {
+    "eyebrow": "مالية الوكالة", "description": "محاسبة الاستحقاق والأحداث النقدية والضرائب والمعاملات متعددة العملات والربحية القابلة للتدقيق، منفصلة عن فوترة اشتراك قنطرة.", "loading": "جارٍ تحميل المالية…", "empty": "لا توجد سجلات مالية في هذا العرض.",
+    "views": { "overview": "نظرة عامة على المالية", "project-budgets": "ميزانيات المشاريع", "engagement-budgets": "ميزانيات الارتباطات", "estimates": "التقديرات", "rate-cards": "بطاقات الأسعار", "expenses": "المصروفات", "invoices": "الفواتير", "payments": "المدفوعات", "retainers": "الدفعات المقدمة", "receivable": "الحسابات المدينة", "payable": "الحسابات الدائنة", "vendors": "الموردون", "banking": "الخدمات المصرفية", "reconciliation": "التسوية", "chart-of-accounts": "دليل الحسابات", "journal-entries": "قيود اليومية", "ledger": "دفتر الأستاذ العام", "tax": "الضرائب", "period-close": "إقفال الفترة", "reports": "التقارير المالية" },
+    "metrics": { "receivable": "الحسابات المدينة", "payable": "الحسابات الدائنة", "revenue": "إيراد الاستحقاق", "profit": "ربح الاستحقاق", "cash": "الحركة النقدية", "unreconciled": "غير مسوّى" },
+    "post": "ترحيل", "accept": "قبول", "close": "إقفال الفترة", "reverse": "عكس", "manualReversal": "قيد عكسي تصحيحي يدوي"
   },
   "NotFound": {
     "metadataTitle": "الصفحة غير موجودة",

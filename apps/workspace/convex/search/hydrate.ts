@@ -40,7 +40,7 @@ export const candidates = query({
     if (args.candidates.length > MAX_CANDIDATES) {
       throw new ConvexError({ code: "SEARCH_CANDIDATE_LIMIT", message: `Search accepts at most ${MAX_CANDIDATES} candidates.` });
     }
-    const [projectAccess, taskAccess, spaceAccess, deliveryAccess, canReadDeals, canUpdateDeals, canReadClients, canUpdateClients] = await Promise.all([
+    const [projectAccess, taskAccess, spaceAccess, deliveryAccess, canReadDeals, canUpdateDeals, canReadClients, canUpdateClients, canReadFinance, canUpdateFinance] = await Promise.all([
       resolveProjectAccess(ctx, args.organizationId),
       resolveTaskAccess(ctx, args.organizationId),
       resolveSpaceAccess(ctx, args.organizationId),
@@ -49,6 +49,8 @@ export const candidates = query({
       canUseOrganizationResourceAction(ctx, args.organizationId, "deal", "update"),
       canUseOrganizationResourceAction(ctx, args.organizationId, "client", "read"),
       canUseOrganizationResourceAction(ctx, args.organizationId, "client", "update"),
+      canUseOrganizationResourceAction(ctx, args.organizationId, "finance", "read"),
+      canUseOrganizationResourceAction(ctx, args.organizationId, "finance", "update"),
     ]);
     const uniqueCandidates = highestScoringCandidates(args.candidates);
     const hydrated = await Promise.all(uniqueCandidates.map(async (candidate) => {
@@ -134,6 +136,21 @@ export const candidates = query({
         if (!deliverable || deliverable.organizationId !== args.organizationId || deliverable.deletedAt || !engagement || !await deliveryAccess.canRead(engagement)) return null;
         const canUpdate = await deliveryAccess.canUpdate(engagement);
         return { resourceType: "deliverable" as const, resourceId: String(deliverable._id), title: deliverable.name, subtitle: deliverable.description, route: projection.route, score: candidate.score, capabilities: { canRead: true, canUpdate, canDelete: false } };
+      }
+      if (candidate.resourceType === "invoice") {
+        const id = ctx.db.normalizeId("financeInvoices", candidate.resourceId); const invoice = id ? await ctx.db.get(id) : null;
+        if (!canReadFinance || !invoice || invoice.organizationId !== args.organizationId || invoice.deletedAt) return null;
+        return { resourceType: "invoice" as const, resourceId: String(invoice._id), title: invoice.number, subtitle: `${invoice.status} · ${invoice.totalMinor} ${invoice.currency} minor units`, route: projection.route, score: candidate.score, capabilities: { canRead: true, canUpdate: canUpdateFinance && invoice.status !== "paid", canDelete: false } };
+      }
+      if (candidate.resourceType === "expense") {
+        const id = ctx.db.normalizeId("financeExpenses", candidate.resourceId); const expense = id ? await ctx.db.get(id) : null;
+        if (!canReadFinance || !expense || expense.organizationId !== args.organizationId || expense.deletedAt) return null;
+        return { resourceType: "expense" as const, resourceId: String(expense._id), title: expense.description, subtitle: `${expense.status} · ${expense.amountMinor} ${expense.currency} minor units`, route: projection.route, score: candidate.score, capabilities: { canRead: true, canUpdate: canUpdateFinance && expense.status !== "paid", canDelete: false } };
+      }
+      if (candidate.resourceType === "payment") {
+        const id = ctx.db.normalizeId("financePayments", candidate.resourceId); const payment = id ? await ctx.db.get(id) : null;
+        if (!canReadFinance || !payment || payment.organizationId !== args.organizationId || payment.deletedAt) return null;
+        return { resourceType: "payment" as const, resourceId: String(payment._id), title: payment.reference ?? payment.method, subtitle: `${payment.direction} · ${payment.amountMinor} ${payment.currency} minor units`, route: projection.route, score: candidate.score, capabilities: { canRead: true, canUpdate: false, canDelete: false } };
       }
       return null;
     }));

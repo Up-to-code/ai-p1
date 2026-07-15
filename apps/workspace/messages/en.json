@@ -597,6 +597,7 @@
       "scenarios": "Scenarios",
       "rateCards": "Rate cards",
       "resourceReports": "Resource reports"
+      ,"financeOverview": "Finance overview", "projectBudgets": "Project budgets", "engagementBudgets": "Engagement budgets", "estimates": "Estimates", "expenses": "Expenses", "invoices": "Invoices", "payments": "Payments", "retainers": "Retainers", "accountsReceivable": "Accounts receivable", "accountsPayable": "Accounts payable", "vendors": "Vendors", "banking": "Banking", "reconciliation": "Reconciliation", "chartOfAccounts": "Chart of accounts", "journalEntries": "Journal entries", "generalLedger": "General ledger", "tax": "Tax", "periodClose": "Period close", "financialReports": "Financial reports"
     },
     "threads": {
       "newThread": "New thread",
@@ -4671,7 +4672,7 @@
     "recentSearches": "Recent searches",
     "noRecent": "No recent searches yet.",
     "usedCount": "Used {count, plural, one {once} other {# times}}",
-    "types": { "project": "Project", "task": "Task", "attachment": "Attachment", "lead": "Lead", "company": "Company", "contact": "Contact", "proposal": "Proposal", "contract": "Contract", "engagement": "Engagement", "deliverable": "Deliverable" },
+    "types": { "project": "Project", "task": "Task", "attachment": "Attachment", "lead": "Lead", "company": "Company", "contact": "Contact", "proposal": "Proposal", "contract": "Contract", "engagement": "Engagement", "deliverable": "Deliverable", "invoice": "Invoice", "expense": "Expense", "payment": "Payment" },
     "scopes": { "organization": "Organization", "space": "Space", "project": "Project", "private": "Private" },
     "sensitivityValues": { "standard": "Standard", "restricted": "Restricted", "confidential": "Confidential" }
   },
@@ -4687,7 +4688,7 @@
     "quarantined": "{count, plural, one {# quarantined file} other {# quarantined files}}",
     "resourceTypes": "Indexed resource types",
     "resourceTypesDescription": "These controls permit projection; record authorization is still checked when results are returned.",
-    "types": { "project": "Projects", "task": "Tasks", "attachment": "Attachments", "lead": "Leads", "company": "Companies", "contact": "Contacts", "proposal": "Proposals", "contract": "Contracts", "engagement": "Engagements", "deliverable": "Deliverables" },
+    "types": { "project": "Projects", "task": "Tasks", "attachment": "Attachments", "lead": "Leads", "company": "Companies", "contact": "Contacts", "proposal": "Proposals", "contract": "Contracts", "engagement": "Engagements", "deliverable": "Deliverables", "invoice": "Invoices", "expense": "Expenses", "payment": "Payments" },
     "contentProcessing": "Attachment processing",
     "enableExtraction": "Extract text from clean supported attachments",
     "enableOcr": "Run OCR for clean supported images",
@@ -4711,6 +4712,9 @@
     "reindexContracts": "Reindex contracts",
     "reindexEngagements": "Reindex engagements",
     "reindexDeliverables": "Reindex deliverables",
+    "reindexInvoices": "Reindex invoices",
+    "reindexExpenses": "Reindex expenses",
+    "reindexPayments": "Reindex payments",
     "save": "Save policy",
     "completed": "Operation completed.",
     "failed": "Operation failed. Check the service logs."
@@ -4749,6 +4753,12 @@
     "member": "Organization member", "contractor": "Contractor", "week": "week", "uncategorized": "Uncategorized", "billable": "Billable", "nonBillable": "Non-billable",
     "emptyPeople": "No people are available.", "emptyContractors": "No contractors yet.", "emptySkills": "No skills yet.", "emptyRateCards": "No rate cards yet.", "emptyScenarios": "No planning scenarios yet.", "emptyLeave": "No approved leave in this period.", "emptyDemand": "No open hiring demand in this period.", "emptyAllocations": "No confirmed allocations in this period.",
     "activeAllocations": "Active allocations", "approvedLeave": "Approved leave periods", "openDemand": "Open hiring demands", "emptyCapacity": "No capacity periods in this range.", "netCapacity": "Net capacity", "available": "Available", "utilization": "Utilization", "approve": "Approve", "reject": "Reject", "cancelAllocation": "Cancel allocation"
+  },
+  "Finance": {
+    "eyebrow": "Agency finance", "description": "Accrual bookkeeping, cash events, tax, multi-currency transactions, and auditable profitability kept separate from Qentrah subscription billing.", "loading": "Loading finance…", "empty": "No finance records in this view.",
+    "views": { "overview": "Finance overview", "project-budgets": "Project budgets", "engagement-budgets": "Engagement budgets", "estimates": "Estimates", "rate-cards": "Rate cards", "expenses": "Expenses", "invoices": "Invoices", "payments": "Payments", "retainers": "Retainers", "receivable": "Accounts receivable", "payable": "Accounts payable", "vendors": "Vendors", "banking": "Banking", "reconciliation": "Reconciliation", "chart-of-accounts": "Chart of accounts", "journal-entries": "Journal entries", "ledger": "General ledger", "tax": "Tax", "period-close": "Period close", "reports": "Financial reports" },
+    "metrics": { "receivable": "Accounts receivable", "payable": "Accounts payable", "revenue": "Accrual revenue", "profit": "Accrual profit", "cash": "Cash movement", "unreconciled": "Unreconciled" },
+    "post": "Post", "accept": "Accept", "close": "Close period", "reverse": "Reverse", "manualReversal": "Manual correcting reversal"
   },
   "NotFound": {
     "metadataTitle": "Page not found",

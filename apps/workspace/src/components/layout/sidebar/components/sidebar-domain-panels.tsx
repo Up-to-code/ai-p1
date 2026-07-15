@@ -42,6 +42,10 @@ export function SidebarResourcesPanel() {
   return <ProjectedDomainPanel domainId="resources" />;
 }
 
+export function SidebarFinancePanel() {
+  return <ProjectedDomainPanel domainId="finance" />;
+}
+
 export function SidebarAutomationsPanel() {
   return <ProjectedDomainPanel domainId="automations" />;
 }

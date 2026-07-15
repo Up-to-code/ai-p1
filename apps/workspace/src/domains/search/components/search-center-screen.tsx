@@ -19,7 +19,7 @@ import { logger } from "@/lib/logger"
 import { useAuthorizedSearchQuery, useRecentSearches, useSavedSearchCommands, useSavedSearches } from "../index"
 import { dateInputValue, paramsFromSearchConfiguration, searchConfigurationFromParams, searchFilterCount } from "../search-center-state"
 
-const searchableTypes = ["project", "task", "attachment", "lead", "company", "contact", "proposal", "contract", "engagement", "deliverable"] as const satisfies readonly SearchResourceType[]
+const searchableTypes = ["project", "task", "attachment", "lead", "company", "contact", "proposal", "contract", "engagement", "deliverable", "invoice", "expense", "payment"] as const satisfies readonly SearchResourceType[]
 
 export function SearchCenterScreen() {
   const t = useTranslations("SearchCenter")

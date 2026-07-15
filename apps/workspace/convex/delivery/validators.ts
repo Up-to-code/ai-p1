@@ -62,3 +62,7 @@ export const concernValidator = v.object({
   type: concernTypeValidator, title: v.string(), description: v.string(), severity: concernSeverityValidator, status: concernStatusValidator, mitigation: v.optional(v.string()), resolvedAt: v.optional(v.number()),
   ownerUserId: v.string(), recordState: recordStateValidator, createdByUserId: v.string(), createdAt: v.number(), updatedAt: v.number(), deletedAt: v.optional(v.number()),
 });
+
+export const timeEntryValidator = v.object({
+  _id: v.id("deliveryTimeEntries"), _creationTime: v.number(), organizationId: v.string(), engagementId: v.id("engagements"), projectId: v.id("projects"), taskId: v.optional(v.id("tasks")), userId: v.string(), workDate: v.number(), minutes: v.number(), description: v.optional(v.string()), billable: v.boolean(), status: v.union(v.literal("draft"), v.literal("submitted"), v.literal("approved"), v.literal("rejected"), v.literal("invoiced")), rateCardEntryId: v.optional(v.id("resourceRateCardEntries")), invoiceId: v.optional(v.id("financeInvoices")), approvedByUserId: v.optional(v.string()), approvedAt: v.optional(v.number()), ownerUserId: v.string(), recordState: recordStateValidator, createdByUserId: v.string(), createdAt: v.number(), updatedAt: v.number(), deletedAt: v.optional(v.number()),
+});

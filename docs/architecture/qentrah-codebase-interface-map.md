@@ -6,11 +6,11 @@
 
 ## Inventory summary
 
-- Source files scanned: 1738
-- Files exposing interfaces: 1467
-- Convex registered functions: 418
-- Application routes: 104
-- Hono/Convex HTTP registrations: 199
+- Source files scanned: 1754
+- Files exposing interfaces: 1483
+- Convex registered functions: 446
+- Application routes: 105
+- Hono/Convex HTTP registrations: 205
 - Eve/MCP tool entries: 118
 - Package commands: 88
 
@@ -140,6 +140,7 @@
 | `/:locale/docs` | page | `apps/marketing/app/(site)/[locale]/docs/page.tsx` |
 | `/:locale/docs` | page | `apps/workspace/src/app/[locale]/(app)/docs/page.tsx` |
 | `/:locale/docs/:docId` | page | `apps/workspace/src/app/[locale]/(app)/docs/[docId]/page.tsx` |
+| `/:locale/finance` | page | `apps/workspace/src/app/[locale]/(app)/finance/page.tsx` |
 | `/:locale/inbox` | page | `apps/workspace/src/app/[locale]/(app)/inbox/page.tsx` |
 | `/:locale/inbox/activity` | page | `apps/workspace/src/app/[locale]/(app)/inbox/activity/page.tsx` |
 | `/:locale/inbox/channels` | page | `apps/workspace/src/app/[locale]/(app)/inbox/channels/page.tsx` |
@@ -335,6 +336,11 @@ fully composed path.
 | POST | `/:organizationId/theories` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
 | PATCH | `/:organizationId/theories/:theoryId` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
 | DELETE | `/:organizationId/theories/:theoryId` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
+| POST | `/:organizationId/finance/invoices` | `apps/workspace/src/server/domains/organization/routing/domains/finance.ts` |
+| POST | `/:organizationId/finance/invoices/:invoiceId/post` | `apps/workspace/src/server/domains/organization/routing/domains/finance.ts` |
+| POST | `/:organizationId/finance/payments` | `apps/workspace/src/server/domains/organization/routing/domains/finance.ts` |
+| GET | `/:organizationId/read/finance/overview` | `apps/workspace/src/server/domains/organization/routing/domains/finance.ts` |
+| GET | `/:organizationId/read/finance/records` | `apps/workspace/src/server/domains/organization/routing/domains/finance.ts` |
 | ALL | `/:organizationId/mcp-connections` | `apps/workspace/src/server/domains/organization/routing/domains/mcp.ts` |
 | ALL | `/:organizationId/mcp-connections/*` | `apps/workspace/src/server/domains/organization/routing/domains/mcp.ts` |
 | PATCH | `/:organizationId/media/:mediaId` | `apps/workspace/src/server/domains/organization/routing/domains/media.ts` |
@@ -378,6 +384,7 @@ fully composed path.
 | PATCH | `/:organizationId/partner-connections/:connectionId` | `apps/workspace/src/server/domains/organization/routing/domains/partners.ts` |
 | DELETE | `/:organizationId/partner-connections/:connectionId` | `apps/workspace/src/server/domains/organization/routing/domains/partners.ts` |
 | POST | `/:organizationId/partner-webhook-endpoints` | `apps/workspace/src/server/domains/organization/routing/domains/partners.ts` |
+| MOUNT | `/` | `apps/workspace/src/server/domains/organization/routing/router.ts` |
 | MOUNT | `/` | `apps/workspace/src/server/domains/organization/routing/router.ts` |
 | MOUNT | `/` | `apps/workspace/src/server/domains/organization/routing/router.ts` |
 | MOUNT | `/` | `apps/workspace/src/server/domains/organization/routing/router.ts` |
@@ -583,6 +590,34 @@ fully composed path.
 | query | `listContracts` | `apps/workspace/convex/delivery/read.ts` |
 | query | `listEngagements` | `apps/workspace/convex/delivery/read.ts` |
 | query | `listProposals` | `apps/workspace/convex/delivery/read.ts` |
+| mutation | `decideTimeEntry` | `apps/workspace/convex/delivery/timeEntries.ts` |
+| query | `listTimeEntries` | `apps/workspace/convex/delivery/timeEntries.ts` |
+| mutation | `recordTimeEntry` | `apps/workspace/convex/delivery/timeEntries.ts` |
+| mutation | `submitTimeEntry` | `apps/workspace/convex/delivery/timeEntries.ts` |
+| mutation | `acceptEstimate` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `applyRetainer` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `closeAccountingPeriod` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `configureFinance` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createBankAccount` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createBudget` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createEstimate` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createExpense` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createInvoice` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createInvoiceFromTime` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createTaxRule` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createVendor` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `importBankTransaction` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `openAccountingPeriod` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `payExpense` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `postExpense` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `postInvoice` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `receiveRetainer` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `reconcileBankTransaction` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `recordInvoicePayment` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `reverseJournal` | `apps/workspace/convex/finance/commands.ts` |
+| query | `overview` | `apps/workspace/convex/finance/read.ts` |
+| query | `profitability` | `apps/workspace/convex/finance/read.ts` |
+| query | `records` | `apps/workspace/convex/finance/read.ts` |
 | query | `getChannel` | `apps/workspace/convex/inbox/read.ts` |
 | query | `getThread` | `apps/workspace/convex/inbox/read.ts` |
 | query | `listChannels` | `apps/workspace/convex/inbox/read.ts` |
@@ -1235,9 +1270,17 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/delivery/lifecycle.ts` | convex-mutation: createProposal<br>convex-mutation: sendProposal<br>convex-mutation: acceptProposal<br>convex-mutation: sendContract<br>convex-mutation: signContract<br>convex-mutation: activateEngagement<br>convex-mutation: linkProject<br>convex-mutation: createDeliverable<br>convex-mutation: submitDeliverable<br>convex-mutation: decideApproval<br>convex-mutation: createChangeOrder<br>convex-mutation: submitChangeOrder<br>convex-mutation: recordConcern<br>convex-mutation: updateConcern<br>convex-mutation: invitePortalIdentity<br>convex-mutation: grantPortalAccess |
 | `apps/workspace/convex/delivery/read.ts` | convex-query: listProposals<br>convex-query: listContracts<br>convex-query: listEngagements<br>convex-query: engagementDetail |
 | `apps/workspace/convex/delivery/search.ts` | function: proposalSearchProjection<br>function: contractSearchProjection<br>function: engagementSearchProjection<br>function: deliverableSearchProjection |
+| `apps/workspace/convex/delivery/timeEntries.ts` | convex-mutation: recordTimeEntry<br>convex-mutation: submitTimeEntry<br>convex-mutation: decideTimeEntry<br>convex-query: listTimeEntries |
 | `apps/workspace/convex/delivery/transitions.ts` | type: CommercialLifecycle<br>function: assertCommercialTransition<br>function: assertProposalAcceptable<br>function: nextAgreedAmount |
-| `apps/workspace/convex/delivery/validators.ts` | value: commercialModelValidator<br>value: proposalStatusValidator<br>value: contractStatusValidator<br>value: engagementStatusValidator<br>value: deliveryHealthValidator<br>value: deliverableStatusValidator<br>value: approvalStatusValidator<br>value: changeOrderStatusValidator<br>value: concernTypeValidator<br>value: concernSeverityValidator<br>value: concernStatusValidator<br>value: proposalValidator<br>value: contractValidator<br>value: engagementValidator<br>value: deliverableValidator<br>value: engagementProjectValidator<br>value: approvalValidator<br>value: changeOrderValidator<br>value: concernValidator |
+| `apps/workspace/convex/delivery/validators.ts` | value: commercialModelValidator<br>value: proposalStatusValidator<br>value: contractStatusValidator<br>value: engagementStatusValidator<br>value: deliveryHealthValidator<br>value: deliverableStatusValidator<br>value: approvalStatusValidator<br>value: changeOrderStatusValidator<br>value: concernTypeValidator<br>value: concernSeverityValidator<br>value: concernStatusValidator<br>value: proposalValidator<br>value: contractValidator<br>value: engagementValidator<br>value: deliverableValidator<br>value: engagementProjectValidator<br>value: approvalValidator<br>value: changeOrderValidator<br>value: concernValidator<br>value: timeEntryValidator |
 | `apps/workspace/convex/email.ts` | value: resend<br>function: getTransactionalFromEmail<br>function: getUpdatesFromEmail<br>function: getAppUrl |
+| `apps/workspace/convex/finance/access.ts` | function: financeAccess |
+| `apps/workspace/convex/finance/calculation.ts` | value: FX_SCALE<br>function: convertToBase<br>function: calculateTax<br>function: assertBalanced |
+| `apps/workspace/convex/finance/commands.ts` | convex-mutation: configureFinance<br>convex-mutation: createTaxRule<br>convex-mutation: openAccountingPeriod<br>convex-mutation: createBudget<br>convex-mutation: createInvoice<br>convex-mutation: postInvoice<br>convex-mutation: createInvoiceFromTime<br>convex-mutation: recordInvoicePayment<br>convex-mutation: createExpense<br>convex-mutation: createVendor<br>convex-mutation: payExpense<br>convex-mutation: createEstimate<br>convex-mutation: acceptEstimate<br>convex-mutation: receiveRetainer<br>convex-mutation: applyRetainer<br>convex-mutation: createBankAccount<br>convex-mutation: importBankTransaction<br>convex-mutation: reconcileBankTransaction<br>convex-mutation: postExpense<br>convex-mutation: closeAccountingPeriod<br>convex-mutation: reverseJournal |
+| `apps/workspace/convex/finance/ledger.ts` | type: LedgerLineInput<br>function: requireFinanceSettings<br>function: systemAccount<br>function: assertAccountingDateOpen<br>function: postJournal<br>function: financeError |
+| `apps/workspace/convex/finance/read.ts` | convex-query: overview<br>convex-query: records<br>convex-query: profitability |
+| `apps/workspace/convex/finance/search.ts` | function: invoiceSearchProjection<br>function: expenseSearchProjection<br>function: paymentSearchProjection |
+| `apps/workspace/convex/finance/validators.ts` | value: accountTypeValidator<br>value: accountSystemKeyValidator<br>value: accountingPeriodStatusValidator<br>value: documentStatusValidator<br>value: estimateStatusValidator<br>value: paymentStatusValidator<br>value: journalStatusValidator<br>value: taxCalculationValidator<br>value: scopeTypeValidator<br>value: bankTransactionStatusValidator |
 | `apps/workspace/convex/inbox/read.ts` | convex-query: listChannels<br>convex-query: getChannel<br>convex-query: listMessages<br>convex-query: listMessagesPage<br>convex-query: getThread |
 | `apps/workspace/convex/inbox/validators.ts` | value: channelTypeValidator<br>value: channelVisibilityValidator<br>value: channelInputValidator<br>value: channelValidator<br>value: messageAttachmentValidator<br>value: messageInputValidator<br>value: messageValidator<br>value: threadValidator |
 | `apps/workspace/convex/inbox/write.ts` | convex-mutation: createChannel<br>convex-mutation: updateChannel<br>convex-mutation: deleteChannel<br>convex-mutation: sendMessage<br>convex-mutation: updateMessage<br>convex-mutation: deleteMessage<br>convex-mutation: addReaction<br>convex-mutation: removeReaction<br>convex-mutation: pinMessage<br>convex-mutation: unpinMessage<br>convex-mutation: createThread |
@@ -1354,6 +1397,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/schema/delivery.ts` | value: deliveryTables |
 | `apps/workspace/convex/schema/docs.ts` | value: docsTables |
 | `apps/workspace/convex/schema/domains.ts` | value: domainTables |
+| `apps/workspace/convex/schema/finance.ts` | value: financeTables |
 | `apps/workspace/convex/schema/maintenance.ts` | value: maintenanceTables |
 | `apps/workspace/convex/schema/media.ts` | value: mediaTables |
 | `apps/workspace/convex/schema/navigation.ts` | value: navigationTables |
@@ -1434,6 +1478,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/docs/layout.tsx` | function: DocsLayout |
 | `apps/workspace/src/app/[locale]/(app)/docs/page.tsx` | function: DocsPage |
 | `apps/workspace/src/app/[locale]/(app)/error.tsx` | function: AppError |
+| `apps/workspace/src/app/[locale]/(app)/finance/page.tsx` | function: FinancePage |
 | `apps/workspace/src/app/[locale]/(app)/inbox/activity/page.tsx` | function: ChatActivityPage |
 | `apps/workspace/src/app/[locale]/(app)/inbox/channels/page.tsx` | function: ChannelsPage |
 | `apps/workspace/src/app/[locale]/(app)/inbox/layout.tsx` | function: InboxLayout |
@@ -1562,7 +1607,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/components/layout/sidebar/components/identity-avatar.tsx` | function: IdentityAvatar |
 | `apps/workspace/src/components/layout/sidebar/components/nav-tooltip.tsx` | function: NavTooltip |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-chat-panel.tsx` | function: SidebarChatPanel |
-| `apps/workspace/src/components/layout/sidebar/components/sidebar-domain-panels.tsx` | function: SidebarTasksPanel<br>function: SidebarCalendarPanel<br>function: SidebarProjectsPanel<br>function: SidebarCrmPanel<br>function: SidebarDeliveryPanel<br>function: SidebarResourcesPanel<br>function: SidebarAutomationsPanel<br>function: SidebarAdminPanel<br>function: SidebarDocsPanel |
+| `apps/workspace/src/components/layout/sidebar/components/sidebar-domain-panels.tsx` | function: SidebarTasksPanel<br>function: SidebarCalendarPanel<br>function: SidebarProjectsPanel<br>function: SidebarCrmPanel<br>function: SidebarDeliveryPanel<br>function: SidebarResourcesPanel<br>function: SidebarFinancePanel<br>function: SidebarAutomationsPanel<br>function: SidebarAdminPanel<br>function: SidebarDocsPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel.tsx` | function: SidebarInboxPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel/channel-filter.ts` | function: filterChannelsByScope<br>function: groupInboxChannels |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel/channel-section.tsx` | function: ChannelSection |
@@ -1859,6 +1904,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/eve/client.ts` | function: getEveClient |
 | `apps/workspace/src/domains/eve/hooks/use-eve-chat.ts` | type: FlattenedMessage<br>type: EveActionProgressItem<br>type: EveActionProgress<br>function: useEveChat |
 | `apps/workspace/src/domains/eve/threads-store.ts` | interface: ThreadStorageEntry<br>interface: ThreadMeta<br>function: threadKey<br>function: indexKey<br>function: threadBelongsToOrg<br>function: listThreads<br>function: getThread<br>function: saveThread<br>function: deleteThread<br>function: renameThread<br>function: generateThreadId |
+| `apps/workspace/src/domains/finance/components/finance-command-panel.tsx` | function: FinanceCommandPanel |
+| `apps/workspace/src/domains/finance/components/finance-screen.tsx` | function: FinanceScreen |
 | `apps/workspace/src/domains/inbox/api/inbox.ts` | type: ChannelPayload<br>type: MessagePayload<br>function: useListChannels<br>function: useGetChannel<br>function: createChannelRequest<br>function: updateChannelRequest<br>function: deleteChannelRequest<br>function: useListMessages<br>function: usePaginatedMessages<br>function: sendMessageRequest<br>function: updateMessageRequest<br>function: deleteMessageRequest<br>function: addReactionRequest<br>function: removeReactionRequest<br>function: pinMessageRequest<br>function: unpinMessageRequest<br>function: useGetThread<br>function: createThreadRequest |
 | `apps/workspace/src/domains/inbox/components/ai-reply-bubble.tsx` | function: AiReplyBubble |
 | `apps/workspace/src/domains/inbox/components/channel-info-modal.tsx` | type: ChannelSettingsInput<br>function: ChannelInfoModal |
@@ -2217,6 +2264,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/server/domains/docs/services/doc-folders.ts` | function: createDocFolder<br>function: renameDocFolder<br>function: deleteDocFolder |
 | `apps/workspace/src/server/domains/docs/services/docs.ts` | function: createDoc<br>function: updateDoc<br>function: deleteDoc<br>function: moveDoc |
 | `apps/workspace/src/server/domains/docs/validation/doc.schema.ts` | value: docPayloadSchema<br>type: DocPayload<br>value: docMoveSchema<br>type: DocMovePayload<br>value: docFolderPayloadSchema<br>type: DocFolderPayload<br>value: docFolderRenameSchema<br>type: DocFolderRenamePayload |
+| `apps/workspace/src/server/domains/finance/handlers/finance.ts` | function: handleFinanceOverview<br>function: handleFinanceRecords<br>function: handleCreateFinanceInvoice<br>function: handlePostFinanceInvoice<br>function: handleRecordFinancePayment |
+| `apps/workspace/src/server/domains/finance/validation/finance.schema.ts` | value: financeInvoiceCommandSchema<br>value: financePaymentCommandSchema |
 | `apps/workspace/src/server/domains/inbox/handlers/inbox.ts` | function: handleSendMessage<br>function: handleUpdateMessage<br>function: handleDeleteMessage<br>function: handleAddReaction<br>function: handleRemoveReaction<br>function: handlePinMessage<br>function: handleUnpinMessage<br>function: handleCreateThread |
 | `apps/workspace/src/server/domains/inbox/validation/inbox.schema.ts` | value: channelPayloadSchema<br>value: messagePayloadSchema<br>value: messageContentPayloadSchema<br>value: reactionPayloadSchema<br>value: threadPayloadSchema<br>type: ChannelPayload<br>type: MessagePayload<br>type: MessageContentPayload<br>type: ReactionPayload<br>type: ThreadPayload |
 | `apps/workspace/src/server/domains/media/handlers/media.ts` | function: handleDeleteMedia<br>function: handleAttachMedia<br>function: handleCreateMediaFolder<br>function: handleDeleteMediaFolder |
@@ -2239,6 +2288,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/server/domains/organization/handlers/workspace-read-surface.ts` | function: readOrganizationId<br>function: workspaceOrganizationReadJson<br>function: workspaceReadJsonForOrganization<br>function: workspacePagedListReadJson<br>function: workspaceIndexedListReadJson<br>function: readWorkspaceListQuery<br>function: readWorkspaceIdParam<br>function: readBoundedOptionalLimit |
 | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` | value: billingSubRouter |
 | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` | value: crudSubRouter |
+| `apps/workspace/src/server/domains/organization/routing/domains/finance.ts` | value: financeSubRouter |
 | `apps/workspace/src/server/domains/organization/routing/domains/mcp.ts` | value: mcpSubRouter |
 | `apps/workspace/src/server/domains/organization/routing/domains/media.ts` | value: mediaSubRouter |
 | `apps/workspace/src/server/domains/organization/routing/domains/notifications.ts` | value: notificationsSubRouter |
@@ -2373,6 +2423,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/domain-contracts/src/crm.ts` | value: leadStatusSchema<br>value: leadInputSchema<br>value: companyInputSchema<br>value: contactInputSchema<br>type: LeadStatus<br>type: LeadInput<br>type: CompanyInput<br>type: ContactInput |
 | `packages/domain-contracts/src/deals.ts` | value: dealStageSchema<br>value: dealStatusSchema<br>value: dealPrioritySchema<br>value: dealInputSchema<br>value: dealRecordSchema<br>type: DealStage<br>type: DealStatus<br>type: DealPriority<br>type: DealInput<br>type: DealRecord<br>type: DealSummary<br>type: DealStats<br>value: crmDealStageSchema<br>value: crmDealRelationTypeSchema<br>value: crmClientPreviewSchema<br>value: crmBrokerPreviewSchema<br>value: crmProjectPreviewSchema<br>value: crmDealInputSchema<br>value: crmUpdateDealInputSchema<br>value: crmUpdateDealStageInputSchema<br>value: crmUpdateDealNotesInputSchema<br>value: crmUpdateDealFollowUpInputSchema<br>value: crmAddDealDocumentInputSchema<br>value: crmAssetDealsInputSchema<br>value: crmArchiveDealInputSchema<br>type: CrmDealInput<br>type: CrmUpdateDealInput<br>type: CrmUpdateDealStageInput<br>type: CrmUpdateDealNotesInput<br>type: CrmUpdateDealFollowUpInput<br>type: CrmAddDealDocumentInput<br>type: CrmAssetDealsInput<br>type: CrmArchiveDealInput<br>type: CrmDealRelationType<br>type: CrmClientPreview<br>type: CrmBrokerPreview<br>type: CrmProjectPreview |
 | `packages/domain-contracts/src/delivery.ts` | value: commercialModelSchema<br>value: proposalStatusSchema<br>value: contractStatusSchema<br>value: engagementStatusSchema<br>value: deliveryHealthSchema<br>value: deliverableStatusSchema<br>value: approvalStatusSchema<br>value: changeOrderStatusSchema<br>value: concernTypeSchema<br>value: concernSeveritySchema<br>value: concernStatusSchema<br>value: proposalInputSchema<br>value: contractTermsSchema<br>value: deliverableInputSchema<br>value: changeOrderInputSchema<br>type: CommercialModel<br>type: ProposalStatus<br>type: ContractStatus<br>type: EngagementStatus<br>type: DeliveryHealth<br>type: DeliverableStatus<br>type: ApprovalStatus<br>type: ChangeOrderStatus<br>type: ProposalInput<br>type: ContractTerms<br>type: DeliverableInput<br>type: ChangeOrderInput |
+| `packages/domain-contracts/src/finance.ts` | value: financeCurrencySchema<br>value: financeAmountSchema<br>value: financePositiveAmountSchema<br>value: financeAccountTypeSchema<br>value: financeScopeTypeSchema<br>value: taxCalculationSchema<br>value: invoiceLineInputSchema<br>type: FinanceAccountType<br>type: FinanceScopeType<br>type: InvoiceLineInput |
 | `packages/domain-contracts/src/navigation.ts` | value: navigationDomainIdSchema<br>value: navigationRailModeSchema<br>value: navigationNodeTypeSchema<br>value: navigationNodeSchema<br>value: navigationDomainSchema<br>value: authorizedNavigationProjectionSchema<br>value: navigationOverlayInputSchema<br>type: NavigationDomainId<br>type: NavigationRailMode<br>type: NavigationNodeType<br>type: NavigationDomain<br>type: AuthorizedNavigationProjection<br>type: NavigationOverlayInput<br>interface: NavigationNode |
 | `packages/domain-contracts/src/projects.ts` | value: projectStatusSchema<br>value: projectHealthSchema<br>value: projectVisibilitySchema<br>value: projectInputSchema<br>value: projectRecordSchema<br>type: ProjectStatus<br>type: ProjectHealth<br>type: ProjectVisibility<br>type: ProjectInput<br>type: ProjectRecord<br>type: ProjectSummary |
 | `packages/domain-contracts/src/resource-planning.ts` | value: resourcePrincipalTypeSchema<br>value: resourceAllocationStatusSchema<br>value: resourceLeaveStatusSchema<br>value: resourceSkillLevelSchema<br>value: resourceIntervalSchema<br>value: resourceAllocationInputSchema<br>type: ResourcePrincipalType<br>type: ResourceAllocationStatus<br>type: ResourceLeaveStatus<br>type: ResourceAllocationInput |

@@ -22,6 +22,7 @@ import {
   ChartNoAxesCombined,
   Boxes,
   Truck,
+  Landmark,
 } from "lucide-react";
 import {
   CalendarIcon,
@@ -45,6 +46,7 @@ const navigationIcons: Readonly<Record<string, NavigationIcon>> = {
   crm: UsersRound,
   delivery: Truck,
   resources: Boxes,
+  finance: Landmark,
   automations: Workflow,
   ai: Bot,
   admin: Settings,

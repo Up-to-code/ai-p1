@@ -9,4 +9,5 @@ export * from "./search";
 export * from "./delivery";
 export * from "./crm";
 export * from "./resource-planning";
+export * from "./finance";
 export * from "./subscriptionPricing";
