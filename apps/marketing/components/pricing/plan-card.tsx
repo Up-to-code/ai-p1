@@ -13,179 +13,12 @@ function CheckGreen() {
   );
 }
 
-// ── Feature bullet data ────────────────────────────────────────────────────────
-type FeatureBulletData = {
-  sectionHeader?: string;
-  items: string[];
-  moreLabel?: string;
-};
-
-const FEATURES: Record<string, FeatureBulletData> = {
-  free: {
-    sectionHeader: "KEY FEATURES:",
-    items: [
-      "60 MB Storage",
-      "Unlimited Tasks",
-      "Unlimited Free Plan Members",
-      "Two-Factor Authentication",
-      "Collaborative Docs",
-      "Kanban Boards",
-      "Sprint Management",
-      "Calendar View",
-      "Basic Custom Field Manager",
-      "In-App Video Recording",
-      "24/7 Support",
-    ],
-  },
-  good: {
-    sectionHeader: "EVERYTHING IN FREE FOREVER, PLUS:",
-    items: [
-      "Unlimited Spaces, Folders, and Forms",
-      "Unlimited Gantt Charts",
-      "Unlimited Integrations",
-      "Unlimited Storage",
-      "Unlimited Custom Fields",
-      "Native Time Tracking",
-      "Goals & Portfolio Management",
-      "Guests With Permission Control",
-      "Resource Management",
-      "Qentrah Chat",
-      "Email in Qentrah",
-      "Integrations like HubSpot, Zapier, Google Drive, and more",
-    ],
-    moreLabel: "and much more...",
-  },
-  better: {
-    sectionHeader: "EVERYTHING IN UNLIMITED, PLUS:",
-    items: [
-      "Unlimited Dashboards with Advanced Cards",
-      "Unlimited Message History",
-      "Unlimited Activity Views",
-      "Unlimited Timeline Views",
-      "Webhooks & Automation Integrations",
-      "5K Automations Per Month",
-      "Mind Mapping",
-      "Private Whiteboards",
-      "Custom Exporting",
-      "Sprint Points & Reporting",
-      "Portfolio Workload Management",
-      "Google SSO",
-      "SMS 2-Factor Authentication",
-      "Unlimited Proofing",
-    ],
-    moreLabel: "and much more...",
-  },
-  custom: {
-    sectionHeader: "EVERYTHING IN BUSINESS, PLUS:",
-    items: [
-      "Enterprise Permissions and Governance",
-      "Unlimited Custom Roles",
-      "SAML SSO & SCIM Provisioning",
-      "Audit Log",
-      "Session Management",
-      "Enterprise API",
-      "250K Automations Per Month",
-      "Custom Branding",
-      "Default Personal Views",
-      "MSA & HIPAA Available",
-      "Data Residency",
-      "Enterprise-Scale Automations & Integrations",
-      "Enterprise-Scale API Usage",
-      "Live Onboarding Training",
-      "Customer Success Manager",
-      "Access to Managed Services",
-    ],
-    moreLabel: "and much more...",
-  },
-};
-
-const FEATURES_AR: Record<string, FeatureBulletData> = {
-  free: {
-    sectionHeader: "الميزات الأساسية:",
-    items: [
-      "60 ميجابايت تخزين",
-      "مهام غير محدودة",
-      "أعضاء مجانيون غير محدودين",
-      "مصادقة ثنائية",
-      "مستندات تعاونية",
-      "لوحات كانبان",
-      "إدارة السبرنت",
-      "عرض التقويم",
-      "مدير الحقول المخصصة",
-      "تسجيل فيديو داخلي",
-      "دعم على مدار الساعة",
-    ],
-  },
-  good: {
-    sectionHeader: "كل ما في المجاني، بالإضافة إلى:",
-    items: [
-      "مساحات ومجلدات ونماذج غير محدودة",
-      "مخططات Gantt غير محدودة",
-      "تكاملات غير محدودة",
-      "تخزين غير محدود",
-      "حقول مخصصة غير محدودة",
-      "تتبع الوقت الأصلي",
-      "إدارة الأهداف والمحافظ",
-      "ضيوف مع التحكم بالأذونات",
-      "إدارة الموارد",
-      "محادثة قنترة",
-      "البريد في قنترة",
-      "تكامل مع HubSpot وZapier وGoogle Drive والمزيد",
-    ],
-    moreLabel: "والمزيد...",
-  },
-  better: {
-    sectionHeader: "كل ما في Unlimited، بالإضافة إلى:",
-    items: [
-      "لوحات معلومات غير محدودة مع بطاقات متقدمة",
-      "سجل رسائل غير محدود",
-      "عروض نشاط غير محدودة",
-      "عروض جدول زمني غير محدودة",
-      "تكامل Webhooks والأتمتة",
-      "5 آلاف أتمتة شهرياً",
-      "خرائط ذهنية",
-      "سبورات بيضاء خاصة",
-      "تصدير مخصص",
-      "نقاط السبرنت والتقارير",
-      "إدارة حمل العمل للمحافظ",
-      "Google SSO",
-      "مصادقة SMS ثنائية",
-      "مراجعة غير محدودة",
-    ],
-    moreLabel: "والمزيد...",
-  },
-  custom: {
-    sectionHeader: "كل ما في Business، بالإضافة إلى:",
-    items: [
-      "أذونات وحوكمة المؤسسة",
-      "أدوار مخصصة غير محدودة",
-      "SAML SSO & SCIM",
-      "سجل التدقيق",
-      "إدارة الجلسات",
-      "Enterprise API",
-      "250 ألف أتمتة شهرياً",
-      "علامة تجارية مخصصة",
-      "عروض شخصية افتراضية",
-      "MSA & HIPAA متاح",
-      "إقامة البيانات",
-      "أتمتة وتكاملات على نطاق المؤسسة",
-      "استخدام API على نطاق المؤسسة",
-      "تدريب إعداد مباشر",
-      "مدير نجاح العملاء",
-      "الوصول إلى الخدمات المُدارة",
-    ],
-    moreLabel: "والمزيد...",
-  },
-};
-
 export function PlanCard({
   plan,
   billing,
-  isAr = false,
 }: {
   plan: Plan;
   billing: BillingCycle;
-  isAr?: boolean;
 }) {
   const price = billing === "monthly" ? plan.monthlyPrice : plan.annuallyPrice;
   const displayPrice =
@@ -198,16 +31,15 @@ export function PlanCard({
   const perUnit =
     price !== null && price > 0
       ? billing === "monthly"
-        ? isAr ? "لكل مستخدم / شهر" : "Per user / month"
-        : isAr ? "لكل مستخدم / سنة، يُفوتر سنوياً" : "Per user / year, billed yearly"
+        ? plan.monthlyUnitLabel
+        : plan.yearlyUnitLabel
       : null;
   const ctaHref = ["good", "better"].includes(plan.id)
     ? `/billing?plan=${plan.id}_${billing === "annually" ? "yearly" : "monthly"}`
     : plan.ctaHref;
 
-  const featureData = (isAr ? FEATURES_AR : FEATURES)[plan.id];
   const isHighlight = plan.highlight;
-  const featurePreview = featureData?.items.slice(0, 6) ?? [];
+  const featurePreview = plan.features.slice(0, 6);
 
   return (
     <div
@@ -236,7 +68,7 @@ export function PlanCard({
           </>
         ) : (
           <p className="cu-plan-custom-text">
-            {isAr ? "احصل على عرض مخصص" : "Get a custom demo"}
+            {plan.customPriceLabel}
           </p>
         )}
       </div>
@@ -254,10 +86,10 @@ export function PlanCard({
       </a>
 
       {/* Features */}
-      {featureData && (
+      {featurePreview.length > 0 && (
         <div className="cu-plan-features">
-          {featureData.sectionHeader && (
-            <p className="cu-plan-features-header">{featureData.sectionHeader}</p>
+          {plan.sectionHeader && (
+            <p className="cu-plan-features-header">{plan.sectionHeader}</p>
           )}
           <ul className="cu-plan-features-list" role="list">
             {featurePreview.map((item) => (
@@ -267,7 +99,7 @@ export function PlanCard({
               </li>
             ))}
           </ul>
-          {featureData.items.length > featurePreview.length && <p className="cu-plan-more">{isAr ? "قارن جميع المزايا أدناه" : "Compare all features below"}</p>}
+          {plan.moreLabel && <p className="cu-plan-more">{plan.moreLabel}</p>}
         </div>
       )}
 

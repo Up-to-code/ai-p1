@@ -11,6 +11,7 @@ import { updateProjectRollup, validateStrictTaskDates } from "../projects/rollup
 import { presentTask } from "./presentation";
 import { clientTaskInputValidator, clientTaskPatchValidator } from "./validators";
 import { removeTaskAssignments, syncTaskAssignments } from "./assignments";
+import { taskSearchProjection } from "../search/adapters/task";
 
 export type TaskInput = Infer<typeof clientTaskInputValidator>;
 export type TaskPatch = Infer<typeof clientTaskPatchValidator>;
@@ -148,6 +149,7 @@ export async function createTask(
   if (args.input.projectId) await updateProjectRollup(ctx.db, args.input.projectId);
   const task = await requireActiveTask(ctx.db, args.organizationId, id);
   await syncTaskAssignments(ctx, task);
+  await taskSearchProjection(ctx, task);
   await emitTaskEffects(ctx, { ...args, task, previous: null });
   await appendAudit(ctx, {
     organizationId: args.organizationId,
@@ -193,6 +195,7 @@ export async function updateTask(
   }
   const task = await requireActiveTask(ctx.db, args.organizationId, args.taskId);
   await syncTaskAssignments(ctx, task);
+  await taskSearchProjection(ctx, task);
   await emitTaskEffects(ctx, { ...args, task, previous: existing });
   await appendAudit(ctx, {
     organizationId: args.organizationId,
@@ -216,6 +219,8 @@ export async function deleteTask(
     recordState: "deleted",
     updatedAt: now,
   });
+  const deleted = await ctx.db.get(args.taskId);
+  if (deleted) await taskSearchProjection(ctx, deleted);
   await removeTaskAssignments(ctx, args.taskId);
   await cancelQueuedJobsForSource(ctx, args.organizationId, "task", args.taskId);
   if (existing.projectId) await updateProjectRollup(ctx.db, existing.projectId);

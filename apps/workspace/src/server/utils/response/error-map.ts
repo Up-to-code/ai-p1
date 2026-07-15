@@ -37,7 +37,7 @@ export function classifyError(error: unknown): ErrorClass {
   }
 
   const message = error instanceof Error ? error.message : "";
-  if (/Unauthenticated/i.test(message)) return "UNAUTHENTICATED";
+  if (/Unauthenticated|authentication[_ ]required/i.test(message)) return "UNAUTHENTICATED";
   if (/platform admin required/i.test(message))
     return "PLATFORM_ADMIN_REQUIRED";
   if (/permission|not have access|forbidden/i.test(message)) return "FORBIDDEN";

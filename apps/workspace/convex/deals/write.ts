@@ -6,7 +6,7 @@ import { getAuthUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { dealInputValidator, dealValidator } from "./validators";
 
-type DealInput = {
+export type DealInput = {
   title: string;
   clientId?: Id<"clients">;
   projectId?: Id<"projects">;
@@ -44,6 +44,23 @@ async function createDealCore(ctx: MutationCtx, args: { organizationId: string; 
   const deal = await ctx.db.get(id);
   if (!deal) throw new Error("Deal could not be created.");
   return { presented: presentDeal(deal), now };
+}
+
+/** Canonical Deal creation Interface for another domain command in the same transaction. */
+export async function createDealFromDomainCommand(
+  ctx: MutationCtx,
+  args: { organizationId: string; input: DealInput; actorUserId: string; auditSummary: string },
+) {
+  const { presented, now } = await createDealCore(ctx, args);
+  await ctx.db.insert("organizationAuditEvents", {
+    organizationId: args.organizationId,
+    actorUserId: args.actorUserId,
+    action: "deal.create",
+    target: presented.id,
+    summary: args.auditSummary,
+    createdAt: now,
+  });
+  return presented;
 }
 
 async function updateDealCore(ctx: MutationCtx, args: { organizationId: string; dealId: Id<"deals">; input: DealInput; actorUserId: string }) {

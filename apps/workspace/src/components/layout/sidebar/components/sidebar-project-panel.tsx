@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import {
   ListTodo,
   CalendarDays,
@@ -9,7 +8,6 @@ import {
   Circle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
 import { useProjectQuery } from "@/domains/projects/api/projects";
 import { useAuthSession } from "@/domains/auth";
 import { useNavigation } from "@/domains/navigation";
@@ -18,19 +16,21 @@ import { SidebarPanelLayout } from "./sidebar-panel-layout";
 import { ProjectsPanelSkeleton } from "@/components/loading-ui";
 
 const projectTabs = [
-  { name: "tasks", href: "/tasks", icon: ListTodo },
-  { name: "calendar", href: "/calendar", icon: CalendarDays },
-  { name: "files", href: "/files", icon: FileText },
-  { name: "team", href: "/team", icon: Users },
+  { name: "overview", path: "project", icon: Circle },
+  { name: "tasks", path: "tasks", icon: ListTodo },
+  { name: "milestones", path: "tasks", view: "milestones", icon: Circle },
+  { name: "timeline", path: "tasks", view: "timeline", icon: CalendarDays },
+  { name: "calendar", path: "calendar", icon: CalendarDays },
+  { name: "documents", path: "docs", icon: FileText },
+  { name: "discussions", path: "channels", icon: FileText },
+  { name: "time", path: "delivery", view: "time", icon: CalendarDays },
+  { name: "expenses", path: "finance", view: "expenses", icon: FileText },
+  { name: "clientApprovals", path: "delivery", view: "approvals", icon: Circle },
+  { name: "budgetMargin", path: "finance", view: "project-budgets", icon: Circle },
+  { name: "team", path: "team", icon: Users },
+  { name: "automations", path: "automations", icon: Circle },
+  { name: "settings", path: "project", view: "settings", icon: Circle },
 ];
-
-const statusColor: Record<string, string> = {
-  active: "#22c55e",
-  planned: "#3b82f6",
-  paused: "#f59e0b",
-  completed: "#8b5cf6",
-  archived: "#6b7280",
-};
 
 export function SidebarProjectPanel() {
   const t = useTranslations("Sidebar");
@@ -42,7 +42,8 @@ export function SidebarProjectPanel() {
       ? session.workspace.organizationId ?? undefined
       : undefined;
 
-  const project = projectId ? useProjectQuery(orgId, projectId) : null;
+  const projectQuery = useProjectQuery(orgId, projectId ?? "");
+  const project = projectId ? projectQuery : null;
   const isLoadingProject = project === undefined;
 
   if (isLoadingProject) {
@@ -59,15 +60,16 @@ export function SidebarProjectPanel() {
     );
   }
 
-  const status = project.status ?? "active";
-
   return (
     <SidebarPanelLayout title={project.name}>
       <div className="flex flex-col py-2">
         {projectTabs.map((tab) => {
-          const href = spaceSlug
-            ? `/${tab.href}?space=${spaceSlug}&project=${projectId}`
-            : `/${tab.href}?project=${projectId}`;
+          const base = tab.path === "project" ? `/projects/${projectId}` : `/${tab.path}`;
+          const params = new URLSearchParams();
+          if (spaceSlug) params.set("space", spaceSlug);
+          params.set("project", projectId!);
+          if (tab.view) params.set(tab.path === "project" ? "tab" : "view", tab.view);
+          const href = `${base}?${params.toString()}`;
 
           return (
             <WorkspaceLink
@@ -76,7 +78,7 @@ export function SidebarProjectPanel() {
               className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-accent/30 hover:text-foreground"
             >
               <tab.icon className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-              <span className="truncate">{t(tab.name)}</span>
+              <span className="truncate">{t.has(`nodes.${tab.name}`) ? t(`nodes.${tab.name}`) : t(tab.name)}</span>
             </WorkspaceLink>
           );
         })}

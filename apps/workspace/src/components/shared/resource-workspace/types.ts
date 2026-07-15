@@ -6,6 +6,15 @@ export type ResourceWorkspaceView = {
   href: string;
   icon?: ReactNode;
   color?: string;
+  actions?: ResourceWorkspaceViewAction[];
+};
+
+export type ResourceWorkspaceViewAction = {
+  id: string;
+  label: string;
+  onSelect: () => void | Promise<void>;
+  disabled?: boolean;
+  destructive?: boolean;
 };
 
 export type ResourceWorkspaceAction = {

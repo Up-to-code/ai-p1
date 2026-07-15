@@ -2,6 +2,11 @@ import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export const maintenanceTables = {
+  organizationPlatformRollouts: defineTable({
+    organizationId: v.string(), featureKey: v.string(), stage: v.union(v.literal("disabled"), v.literal("preview"), v.literal("canonical")),
+    version: v.number(), updatedByUserId: v.string(), createdAt: v.number(), updatedAt: v.number(),
+  }).index("by_organization_feature", ["organizationId", "featureKey"])
+    .index("by_feature_stage", ["featureKey", "stage", "updatedAt"]),
   dataSecurityBackfillJobs: defineTable({
     target: v.union(
       v.literal("clientsDeletedFlag"),

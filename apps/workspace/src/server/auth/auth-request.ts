@@ -50,6 +50,50 @@ const authHttp = createAuthHttpClient({
   },
 });
 
+function isLoopbackHostname(hostname: string) {
+  const normalized = hostname.toLowerCase().replace(/^\[|\]$/gu, "");
+  return normalized === "localhost"
+    || normalized === "::1"
+    || normalized === "0.0.0.0"
+    || normalized.startsWith("127.");
+}
+
+/**
+ * Next may select a different local port when the configured one is occupied.
+ * In development, keep server-side Better Auth calls on the same trusted
+ * loopback origin as the browser request instead of silently calling another
+ * local application. Production always uses the canonical configured issuer.
+ */
+function requestScopedAuthIssuer() {
+  if (process.env.NODE_ENV === "production") return authTopology.authIssuer;
+
+  const incoming = getRequestHeaders();
+  for (const candidate of [incoming?.get("origin"), incoming?.get("referer")]) {
+    if (!candidate) continue;
+    try {
+      const url = new URL(candidate);
+      if (isLoopbackHostname(url.hostname)) return `${url.origin}/api/auth`;
+    } catch {
+      // Ignore malformed ambient headers and retain the configured issuer.
+    }
+  }
+
+  return authTopology.authIssuer;
+}
+
+function requestScopedAuthHttp() {
+  const issuer = requestScopedAuthIssuer();
+  if (issuer === authTopology.authIssuer) return authHttp;
+  return createAuthHttpClient({
+    baseUrl: issuer,
+    fetch: (...args) => globalThis.fetch(...args),
+    credentialProvider: () => {
+      const headers = getRequestHeaders();
+      return headers ? readAuthCredential(headers) : null;
+    },
+  });
+}
+
 export function runWithAuthHeaders<T>(headers: Headers, operation: () => T | Promise<T>) {
   return requestStore.run({ headers: new Headers(headers) }, operation);
 }
@@ -132,7 +176,7 @@ export async function callBetterAuth<T>(
   path: string,
   options: AuthHttpRequestOptions = {},
 ): Promise<T> {
-  return authHttp.request<T>(path, {
+  return requestScopedAuthHttp().request<T>(path, {
     ...options,
     headers: new Headers([
       ...requestOriginHeaders().entries(),

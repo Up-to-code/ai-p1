@@ -41,7 +41,7 @@ export function useBillingCheckout({
             planId: nextPlanId,
             seats: effectiveSeats,
             locale,
-            returnUrl: window.location.origin + `/${locale}/organization?tab=billing`,
+            returnUrl: window.location.origin + `/${locale}/billing?return=checkout&order=pending`,
           }),
         },
       );

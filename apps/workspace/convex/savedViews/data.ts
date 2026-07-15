@@ -1,5 +1,8 @@
 import type { Doc } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { resolveActorTeamIds } from "../access/team";
+import type { SavedViewAccessDecision } from "../access/savedViewGrant";
+import { getOrganizationRole } from "../permissions";
 
 type Scope = "project" | "space" | "workspace" | "global";
 
@@ -16,7 +19,18 @@ export function scopeForInput(args: {
   return { scopeType: "workspace" as const, scopeId: args.scopeKey };
 }
 
-export function presentSavedView(view: Doc<"savedViews">) {
+const ownerCapabilities: SavedViewAccessDecision = {
+  canRead: true,
+  canConfigure: true,
+  canShare: true,
+  canDelete: true,
+  canSetDefault: true,
+};
+
+export function presentSavedView(
+  view: Doc<"savedViews">,
+  capabilities: SavedViewAccessDecision = ownerCapabilities,
+) {
   const scope: Scope =
     view.scopeType === "project"
       ? "project"
@@ -41,6 +55,12 @@ export function presentSavedView(view: Doc<"savedViews">) {
     spaceId: view.scopeType === "space" ? view.scopeId : undefined,
     config: view.config,
     isDefault: view.isDefault,
+    sharingMode: view.sharingMode ?? "personal" as const,
+    revision: view.revision ?? 1,
+    canConfigure: capabilities.canConfigure,
+    canShare: capabilities.canShare,
+    canDelete: capabilities.canDelete,
+    canSetDefault: capabilities.canSetDefault,
     createdAt: view.createdAt,
     updatedAt: view.updatedAt,
   };
@@ -55,28 +75,64 @@ export async function listViewsForUser(
     organizationId?: string;
     projectId?: string;
     spaceId?: string;
+    includeAdministered?: boolean;
+  },
+) {
+  const records = await listViewRecordsForUser(ctx, userId, args);
+  return records.map((view) => presentSavedView(view));
+}
+
+export async function listViewRecordsForUser(
+  ctx: QueryCtx | MutationCtx,
+  userId: string,
+  args?: {
+    resourceType?: Doc<"savedViews">["resourceType"];
+    viewType?: Doc<"savedViews">["viewType"];
+    organizationId?: string;
+    projectId?: string;
+    spaceId?: string;
+    includeAdministered?: boolean;
   },
 ) {
   const organizationId = args?.organizationId;
   const resourceType = args?.resourceType;
   if (!organizationId || !resourceType) return [];
 
-  const all = await ctx.db
+  const owned = await ctx.db
     .query("savedViews")
     .withIndex("by_owner_resource", (q) =>
       q.eq("organizationId", organizationId).eq("ownerUserId", userId).eq("resourceType", resourceType),
     )
     .collect();
 
-  return all
-    .filter((view) => {
-      if (view.recordState !== "active") return false;
-      if (args.viewType && view.viewType !== args.viewType) return false;
-      if (args.projectId && (view.scopeType !== "project" || view.scopeId !== args.projectId)) return false;
-      if (args.spaceId && (view.scopeType !== "space" || view.scopeId !== args.spaceId)) return false;
-      return true;
-    })
-    .map(presentSavedView);
+  const role = args.includeAdministered ? await getOrganizationRole(ctx, organizationId, userId) : null;
+  const administered = role === "owner" || role === "admin"
+    ? await ctx.db.query("savedViews").withIndex("by_resource_state", (q) =>
+      q.eq("organizationId", organizationId).eq("resourceType", resourceType).eq("recordState", "active"),
+    ).collect()
+    : [];
+
+  const teamIds = await resolveActorTeamIds(ctx, organizationId, userId);
+  const grantGroups = await Promise.all([
+    ctx.db.query("savedViewGrants").withIndex("by_principal_view", (q) =>
+      q.eq("organizationId", organizationId).eq("principalType", "user").eq("principalId", userId),
+    ).collect(),
+    ...teamIds.map((teamId) => ctx.db.query("savedViewGrants").withIndex("by_principal_view", (q) =>
+      q.eq("organizationId", organizationId).eq("principalType", "team").eq("principalId", teamId),
+    ).collect()),
+  ]);
+  const grantedViewIds = [...new Set(grantGroups.flat().filter((grant) => !grant.deletedAt && grant.recordState === "active").map((grant) => grant.viewId))];
+  const grantedViews = (await Promise.all(grantedViewIds.map((viewId) => ctx.db.get(viewId))))
+    .filter((view): view is Doc<"savedViews"> => view !== null);
+  const candidates = [...new Map([...owned, ...grantedViews, ...administered].map((view) => [view._id, view])).values()];
+
+  return candidates.filter((view) => {
+    if (view.recordState !== "active") return false;
+    if (args.viewType && view.viewType !== args.viewType) return false;
+    if (args.projectId && (view.scopeType !== "project" || view.scopeId !== args.projectId)) return false;
+    if (args.spaceId && (view.scopeType !== "space" || view.scopeId !== args.spaceId)) return false;
+    return true;
+  });
 }
 
 export async function getDefaultView(

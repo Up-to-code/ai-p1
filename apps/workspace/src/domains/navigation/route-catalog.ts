@@ -1,16 +1,8 @@
 import { isLocale } from "@/i18n/locale-registry";
 
-export type RailItemId =
-  | "home"
-  | "ws"
-  | "spaces"
-  | "tasks"
-  | "calendar"
-  | "clients"
-  | "deals"
-  | "docs"
-  | "inbox"
-  | null;
+import type { NavigationDomainId } from "@qentrah/domain-contracts";
+
+export type RailItemId = NavigationDomainId | null;
 
 export const ROUTE_IDS = [
   "ws",
@@ -22,9 +14,32 @@ export const ROUTE_IDS = [
   "deals",
   "channels",
   "inbox",
+  "inboxReplies",
+  "inboxAssignedComments",
   "spaces",
   "projects",
+  "search",
   "organization",
+  "automations",
+  "team",
+  "billing",
+  "usage",
+  "integrations",
+  "mcp",
+  "permissions",
+  "organizationSpaces",
+  "searchPolicy",
+  "adminConfig",
+  "organizationActivity",
+  "delivery",
+  "proposals",
+  "contracts",
+  "leads",
+  "companies",
+  "contacts",
+  "resources",
+  "finance",
+  "reports",
 ] as const;
 
 export type RouteId = (typeof ROUTE_IDS)[number];
@@ -44,17 +59,40 @@ const taskParams = ["filter", "project", "space"] as const;
 
 export const ROUTE_CATALOG: readonly RouteCatalogEntry[] = [
   { id: "ws", path: "/ws", persistentParams: [], railItem: "home" },
-  { id: "ai", path: "/ai", persistentParams: aiParams, railItem: "home" },
+  { id: "ai", path: "/ai", persistentParams: aiParams, railItem: "ai" },
   { id: "tasks", path: "/tasks", persistentParams: taskParams, railItem: "tasks" },
   { id: "calendar", path: "/calendar", persistentParams: contextParams, railItem: "calendar" },
   { id: "docs", path: "/docs", persistentParams: contextParams, railItem: "docs" },
-  { id: "clients", path: "/clients", persistentParams: [], railItem: "clients" },
-  { id: "deals", path: "/deals", persistentParams: dealParams, railItem: "deals", aliases: ["/opportunities"] },
+  { id: "clients", path: "/clients", persistentParams: [], railItem: null },
+  { id: "deals", path: "/deals", persistentParams: dealParams, railItem: null, aliases: ["/opportunities"] },
   { id: "channels", path: "/channels", persistentParams: contextParams, railItem: "inbox", aliases: ["/ws/channels", "/inbox/channels", "/organization/channels"] },
-  { id: "inbox", path: "/inbox", persistentParams: [], railItem: "inbox", aliases: ["/ws/inbox"] },
+  { id: "inboxReplies", path: "/inbox/replies", persistentParams: ["status"], railItem: "inbox" },
+  { id: "inboxAssignedComments", path: "/inbox/assigned-comments", persistentParams: ["scope"], railItem: "inbox" },
+  { id: "inbox", path: "/inbox", persistentParams: ["tab", "filter"], railItem: "inbox", aliases: ["/ws/inbox"] },
   { id: "spaces", path: "/spaces", persistentParams: [], railItem: "spaces", aliases: ["/ws/spaces", "/inbox/spaces", "/organization/spaces"] },
-  { id: "projects", path: "/projects", persistentParams: [], railItem: "spaces" },
-  { id: "organization", path: "/organization", persistentParams: [], railItem: null },
+  { id: "projects", path: "/projects/table", persistentParams: ["search", "status", "health", "member", "space"], railItem: "projects", aliases: ["/projects"] },
+  { id: "search", path: "/search", persistentParams: [], railItem: "home" },
+  { id: "organization", path: "/organization", persistentParams: ["tab"], railItem: "admin" },
+  { id: "automations", path: "/automations", persistentParams: ["view"], railItem: "automations" },
+  { id: "team", path: "/team", persistentParams: [], railItem: "admin" },
+  { id: "billing", path: "/billing", persistentParams: [], railItem: "admin" },
+  { id: "usage", path: "/usage", persistentParams: [], railItem: "admin" },
+  { id: "integrations", path: "/web-apps", persistentParams: [], railItem: "admin", aliases: ["/integrations"] },
+  { id: "mcp", path: "/mcp", persistentParams: [], railItem: "admin" },
+  { id: "permissions", path: "/organization/custom-permissions", persistentParams: [], railItem: "admin" },
+  { id: "organizationSpaces", path: "/organization/spaces", persistentParams: [], railItem: "admin" },
+  { id: "searchPolicy", path: "/organization/search-policy", persistentParams: [], railItem: "admin" },
+  { id: "adminConfig", path: "/organization/admin-config", persistentParams: ["view"], railItem: "admin" },
+  { id: "organizationActivity", path: "/organization/activity", persistentParams: [], railItem: "admin" },
+  { id: "proposals", path: "/crm/proposals", persistentParams: [], railItem: null },
+  { id: "contracts", path: "/crm/contracts", persistentParams: [], railItem: null },
+  { id: "leads", path: "/crm/leads", persistentParams: [], railItem: null },
+  { id: "companies", path: "/crm/companies", persistentParams: [], railItem: null },
+  { id: "contacts", path: "/crm/contacts", persistentParams: [], railItem: null },
+  { id: "delivery", path: "/delivery", persistentParams: [], railItem: null },
+  { id: "resources", path: "/resources", persistentParams: ["view", "start", "end"], railItem: null },
+  { id: "finance", path: "/finance", persistentParams: ["view", "scope", "scopeId", "start", "end"], railItem: null },
+  { id: "reports", path: "/reports", persistentParams: ["view", "report", "start", "end"], railItem: null },
 ];
 
 function normalizePath(pathname: string): string | null {
@@ -88,6 +126,14 @@ export function getActiveRailItem(pathname: string): RailItemId {
 
 export function getSupportedPersistentParams(pathname: string): readonly string[] {
   return getRouteEntry(pathname)?.persistentParams ?? [];
+}
+
+export function getRoutePath(routeId: RouteId): `/${string}` {
+  return ROUTE_CATALOG.find((entry) => entry.id === routeId)?.path ?? "/ws";
+}
+
+export function getRoutePathById(routeId: string): `/${string}` {
+  return ROUTE_CATALOG.find((entry) => entry.id === routeId)?.path ?? "/ws";
 }
 
 export function isInternalHref(href: string): boolean {

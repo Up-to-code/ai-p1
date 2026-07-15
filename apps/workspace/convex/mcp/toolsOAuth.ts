@@ -2,12 +2,37 @@ import { v } from "convex/values";
 import { action, internalMutation, internalQuery } from "../_generated/server";
 import type { ActionCtx } from "../_generated/server";
 import { internal } from "../_generated/api";
+import type { Doc, Id } from "../_generated/dataModel";
 import { mcpActor } from "../workspace/businessData";
 import { readHandlers, writeHandlers } from "./handlers/registry";
 import { inputObject } from "./toolInputs";
 import { mcpReadToolNames as readTools } from "./toolRegistry";
 import { scopePolicyContext } from "./scopePolicy";
 import { assertOAuthToolPermission, authorizedTools } from "./oauthGrants";
+import type { EffectiveScopePolicy } from "./scopePolicy";
+import type { McpPermission } from "./validators";
+
+type OAuthIdentityContext = {
+  userId: string;
+  organizationId: string;
+  oauthClientId: string;
+  scopes: string[];
+};
+
+type OAuthGrantResolution = {
+  grant: Doc<"mcpOAuthGrants">;
+  permissions: McpPermission[];
+  policy: EffectiveScopePolicy;
+};
+
+type OAuthAuthorization = {
+  grantId: Id<"mcpOAuthGrants">;
+  organizationId: string;
+  clientId: string;
+  userId: string;
+  expiresAt: number;
+  tools: ReturnType<typeof authorizedTools>;
+};
 
 function identityContext(identity: Record<string, unknown> | null) {
   if (!identity) throw new Error("Authentication required.");
@@ -22,7 +47,10 @@ function identityContext(identity: Record<string, unknown> | null) {
   return { userId, organizationId, oauthClientId, scopes };
 }
 
-async function resolveGrant(ctx: ActionCtx): Promise<any> {
+async function resolveGrant(ctx: ActionCtx): Promise<{
+  auth: OAuthIdentityContext;
+  resolved: OAuthGrantResolution;
+}> {
   const identity = await ctx.auth.getUserIdentity();
   const auth = identityContext(identity as unknown as Record<string, unknown> | null);
   const resolved = await ctx.runQuery(internal.mcp.oauthGrants.resolveInternal, {
@@ -41,7 +69,7 @@ async function resolveGrant(ctx: ActionCtx): Promise<any> {
 export const authorizeOAuthGrant = action({
   args: {},
   returns: v.any(),
-  handler: async (ctx): Promise<any> => {
+  handler: async (ctx): Promise<OAuthAuthorization> => {
     const { auth, resolved } = await resolveGrant(ctx);
     return {
       grantId: resolved.grant._id,
@@ -74,6 +102,9 @@ export const callToolOAuth = action({
       now,
     });
     if (!rate.allowed) throw new Error("MCP_RATE_LIMITED");
+    await ctx.runMutation(internal.billing.access.consumeApiCallFromMcp, {
+      organizationId: auth.organizationId,
+    });
     const common = {
       organizationId: auth.organizationId,
       connectionId: resolved.grant._id,

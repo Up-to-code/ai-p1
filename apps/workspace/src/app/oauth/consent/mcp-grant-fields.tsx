@@ -24,6 +24,8 @@ const resourceLabels: Record<McpResource, string> = {
   deal: "Deals",
   calendar: "Calendar",
   media: "Media",
+  finance: "Finance",
+  report: "Reports",
 };
 
 const actionLabels: Record<McpAction, string> = {

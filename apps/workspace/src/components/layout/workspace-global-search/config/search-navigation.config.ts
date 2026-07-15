@@ -32,7 +32,7 @@ export type GlobalSearchNavigationAction = {
 
 export type GlobalSearchResult = {
   id: string;
-  type: "project" | "client";
+  type: "project" | "client" | "task" | "document";
   title: string;
   description: string;
   href: string;

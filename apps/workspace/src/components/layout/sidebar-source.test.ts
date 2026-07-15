@@ -9,30 +9,18 @@ function readSource(path: string) {
   return readFileSync(resolve(root, path), "utf8");
 }
 
-function sidebarMessages(source: string) {
-  const start = source.indexOf('"Sidebar": {');
-  const end = source.indexOf('"Topbar": {', start);
-  return source.slice(start, end);
-}
-
-function countKey(source: string, key: string) {
-  return Array.from(source.matchAll(new RegExp(`"${key}"\\s*:`, "g"))).length;
-}
-
 describe("sidebar source", () => {
-  it("keeps the Work OS navigation route-complete and ordered", () => {
-    const source = readSource("src/components/layout/sidebar/config/nav.config.ts");
+  it("keeps the implemented domain launcher canonical and ordered", () => {
+    const source = readSource("convex/navigation/catalog.ts");
     const expectedItems = [
-      '{ name: "home", href: "/ws", icon: Home',
-      '{ name: "inbox", href: "/ws/inbox", icon: Inbox',
-      '{ name: "spaces", icon: LayoutGrid',
-      '{ name: "clients", href: "/clients", icon: UserRound',
-      '{ name: "deals", href: "/deals", icon: BadgeDollarSign',
-      '{ name: "tasks", href: "/tasks", icon: ListLinesIcon',
-      '{ name: "calendar", href: "/calendar", icon: CalendarIcon',
-      '{ name: "docs", href: "/docs", icon: DocumentLinesIcon',
-      '{ name: "integrations", icon: Plug',
-      '{ name: "organization", href: "/organization", icon: Building2',
+      'id: "home"',
+      'id: "inbox"',
+      'id: "projects"',
+      'id: "tasks"',
+      'id: "docs"',
+      'id: "calendar"',
+      'id: "automations"',
+      'id: "admin"',
     ];
 
     let previousIndex = -1;
@@ -41,19 +29,36 @@ describe("sidebar source", () => {
       expect(nextIndex, item).toBeGreaterThan(previousIndex);
       previousIndex = nextIndex;
     }
-
-    expect(source).not.toContain('{ name: "usage"');
-    expect(source).not.toContain('{ name: "activity"');
-    expect(source).not.toContain('{ name: "opportunities"');
   });
 
-  it("keeps sidebar message keys unique in English and Arabic", () => {
-    const enSidebar = sidebarMessages(readSource("messages/en.json"));
-    const arSidebar = sidebarMessages(readSource("messages/ar.json"));
+  it("keeps domain launcher labels available in English and Arabic", () => {
+    const enSidebar = JSON.parse(readSource("messages/en.json"))["Sidebar"];
+    const arSidebar = JSON.parse(readSource("messages/ar.json"))["Sidebar"];
 
-    for (const key of ["dashboard", "clients", "deals", "projects", "tasks", "docs", "calendar", "integrations", "organization", "settings"]) {
-      expect(countKey(enSidebar, key), `en:${key}`).toBe(1);
-      expect(countKey(arSidebar, key), `ar:${key}`).toBe(1);
+    for (const key of ["home", "inbox", "projects", "tasks", "docs", "calendar", "crm", "delivery", "resources", "finance", "reports", "automations", "admin"]) {
+      expect(enSidebar[key], `en:${key}`).toEqual(expect.any(String));
+      expect(arSidebar[key], `ar:${key}`).toEqual(expect.any(String));
+    }
+  });
+
+  it("keeps the primary rail permanently compact", () => {
+    const source = readSource("src/components/layout/sidebar/components/sidebar-rail.tsx");
+    expect(source).toContain('data-rail-mode="compact"');
+    expect(source).toContain("w-12");
+    expect(source).not.toContain("w-52");
+    expect(source).not.toContain("setRailMode");
+  });
+
+  it("localizes every projected node label in English and Arabic", () => {
+    const catalog = readSource("convex/navigation/catalog.ts");
+    const labelKeys = [...catalog.matchAll(/node\([^,]+,[^,]+,\s*"([^"]+)"/g)]
+      .map((match) => match[1]);
+    const enNodes = JSON.parse(readSource("messages/en.json"))["Sidebar"]["nodes"];
+    const arNodes = JSON.parse(readSource("messages/ar.json"))["Sidebar"]["nodes"];
+
+    for (const key of new Set(labelKeys)) {
+      expect(enNodes[key], `en:Sidebar.nodes.${key}`).toEqual(expect.any(String));
+      expect(arNodes[key], `ar:Sidebar.nodes.${key}`).toEqual(expect.any(String));
     }
   });
 });

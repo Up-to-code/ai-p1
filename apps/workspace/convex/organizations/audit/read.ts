@@ -5,8 +5,16 @@ import { assertOrganizationPermission } from "../profile/access";
 import { auditStats } from "../../workspace/readStats";
 import { auditCategoryForAction, toPublicAuditEvent } from "./data";
 import { organizationAuditEventValidator } from "./validators";
+import { resolveOrganizationEntitlements } from "../../billing/access";
 
 const MAX_AUDIT_STATS_EVENTS = 2_000;
+
+async function auditCutoff(ctx: Parameters<typeof resolveOrganizationEntitlements>[0], organizationId: string) {
+  const entitlements = await resolveOrganizationEntitlements(ctx, organizationId);
+  return entitlements.auditLogDays === null
+    ? 0
+    : Date.now() - entitlements.auditLogDays * 24 * 60 * 60 * 1_000;
+}
 
 export const listRecent = query({
   args: {
@@ -18,9 +26,10 @@ export const listRecent = query({
     await assertOrganizationPermission(ctx, args.organizationId, "read");
 
     const limit = Math.max(1, Math.min(args.limit ?? 100, 200));
+    const cutoff = await auditCutoff(ctx, args.organizationId);
     const events = await ctx.db
       .query("organizationAuditEvents")
-      .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
+      .withIndex("by_organization_created", (q) => q.eq("organizationId", args.organizationId).gte("createdAt", cutoff))
       .order("desc")
       .take(limit);
 
@@ -35,9 +44,10 @@ export const listPaged = query({
   },
   handler: async (ctx, args) => {
     await assertOrganizationPermission(ctx, args.organizationId, "read");
+    const cutoff = await auditCutoff(ctx, args.organizationId);
     const page = await ctx.db
       .query("organizationAuditEvents")
-      .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
+      .withIndex("by_organization_created", (q) => q.eq("organizationId", args.organizationId).gte("createdAt", cutoff))
       .order("desc")
       .paginate(args.paginationOpts);
 
@@ -58,9 +68,10 @@ export const stats = query({
   }),
   handler: async (ctx, args) => {
     await assertOrganizationPermission(ctx, args.organizationId, "read");
+    const cutoff = await auditCutoff(ctx, args.organizationId);
     const events = await ctx.db
       .query("organizationAuditEvents")
-      .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
+      .withIndex("by_organization_created", (q) => q.eq("organizationId", args.organizationId).gte("createdAt", cutoff))
       .order("desc")
       .take(MAX_AUDIT_STATS_EVENTS);
     return auditStats(events, auditCategoryForAction);

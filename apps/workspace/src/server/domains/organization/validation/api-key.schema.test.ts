@@ -14,7 +14,7 @@ describe("organization API key validation", () => {
     expect(organizationApiKeyExpiresAt("never", now)).toBeUndefined();
   });
 
-  it("deduplicates permissions and keeps non-client writes blocked for v1", () => {
+  it("deduplicates permissions and limits write-capable resources for v1", () => {
     expect(normalizeOrganizationApiKeyPermissions([
       { resource: "client", actions: ["read", "create", "read"] },
       { resource: "organization", actions: ["read"] },
@@ -25,6 +25,10 @@ describe("organization API key validation", () => {
 
     expect(() => normalizeOrganizationApiKeyPermissions([
       { resource: "media", actions: ["read", "update"] },
-    ])).toThrow("Only client API keys can create, update, or delete records in v1.");
+    ])).toThrow("Only client, task, and document API keys can create or update records in v1.");
+
+    expect(() => normalizeOrganizationApiKeyPermissions([
+      { resource: "document", actions: ["read", "delete"] },
+    ])).toThrow("Task and document API keys do not support delete in v1.");
   });
 });

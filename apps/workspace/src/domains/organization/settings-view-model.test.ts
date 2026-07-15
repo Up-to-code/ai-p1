@@ -163,6 +163,7 @@ describe("organization settings permission view model", () => {
       { resource: "project", actions: ["read"] },
       { resource: "calendar", actions: ["read"] },
       { resource: "task", actions: ["read"] },
+      { resource: "document", actions: ["read"] },
       { resource: "media", actions: ["read"] },
     ] satisfies OrganizationApiKeyPermission[]);
     expect(defaultApiKeyPermissions(grantable)).toEqual([
@@ -171,6 +172,7 @@ describe("organization settings permission view model", () => {
       { resource: "project", actions: ["read"] },
       { resource: "calendar", actions: ["read"] },
       { resource: "task", actions: ["read"] },
+      { resource: "document", actions: ["read"] },
       { resource: "media", actions: ["read"] },
     ]);
   });

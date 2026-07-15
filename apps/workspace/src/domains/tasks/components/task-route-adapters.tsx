@@ -8,6 +8,8 @@ import { useTaskWorkspace } from "./task-workspace-provider";
 import { TaskBoardView } from "./views/task-board-view";
 import { TaskListView } from "./views/task-list-view";
 import { TaskTableView } from "./views/task-table-view";
+import { TaskCalendarWorkspaceView } from "./views/task-calendar-workspace-view";
+import { TaskTimelineWorkspaceView } from "./views/task-timeline-workspace-view";
 import { TaskRoutePagination, TaskRouteState } from "./views/task-route-shared";
 
 function TaskRouteShell({ children }: { children: React.ReactNode }) {
@@ -55,4 +57,14 @@ export function TaskTableRouteAdapter() {
       <TaskTableView tasks={workspace.pagedTasks} organizationId={workspace.organizationId} projectId={workspace.projectId} spaceId={workspace.spaceId} memberOptions={workspace.memberOptions} onTaskOpen={workspace.openTask} onTaskUpdate={workspace.updateTask} onTaskDelete={workspace.deleteTask} onTaskCreate={workspace.createTask} onTaskMove={workspace.moveTask} onOpenFields={openFields} viewState={workspace.viewState} onViewStateChange={workspace.updateViewState} onTasksBulk={workspace.bulkTasks} />
     </TaskRouteShell>
   );
+}
+
+export function TaskCalendarRouteAdapter() {
+  const workspace = useTaskWorkspace();
+  return <TaskCalendarWorkspaceView tasks={workspace.tasks} onTaskOpen={workspace.openTask} />;
+}
+
+export function TaskTimelineRouteAdapter() {
+  const workspace = useTaskWorkspace();
+  return <TaskTimelineWorkspaceView tasks={workspace.tasks} onTaskOpen={workspace.openTask} />;
 }

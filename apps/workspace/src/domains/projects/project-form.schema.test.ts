@@ -14,9 +14,9 @@ describe("project form schema", () => {
     expect(projectSchema.safeParse(validProjectForm).success).toBe(true);
   });
 
-  it("still rejects blank descriptions", () => {
+  it("accepts a blank optional description", () => {
     const result = projectSchema.safeParse({ ...validProjectForm, description: "   " });
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 });

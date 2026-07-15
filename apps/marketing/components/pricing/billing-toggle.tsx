@@ -6,13 +6,13 @@ import type { BillingCycle } from "./types";
 export function BillingToggle({
   value,
   onChange,
-  monthlyLabel = "Monthly",
-  annuallyLabel = "Yearly",
+  monthlyLabel,
+  annuallyLabel,
 }: {
   value: BillingCycle;
   onChange: (cycle: BillingCycle) => void;
-  monthlyLabel?: string;
-  annuallyLabel?: string;
+  monthlyLabel: string;
+  annuallyLabel: string;
 }) {
   return (
       <div className="cu-toggle-wrapper">

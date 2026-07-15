@@ -40,6 +40,7 @@ import type {
   UpdateOrganizationMemberRoleInput,
   UpdateOrganizationRoleInput,
 } from "../validation/actions.schema";
+import { syncSubscriptionSeats } from "@/server/domains/billing/services/billing";
 
 const listMembers = listMembersForOrganizationAction;
 const listInvitations = listInvitationsForOrganizationAction;
@@ -100,7 +101,19 @@ export async function createOrganizationEmailInvitation(
 ) {
   return runOrganizationActionWorkflow(organizationId, {
     permission: { resource: "member", action: "create" },
-    prepare: () => assertCanAssignRole(c, organizationId, input.role),
+    prepare: async () => {
+      await assertCanAssignRole(c, organizationId, input.role);
+      const [members, invitations] = await Promise.all([
+        listMembers(c, organizationId),
+        listInvitations(c, organizationId),
+      ]);
+      await fetchAuthMutation(api.billing.access.assertEntitlementForAuthorizedRequest, {
+        organizationId,
+        key: "member",
+        used: members.length + invitations.length,
+        requestedUnits: 1,
+      });
+    },
     perform: () => inviteMemberBA(c, organizationId, input.email, input.role),
     audit: {
       action: "organization.invitation.create",
@@ -179,6 +192,8 @@ export async function removeOrganizationMember(
     summary: "Removed organization member.",
   });
 
+  await syncSubscriptionSeats(organizationId, Math.max(1, members.length - 1));
+
   return member;
 }
 
@@ -188,6 +203,10 @@ export async function createOrganizationWorkRole(
   input: CreateOrganizationRoleInput,
 ) {
   await requireOrganizationAction(organizationId, "role", "create");
+  await fetchAuthMutation(api.billing.access.assertEntitlementForAuthorizedRequest, {
+    organizationId,
+    key: "custom_role",
+  });
   const role = normalizeOrganizationRoleName(input.role);
   if (!role) {
     throw new OrganizationActionError("Work role name is required.", 400);
@@ -219,6 +238,10 @@ export async function updateOrganizationWorkRole(
   input: UpdateOrganizationRoleInput,
 ) {
   await requireOrganizationAction(organizationId, "role", "update");
+  await fetchAuthMutation(api.billing.access.assertEntitlementForAuthorizedRequest, {
+    organizationId,
+    key: "custom_role",
+  });
   const currentRole = (await listRoles(c, organizationId)).find((role) => role.id === roleId);
   if (!currentRole) {
     throw new OrganizationActionError("Work role was not found.", 404);
@@ -298,6 +321,19 @@ export async function acceptOrganizationEmailInvitation(
   c: Context,
   invitationId: string,
 ) {
+  const pending = await listPendingInvitationsForCurrentUser(c) as Array<{ id?: string; invitationId?: string; organizationId?: string }>;
+  const pendingInvitation = Array.isArray(pending)
+    ? pending.find((invitation) => invitation.id === invitationId || invitation.invitationId === invitationId)
+    : undefined;
+  if (pendingInvitation?.organizationId) {
+    const members = await listMembers(c, pendingInvitation.organizationId);
+    await fetchAuthMutation(api.billing.access.assertEntitlementForAuthorizedRequest, {
+      organizationId: pendingInvitation.organizationId,
+      key: "member",
+      used: members.length,
+      requestedUnits: 1,
+    });
+  }
   const accepted = await acceptInvitationBA(c, invitationId) as AcceptInvitationResponse;
   const organizationId =
     accepted.organizationId ??
@@ -316,6 +352,8 @@ export async function acceptOrganizationEmailInvitation(
       target: invitationId,
       summary: `Accepted email invitation${accepted.invitation?.role ? ` for ${accepted.invitation.role}` : ""}.`,
     });
+    const members = await listMembers(c, organizationId);
+    await syncSubscriptionSeats(organizationId, members.length);
   }
 
   return accepted;

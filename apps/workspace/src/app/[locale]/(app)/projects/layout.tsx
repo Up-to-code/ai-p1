@@ -1,9 +1,6 @@
 import type { ReactNode } from "react";
+import { ProjectResourceLayout } from "@/domains/projects/components/project-resource-layout";
 
 export default function ProjectsLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex h-full flex-col overflow-hidden bg-background px-6">
-      {children}
-    </div>
-  );
+  return <ProjectResourceLayout>{children}</ProjectResourceLayout>;
 }

@@ -9,6 +9,7 @@ import { PlatformStorySections } from "@/components/landing/platform-story-secti
 import LogoCloud from "@/components/logo-cloud";
 import { isLocale, type Locale } from "@/lib/content";
 import { pageMetadata } from "@/lib/page-metadata";
+import { getMarketingContent } from "@/lib/contentful";
 
 // Revalidate every hour — content changes rarely.
 export const revalidate = 3600;
@@ -19,7 +20,9 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  return isLocale(locale) ? pageMetadata(locale as Locale, "home") : {};
+  if (!isLocale(locale)) return {};
+  const content = await getMarketingContent(locale);
+  return pageMetadata(locale as Locale, "home", content.presentation.seoEntries.find((entry) => entry.pageKey === "home"));
 }
 
 export default async function LocaleHomePage({ params }: Props) {
@@ -35,9 +38,9 @@ export default async function LocaleHomePage({ params }: Props) {
 
       <LogoCloud />
 
-      <PlatformStorySections locale={locale} />
+      <PlatformStorySections />
 
-      <AiOutcomesSections locale={locale} />
+      <AiOutcomesSections />
 
       <Faq02 />
 

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { brandLabel, brandProductName } from "@qentrah/brand-identity";
-import { type Locale } from "@/lib/content";
+import { type Locale, type MarketingSeoEntry } from "@/lib/content";
 
 const siteUrl = "https://www.qentrah.com";
 
@@ -244,8 +244,15 @@ const fr: Record<string, PageMeta> = {
 
 const localeMap: Record<Locale, Record<string, PageMeta>> = { en, ar, fr };
 
-export function pageMetadata(locale: Locale, page: string): Metadata {
-  const meta = localeMap[locale]?.[page] ?? localeMap.en.home;
+export function pageMetadata(
+  locale: Locale,
+  page: string,
+  cmsEntry?: MarketingSeoEntry,
+): Metadata {
+  const fallback = localeMap[locale]?.[page] ?? localeMap.en.home;
+  const meta: PageMeta = cmsEntry
+    ? { title: cmsEntry.title, description: cmsEntry.description, keywords: cmsEntry.keywords }
+    : fallback;
 
   const isAr = locale === "ar";
   const isFr = locale === "fr";
@@ -272,10 +279,10 @@ export function pageMetadata(locale: Locale, page: string): Metadata {
       url: `/${locale}${page === "home" ? "" : `/${page}`}`,
       images: [
         {
-          url: "/logo.ico",
+          url: cmsEntry?.socialImage || "/logo.ico",
           width: 512,
           height: 512,
-          alt: `${brand} logo`,
+          alt: cmsEntry?.socialImageAlt || `${brand} logo`,
         },
       ],
     },
@@ -283,7 +290,7 @@ export function pageMetadata(locale: Locale, page: string): Metadata {
       card: "summary_large_image",
       title,
       description: meta.ogDescription ?? description,
-      images: ["/logo.ico"],
+      images: [cmsEntry?.socialImage || "/logo.ico"],
     },
     robots: {
       index: true,

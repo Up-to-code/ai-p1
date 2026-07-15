@@ -17,6 +17,7 @@ import {
   clientTaskValidator,
 } from "./validators";
 import { executeBulkTaskAction } from "./bulk";
+import { taskSearchProjection } from "../search/adapters/task";
 
 export const createFromHono = mutation({
   args: { organizationId: v.string(), input: clientTaskInputValidator },
@@ -138,6 +139,8 @@ export const assignTasksToProject = mutation({
           now,
         }),
       });
+      const updatedTask = await ctx.db.get(taskId);
+      if (updatedTask) await taskSearchProjection(ctx, updatedTask);
       updated++;
       if (existing.projectId) affectedProjectIds.add(existing.projectId);
       affectedProjectIds.add(args.projectId);

@@ -9,6 +9,8 @@ export const mcpResourceValidator = v.union(
   v.literal("task"),
   v.literal("media"),
   v.literal("space"),
+  v.literal("finance"),
+  v.literal("report"),
 );
 
 export const mcpActionValidator = v.union(
@@ -90,7 +92,9 @@ export type McpResource =
   | "calendar"
   | "task"
   | "media"
-  | "space";
+  | "space"
+  | "finance"
+  | "report";
 
 export type McpAction = "read" | "create" | "update" | "delete";
 

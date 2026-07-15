@@ -1,0 +1,21 @@
+name: Platform readiness
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run licenses:check
+      - run: npm run docs:codebase-map:check
+      - run: npm --workspace @qentrah/workspace run typecheck
+      - run: npm --workspace @qentrah/workspace run test:agency-readiness

@@ -1,10 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useCallback, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { useAuthSession } from "@/domains/auth";
-import { useIndexedDbConfig } from "@/domains/storage";
-import { logger } from "@/lib/logger";
 import { useNavigation } from "@/domains/navigation";
 import { useSidebarRail } from "../sidebar-rail-context";
 import { SidebarChatPanel } from "./sidebar-chat-panel";
@@ -15,12 +13,12 @@ import { WorkspaceSidebarPanel } from "@/domains/workspace/components/workspace-
 import {
   SidebarTasksPanel,
   SidebarCalendarPanel,
-  SidebarClientsPanel,
-  SidebarDealsPanel,
   SidebarDocsPanel,
+  SidebarProjectsPanel,
+  SidebarAutomationsPanel,
+  SidebarAdminPanel,
 } from "./sidebar-domain-panels";
 
-const SIDEBAR_WIDTH_KEY = "sidebar.secondary.width";
 const MIN_WIDTH = 188;
 const DEFAULT_WIDTH = 248;
 const MAX_WIDTH = 360;
@@ -29,61 +27,40 @@ export function clampSidebarWidth(width: number): number {
   return Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, width));
 }
 
-export function sidebarWidthStorageKey(organizationId: string, userId: string): string {
-  return `organization:${organizationId}:user:${userId}:${SIDEBAR_WIDTH_KEY}`;
-}
-
 export function SidebarSecondaryPanel() {
-  const { activeRailItem, secondaryPanelMode } = useSidebarRail();
+  const t = useTranslations("Sidebar");
+  const {
+    activeRailItem,
+    secondaryPanelMode,
+    secondaryPanelWidth,
+    setSecondaryPanelWidth,
+  } = useSidebarRail();
   const { level } = useNavigation();
-  const session = useAuthSession();
-  const organizationId = session.workspace.organizationId;
-  const userId = session.user.id;
-  const storageKey = organizationId && userId
-    ? sidebarWidthStorageKey(organizationId, userId)
-    : "sidebar.secondary.width.pending";
-  const logStorageError = useCallback((error: unknown, operation: string) => {
-    logger.error("sidebar.secondary_width_persistence_failed", { operation, error });
-  }, []);
-  const { value: persistedWidth, setValue: persistWidth } = useIndexedDbConfig(
-    "layouts",
-    storageKey,
-    DEFAULT_WIDTH,
-    { onError: logStorageError },
-  );
-  const [width, setWidth] = useState(persistedWidth);
-  const latestWidth = useRef(width);
-
-  useEffect(() => {
-    setWidth(persistedWidth);
-    latestWidth.current = persistedWidth;
-  }, [persistedWidth]);
-
-  const showProject = activeRailItem === "spaces" && level === "project";
+  const [dragWidth, setDragWidth] = useState<number | null>(null);
+  const width = dragWidth ?? secondaryPanelWidth ?? DEFAULT_WIDTH;
+  const showProject = (activeRailItem === "spaces" || activeRailItem === "projects") && level === "project";
   const isOpen = Boolean(activeRailItem);
 
   const startResize = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
     event.preventDefault();
     const startX = event.clientX;
     const startWidth = width;
+    let latestWidth = width;
 
     const handleMove = (moveEvent: PointerEvent) => {
-      const nextWidth = clampSidebarWidth(startWidth + moveEvent.clientX - startX);
-      latestWidth.current = nextWidth;
-      setWidth(nextWidth);
+      latestWidth = clampSidebarWidth(startWidth + moveEvent.clientX - startX);
+      setDragWidth(latestWidth);
     };
 
     const handleUp = () => {
-      if (organizationId && userId) {
-        void persistWidth(latestWidth.current);
-      }
       window.removeEventListener("pointermove", handleMove);
       window.removeEventListener("pointerup", handleUp);
+      void setSecondaryPanelWidth(latestWidth).finally(() => setDragWidth(null));
     };
 
     window.addEventListener("pointermove", handleMove);
     window.addEventListener("pointerup", handleUp);
-  }, [organizationId, persistWidth, userId, width]);
+  }, [setSecondaryPanelWidth, width]);
 
   return (
     <div
@@ -93,30 +70,33 @@ export function SidebarSecondaryPanel() {
       )}
       style={{ width: isOpen ? width : 0 }}
     >
-      <div className="flex h-full min-w-0 flex-col overflow-hidden" style={{ width }}>
-        {secondaryPanelMode === "ai" ? (
-          <SidebarChatPanel />
-        ) : (
-          <>
-            {activeRailItem === "home" && <WorkspaceSidebarPanel />}
-            {activeRailItem === "spaces" && !showProject && <SidebarSpacePanel />}
-            {showProject && <SidebarProjectPanel />}
-            {activeRailItem === "tasks" && <SidebarTasksPanel />}
-            {activeRailItem === "calendar" && <SidebarCalendarPanel />}
-            {activeRailItem === "clients" && <SidebarClientsPanel />}
-            {activeRailItem === "deals" && <SidebarDealsPanel />}
-            {activeRailItem === "docs" && <SidebarDocsPanel />}
-            {activeRailItem === "inbox" && <SidebarInboxPanel />}
-          </>
-        )}
-      </div>
       {isOpen ? (
-        <button
-          type="button"
-          aria-label="Resize sidebar"
-          onPointerDown={startResize}
-          className="absolute right-0 top-0 hidden h-full w-1 cursor-col-resize bg-transparent hover:bg-[var(--q-bg-tertiary)] md:block"
-        />
+        <>
+          <div className="flex h-full min-w-0 flex-col overflow-hidden" style={{ width }}>
+            {secondaryPanelMode === "ai" ? (
+              <SidebarChatPanel />
+            ) : (
+              <>
+                {activeRailItem === "home" && <WorkspaceSidebarPanel />}
+                {activeRailItem === "spaces" && !showProject && <SidebarSpacePanel />}
+                {activeRailItem === "projects" && !showProject && <SidebarProjectsPanel />}
+                {showProject && <SidebarProjectPanel />}
+                {activeRailItem === "tasks" && <SidebarTasksPanel />}
+                {activeRailItem === "calendar" && <SidebarCalendarPanel />}
+                {activeRailItem === "docs" && <SidebarDocsPanel />}
+                {activeRailItem === "inbox" && <SidebarInboxPanel />}
+                {activeRailItem === "automations" && <SidebarAutomationsPanel />}
+                {activeRailItem === "admin" && <SidebarAdminPanel />}
+              </>
+            )}
+          </div>
+          <button
+            type="button"
+            aria-label={t("resizePanel")}
+            onPointerDown={startResize}
+            className="absolute right-0 top-0 hidden h-full w-1 cursor-col-resize bg-transparent hover:bg-[var(--q-bg-tertiary)] md:block"
+          />
+        </>
       ) : null}
     </div>
   );

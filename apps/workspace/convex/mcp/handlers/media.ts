@@ -6,6 +6,7 @@ import {
   TOOL_SCAN_LIMIT, assertConnectionPermission, mediaResourcePermission, audit,
 } from "./shared";
 import { scopeActorUserId } from "../scopePolicy";
+import { assertOrganizationStorageAvailable } from "../../billing/storage";
 
 export const mediaList: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
   const limit = listLimit(args.input);
@@ -28,6 +29,8 @@ export const mediaAttachUrl: WriteHandler = async (ctx: MutationCtx, args: Write
   const resourceType = requiredString(args.input, "resourceType") as "project" | "client" | "calendarEvent" | "task";
   assertConnectionPermission(args.permissions, mediaResourcePermission(resourceType), "update");
   const resourceId = requiredString(args.input, "resourceId");
+  const size = optionalNumber(args.input, "size") ?? 0;
+  await assertOrganizationStorageAvailable(ctx, args.organizationId, size);
   const existing = await ctx.db
     .query("mediaAssets")
     .withIndex("by_organization_resource", (q) => q.eq("organizationId", args.organizationId).eq("resourceType", resourceType).eq("resourceId", resourceId))
@@ -38,7 +41,7 @@ export const mediaAttachUrl: WriteHandler = async (ctx: MutationCtx, args: Write
     url: requiredString(args.input, "url"),
     name: requiredString(args.input, "name"),
     mimeType: optionalString(args.input, "mimeType") ?? "application/octet-stream",
-    size: optionalNumber(args.input, "size") ?? 0,
+    size,
     kind: mediaKind(args.input),
     resourceType,
     resourceId,

@@ -16,27 +16,17 @@ function okResponse(body: unknown) {
 }
 
 describe("billing request wrappers", () => {
-  it("builds inactive fallback billing overview for failed overview loads", () => {
-    vi.setSystemTime(new Date("2026-05-28T00:00:00.000Z"));
-
+  it("builds a Free fallback billing overview for failed overview loads", () => {
     expect(fallbackBillingOverview("org_1")).toMatchObject({
-      plan: { id: "good_monthly" },
-      subscription: {
-        organizationId: "org_1",
-        planId: "good_monthly",
-        status: "inactive",
-        createdAt: Date.parse("2026-05-28T00:00:00.000Z"),
-        updatedAt: Date.parse("2026-05-28T00:00:00.000Z"),
-      },
+      plan: { id: "free" },
+      subscription: null,
       latestPayment: null,
     });
-
-    vi.useRealTimers();
   });
 
   it("builds zero-safe fallback usage data", () => {
     expect(fallbackBillingUsage("org_1")).toMatchObject({
-      overview: { plan: { id: "good_monthly" } },
+      overview: { plan: { id: "free" } },
       credits: {
         subscriptionCreditsGranted: 0,
         subscriptionCreditsUsed: 0,

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation } from "../_generated/server";
+import { internalMutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
 import { getAuthUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
@@ -24,7 +24,7 @@ function legacyDb(ctx: MutationCtx) {
   };
 }
 
-export const archiveLegacyAssets = mutation({
+export const archiveLegacyAssets = internalMutation({
   args: {
     organizationId: v.string(),
     limit: v.optional(v.number()),

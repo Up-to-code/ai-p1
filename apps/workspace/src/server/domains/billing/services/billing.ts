@@ -1,166 +1,24 @@
 import { makeFunctionReference } from "convex/server";
+import DodoPayments from "dodopayments";
+import { billingCycleForKey, normalizeBillingPlanKey } from "@qentrah/domain-contracts/subscription-pricing";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/auth-request";
 import { convexCalls } from "@/server/convex/http-client";
-import type { BillingCheckoutPayload, DodoWebhookPayload } from "../validation/billing.schema";
+import {
+  BILLING_PLANS,
+  FREE_PLAN,
+  type BillingOverview,
+  type BillingPlan,
+  type BillingPlanId,
+  type OrganizationBillingUsage,
+} from "@/domains/billing/config/plans.config";
+import type { BillingCheckoutPayload, BillingCreditCheckoutPayload } from "../validation/billing.schema";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-type BillingPlanId = "good_monthly" | "good_yearly" | "better_monthly" | "better_yearly";
+const DEFAULT_BILLING_PLAN = FREE_PLAN;
 
-const BILLING_PLANS: Record<BillingPlanId, {
-  id: BillingPlanId;
-  dodoProductId: string;
-  name: string;
-  amount: number;
-  currency: "USD";
-  periodDays: number;
-  checkoutMode: "provider";
-  trialDays: number;
-  includedMemberCount: number;
-  additionalMemberAmount: number;
-  access: {
-    memberLimit: number | null;
-    aiCreditLimit: number;
-    aiCardLimit: number;
-    automationRuns: number;
-    auditLogDays: number | null;
-    customRoles: boolean;
-    sso: boolean;
-    support: "email" | "priority";
-  };
-}> = {
-  good_monthly: {
-    id: "good_monthly",
-    dodoProductId: process.env.DODO_PRODUCT_GOOD_MONTHLY ?? "",
-    name: "Unlimited",
-    amount: 7,
-    currency: "USD",
-    periodDays: 30,
-    checkoutMode: "provider",
-    trialDays: 7,
-    includedMemberCount: 3,
-    additionalMemberAmount: 7,
-    access: {
-      memberLimit: null,
-      aiCreditLimit: 12000,
-      aiCardLimit: 3,
-      automationRuns: 1000,
-      auditLogDays: 7,
-      customRoles: false,
-      sso: false,
-      support: "email",
-    },
-  },
-  good_yearly: {
-    id: "good_yearly",
-    dodoProductId: process.env.DODO_PRODUCT_GOOD_YEARLY ?? "",
-    name: "Unlimited Annual",
-    amount: 70,
-    currency: "USD",
-    periodDays: 365,
-    checkoutMode: "provider",
-    trialDays: 7,
-    includedMemberCount: 3,
-    additionalMemberAmount: 70,
-    access: {
-      memberLimit: null,
-      aiCreditLimit: 12000,
-      aiCardLimit: 3,
-      automationRuns: 1000,
-      auditLogDays: 7,
-      customRoles: false,
-      sso: false,
-      support: "email",
-    },
-  },
-  better_monthly: {
-    id: "better_monthly",
-    dodoProductId: process.env.DODO_PRODUCT_BETTER_MONTHLY ?? "",
-    name: "Business",
-    amount: 19,
-    currency: "USD",
-    periodDays: 30,
-    checkoutMode: "provider",
-    trialDays: 7,
-    includedMemberCount: 3,
-    additionalMemberAmount: 19,
-    access: {
-      memberLimit: null,
-      aiCreditLimit: 50000,
-      aiCardLimit: 10,
-      automationRuns: 5000,
-      auditLogDays: 7,
-      customRoles: false,
-      sso: false,
-      support: "priority",
-    },
-  },
-  better_yearly: {
-    id: "better_yearly",
-    dodoProductId: process.env.DODO_PRODUCT_BETTER_YEARLY ?? "",
-    name: "Business Annual",
-    amount: 190,
-    currency: "USD",
-    periodDays: 365,
-    checkoutMode: "provider",
-    trialDays: 7,
-    includedMemberCount: 3,
-    additionalMemberAmount: 190,
-    access: {
-      memberLimit: null,
-      aiCreditLimit: 50000,
-      aiCardLimit: 10,
-      automationRuns: 5000,
-      auditLogDays: 7,
-      customRoles: false,
-      sso: false,
-      support: "priority",
-    },
-  },
-};
-
-const DEFAULT_BILLING_PLAN = BILLING_PLANS.good_monthly;
-
-type Payment = {
-  _id: string;
-  amount: number;
-  currency: string;
-  planId: BillingPlanId;
-  orderId: string;
-};
-
-type BillingOverview = {
-  plan: typeof DEFAULT_BILLING_PLAN;
-  subscription: {
-    organizationId: string;
-    planId: BillingPlanId;
-    seatCount: number;
-    status: "inactive" | "pending" | "active" | "past_due" | "canceled";
-    currentPeriodStartAt?: number;
-    currentPeriodEndAt?: number;
-    createdAt?: number;
-    updatedAt: number;
-  } | null;
-  latestPayment: Payment | null;
-};
-
-export type OrganizationBillingUsage = {
-  overview: BillingOverview;
-  credits: {
-    subscriptionCreditsGranted: number;
-    subscriptionCreditsUsed: number;
-    subscriptionCreditsRemaining: number;
-    addOnCreditsGranted: number;
-    addOnCreditsUsed: number;
-    addOnCreditsRemaining: number;
-    currentPeriodStartAt?: number;
-    currentPeriodEndAt?: number;
-  };
-  payments: Payment[];
-};
 
 // ─── Convex function references ───────────────────────────────────────────────
 const refs = {
-  getSubscriptionOverview: makeFunctionReference<"query", { organizationId: string }, unknown>(
+  getSubscriptionOverview: makeFunctionReference<"query", { organizationId: string }, BillingOverview>(
     "billing/read:getSubscriptionOverview",
   ),
   getUsageOverview: makeFunctionReference<"query", { organizationId: string }, OrganizationBillingUsage>(
@@ -188,12 +46,20 @@ const refs = {
   }>("billing/write:recordAgentCreditUsage"),
   createPendingPaymentFromHono: makeFunctionReference<"mutation", {
     organizationId: string;
-    input: { planId: BillingPlanId; seats: number };
+    input: { planId: BillingPlanId; seats: number; idempotencyKey: string };
   }, {
     plan: typeof DEFAULT_BILLING_PLAN;
     payment: { _id: string; id: string; orderId: string };
     organization: { name: string; legalName: string; email: string; phone: string; address: string };
   }>("billing/write:createPendingPaymentFromHono"),
+  createPendingCreditPurchaseFromHono: makeFunctionReference<"mutation", {
+    organizationId: string;
+    input: { dollars: number; idempotencyKey: string };
+  }, {
+    plan: BillingPlan;
+    payment: { _id: string; id: string; orderId: string; credits?: number };
+    organization: { name: string; legalName: string; email: string; phone: string; address: string };
+  }>("billing/write:createPendingCreditPurchaseFromHono"),
   attachCheckoutFromHono: makeFunctionReference<"mutation", {
     organizationId: string;
     paymentId: string;
@@ -204,34 +70,34 @@ const refs = {
     paymentId: string;
     reason: string;
   }, unknown>("billing/write:markPaymentFailedFromHono"),
-  markPaymentStatusFromWebhook: makeFunctionReference<"mutation", {
-    serverToken: string;
-    paymentId: string;
-    status: "pending" | "succeeded" | "failed" | "canceled";
-    eventId?: string;
-    failureReason?: string;
-  }, unknown>("billing/write:markPaymentStatusFromWebhook"),
+  authorizeBillingManagement: makeFunctionReference<"mutation", { organizationId: string }, null>(
+    "billing/write:authorizeBillingManagement",
+  ),
+  setScheduledCancellationFromHono: makeFunctionReference<"mutation", { organizationId: string; cancelAtPeriodEnd: boolean }, null>(
+    "billing/write:setScheduledCancellationFromHono",
+  ),
+  setScheduledPlanFromHono: makeFunctionReference<"mutation", { organizationId: string; planId?: BillingPlanId }, null>(
+    "billing/write:setScheduledPlanFromHono",
+  ),
   // DodoPayments action — passes the real product ID + seat quantity
   createCheckout: makeFunctionReference<"action", {
     productId: string;
     quantity: number;
     returnUrl?: string;
+    metadata: {
+      localOrderId: string;
+      organizationId: string;
+      planId: string;
+      seats: number;
+      billingCycle: string;
+      purchaseKind: "subscription" | "credit_purchase";
+      credits?: number;
+      idempotencyKey: string;
+    };
   }, { checkout_url: string }>("billing/payments:createCheckout"),
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function convexBridgeSecret() {
-  const secret = process.env.WORKSPACE_CONVEX_BRIDGE_SECRET?.trim() ?? "";
-  if (secret.length < 32) {
-    throw new Error("WORKSPACE_CONVEX_BRIDGE_SECRET must be configured for billing webhooks.");
-  }
-  return secret;
-}
-
-function isPaymentSucceededEvent(eventType: string) {
-  return eventType === "payment.succeeded" || eventType === "payment_captured";
-}
 
 function isDevelopmentConvexFunctionError(error: unknown) {
   if (process.env.NODE_ENV === "production") return false;
@@ -244,16 +110,10 @@ function localOrderReference() {
 }
 
 function localBillingOverview(organizationId: string): BillingOverview {
+  void organizationId;
   return {
     plan: DEFAULT_BILLING_PLAN,
-    subscription: {
-      organizationId,
-      planId: DEFAULT_BILLING_PLAN.id,
-      seatCount: 1,
-      status: "inactive",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    },
+    subscription: null,
     latestPayment: null,
   };
 }
@@ -291,18 +151,28 @@ function localCheckoutContext(organizationId: string) {
 }
 
 function billingPlan(planId: string) {
-  return BILLING_PLANS[planId as BillingPlanId] ?? DEFAULT_BILLING_PLAN;
+  return BILLING_PLANS[normalizeBillingPlanKey(planId)] ?? DEFAULT_BILLING_PLAN;
 }
 
-function requireDodoProductId(plan: typeof DEFAULT_BILLING_PLAN) {
-  const productId = plan.dodoProductId.trim();
+function serverProductId(plan: BillingPlan) {
+  const configured: Partial<Record<BillingPlanId, string>> = {
+    good_monthly: process.env.DODO_PRODUCT_GOOD_MONTHLY,
+    good_yearly: process.env.DODO_PRODUCT_GOOD_YEARLY,
+    better_monthly: process.env.DODO_PRODUCT_BETTER_MONTHLY,
+    better_yearly: process.env.DODO_PRODUCT_BETTER_YEARLY,
+  };
+  return configured[plan.id]?.trim() || plan.dodoProductId.trim();
+}
+
+function requireDodoProductId(plan: BillingPlan) {
+  const productId = serverProductId(plan);
   if (!productId || productId.includes("unconfigured")) {
     throw new Error(`Dodo product id is not configured for ${plan.id}. Set DODO_PRODUCT_${plan.id.toUpperCase()} in the workspace environment.`);
   }
   return productId;
 }
 
-function billableMemberUnits(plan: typeof DEFAULT_BILLING_PLAN, memberCount: number) {
+function billableMemberUnits(plan: BillingPlan, memberCount: number) {
   const safeMemberCount = Math.max(1, Math.floor(memberCount));
   const includedMembers = Math.max(1, plan.includedMemberCount);
   return Math.max(1, safeMemberCount - includedMembers + 1);
@@ -375,11 +245,12 @@ export async function recordAgentCreditUsage(organizationId: string, input: {
 export async function createBillingCheckout(organizationId: string, input: BillingCheckoutPayload) {
   const seats = input.seats ?? 1;
   const plan = billingPlan(input.planId);
+  const idempotencyKey = crypto.randomUUID();
 
   // 1. Create a pending payment record in Convex
   const context = await fetchAuthMutation(refs.createPendingPaymentFromHono, {
     organizationId,
-    input: { planId: plan.id, seats },
+    input: { planId: plan.id, seats, idempotencyKey },
   }).catch((error) => {
     if (isDevelopmentConvexFunctionError(error)) return localCheckoutContext(organizationId);
     throw error;
@@ -391,6 +262,15 @@ export async function createBillingCheckout(organizationId: string, input: Billi
       productId: requireDodoProductId(plan),
       quantity: billableMemberUnits(plan, seats),
       returnUrl: input.returnUrl,
+      metadata: {
+        localOrderId: context.payment.orderId,
+        organizationId,
+        planId: plan.id,
+        seats,
+        billingCycle: billingCycleForKey(plan.id),
+        purchaseKind: "subscription",
+        idempotencyKey,
+      },
     }) as { checkout_url?: string } | null;
 
     const checkoutUrl = checkoutResult?.checkout_url;
@@ -436,19 +316,135 @@ export async function getBillingPaymentStatus(organizationId: string, orderId: s
   return { payment };
 }
 
-export async function processDodoWebhook(input: {
-  token: string;
-  payload: DodoWebhookPayload;
-}) {
-  const serverToken = convexBridgeSecret();
-  const paymentId = input.payload.data?.payment_id;
+export async function createCreditPurchaseCheckout(organizationId: string, input: BillingCreditCheckoutPayload) {
+  const idempotencyKey = crypto.randomUUID();
+  const context = await fetchAuthMutation(refs.createPendingCreditPurchaseFromHono, {
+    organizationId,
+    input: { dollars: input.dollars, idempotencyKey },
+  });
+  try {
+    const productId = process.env.DODO_PRODUCT_AI_CREDITS_USD?.trim() ?? "";
+    if (!productId) throw new Error("Dodo checkout configuration error: DODO_PRODUCT_AI_CREDITS_USD is not configured.");
+    const checkout = await convexCalls.action(refs.createCheckout, {
+      productId,
+      quantity: input.dollars,
+      returnUrl: input.returnUrl,
+      metadata: {
+        localOrderId: context.payment.orderId,
+        organizationId,
+        planId: context.plan.id,
+        seats: 0,
+        billingCycle: billingCycleForKey(context.plan.id),
+        purchaseKind: "credit_purchase",
+        credits: context.payment.credits ?? input.dollars * 1_000,
+        idempotencyKey,
+      },
+    }) as { checkout_url?: string } | null;
+    if (!checkout?.checkout_url) throw new Error("Dodo did not return a checkout URL.");
+    await fetchAuthMutation(refs.attachCheckoutFromHono, {
+      organizationId,
+      paymentId: context.payment._id,
+      input: { dodoPaymentId: context.payment.orderId, checkoutUrl: checkout.checkout_url, status: "pending" },
+    });
+    return { checkoutUrl: checkout.checkout_url, orderId: context.payment.orderId, credits: context.payment.credits };
+  } catch (error) {
+    const checkoutError = normalizeCheckoutError(error);
+    await fetchAuthMutation(refs.markPaymentFailedFromHono, {
+      organizationId,
+      paymentId: context.payment._id,
+      reason: checkoutError.message,
+    }).catch(() => undefined);
+    throw checkoutError;
+  }
+}
 
-  const payment = await convexCalls.mutation(refs.markPaymentStatusFromWebhook, {
-    serverToken,
-    paymentId: paymentId || "",
-    status: isPaymentSucceededEvent(input.payload.event_type) ? "succeeded" : "pending",
-    failureReason: input.payload.data?.failure_reason,
-  }).catch(() => null);
+export async function createCustomerPortal(organizationId: string) {
+  await fetchAuthMutation(refs.authorizeBillingManagement, { organizationId });
+  const overview = await fetchAuthQuery(refs.getSubscriptionOverview, { organizationId });
+  const customerId = overview.subscription?.providerCustomerId;
+  if (!customerId) throw new Error("This organization does not have a verified billing customer yet.");
+  const client = new DodoPayments({
+    bearerToken: process.env.DODO_PAYMENTS_API_KEY,
+    environment: (process.env.DODO_PAYMENTS_ENVIRONMENT || "test_mode") as "test_mode" | "live_mode",
+  });
+  const result = await client.customers.customerPortal.create(customerId, {
+    return_url: `${process.env.APP_URL ?? "https://app.qentrah.com"}/billing`,
+  });
+  const portalUrl = result.link;
+  if (!portalUrl) throw new Error("Dodo did not return a customer portal URL.");
+  return { portalUrl };
+}
 
-  return { accepted: true, payment };
+export async function setSubscriptionCancellation(organizationId: string, cancelAtPeriodEnd: boolean) {
+  await fetchAuthMutation(refs.authorizeBillingManagement, { organizationId });
+  const overview = await fetchAuthQuery(refs.getSubscriptionOverview, { organizationId });
+  const subscriptionId = overview.subscription?.providerSubscriptionId;
+  if (!subscriptionId) throw new Error("A verified provider subscription is required.");
+  const client = new DodoPayments({
+    bearerToken: process.env.DODO_PAYMENTS_API_KEY,
+    environment: (process.env.DODO_PAYMENTS_ENVIRONMENT || "test_mode") as "test_mode" | "live_mode",
+  });
+  await client.subscriptions.update(subscriptionId, {
+    cancel_at_next_billing_date: cancelAtPeriodEnd,
+    cancel_reason: cancelAtPeriodEnd ? "cancelled_by_customer" : null,
+  });
+  await fetchAuthMutation(refs.setScheduledCancellationFromHono, { organizationId, cancelAtPeriodEnd });
+  return { cancelAtPeriodEnd };
+}
+
+export async function scheduleSubscriptionPlan(organizationId: string, planId: BillingPlanId | null) {
+  await fetchAuthMutation(refs.authorizeBillingManagement, { organizationId });
+  const overview = await fetchAuthQuery(refs.getSubscriptionOverview, { organizationId });
+  const subscription = overview.subscription;
+  if (!subscription?.providerSubscriptionId) throw new Error("A verified provider subscription is required.");
+  const client = new DodoPayments({
+    bearerToken: process.env.DODO_PAYMENTS_API_KEY,
+    environment: (process.env.DODO_PAYMENTS_ENVIRONMENT || "test_mode") as "test_mode" | "live_mode",
+  });
+  if (planId === null) {
+    await client.subscriptions.cancelChangePlan(subscription.providerSubscriptionId);
+    await fetchAuthMutation(refs.setScheduledPlanFromHono, { organizationId });
+    return { scheduledPlanId: null };
+  }
+  const target = billingPlan(planId);
+  if (target.planId === "free" || target.planId === "custom") throw new Error("This plan change is not supported by hosted billing.");
+  const rank = { free: 0, good: 1, better: 2, custom: 3 } as const;
+  if (rank[target.planId] >= rank[overview.plan.planId]) throw new Error("Upgrades require a new verified checkout.");
+  await client.subscriptions.changePlan(subscription.providerSubscriptionId, {
+    product_id: requireDodoProductId(target),
+    quantity: billableMemberUnits(target, subscription.seatCount),
+    proration_billing_mode: "do_not_bill",
+    effective_at: "next_billing_date",
+    on_payment_failure: "prevent_change",
+    metadata: { organizationId, planId: target.id, purchaseKind: "subscription" },
+  });
+  await fetchAuthMutation(refs.setScheduledPlanFromHono, { organizationId, planId: target.id });
+  return { scheduledPlanId: target.id };
+}
+
+export async function syncSubscriptionSeats(organizationId: string, memberCount: number) {
+  try {
+    const overview = await fetchAuthQuery(refs.getSubscriptionOverview, { organizationId });
+    const subscription = overview.subscription;
+    if (!subscription?.providerSubscriptionId || overview.plan.planId === "free" || overview.plan.planId === "custom") {
+      return { synced: false, reason: "provider_subscription_unavailable" };
+    }
+    const client = new DodoPayments({
+      bearerToken: process.env.DODO_PAYMENTS_API_KEY,
+      environment: (process.env.DODO_PAYMENTS_ENVIRONMENT || "test_mode") as "test_mode" | "live_mode",
+    });
+    const quantity = billableMemberUnits(overview.plan, memberCount);
+    await client.subscriptions.changePlan(subscription.providerSubscriptionId, {
+      product_id: requireDodoProductId(overview.plan),
+      quantity,
+      proration_billing_mode: "prorated_immediately",
+      effective_at: "immediately",
+      on_payment_failure: "prevent_change",
+      metadata: { organizationId, planId: overview.plan.id, purchaseKind: "subscription", seats: memberCount },
+    });
+    return { synced: true, quantity };
+  } catch (error) {
+    console.error("[billing-seat-sync]", { organizationId, memberCount, error });
+    return { synced: false, reason: error instanceof Error ? error.message : "seat_sync_failed" };
+  }
 }

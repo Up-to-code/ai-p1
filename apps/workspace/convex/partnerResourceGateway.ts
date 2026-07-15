@@ -7,6 +7,7 @@ import type {
 } from "@qentrah/partner-auth-core";
 import { protectClientPii, revealClientPii } from "./security/clientPii";
 import { assertConvexBridgeToken } from "./serviceTokens";
+import { taskSearchProjection } from "./search/adapters/task";
 
 type Input = Record<string, unknown>;
 type GatewayResource = PartnerPermissionResource | "document";
@@ -343,7 +344,9 @@ export async function writePartnerResourceThroughGateway(ctx: MutationCtx, args:
         updatedAt: now,
       });
       await insertActorAudit(ctx, args.organizationId, args.actor, `${args.actor.type}.task.create`, id, "Created task from external integration.", now);
-      return present((await ctx.db.get(id))!);
+      const createdTask = (await ctx.db.get(id))!;
+      await taskSearchProjection(ctx, createdTask);
+      return present(createdTask);
     }
     const taskId = requiredString(input, "taskId") as Id<"tasks">;
     const existing = await ctx.db.get(taskId);
@@ -353,7 +356,9 @@ export async function writePartnerResourceThroughGateway(ctx: MutationCtx, args:
     if (args.action === "update") {
       await ctx.db.patch(taskId, { ...taskPatch(input), updatedAt: now });
       await insertActorAudit(ctx, args.organizationId, args.actor, `${args.actor.type}.task.update`, taskId, "Updated task from external integration.", now);
-      return present((await ctx.db.get(taskId))!);
+      const updatedTask = (await ctx.db.get(taskId))!;
+      await taskSearchProjection(ctx, updatedTask);
+      return present(updatedTask);
     }
     throw new Error("Task API supports create and update actions.");
   }

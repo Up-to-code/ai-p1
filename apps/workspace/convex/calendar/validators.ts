@@ -63,6 +63,7 @@ export const calendarEventValidator = v.object({
   ownerUserId: v.optional(v.string()),
   clientId: v.optional(v.string()),
   projectId: v.optional(v.string()),
+  spaceId: v.optional(v.string()),
   taskId: v.optional(v.string()),
   documentId: v.optional(v.string()),
   startAt: v.number(),
@@ -82,4 +83,5 @@ export const calendarEventValidator = v.object({
   createdByUserId: v.string(),
   createdAt: v.number(),
   updatedAt: v.number(),
+  deletedAt: v.optional(v.number()),
 });

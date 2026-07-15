@@ -1,15 +1,31 @@
-const PLAN_CURRENCY = "USD" as const;
+import {
+  billingCycleForKey,
+  getMarketPricing,
+  normalizeBillingPlanKey,
+  resolveSubscriptionEntitlements,
+  subscriptionPlanIdForBillingKey,
+  type BillingPlanKey,
+  type SubscriptionStatus,
+} from "@qentrah/domain-contracts/subscription-pricing";
 
-type BillingPlanId =
-  | "good_monthly"
-  | "good_yearly"
-  | "better_monthly"
-  | "better_yearly"
-  | "custom_monthly"
-  | "custom_yearly"
-  | "qentrah_workspace";
+export type BillingPlanId = BillingPlanKey;
 
-type BillingPlan = {
+export type BillingPlanAccess = {
+  memberLimit: number | null;
+  projectLimit: number | null;
+  storageBytesLimit: number | null;
+  guestLimit: number | null;
+  webhookLimit: number | null;
+  aiCreditLimit: number;
+  aiCardLimit: number;
+  automationRuns: number;
+  auditLogDays: number | null;
+  customRoles: boolean;
+  sso: boolean;
+  support: "community" | "email" | "priority" | "dedicated";
+};
+
+export type BillingPlan = {
   id: BillingPlanId;
   dodoProductId: string;
   name: string;
@@ -23,162 +39,75 @@ type BillingPlan = {
   additionalMemberAmount: number | null;
 };
 
-type BillingPlanAccess = {
-  memberLimit: number | null;
-  aiCreditLimit: number;
-  aiCardLimit: number;
-  automationRuns: number;
-  auditLogDays: number | null;
-  customRoles: boolean;
-  sso: boolean;
-  support: "community" | "email" | "priority" | "dedicated";
+const productIds: Partial<Record<BillingPlanId, string>> = {
+  good_monthly: process.env.DODO_PRODUCT_GOOD_MONTHLY ?? "",
+  good_yearly: process.env.DODO_PRODUCT_GOOD_YEARLY ?? "",
+  better_monthly: process.env.DODO_PRODUCT_BETTER_MONTHLY ?? "",
+  better_yearly: process.env.DODO_PRODUCT_BETTER_YEARLY ?? "",
 };
 
-const GOOD_MONTHLY_PLAN: BillingPlan = {
-  id: "good_monthly",
-  dodoProductId: process.env.DODO_PRODUCT_GOOD_MONTHLY ?? "",
-  name: "Unlimited",
-  amount: 7,
-  currency: PLAN_CURRENCY,
-  periodDays: 30,
-  checkoutMode: "provider",
-  trialDays: 7,
-  includedMemberCount: 3,
-  additionalMemberAmount: 7,
-  access: {
-    memberLimit: null,
-    aiCreditLimit: 12000,
-    aiCardLimit: 3,
-    automationRuns: 1000,
-    auditLogDays: 7,
-    customRoles: false,
-    sso: false,
-    support: "email",
-  },
+function buildPlan(id: BillingPlanId): BillingPlan {
+  const planId = subscriptionPlanIdForBillingKey(id);
+  const pricing = getMarketPricing({ planId, cycle: billingCycleForKey(id) });
+  const access = resolveSubscriptionEntitlements(planId);
+  return {
+    id,
+    dodoProductId: productIds[id] ?? "",
+    name: pricing.name,
+    amount: pricing.amount,
+    currency: pricing.currency,
+    periodDays: pricing.periodDays,
+    checkoutMode: planId === "free" ? "contact_sales" : pricing.checkoutMode,
+    access: {
+      memberLimit: access.memberLimit,
+      projectLimit: access.projectLimit,
+      storageBytesLimit: access.storageBytesLimit,
+      guestLimit: access.guestLimit,
+      webhookLimit: access.webhookLimit,
+      aiCreditLimit: access.includedCredits,
+      aiCardLimit: access.includedCreditCards,
+      automationRuns: access.automationRunLimit,
+      auditLogDays: access.auditLogDays,
+      customRoles: access.customRoles,
+      sso: access.sso !== "none",
+      support: access.supportLevel === "standard" ? "email" : access.supportLevel,
+    },
+    trialDays: planId === "free" ? 0 : 7,
+    includedMemberCount: 3,
+    additionalMemberAmount: planId === "free" || planId === "custom" ? null : pricing.amount,
+  };
+}
+
+export const BILLING_PLANS: Record<BillingPlanId, BillingPlan> = {
+  free: buildPlan("free"),
+  good_monthly: buildPlan("good_monthly"),
+  good_yearly: buildPlan("good_yearly"),
+  better_monthly: buildPlan("better_monthly"),
+  better_yearly: buildPlan("better_yearly"),
+  custom_monthly: buildPlan("custom_monthly"),
+  custom_yearly: buildPlan("custom_yearly"),
+  qentrah_workspace: buildPlan("good_monthly"),
 };
 
-const GOOD_YEARLY_PLAN: BillingPlan = {
-  id: "good_yearly",
-  dodoProductId: process.env.DODO_PRODUCT_GOOD_YEARLY ?? "",
-  name: "Unlimited Annual",
-  amount: 70,
-  currency: PLAN_CURRENCY,
-  periodDays: 365,
-  checkoutMode: "provider",
-  trialDays: 7,
-  includedMemberCount: 3,
-  additionalMemberAmount: 70,
-  access: GOOD_MONTHLY_PLAN.access,
-};
-
-const BETTER_MONTHLY_PLAN: BillingPlan = {
-  id: "better_monthly",
-  dodoProductId: process.env.DODO_PRODUCT_BETTER_MONTHLY ?? "",
-  name: "Business",
-  amount: 19,
-  currency: PLAN_CURRENCY,
-  periodDays: 30,
-  checkoutMode: "provider",
-  trialDays: 7,
-  includedMemberCount: 3,
-  additionalMemberAmount: 19,
-  access: {
-    memberLimit: null,
-    aiCreditLimit: 50000,
-    aiCardLimit: 10,
-    automationRuns: 5000,
-    auditLogDays: 7,
-    customRoles: false,
-    sso: false,
-    support: "priority",
-  },
-};
-
-const BETTER_YEARLY_PLAN: BillingPlan = {
-  id: "better_yearly",
-  dodoProductId: process.env.DODO_PRODUCT_BETTER_YEARLY ?? "",
-  name: "Business Annual",
-  amount: 190,
-  currency: PLAN_CURRENCY,
-  periodDays: 365,
-  checkoutMode: "provider",
-  trialDays: 7,
-  includedMemberCount: 3,
-  additionalMemberAmount: 190,
-  access: BETTER_MONTHLY_PLAN.access,
-};
-
-const CUSTOM_MONTHLY_PLAN: BillingPlan = {
-  id: "custom_monthly",
-  dodoProductId: "",
-  name: "Enterprise",
-  amount: null,
-  currency: PLAN_CURRENCY,
-  periodDays: 30,
-  checkoutMode: "contact_sales",
-  trialDays: 7,
-  includedMemberCount: 3,
-  additionalMemberAmount: null,
-  access: {
-    memberLimit: null,
-    aiCreditLimit: 250000,
-    aiCardLimit: 50,
-    automationRuns: 250000,
-    auditLogDays: 365,
-    customRoles: true,
-    sso: true,
-    support: "dedicated",
-  },
-};
-
-const CUSTOM_YEARLY_PLAN: BillingPlan = {
-  id: "custom_yearly",
-  dodoProductId: "",
-  name: "Enterprise Annual",
-  amount: null,
-  currency: PLAN_CURRENCY,
-  periodDays: 365,
-  checkoutMode: "contact_sales",
-  trialDays: 7,
-  includedMemberCount: 3,
-  additionalMemberAmount: null,
-  access: CUSTOM_MONTHLY_PLAN.access,
-};
-
-const BILLING_PLANS: Record<BillingPlanId, BillingPlan> = {
-  good_monthly: GOOD_MONTHLY_PLAN,
-  good_yearly: GOOD_YEARLY_PLAN,
-  better_monthly: BETTER_MONTHLY_PLAN,
-  better_yearly: BETTER_YEARLY_PLAN,
-  custom_monthly: CUSTOM_MONTHLY_PLAN,
-  custom_yearly: CUSTOM_YEARLY_PLAN,
-  qentrah_workspace: GOOD_MONTHLY_PLAN,
-};
-
-export { BILLING_PLANS, type BillingPlanId };
-
-// Legacy plan entries — kept so existing stored planId values from before the
-// migration to the single plan don't throw. All legacy plans resolve to the
-// current Qentrah Workspace plan shape.
-const LEGACY_PLAN_FALLBACK = GOOD_MONTHLY_PLAN;
-
-export type PaymentStatus =
-  | "pending"
-  | "succeeded"
-  | "failed"
-  | "canceled";
-
-export type SubscriptionStatus = "inactive" | "pending" | "active" | "past_due" | "canceled";
+export type PaymentStatus = "pending" | "succeeded" | "failed" | "canceled" | "refunded" | "chargeback";
 
 export type StoredPayment = {
   _id: string;
   _creationTime: number;
   organizationId: string;
   planId: string;
+  kind?: "subscription" | "credit_purchase";
   orderId: string;
+  idempotencyKey?: string;
+  dodoCheckoutId?: string;
   dodoPaymentId?: string;
+  dodoInvoiceId?: string;
+  dodoSubscriptionId?: string;
+  dodoProductId?: string;
   amount: number;
   currency: string;
+  credits?: number;
+  seats?: number;
   status: PaymentStatus;
   checkoutUrl?: string;
   failureReason?: string;
@@ -193,9 +122,21 @@ export type StoredSubscription = {
   organizationId: string;
   planId: string;
   status: SubscriptionStatus;
+  seatCount?: number;
+  providerCustomerId?: string;
+  providerSubscriptionId?: string;
   currentPeriodStartAt?: number;
   currentPeriodEndAt?: number;
+  entitlementWindowStartAt?: number;
+  entitlementWindowEndAt?: number;
+  graceEndsAt?: number;
+  trialStartedAt?: number;
+  trialEndsAt?: number;
+  trialUsedAt?: number;
+  scheduledPlanId?: string;
+  cancelAtPeriodEnd?: boolean;
   latestPaymentId?: string;
+  enterpriseOverrides?: Record<string, unknown>;
   createdAt: number;
   updatedAt: number;
 };
@@ -209,12 +150,7 @@ export type StoredOrganizationProfile = {
 };
 
 export function getBillingPlan(planId: string) {
-  // 1. Current plan
-  const plan = BILLING_PLANS[planId as BillingPlanId];
-  if (plan) return plan;
-  // Unknown plan — return the default plan rather than crashing historical reads.
-  console.warn(`getBillingPlan: unknown planId "${planId}", falling back to good_monthly`);
-  return LEGACY_PLAN_FALLBACK;
+  return BILLING_PLANS[normalizeBillingPlanKey(planId)];
 }
 
 export function getBillingPlanAccess(planId: string) {
@@ -223,7 +159,7 @@ export function getBillingPlanAccess(planId: string) {
 
 export function billableMemberUnitsForPlan(planId: string, memberCount: number) {
   const plan = getBillingPlan(planId);
-  if (plan.amount === null) return 0;
+  if (plan.amount === null || plan.id === "free") return 0;
   const safeMemberCount = Math.max(1, Math.floor(memberCount));
   const includedMembers = Math.max(1, plan.includedMemberCount);
   return Math.max(1, safeMemberCount - includedMembers + 1);
@@ -241,14 +177,21 @@ export function canUseEnterpriseControlsForPlan(planId: string) {
 export function presentPayment(payment: StoredPayment) {
   return {
     _id: payment._id,
-    _creationTime: payment.createdAt,
+    _creationTime: payment._creationTime ?? payment.createdAt,
     id: payment._id,
     organizationId: payment.organizationId,
-    planId: payment.planId as BillingPlanId,
+    planId: normalizeBillingPlanKey(payment.planId),
+    kind: payment.kind,
     orderId: payment.orderId,
+    dodoCheckoutId: payment.dodoCheckoutId,
     dodoPaymentId: payment.dodoPaymentId,
+    dodoInvoiceId: payment.dodoInvoiceId,
+    dodoSubscriptionId: payment.dodoSubscriptionId,
+    dodoProductId: payment.dodoProductId,
     amount: payment.amount,
     currency: payment.currency,
+    credits: payment.credits,
+    seats: payment.seats,
     status: payment.status,
     checkoutUrl: payment.checkoutUrl,
     failureReason: payment.failureReason,
@@ -264,10 +207,21 @@ export function presentSubscription(subscription: StoredSubscription) {
     _id: subscription._id,
     id: subscription._id,
     organizationId: subscription.organizationId,
-    planId: subscription.planId as BillingPlanId,
+    planId: normalizeBillingPlanKey(subscription.planId),
+    seatCount: subscription.seatCount ?? 1,
     status: subscription.status,
+    providerCustomerId: subscription.providerCustomerId,
+    providerSubscriptionId: subscription.providerSubscriptionId,
     currentPeriodStartAt: subscription.currentPeriodStartAt,
     currentPeriodEndAt: subscription.currentPeriodEndAt,
+    entitlementWindowStartAt: subscription.entitlementWindowStartAt,
+    entitlementWindowEndAt: subscription.entitlementWindowEndAt,
+    graceEndsAt: subscription.graceEndsAt,
+    trialStartedAt: subscription.trialStartedAt,
+    trialEndsAt: subscription.trialEndsAt,
+    trialUsedAt: subscription.trialUsedAt,
+    scheduledPlanId: subscription.scheduledPlanId ? normalizeBillingPlanKey(subscription.scheduledPlanId) : undefined,
+    cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
     latestPaymentId: subscription.latestPaymentId,
     createdAt: subscription.createdAt,
     updatedAt: subscription.updatedAt,

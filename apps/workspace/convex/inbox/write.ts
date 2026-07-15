@@ -10,7 +10,10 @@ import {
   messageValidator,
   threadValidator,
 } from "./validators";
-import { emitMessageMentionEvents } from "../notifications/inbox_events";
+import {
+  emitMessageMentionEvents,
+  emitThreadReplyEvents,
+} from "../notifications/inbox_events";
 
 const MAX_CHANNEL_MESSAGES = 5_000;
 const MAX_CHANNEL_THREADS = 2_000;
@@ -228,6 +231,16 @@ async function createMessage(
     channelId: channel.id,
     message,
   });
+  if (thread) {
+    await emitThreadReplyEvents(ctx, {
+      organizationId: channel.organizationId,
+      actorUserId: authorId,
+      channelId: channel.id,
+      threadId: thread.id,
+      participantUserIds: thread.participantIds,
+      message,
+    });
+  }
   return message;
 }
 

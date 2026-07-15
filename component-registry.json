@@ -1,62 +1,20 @@
 {
   "components": [
     {
-      "name": "AutomationCanvas",
-      "path": "apps/workspace/src/domains/automations/components/automations-screen.tsx",
+      "name": "CmsLegalPage",
+      "path": "apps/marketing/components/marketing/cms-legal-page.tsx",
       "kind": "domain-shared",
-      "summary": "React Flow automation canvas with draggable trigger/action nodes, connecting lines, zoom controls, minimap, and a step inspector.",
+      "summary": "Renders typed Contentful or repository legal-page sections with paragraphs and optional bullet inputs.",
       "usedIn": [
-        "app/[locale]/(app)/automations"
-      ],
-      "props": [],
-      "createdAt": "2026-07-10",
-      "notes": "Uses the same React Flow foundation as the referenced shadcn AI Canvas; workflow state is persisted in organization-scoped Convex tables."
-    },
-    {
-      "name": "AutomationLibraryDialog",
-      "path": "apps/workspace/src/domains/automations/components/automation-library-dialog.tsx",
-      "kind": "domain-shared",
-      "summary": "Searchable grouped chooser for automation templates and task, document, client, or integration components.",
-      "usedIn": [
-        "domains/automations/components/automations-screen"
+        "app/(site)/[locale]/privacy",
+        "app/(site)/[locale]/terms",
+        "app/(site)/[locale]/legal"
       ],
       "props": [
-        "open",
-        "mode",
-        "onOpenChange",
-        "onSelectTemplate",
-        "onSelectComponent"
+        "content"
       ],
-      "createdAt": "2026-07-10",
-      "notes": "One catalog powers both new-workflow templates and insertion of actions between existing nodes."
-    },
-    {
-      "name": "AutomationComponentPalette",
-      "path": "apps/workspace/src/domains/automations/components/automation-component-palette.tsx",
-      "kind": "domain-shared",
-      "summary": "Persistent grouped palette of automation actions with domain-specific icons.",
-      "usedIn": [
-        "domains/automations/components/automations-screen"
-      ],
-      "props": [
-        "onAdd"
-      ],
-      "createdAt": "2026-07-10",
-      "notes": "Reads from the typed automation component catalog so palette, chooser, nodes, inspector, and executor stay aligned."
-    },
-    {
-      "name": "AutomationSaveStatus",
-      "path": "apps/workspace/src/domains/automations/components/automation-save-status.tsx",
-      "kind": "domain-shared",
-      "summary": "Compact accessible persistence indicator for saved, unsaved, saving, and failed automation editor states.",
-      "usedIn": [
-        "domains/automations/components/automations-screen"
-      ],
-      "props": [
-        "status"
-      ],
-      "createdAt": "2026-07-10",
-      "notes": "Reflects both full content autosaves and coalesced canvas-layout writes."
+      "createdAt": "2026-07-14",
+      "notes": "Contentful owns only editable presentation; the route keeps its repository fallback when no complete CMS page is available."
     },
     {
       "name": "DocTemplateCover",
@@ -635,17 +593,28 @@
       "kind": "shared-ui",
       "summary": "Generic modal for viewing/editing a single record.",
       "usedIn": [
-        "domains/clients/client-picker-modal",
-        "domains/projects/project-picker"
+        "domains/projects/create-project-form",
+        "domains/projects/edit-project-form"
       ],
       "props": [
-        "open",
+        "isOpen",
         "onClose",
-        "record",
-        "fields"
+        "title",
+        "description",
+        "actionLabel",
+        "onAction",
+        "isSaving",
+        "isUnsaved",
+        "defaultWidth",
+        "defaultHeight",
+        "minWidth",
+        "maxWidth",
+        "minHeight",
+        "maxHeight",
+        "children"
       ],
       "createdAt": "2026-03-01",
-      "notes": "Not to be confused with form modals — this is for record selection."
+      "notes": "Resizable record editor shell. Callers own form state, validation, and writes; optional dimensions preserve the shared defaults while allowing dense record forms to request a larger canvas."
     },
     {
       "name": "AddMenu",
@@ -747,7 +716,8 @@
       "usedIn": [
         "components/layout/sidebar/components/sidebar-chat-panel",
         "components/layout/sidebar/components/sidebar-space-panel",
-        "components/layout/sidebar/components/sidebar-project-panel"
+        "components/layout/sidebar/components/sidebar-project-panel",
+        "components/layout/sidebar/components/sidebar-domain-panels"
       ],
       "props": [
         "title",
@@ -1108,10 +1078,28 @@
         "paramKey",
         "paramValue",
         "clearParams",
-        "iconPicker"
+        "extraParams",
+        "iconPicker",
+        "exact"
       ],
       "createdAt": "2026-07-07",
       "notes": "Extracted from duplicated local PanelLink modules in sidebar domain and inbox panels."
+    },
+    {
+      "name": "SidebarProjectedDomainLinks",
+      "path": "apps/workspace/src/components/layout/sidebar/components/sidebar-projected-domain-links.tsx",
+      "kind": "domain-shared",
+      "summary": "Renders the fixed authorized portion of a contextual domain tree from semantic route, icon, label, and query identifiers.",
+      "usedIn": [
+        "domains/workspace/components/workspace-sidebar-panel",
+        "components/layout/sidebar/components/sidebar-domain-panels",
+        "components/layout/sidebar/components/sidebar-inbox-panel"
+      ],
+      "props": [
+        "domainId"
+      ],
+      "createdAt": "2026-07-14",
+      "notes": "Dynamic Space/resource trees remain owned by their domain panels; this component renders only server-authorized fixed nodes."
     },
     {
       "name": "TaskTableView",
@@ -1271,7 +1259,9 @@
       "usedIn": [
         "components/shared/resource-workspace",
         "domains/tasks/components/task-resource-layout",
-        "app/[locale]/(app)/tasks/layout"
+        "app/[locale]/(app)/tasks/layout",
+        "domains/projects/components/project-resource-layout",
+        "app/[locale]/(app)/projects/layout"
       ],
       "props": [
         "config",
@@ -1283,6 +1273,24 @@
       ],
       "createdAt": "2026-07-12",
       "notes": "Owns placement only. Domain route layouts provide configuration and view pages provide domain Adapters. Pathname transitions are scoped inside the body seam so the persistent header and tabs never remount or fade. The exported useResourceWorkspaceExtension hook lets the active view dock view-owned UI without moving that logic into the shell. Does not import domain mutations or schemas."
+    },
+    {
+      "name": "ProjectManagementTree",
+      "path": "apps/workspace/src/components/shared/project-management-tree/project-management-tree.tsx",
+      "kind": "shared-ui",
+      "summary": "Stateless hierarchical renderer for an authorized Project-management navigation projection, including Spaces, Projects, documents, counts, and create actions.",
+      "usedIn": [
+        "components/layout/sidebar/components/sidebar-domain-panels"
+      ],
+      "props": [
+        "projection",
+        "expandedIds",
+        "onToggle",
+        "onCreateSpace",
+        "onCreateProject"
+      ],
+      "createdAt": "2026-07-15",
+      "notes": "Rendering-only. Convex projectWorkspace.getProjectManagementTree filters every Space, Project, and Document before this component receives the payload. Messaging remains owned and rendered by Inbox. Expansion remains UI-only state in the domain adapter."
     },
     {
       "name": "ResourceViewMenu",

@@ -32,6 +32,7 @@ export const organizationTables = {
     createdAt: v.number(),
   })
     .index("by_organization_id", ["organizationId"])
+    .index("by_organization_created", ["organizationId", "createdAt"])
     .index("by_created", ["createdAt"]),
 
   organizationSecurityUpdates: defineTable({
@@ -123,6 +124,8 @@ export const organizationTables = {
         v.literal("task"),
         v.literal("media"),
         v.literal("space"),
+        v.literal("finance"),
+        v.literal("report"),
       ),
       actions: v.array(v.union(
         v.literal("read"),
@@ -164,7 +167,7 @@ export const organizationTables = {
       resource: v.union(
         v.literal("organization"), v.literal("client"), v.literal("project"),
         v.literal("deal"), v.literal("calendar"), v.literal("task"),
-        v.literal("media"), v.literal("space"),
+        v.literal("media"), v.literal("space"), v.literal("finance"), v.literal("report"),
       ),
       actions: v.array(v.union(
         v.literal("read"), v.literal("create"), v.literal("update"), v.literal("delete"),
@@ -192,7 +195,7 @@ export const organizationTables = {
       resource: v.union(
         v.literal("organization"), v.literal("client"), v.literal("project"),
         v.literal("deal"), v.literal("calendar"), v.literal("task"),
-        v.literal("media"), v.literal("space"),
+        v.literal("media"), v.literal("space"), v.literal("finance"), v.literal("report"),
       ),
       actions: v.array(v.union(
         v.literal("read"), v.literal("create"), v.literal("update"), v.literal("delete"),

@@ -3,7 +3,7 @@ import type { MutationCtx } from "../_generated/server";
 import { taskAssigneeIds } from "../clientTasks/assignments";
 export { taskAssigneeIds } from "../clientTasks/assignments";
 
-type EventKind = "task_assigned" | "mentioned";
+type EventKind = "task_assigned" | "mentioned" | "thread_reply";
 type ResourceType = "task" | "message" | "document" | "project" | "client" | "deal" | "file";
 
 type NotificationEventInput = {
@@ -11,6 +11,7 @@ type NotificationEventInput = {
   recipientUserId: string;
   actorUserId: string;
   kind: EventKind;
+  lane?: "primary" | "other";
   resourceType: ResourceType;
   resourceId: string;
   title: string;
@@ -78,7 +79,11 @@ export async function createNotificationEvent(
     .first();
   if (existing) return existing._id;
 
-  return await ctx.db.insert("notificationEvents", input);
+  return await ctx.db.insert("notificationEvents", {
+    ...input,
+    lane: input.lane ?? "primary",
+    disposition: "active",
+  });
 }
 
 export async function emitTaskAssignmentEvents(
@@ -141,6 +146,51 @@ export async function emitMessageMentionEvents(
       createdAt: input.message.createdAt,
     }),
   ));
+}
+
+/** Emits one reply event per existing thread participant without widening Channel access. */
+export async function emitThreadReplyEvents(
+  ctx: MutationCtx,
+  input: {
+    organizationId: string;
+    actorUserId: string;
+    channelId: string;
+    threadId: string;
+    participantUserIds: readonly string[];
+    message: Doc<"messages">;
+  },
+) {
+  const recipients = threadReplyRecipientIds(
+    input.participantUserIds,
+    input.actorUserId,
+  );
+  await Promise.all(
+    recipients.map((recipientUserId) =>
+      createNotificationEvent(ctx, {
+        organizationId: input.organizationId,
+        recipientUserId,
+        actorUserId: input.actorUserId,
+        kind: "thread_reply",
+        lane: "other",
+        resourceType: "message",
+        resourceId: input.message.id,
+        title: "New reply in a conversation",
+        body: input.message.content.slice(0, 180),
+        href: `/inbox?channel=${encodeURIComponent(input.channelId)}`,
+        dedupeKey: `thread-reply:${input.threadId}:${input.message.id}`,
+        createdAt: input.message.createdAt,
+      }),
+    ),
+  );
+}
+
+export function threadReplyRecipientIds(
+  participantUserIds: readonly string[],
+  actorUserId: string,
+) {
+  return [...new Set(participantUserIds)].filter(
+    (userId) => userId !== actorUserId,
+  );
 }
 
 export async function emitRichTextMentionEvents(

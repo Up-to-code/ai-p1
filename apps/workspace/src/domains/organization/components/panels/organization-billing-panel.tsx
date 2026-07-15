@@ -35,7 +35,7 @@ export function OrganizationBillingPanel({
 
   const subscription = overview?.subscription ?? null;
   const plan = overview?.plan ?? null;
-  const status = subscription?.status ?? "inactive";
+  const status = subscription?.status ?? "free";
   const isActive = status === "active";
   const isYearly = (plan?.periodDays ?? 30) >= 365;
   const billingPeriodLabel = isYearly
@@ -46,7 +46,7 @@ export function OrganizationBillingPanel({
     : isRtl ? "/ شهر" : "/ month";
 
   // Price per seat
-  const pricePerUser = plan?.amount ?? 7;
+  const pricePerUser = plan?.amount ?? 0;
   const billableUnits = plan ? billableMemberUnits(plan, memberCount) : 1;
   const includedMemberCount = plan?.includedMemberCount ?? 3;
   const priceLabel = plan
@@ -55,7 +55,7 @@ export function OrganizationBillingPanel({
         currency: plan.currency,
         maximumFractionDigits: 2,
       }).format(pricePerUser)
-    : "$7.00";
+    : "$0.00";
   const totalLabel = new Intl.NumberFormat(isRtl ? "ar-EG" : "en-US", {
     style: "currency",
     currency: plan?.currency ?? "USD",
@@ -113,7 +113,7 @@ export function OrganizationBillingPanel({
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             <StatusPill label={status} tone={subscriptionTone(status)} />
             {planAction ?? (
-              <LocaleLink href="/organization?tab=billing">
+              <LocaleLink href="/billing">
                 <Button
                   variant="outline"
                   size="sm"
@@ -166,7 +166,7 @@ export function OrganizationBillingPanel({
 
       {/* ── Payment history ────────────────────────────── */}
       {usageAction ?? (
-        <LocaleLink href="/organization?tab=billing">
+        <LocaleLink href="/billing">
           <Button
             variant="outline"
             size="sm"

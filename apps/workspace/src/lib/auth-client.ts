@@ -9,7 +9,7 @@ export const authClient = createAuthClient({
   plugins: [
     convexClient(),
     emailOTPClient(),
-    organizationClient(),
+    organizationClient({ teams: { enabled: true } }),
     lastLoginMethodClient({ domain: ".qentrah.com" }),
     oauthProviderClient(),
   ],

@@ -3,6 +3,7 @@ import { mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import { assertOrganizationEntitlement } from "../billing/access";
 import { automationEdgeValidator, automationNodeValidator, automationViewportValidator } from "./validators";
 import { graphProblem } from "./graph";
 import { automationLayoutUnchanged, mergeAutomationPositions } from "./layout";
@@ -41,6 +42,11 @@ export const create = mutation({
       "organization",
       "update",
     );
+    await assertOrganizationEntitlement(ctx, {
+      organizationId: args.organizationId,
+      key: "automation_run",
+      used: 0,
+    });
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new ConvexError({ code: "UNAUTHENTICATED", message: "Sign in required." });
     const now = Date.now();

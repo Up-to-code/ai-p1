@@ -16,7 +16,7 @@ export function billingSubscriptionOverview(
   latestPayment: StoredPayment | null,
 ) {
   return {
-    plan: subscription ? getBillingPlan(subscription.planId) : BILLING_PLANS.good_monthly,
+    plan: subscription ? getBillingPlan(subscription.planId) : BILLING_PLANS.free,
     subscription: subscription ? presentSubscription(subscription) : null,
     latestPayment: latestPayment ? presentPayment(latestPayment) : null,
   };

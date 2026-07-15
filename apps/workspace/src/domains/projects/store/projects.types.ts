@@ -13,11 +13,15 @@ export type Project = {
   startDate?: string;
   endDate?: string;
   budget?: number;
+  currency?: string;
   description?: string;
   templateId?: string;
   tags?: string[];
   progress?: number;
   teamMemberIds?: string[];
+  ownerUserId?: string;
+  createdAt?: number;
+  updatedAt?: number;
   _creationTime: number;
   syncState?: "draft" | "blocked" | "synced";
   dataVersion?: number;

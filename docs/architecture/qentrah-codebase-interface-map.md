@@ -6,18 +6,22 @@
 
 ## Inventory summary
 
-- Source files scanned: 1633
-- Files exposing interfaces: 1377
-- Convex registered functions: 321
-- Application routes: 92
-- Hono/Convex HTTP registrations: 196
+- Source files scanned: 1808
+- Files exposing interfaces: 1534
+- Convex registered functions: 478
+- Application routes: 122
+- Hono/Convex HTTP registrations: 210
 - Eve/MCP tool entries: 118
-- Package commands: 82
+- Package commands: 91
 
 ## Package commands
 
 | Package | Command | Implementation |
 | --- | --- | --- |
+| @qentrah/marketing | contentful:models | `node scripts/sync-contentful-models.mjs` |
+| @qentrah/marketing | contentful:audit | `node scripts/sync-contentful-models.mjs --audit` |
+| @qentrah/marketing | contentful:prune | `node scripts/sync-contentful-models.mjs --prune` |
+| @qentrah/marketing | contentful:seed-drafts | `node scripts/seed-contentful-drafts.mjs` |
 | @qentrah/marketing | dev | `next dev --port 3005` |
 | @qentrah/marketing | build | `next build` |
 | @qentrah/marketing | start | `next start --port 3005` |
@@ -46,12 +50,15 @@
 | @qentrah/workspace | dev:convex | `convex dev` |
 | @qentrah/workspace | dev:convex:once | `convex dev --once` |
 | @qentrah/workspace | codegen:convex | `convex codegen` |
+| @qentrah/workspace | prebuild | `node scripts/check-production-env.mjs` |
 | @qentrah/workspace | build | `npm --workspace @qentrah/location-map --include-workspace-root=false run build && npm --workspace @qentrah/mcp-contracts --include-workspace-root=false run build && npm --workspace @qentrah/our-platform-components --include-workspace-root=false run build && npm --workspace @qentrah/ui --include-workspace-root=false run build && next build && node scripts/ensure-vercel-manifest.mjs` |
+| @qentrah/workspace | check:production-env | `node scripts/check-production-env.mjs` |
 | @qentrah/workspace | start | `next start` |
 | @qentrah/workspace | typecheck | `tsc --noEmit` |
 | @qentrah/workspace | lint | `eslint` |
 | @qentrah/workspace | check:convex-runtime | `node scripts/check-convex-runtime.mjs` |
 | @qentrah/workspace | test | `vitest run` |
+| @qentrah/workspace | test:agency-readiness | `vitest run convex/access/*.test.ts convex/automations/*.test.ts convex/crm/*.test.ts convex/delivery/*.test.ts convex/finance/*.test.ts convex/navigation/*.test.ts convex/portal/*.test.ts convex/resourcePlanning/*.test.ts convex/savedViews/*.test.ts convex/search/*.test.ts convex/security/*.test.ts src/domains/navigation/*.test.ts src/domains/search/*.test.ts src/server/domains/search/*.test.ts` |
 | @qentrah/workspace | test:e2e | `playwright test` |
 | @qentrah/zapier-app | test | `npm run build && vitest --run` |
 | @qentrah/zapier-app | clean | `rimraf ./dist ./build` |
@@ -72,6 +79,8 @@
 | qentrah | brand:sync | `node scripts/brand-sync.mjs` |
 | qentrah | docs:codebase-map | `node scripts/generate-codebase-interface-map.mjs` |
 | qentrah | docs:codebase-map:check | `node scripts/generate-codebase-interface-map.mjs --check` |
+| qentrah | licenses:generate | `node scripts/check-dependency-licenses.mjs` |
+| qentrah | licenses:check | `node scripts/check-dependency-licenses.mjs --check` |
 | qentrah | build | `npm run build --workspaces --if-present` |
 | qentrah | test | `npm run test --workspaces --if-present` |
 | qentrah | typecheck | `npm run typecheck --workspaces --if-present` |
@@ -122,14 +131,22 @@
 | `/:locale/clients/:id` | page | `apps/workspace/src/app/[locale]/(app)/clients/[id]/page.tsx` |
 | `/:locale/clients/:id/edit` | page | `apps/workspace/src/app/[locale]/(app)/clients/[id]/edit/page.tsx` |
 | `/:locale/clients/create` | page | `apps/workspace/src/app/[locale]/(app)/clients/create/page.tsx` |
+| `/:locale/crm/companies` | page | `apps/workspace/src/app/[locale]/(app)/crm/companies/page.tsx` |
+| `/:locale/crm/contacts` | page | `apps/workspace/src/app/[locale]/(app)/crm/contacts/page.tsx` |
+| `/:locale/crm/contracts` | page | `apps/workspace/src/app/[locale]/(app)/crm/contracts/page.tsx` |
+| `/:locale/crm/leads` | page | `apps/workspace/src/app/[locale]/(app)/crm/leads/page.tsx` |
+| `/:locale/crm/proposals` | page | `apps/workspace/src/app/[locale]/(app)/crm/proposals/page.tsx` |
 | `/:locale/dashboard` | page | `apps/marketing/app/(site)/[locale]/dashboard/page.tsx` |
 | `/:locale/deals` | page | `apps/workspace/src/app/[locale]/(app)/deals/page.tsx` |
 | `/:locale/deals/:id` | page | `apps/workspace/src/app/[locale]/(app)/deals/[id]/page.tsx` |
+| `/:locale/delivery` | page | `apps/workspace/src/app/[locale]/(app)/delivery/page.tsx` |
 | `/:locale/docs` | page | `apps/marketing/app/(site)/[locale]/docs/page.tsx` |
 | `/:locale/docs` | page | `apps/workspace/src/app/[locale]/(app)/docs/page.tsx` |
 | `/:locale/docs/:docId` | page | `apps/workspace/src/app/[locale]/(app)/docs/[docId]/page.tsx` |
+| `/:locale/finance` | page | `apps/workspace/src/app/[locale]/(app)/finance/page.tsx` |
 | `/:locale/inbox` | page | `apps/workspace/src/app/[locale]/(app)/inbox/page.tsx` |
 | `/:locale/inbox/activity` | page | `apps/workspace/src/app/[locale]/(app)/inbox/activity/page.tsx` |
+| `/:locale/inbox/assigned-comments` | page | `apps/workspace/src/app/[locale]/(app)/inbox/assigned-comments/page.tsx` |
 | `/:locale/inbox/channels` | page | `apps/workspace/src/app/[locale]/(app)/inbox/channels/page.tsx` |
 | `/:locale/inbox/posts` | page | `apps/workspace/src/app/[locale]/(app)/inbox/posts/page.tsx` |
 | `/:locale/inbox/replies` | page | `apps/workspace/src/app/[locale]/(app)/inbox/replies/page.tsx` |
@@ -146,14 +163,33 @@
 | `/:locale/opportunities/:id` | page | `apps/workspace/src/app/[locale]/(app)/opportunities/[id]/page.tsx` |
 | `/:locale/organization` | page | `apps/workspace/src/app/[locale]/(app)/organization/page.tsx` |
 | `/:locale/organization/activity` | page | `apps/workspace/src/app/[locale]/(app)/organization/activity/page.tsx` |
+| `/:locale/organization/admin-config` | page | `apps/workspace/src/app/[locale]/(app)/organization/admin-config/page.tsx` |
 | `/:locale/organization/channels` | page | `apps/workspace/src/app/[locale]/(app)/organization/channels/page.tsx` |
 | `/:locale/organization/custom-permissions` | page | `apps/workspace/src/app/[locale]/(app)/organization/custom-permissions/page.tsx` |
+| `/:locale/organization/search-policy` | page | `apps/workspace/src/app/[locale]/(app)/organization/search-policy/page.tsx` |
 | `/:locale/organization/spaces` | page | `apps/workspace/src/app/[locale]/(app)/organization/spaces/page.tsx` |
 | `/:locale/partners` | page | `apps/marketing/app/(site)/[locale]/partners/page.tsx` |
 | `/:locale/pricing` | page | `apps/marketing/app/(site)/[locale]/pricing/page.tsx` |
 | `/:locale/privacy` | page | `apps/marketing/app/(site)/[locale]/privacy/page.tsx` |
 | `/:locale/profile` | page | `apps/workspace/src/app/[locale]/(app)/profile/page.tsx` |
 | `/:locale/projects` | page | `apps/workspace/src/app/[locale]/(app)/projects/page.tsx` |
+| `/:locale/projects/:projectId` | page | `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/page.tsx` |
+| `/:locale/projects/:projectId/edit` | page | `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/edit/page.tsx` |
+| `/:locale/projects/board` | page | `apps/workspace/src/app/[locale]/(app)/projects/board/page.tsx` |
+| `/:locale/projects/board/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/projects/board/[savedViewId]/page.tsx` |
+| `/:locale/projects/calendar` | page | `apps/workspace/src/app/[locale]/(app)/projects/calendar/page.tsx` |
+| `/:locale/projects/calendar/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/projects/calendar/[savedViewId]/page.tsx` |
+| `/:locale/projects/dashboard` | page | `apps/workspace/src/app/[locale]/(app)/projects/dashboard/page.tsx` |
+| `/:locale/projects/dashboard/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/projects/dashboard/[savedViewId]/page.tsx` |
+| `/:locale/projects/list` | page | `apps/workspace/src/app/[locale]/(app)/projects/list/page.tsx` |
+| `/:locale/projects/list/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/projects/list/[savedViewId]/page.tsx` |
+| `/:locale/projects/table` | page | `apps/workspace/src/app/[locale]/(app)/projects/table/page.tsx` |
+| `/:locale/projects/table/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/projects/table/[savedViewId]/page.tsx` |
+| `/:locale/projects/timeline` | page | `apps/workspace/src/app/[locale]/(app)/projects/timeline/page.tsx` |
+| `/:locale/projects/timeline/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/projects/timeline/[savedViewId]/page.tsx` |
+| `/:locale/reports` | page | `apps/workspace/src/app/[locale]/(app)/reports/page.tsx` |
+| `/:locale/resources` | page | `apps/workspace/src/app/[locale]/(app)/resources/page.tsx` |
+| `/:locale/search` | page | `apps/workspace/src/app/[locale]/(app)/search/page.tsx` |
 | `/:locale/settings` | page | `apps/workspace/src/app/[locale]/(app)/settings/page.tsx` |
 | `/:locale/settings/:section` | page | `apps/workspace/src/app/[locale]/(app)/settings/[section]/page.tsx` |
 | `/:locale/sign-in` | page | `apps/workspace/src/app/[locale]/(auth)/sign-in/page.tsx` |
@@ -163,8 +199,10 @@
 | `/:locale/tasks` | page | `apps/workspace/src/app/[locale]/(app)/tasks/page.tsx` |
 | `/:locale/tasks/:id` | page | `apps/workspace/src/app/[locale]/(app)/tasks/[id]/page.tsx` |
 | `/:locale/tasks/board` | page | `apps/workspace/src/app/[locale]/(app)/tasks/board/page.tsx` |
+| `/:locale/tasks/calendar` | page | `apps/workspace/src/app/[locale]/(app)/tasks/calendar/page.tsx` |
 | `/:locale/tasks/list` | page | `apps/workspace/src/app/[locale]/(app)/tasks/list/page.tsx` |
 | `/:locale/tasks/table` | page | `apps/workspace/src/app/[locale]/(app)/tasks/table/page.tsx` |
+| `/:locale/tasks/timeline` | page | `apps/workspace/src/app/[locale]/(app)/tasks/timeline/page.tsx` |
 | `/:locale/team` | page | `apps/workspace/src/app/[locale]/(app)/team/page.tsx` |
 | `/:locale/terms` | page | `apps/marketing/app/(site)/[locale]/terms/page.tsx` |
 | `/:locale/theories` | page | `apps/workspace/src/app/[locale]/(app)/theories/page.tsx` |
@@ -184,6 +222,7 @@
 | `/api/:[...route]` | handler | `apps/workspace/src/app/api/[[...route]]/route.ts` |
 | `/api/auth/:all*` | handler | `apps/workspace/src/app/api/auth/[...all]/route.ts` |
 | `/api/auth/jwks` | handler | `apps/workspace/src/app/api/auth/jwks/route.ts` |
+| `/api/contentful/revalidate` | handler | `apps/marketing/app/api/contentful/revalidate/route.ts` |
 | `/api/mcp` | handler | `apps/workspace/src/app/api/mcp/route.ts` |
 | `/billing` | page | `apps/marketing/app/(site)/billing/page.tsx` |
 | `/dashboard` | page | `apps/marketing/app/(site)/dashboard/page.tsx` |
@@ -206,12 +245,10 @@ fully composed path.
 
 | Method | Registered path | Source |
 | --- | --- | --- |
-| POST | `/dodopayments-webhook` | `apps/workspace/convex/billing/webhooks.ts` |
 | POST | `/dodopayments-webhook` | `apps/workspace/convex/http.ts` |
 | POST | `/resend-webhook` | `apps/workspace/convex/http.ts` |
 | ALL | `/uploadthing` | `apps/workspace/src/server/app/app.ts` |
 | MOUNT | `/v1` | `apps/workspace/src/server/app/app.ts` |
-| POST | `/dodo/webhook` | `apps/workspace/src/server/domains/billing/routing.ts` |
 | GET | `/:organizationId/custom-fields/definitions` | `apps/workspace/src/server/domains/custom-fields/routing/router.ts` |
 | POST | `/:organizationId/custom-fields/definitions` | `apps/workspace/src/server/domains/custom-fields/routing/router.ts` |
 | PATCH | `/:organizationId/custom-fields/definitions/:fieldId` | `apps/workspace/src/server/domains/custom-fields/routing/router.ts` |
@@ -222,8 +259,12 @@ fully composed path.
 | GET | `/:organizationId/custom-fields/values/:recordType` | `apps/workspace/src/server/domains/custom-fields/routing/router.ts` |
 | GET | `/:organizationId/custom-fields/values/:recordType/:recordId` | `apps/workspace/src/server/domains/custom-fields/routing/router.ts` |
 | DELETE | `/:organizationId/custom-fields/values/:valueId` | `apps/workspace/src/server/domains/custom-fields/routing/router.ts` |
+| POST | `/:organizationId/billing/cancellation` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
 | POST | `/:organizationId/billing/checkout` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
+| POST | `/:organizationId/billing/credits/checkout` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
+| POST | `/:organizationId/billing/customer-portal` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
 | GET | `/:organizationId/billing/payments/:orderId` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
+| POST | `/:organizationId/billing/scheduled-plan` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
 | GET | `/:organizationId/billing/subscription` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
 | GET | `/:organizationId/billing/usage` | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` |
 | POST | `/:organizationId/calendar-events` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
@@ -298,6 +339,7 @@ fully composed path.
 | GET | `/:organizationId/read/projects/options` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
 | GET | `/:organizationId/read/projects/stats` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
 | GET | `/:organizationId/read/projects/task-counts` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
+| GET | `/:organizationId/read/search` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
 | GET | `/:organizationId/read/spaces/options` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
 | GET | `/:organizationId/read/tasks` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
 | GET | `/:organizationId/read/tasks/:taskId` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
@@ -314,6 +356,11 @@ fully composed path.
 | POST | `/:organizationId/theories` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
 | PATCH | `/:organizationId/theories/:theoryId` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
 | DELETE | `/:organizationId/theories/:theoryId` | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` |
+| POST | `/:organizationId/finance/invoices` | `apps/workspace/src/server/domains/organization/routing/domains/finance.ts` |
+| POST | `/:organizationId/finance/invoices/:invoiceId/post` | `apps/workspace/src/server/domains/organization/routing/domains/finance.ts` |
+| POST | `/:organizationId/finance/payments` | `apps/workspace/src/server/domains/organization/routing/domains/finance.ts` |
+| GET | `/:organizationId/read/finance/overview` | `apps/workspace/src/server/domains/organization/routing/domains/finance.ts` |
+| GET | `/:organizationId/read/finance/records` | `apps/workspace/src/server/domains/organization/routing/domains/finance.ts` |
 | ALL | `/:organizationId/mcp-connections` | `apps/workspace/src/server/domains/organization/routing/domains/mcp.ts` |
 | ALL | `/:organizationId/mcp-connections/*` | `apps/workspace/src/server/domains/organization/routing/domains/mcp.ts` |
 | PATCH | `/:organizationId/media/:mediaId` | `apps/workspace/src/server/domains/organization/routing/domains/media.ts` |
@@ -365,6 +412,7 @@ fully composed path.
 | MOUNT | `/` | `apps/workspace/src/server/domains/organization/routing/router.ts` |
 | MOUNT | `/` | `apps/workspace/src/server/domains/organization/routing/router.ts` |
 | MOUNT | `/` | `apps/workspace/src/server/domains/organization/routing/router.ts` |
+| MOUNT | `/` | `apps/workspace/src/server/domains/organization/routing/router.ts` |
 | GET | `/` | `apps/workspace/src/server/domains/partnerApps/routing/router.ts` |
 | GET | `/organizations/:organizationId/assets` | `apps/workspace/src/server/domains/partnerApps/routing/router.ts` |
 | GET | `/organizations/:organizationId/assets/:assetId` | `apps/workspace/src/server/domains/partnerApps/routing/router.ts` |
@@ -388,6 +436,10 @@ fully composed path.
 | GET | `/organizations/:organizationId/tasks/:taskId` | `apps/workspace/src/server/domains/partnerApps/routing/router.ts` |
 | PATCH | `/organizations/:organizationId/tasks/:taskId` | `apps/workspace/src/server/domains/partnerApps/routing/router.ts` |
 | POST | `/organizations/:organizationId/webhooks/inbound` | `apps/workspace/src/server/domains/partnerApps/routing/router.ts` |
+| GET | `/engagements/:engagementId` | `apps/workspace/src/server/domains/portal/routing/router.ts` |
+| POST | `/engagements/:engagementId/approvals/:approvalId` | `apps/workspace/src/server/domains/portal/routing/router.ts` |
+| POST | `/engagements/:engagementId/requests` | `apps/workspace/src/server/domains/portal/routing/router.ts` |
+| POST | `/session/activate` | `apps/workspace/src/server/domains/portal/routing/router.ts` |
 | PATCH | `/` | `apps/workspace/src/server/domains/profile/routing/router.ts` |
 | PATCH | `/avatar` | `apps/workspace/src/server/domains/profile/routing/router.ts` |
 | GET | `/push-devices` | `apps/workspace/src/server/domains/profile/routing/router.ts` |
@@ -401,6 +453,7 @@ fully composed path.
 | MOUNT | `/organizations` | `apps/workspace/src/server/routing/v1/router.ts` |
 | MOUNT | `/partner` | `apps/workspace/src/server/routing/v1/router.ts` |
 | MOUNT | `/partner-apps` | `apps/workspace/src/server/routing/v1/router.ts` |
+| MOUNT | `/portal` | `apps/workspace/src/server/routing/v1/router.ts` |
 | MOUNT | `/profile` | `apps/workspace/src/server/routing/v1/router.ts` |
 
 ## Convex functions
@@ -408,15 +461,27 @@ fully composed path.
 | Exposure | Export | Source |
 | --- | --- | --- |
 | internalAction | `rotateKeys` | `apps/workspace/convex/auth.ts` |
+| mutation | `decideApproval` | `apps/workspace/convex/automations/execute.ts` |
+| internalMutation | `processPendingEvents` | `apps/workspace/convex/automations/execute.ts` |
 | mutation | `runManual` | `apps/workspace/convex/automations/execute.ts` |
 | internalMutation | `runWebhook` | `apps/workspace/convex/automations/execute.ts` |
 | query | `list` | `apps/workspace/convex/automations/read.ts` |
 | query | `listRuns` | `apps/workspace/convex/automations/read.ts` |
+| query | `organizationRuns` | `apps/workspace/convex/automations/read.ts` |
+| query | `pendingApprovals` | `apps/workspace/convex/automations/read.ts` |
 | mutation | `create` | `apps/workspace/convex/automations/write.ts` |
 | mutation | `remove` | `apps/workspace/convex/automations/write.ts` |
 | mutation | `save` | `apps/workspace/convex/automations/write.ts` |
 | mutation | `saveLayout` | `apps/workspace/convex/automations/write.ts` |
 | mutation | `setEnabled` | `apps/workspace/convex/automations/write.ts` |
+| mutation | `assertEntitlementForAuthorizedRequest` | `apps/workspace/convex/billing/access.ts` |
+| internalMutation | `consumeApiCallFromMcp` | `apps/workspace/convex/billing/access.ts` |
+| query | `getOrganizationEntitlements` | `apps/workspace/convex/billing/access.ts` |
+| query | `getCreditLedger` | `apps/workspace/convex/billing/credits.ts` |
+| mutation | `recordAiStepUsage` | `apps/workspace/convex/billing/credits.ts` |
+| mutation | `releaseAiCredits` | `apps/workspace/convex/billing/credits.ts` |
+| mutation | `reserveAiCredits` | `apps/workspace/convex/billing/credits.ts` |
+| mutation | `settleAiCredits` | `apps/workspace/convex/billing/credits.ts` |
 | internalQuery | `getByAuthId` | `apps/workspace/convex/billing/customers.ts` |
 | internalQuery | `getByDodoCustomerId` | `apps/workspace/convex/billing/customers.ts` |
 | query | `getCurrentUserCustomer` | `apps/workspace/convex/billing/customers.ts` |
@@ -428,15 +493,18 @@ fully composed path.
 | query | `getSubscriptionOverview` | `apps/workspace/convex/billing/read.ts` |
 | query | `getUsageOverview` | `apps/workspace/convex/billing/read.ts` |
 | query | `listPayments` | `apps/workspace/convex/billing/read.ts` |
-| internalMutation | `recordPayment` | `apps/workspace/convex/billing/webhookMutations.ts` |
-| internalMutation | `recordPaymentFailure` | `apps/workspace/convex/billing/webhookMutations.ts` |
-| internalMutation | `recordSubscription` | `apps/workspace/convex/billing/webhookMutations.ts` |
+| internalMutation | `reconcilePayment` | `apps/workspace/convex/billing/webhookMutations.ts` |
+| internalMutation | `reconcileRefund` | `apps/workspace/convex/billing/webhookMutations.ts` |
+| internalMutation | `reconcileSubscription` | `apps/workspace/convex/billing/webhookMutations.ts` |
 | mutation | `attachCheckoutFromHono` | `apps/workspace/convex/billing/write.ts` |
+| mutation | `authorizeBillingManagement` | `apps/workspace/convex/billing/write.ts` |
+| mutation | `createPendingCreditPurchaseFromHono` | `apps/workspace/convex/billing/write.ts` |
 | mutation | `createPendingPaymentFromHono` | `apps/workspace/convex/billing/write.ts` |
 | mutation | `ensureCreditBalanceForOrganization` | `apps/workspace/convex/billing/write.ts` |
 | mutation | `markPaymentFailedFromHono` | `apps/workspace/convex/billing/write.ts` |
-| mutation | `markPaymentStatusFromWebhook` | `apps/workspace/convex/billing/write.ts` |
 | mutation | `recordAgentCreditUsage` | `apps/workspace/convex/billing/write.ts` |
+| mutation | `setScheduledCancellationFromHono` | `apps/workspace/convex/billing/write.ts` |
+| mutation | `setScheduledPlanFromHono` | `apps/workspace/convex/billing/write.ts` |
 | query | `get` | `apps/workspace/convex/calendar/read.ts` |
 | query | `list` | `apps/workspace/convex/calendar/read.ts` |
 | query | `listByProject` | `apps/workspace/convex/calendar/read.ts` |
@@ -501,6 +569,15 @@ fully composed path.
 | internalMutation | `deleteInternal` | `apps/workspace/convex/clientTasks/write.ts` |
 | mutation | `updateFromHono` | `apps/workspace/convex/clientTasks/write.ts` |
 | internalMutation | `updateInternal` | `apps/workspace/convex/clientTasks/write.ts` |
+| mutation | `convertLead` | `apps/workspace/convex/crm/lifecycle.ts` |
+| mutation | `createCompany` | `apps/workspace/convex/crm/lifecycle.ts` |
+| mutation | `createContact` | `apps/workspace/convex/crm/lifecycle.ts` |
+| mutation | `createLead` | `apps/workspace/convex/crm/lifecycle.ts` |
+| mutation | `updateLeadStatus` | `apps/workspace/convex/crm/lifecycle.ts` |
+| query | `listCompanies` | `apps/workspace/convex/crm/read.ts` |
+| query | `listContacts` | `apps/workspace/convex/crm/read.ts` |
+| query | `listLeads` | `apps/workspace/convex/crm/read.ts` |
+| query | `overview` | `apps/workspace/convex/crm/read.ts` |
 | query | `listByOrganization` | `apps/workspace/convex/customFields/read.ts` |
 | query | `listByOrganizationForTable` | `apps/workspace/convex/customFields/read.ts` |
 | query | `listByOrganization` | `apps/workspace/convex/customFields/values_read.ts` |
@@ -522,6 +599,55 @@ fully composed path.
 | internalMutation | `deleteInternal` | `apps/workspace/convex/deals/write.ts` |
 | mutation | `updateFromHono` | `apps/workspace/convex/deals/write.ts` |
 | internalMutation | `updateInternal` | `apps/workspace/convex/deals/write.ts` |
+| mutation | `acceptProposal` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `activateEngagement` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `createChangeOrder` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `createDeliverable` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `createProposal` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `decideApproval` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `grantPortalAccess` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `invitePortalIdentity` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `linkProject` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `recordConcern` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `sendContract` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `sendProposal` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `signContract` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `submitChangeOrder` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `submitDeliverable` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| mutation | `updateConcern` | `apps/workspace/convex/delivery/lifecycle.ts` |
+| query | `engagementDetail` | `apps/workspace/convex/delivery/read.ts` |
+| query | `listContracts` | `apps/workspace/convex/delivery/read.ts` |
+| query | `listEngagements` | `apps/workspace/convex/delivery/read.ts` |
+| query | `listProposals` | `apps/workspace/convex/delivery/read.ts` |
+| mutation | `decideTimeEntry` | `apps/workspace/convex/delivery/timeEntries.ts` |
+| query | `listTimeEntries` | `apps/workspace/convex/delivery/timeEntries.ts` |
+| mutation | `recordTimeEntry` | `apps/workspace/convex/delivery/timeEntries.ts` |
+| mutation | `submitTimeEntry` | `apps/workspace/convex/delivery/timeEntries.ts` |
+| internalMutation | `seedProjectManagementPortfolio` | `apps/workspace/convex/devSeed/projectManagement.ts` |
+| mutation | `acceptEstimate` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `applyRetainer` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `closeAccountingPeriod` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `configureFinance` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createBankAccount` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createBudget` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createEstimate` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createExpense` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createInvoice` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createInvoiceFromTime` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createTaxRule` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `createVendor` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `importBankTransaction` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `openAccountingPeriod` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `payExpense` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `postExpense` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `postInvoice` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `receiveRetainer` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `reconcileBankTransaction` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `recordInvoicePayment` | `apps/workspace/convex/finance/commands.ts` |
+| mutation | `reverseJournal` | `apps/workspace/convex/finance/commands.ts` |
+| query | `overview` | `apps/workspace/convex/finance/read.ts` |
+| query | `profitability` | `apps/workspace/convex/finance/read.ts` |
+| query | `records` | `apps/workspace/convex/finance/read.ts` |
 | query | `getChannel` | `apps/workspace/convex/inbox/read.ts` |
 | query | `getThread` | `apps/workspace/convex/inbox/read.ts` |
 | query | `listChannels` | `apps/workspace/convex/inbox/read.ts` |
@@ -567,23 +693,29 @@ fully composed path.
 | query | `list` | `apps/workspace/convex/memory.ts` |
 | mutation | `put` | `apps/workspace/convex/memory.ts` |
 | internalMutation | `runBatch` | `apps/workspace/convex/migrations/backfillOrganizationTaskVisibility.ts` |
-| mutation | `backfillWorkspaceRecordState` | `apps/workspace/convex/migrations/backfillRecordState.ts` |
-| query | `previewWorkspaceRecordStateBackfill` | `apps/workspace/convex/migrations/backfillRecordState.ts` |
+| internalMutation | `backfillWorkspaceRecordState` | `apps/workspace/convex/migrations/backfillRecordState.ts` |
+| internalQuery | `previewWorkspaceRecordStateBackfill` | `apps/workspace/convex/migrations/backfillRecordState.ts` |
 | internalMutation | `runBatch` | `apps/workspace/convex/migrations/backfillTaskAssignments.ts` |
 | internalMutation | `migrateToOrganizationSpaces` | `apps/workspace/convex/migrations/migrateToOrganizationSpaces.ts` |
+| internalMutation | `runBatch` | `apps/workspace/convex/migrations/prepareAgencyCutover.ts` |
 | internalMutation | `purgeAllLegacyAssetMedia` | `apps/workspace/convex/migrations/purgeLegacyAssetMedia.ts` |
 | internalMutation | `purgeLegacyMcpConnections` | `apps/workspace/convex/migrations/purgeLegacyMcpConnections.ts` |
-| mutation | `archiveLegacyAssets` | `apps/workspace/convex/migrations/removeAssets.ts` |
+| internalMutation | `archiveLegacyAssets` | `apps/workspace/convex/migrations/removeAssets.ts` |
 | query | `getSurfaceByKey` | `apps/workspace/convex/modelization/read.ts` |
 | query | `listSavedViews` | `apps/workspace/convex/modelization/read.ts` |
 | query | `listSurfaceTabs` | `apps/workspace/convex/modelization/read.ts` |
 | query | `listWorkflowStates` | `apps/workspace/convex/modelization/read.ts` |
 | mutation | `seedWorkspaceDefaults` | `apps/workspace/convex/modelization/write.ts` |
+| query | `getAuthorizedProjection` | `apps/workspace/convex/navigation/read.ts` |
+| mutation | `updateMyOverlay` | `apps/workspace/convex/navigation/write.ts` |
+| mutation | `updateOrganizationLayout` | `apps/workspace/convex/navigation/write.ts` |
 | internalMutation | `dispatchJob` | `apps/workspace/convex/notifications/dispatch.ts` |
 | internalMutation | `recoverDueJobs` | `apps/workspace/convex/notifications/dispatch.ts` |
-| query | `listPrimary` | `apps/workspace/convex/notifications/inbox.ts` |
+| query | `listAttention` | `apps/workspace/convex/notifications/inbox.ts` |
+| query | `listReplies` | `apps/workspace/convex/notifications/inbox.ts` |
 | mutation | `markAllRead` | `apps/workspace/convex/notifications/inbox.ts` |
 | mutation | `markRead` | `apps/workspace/convex/notifications/inbox.ts` |
+| mutation | `transitionEvent` | `apps/workspace/convex/notifications/inbox.ts` |
 | query | `getMyPreferences` | `apps/workspace/convex/notifications/read.ts` |
 | query | `getMyStatus` | `apps/workspace/convex/notifications/read.ts` |
 | query | `getOrganizationPreferences` | `apps/workspace/convex/notifications/read.ts` |
@@ -657,6 +789,13 @@ fully composed path.
 | mutation | `seedDefaults` | `apps/workspace/convex/pipeline_stages/write.ts` |
 | mutation | `update` | `apps/workspace/convex/pipeline_stages/write.ts` |
 | query | `canUsePlatformAdminAction` | `apps/workspace/convex/platform/access.ts` |
+| query | `getAgencyOs` | `apps/workspace/convex/platform/rollout.ts` |
+| mutation | `setAgencyOs` | `apps/workspace/convex/platform/rollout.ts` |
+| mutation | `activateSession` | `apps/workspace/convex/portal/commands.ts` |
+| mutation | `decideDeliveryApproval` | `apps/workspace/convex/portal/commands.ts` |
+| mutation | `issueSession` | `apps/workspace/convex/portal/commands.ts` |
+| mutation | `submitRequest` | `apps/workspace/convex/portal/commands.ts` |
+| query | `engagement` | `apps/workspace/convex/portal/read.ts` |
 | query | `get` | `apps/workspace/convex/projectDashboards.ts` |
 | mutation | `upsert` | `apps/workspace/convex/projectDashboards.ts` |
 | query | `get` | `apps/workspace/convex/projects/read.ts` |
@@ -681,13 +820,84 @@ fully composed path.
 | mutation | `createFromHono` | `apps/workspace/convex/projectSpaces/write.ts` |
 | mutation | `deleteFromHono` | `apps/workspace/convex/projectSpaces/write.ts` |
 | mutation | `updateFromHono` | `apps/workspace/convex/projectSpaces/write.ts` |
+| query | `getProjectManagementTree` | `apps/workspace/convex/projectWorkspace/read.ts` |
+| query | `getSurfaceProjection` | `apps/workspace/convex/projectWorkspace/read.ts` |
+| mutation | `createAndAttachView` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `createDefaultRouteView` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `detachViewTab` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `duplicateViewTab` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `ensureProjectWorkspaceDefaults` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `renameViewTab` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `reorderViewTabs` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `updateViewConfig` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `createReport` | `apps/workspace/convex/reports/commands.ts` |
+| mutation | `scheduleReport` | `apps/workspace/convex/reports/commands.ts` |
+| mutation | `setReportGrants` | `apps/workspace/convex/reports/commands.ts` |
+| mutation | `updateReport` | `apps/workspace/convex/reports/commands.ts` |
+| query | `list` | `apps/workspace/convex/reports/read.ts` |
+| query | `overview` | `apps/workspace/convex/reports/read.ts` |
+| query | `schedules` | `apps/workspace/convex/reports/read.ts` |
+| mutation | `addRateCardEntry` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `allocateResource` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `assignSkill` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `cancelAllocation` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `createContractor` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `createHiringDemand` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `createRateCard` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `createScenario` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `createSkill` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `decideLeave` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `requestLeave` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| mutation | `setCapacity` | `apps/workspace/convex/resourcePlanning/commands.ts` |
+| query | `catalog` | `apps/workspace/convex/resourcePlanning/read.ts` |
+| query | `overview` | `apps/workspace/convex/resourcePlanning/read.ts` |
+| query | `principalAvailability` | `apps/workspace/convex/resourcePlanning/read.ts` |
+| query | `schedule` | `apps/workspace/convex/resourcePlanning/read.ts` |
 | query | `get` | `apps/workspace/convex/savedViews/read.ts` |
 | query | `getDefault` | `apps/workspace/convex/savedViews/read.ts` |
 | query | `list` | `apps/workspace/convex/savedViews/read.ts` |
+| query | `listGrants` | `apps/workspace/convex/savedViews/read.ts` |
 | mutation | `create` | `apps/workspace/convex/savedViews/write.ts` |
+| mutation | `makePersonal` | `apps/workspace/convex/savedViews/write.ts` |
 | mutation | `remove` | `apps/workspace/convex/savedViews/write.ts` |
 | mutation | `setDefault` | `apps/workspace/convex/savedViews/write.ts` |
+| mutation | `share` | `apps/workspace/convex/savedViews/write.ts` |
 | mutation | `update` | `apps/workspace/convex/savedViews/write.ts` |
+| query | `resolve` | `apps/workspace/convex/search/accessContext.ts` |
+| internalMutation | `claimExtractionJob` | `apps/workspace/convex/search/extraction.ts` |
+| internalMutation | `claimSecurityJob` | `apps/workspace/convex/search/extraction.ts` |
+| internalMutation | `completeExtractionJob` | `apps/workspace/convex/search/extraction.ts` |
+| internalMutation | `completeSecurityJob` | `apps/workspace/convex/search/extraction.ts` |
+| internalMutation | `failExtractionJob` | `apps/workspace/convex/search/extraction.ts` |
+| internalMutation | `failSecurityJob` | `apps/workspace/convex/search/extraction.ts` |
+| internalQuery | `loadExtractionSource` | `apps/workspace/convex/search/extraction.ts` |
+| internalQuery | `loadSecuritySource` | `apps/workspace/convex/search/extraction.ts` |
+| mutation | `reprocessAttachment` | `apps/workspace/convex/search/extraction.ts` |
+| mutation | `retryDeadLetters` | `apps/workspace/convex/search/extraction.ts` |
+| internalAction | `processExtractionBatch` | `apps/workspace/convex/search/extractionWorker.ts` |
+| internalAction | `processSecurityBatch` | `apps/workspace/convex/search/extractionWorker.ts` |
+| query | `candidates` | `apps/workspace/convex/search/hydrate.ts` |
+| internalMutation | `claimNext` | `apps/workspace/convex/search/outbox.ts` |
+| internalMutation | `complete` | `apps/workspace/convex/search/outbox.ts` |
+| internalMutation | `fail` | `apps/workspace/convex/search/outbox.ts` |
+| internalQuery | `indexSettingsVersion` | `apps/workspace/convex/search/outbox.ts` |
+| internalQuery | `loadPolicy` | `apps/workspace/convex/search/outbox.ts` |
+| internalQuery | `loadProjection` | `apps/workspace/convex/search/outbox.ts` |
+| internalMutation | `markIndexConfigured` | `apps/workspace/convex/search/outbox.ts` |
+| query | `health` | `apps/workspace/convex/search/read.ts` |
+| query | `policy` | `apps/workspace/convex/search/read.ts` |
+| internalMutation | `processNextBatch` | `apps/workspace/convex/search/reindex.ts` |
+| mutation | `retryDeadLetters` | `apps/workspace/convex/search/reindex.ts` |
+| mutation | `start` | `apps/workspace/convex/search/reindex.ts` |
+| query | `listRecent` | `apps/workspace/convex/search/savedQueries.ts` |
+| query | `listSaved` | `apps/workspace/convex/search/savedQueries.ts` |
+| mutation | `recordRecent` | `apps/workspace/convex/search/savedQueries.ts` |
+| mutation | `recordResultOpened` | `apps/workspace/convex/search/savedQueries.ts` |
+| mutation | `remove` | `apps/workspace/convex/search/savedQueries.ts` |
+| mutation | `save` | `apps/workspace/convex/search/savedQueries.ts` |
+| internalAction | `processBatch` | `apps/workspace/convex/search/worker.ts` |
+| mutation | `rebuildProjection` | `apps/workspace/convex/search/write.ts` |
+| mutation | `updatePolicy` | `apps/workspace/convex/search/write.ts` |
 | internalMutation | `applyBatch` | `apps/workspace/convex/security/backfill.ts` |
 | query | `listDataSecurityBackfillJobs` | `apps/workspace/convex/security/backfill.ts` |
 | internalQuery | `readBatch` | `apps/workspace/convex/security/backfill.ts` |
@@ -883,6 +1093,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/marketing/app/(site)/partners/page.tsx` | function: PartnersRedirectPage |
 | `apps/marketing/app/(site)/privacy/page.tsx` | function: PrivacyRedirectPage |
 | `apps/marketing/app/(site)/terms/page.tsx` | function: TermsRedirectPage |
+| `apps/marketing/app/api/contentful/revalidate/route.ts` | function: POST |
 | `apps/marketing/app/layout.tsx` | value: metadata<br>function: RootLayout |
 | `apps/marketing/app/manifest.ts` | function: manifest |
 | `apps/marketing/app/robots.ts` | function: robots |
@@ -1036,11 +1247,15 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/agent/subagents/tasks/task-update-input.ts` | value: taskUpdateToolInputSchema<br>function: parseTaskUpdatePatch |
 | `apps/workspace/convex/access/actor.ts` | type: ServerActor<br>function: requireServerActor |
 | `apps/workspace/convex/access/channel.ts` | type: ChannelAccessErrorCode<br>interface: ChannelAccess<br>type: ChannelScopeInput<br>function: findChannelByPublicId<br>function: resolveChannelAccess |
+| `apps/workspace/convex/access/delivery.ts` | function: resolveDeliveryAccess |
 | `apps/workspace/convex/access/document.ts` | type: DocumentAccessErrorCode<br>interface: DocumentAccess<br>function: resolveDocumentAccess |
 | `apps/workspace/convex/access/project.ts` | type: ProjectAccessErrorCode<br>interface: ProjectAccess<br>function: resolveProjectAccess |
 | `apps/workspace/convex/access/projectSpace.ts` | type: ProjectSpaceAccessErrorCode<br>interface: ProjectSpaceAccess<br>function: resolveProjectSpaceAccess |
+| `apps/workspace/convex/access/savedView.ts` | type: SavedViewScopeRef<br>function: assertCanReadSavedViewScope<br>function: filterReadableSavedViews |
+| `apps/workspace/convex/access/savedViewGrant.ts` | type: SavedViewAccessDecision<br>function: resolveSavedViewGrantAccess<br>function: assertSavedViewGrantAction |
 | `apps/workspace/convex/access/space.ts` | type: SpaceAccessErrorCode<br>interface: SpaceAccess<br>function: resolveSpaceAccess |
 | `apps/workspace/convex/access/task.ts` | type: TaskAccessErrorCode<br>interface: TaskAccess<br>type: TaskScopeInput<br>function: resolveTaskAccess |
+| `apps/workspace/convex/access/team.ts` | function: resolveActorTeamIds<br>function: assertTeamInOrganization |
 | `apps/workspace/convex/apiKeys.ts` | value: apiKeys |
 | `apps/workspace/convex/auth.ts` | value: createAuth<br>function: getAuthUser<br>function: safeGetAuthUser<br>convex-internalAction: rotateKeys |
 | `apps/workspace/convex/auth/email.ts` | function: createEmailAndPasswordOptions<br>function: createEmailOtpPlugin |
@@ -1048,25 +1263,29 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/auth/organization.ts` | function: createOrganizationPlugin |
 | `apps/workspace/convex/auth/runtime.ts` | type: BetterAuthRuntimeContext<br>function: asBetterAuthAdapterContext<br>value: AUTH_JWT_ALGORITHM<br>function: resolveBetterAuthRuntime<br>function: resolveSocialProviders |
 | `apps/workspace/convex/auth/topology.ts` | function: resolveConvexAuthTopology |
-| `apps/workspace/convex/automations/execute.ts` | convex-mutation: runManual<br>convex-internalMutation: runWebhook |
+| `apps/workspace/convex/automations/commandAdapter.ts` | function: executeAutomationAction<br>function: automationActionNeedsApproval |
+| `apps/workspace/convex/automations/events.ts` | function: emitAutomationEvent |
+| `apps/workspace/convex/automations/execute.ts` | convex-mutation: runManual<br>convex-mutation: decideApproval<br>convex-internalMutation: runWebhook<br>convex-internalMutation: processPendingEvents |
 | `apps/workspace/convex/automations/graph.ts` | function: orderedReachableActions<br>function: graphProblem |
 | `apps/workspace/convex/automations/layout.ts` | function: mergeAutomationPositions<br>function: automationLayoutUnchanged |
-| `apps/workspace/convex/automations/read.ts` | convex-query: list<br>convex-query: listRuns |
+| `apps/workspace/convex/automations/read.ts` | convex-query: list<br>convex-query: listRuns<br>convex-query: organizationRuns<br>convex-query: pendingApprovals |
 | `apps/workspace/convex/automations/validators.ts` | value: automationDocumentValidator<br>value: automationRunDocumentValidator |
 | `apps/workspace/convex/automations/write.ts` | convex-mutation: create<br>convex-mutation: save<br>convex-mutation: saveLayout<br>convex-mutation: setEnabled<br>convex-mutation: remove |
 | `apps/workspace/convex/betterAuth.ts` | value: betterAuthClient |
 | `apps/workspace/convex/betterAuthLocal/schema.ts` | value: tables |
+| `apps/workspace/convex/billing/access.ts` | function: resolveOrganizationEntitlements<br>function: assertOrganizationEntitlement<br>function: countActiveProjects<br>function: countOrganizationMembers<br>function: consumeOrganizationEntitlement<br>convex-query: getOrganizationEntitlements<br>convex-mutation: assertEntitlementForAuthorizedRequest<br>convex-internalMutation: consumeApiCallFromMcp |
 | `apps/workspace/convex/billing/creditSurface.ts` | type: StoredCreditBalance<br>type: StoredCreditLedger<br>type: CreditUsageSummary<br>function: includedCreditsForBillingPlan<br>function: creditUsageSummary<br>function: applyCreditUsageToBalance<br>function: calculateAgentRunCredits |
+| `apps/workspace/convex/billing/credits.ts` | convex-mutation: reserveAiCredits<br>convex-mutation: settleAiCredits<br>convex-mutation: recordAiStepUsage<br>convex-mutation: releaseAiCredits<br>convex-query: getCreditLedger |
 | `apps/workspace/convex/billing/customers.ts` | convex-internalQuery: getByAuthId<br>convex-query: getCurrentUserCustomer<br>convex-mutation: upsertCustomer<br>convex-internalQuery: getByDodoCustomerId |
-| `apps/workspace/convex/billing/data.ts` | type: PaymentStatus<br>type: SubscriptionStatus<br>type: StoredPayment<br>type: StoredSubscription<br>type: StoredOrganizationProfile<br>function: getBillingPlan<br>function: getBillingPlanAccess<br>function: billableMemberUnitsForPlan<br>function: canCreateAiCardForPlan<br>function: canUseEnterpriseControlsForPlan<br>function: presentPayment<br>function: presentSubscription |
-| `apps/workspace/convex/billing/dodo.ts` | value: dodo<br>value: PRICING_PLANS |
+| `apps/workspace/convex/billing/data.ts` | type: BillingPlanId<br>type: BillingPlanAccess<br>type: BillingPlan<br>value: BILLING_PLANS<br>type: PaymentStatus<br>type: StoredPayment<br>type: StoredSubscription<br>type: StoredOrganizationProfile<br>function: getBillingPlan<br>function: getBillingPlanAccess<br>function: billableMemberUnitsForPlan<br>function: canCreateAiCardForPlan<br>function: canUseEnterpriseControlsForPlan<br>function: presentPayment<br>function: presentSubscription |
+| `apps/workspace/convex/billing/dodo.ts` | value: dodo |
 | `apps/workspace/convex/billing/payments.ts` | convex-action: createCheckout<br>convex-action: getCustomerPortal<br>convex-action: listPlans |
 | `apps/workspace/convex/billing/read.ts` | convex-query: getSubscriptionOverview<br>convex-query: listPayments<br>convex-query: getUsageOverview<br>convex-query: getPaymentByOrder |
 | `apps/workspace/convex/billing/readSurface.ts` | function: latestPayment<br>function: billingSubscriptionOverview |
-| `apps/workspace/convex/billing/validators.ts` | value: billingPlanIdValidator<br>value: subscriptionStatusValidator<br>value: paymentStatusValidator<br>value: billingPlanValidator<br>value: organizationSubscriptionValidator<br>value: paymentValidator<br>value: billingOverviewValidator<br>value: billingCreditUsageValidator<br>value: billingUsageOverviewValidator<br>value: checkoutContextValidator |
-| `apps/workspace/convex/billing/webhookMutations.ts` | convex-internalMutation: recordPayment<br>convex-internalMutation: recordPaymentFailure<br>convex-internalMutation: recordSubscription |
-| `apps/workspace/convex/billing/webhookProcessing.ts` | function: acceptDodoWebhook<br>function: markDodoWebhookFailed<br>function: markPaymentStatusFromWebhookEvent |
-| `apps/workspace/convex/billing/write.ts` | convex-mutation: ensureCreditBalanceForOrganization<br>convex-mutation: recordAgentCreditUsage<br>convex-mutation: createPendingPaymentFromHono<br>convex-mutation: attachCheckoutFromHono<br>convex-mutation: markPaymentFailedFromHono<br>convex-mutation: markPaymentStatusFromWebhook |
+| `apps/workspace/convex/billing/storage.ts` | function: assertOrganizationStorageAvailable |
+| `apps/workspace/convex/billing/validators.ts` | value: billingPlanIdValidator<br>value: subscriptionStatusValidator<br>value: paymentStatusValidator<br>value: enterpriseOverridesValidator<br>value: organizationEntitlementsValidator<br>value: billingPlanValidator<br>value: organizationSubscriptionValidator<br>value: paymentValidator<br>value: billingOverviewValidator<br>value: billingCreditUsageValidator<br>value: billingUsageOverviewValidator<br>value: checkoutContextValidator |
+| `apps/workspace/convex/billing/webhookMutations.ts` | convex-internalMutation: reconcilePayment<br>convex-internalMutation: reconcileSubscription<br>convex-internalMutation: reconcileRefund |
+| `apps/workspace/convex/billing/write.ts` | convex-mutation: ensureCreditBalanceForOrganization<br>convex-mutation: authorizeBillingManagement<br>convex-mutation: setScheduledCancellationFromHono<br>convex-mutation: setScheduledPlanFromHono<br>convex-mutation: recordAgentCreditUsage<br>convex-mutation: createPendingPaymentFromHono<br>convex-mutation: createPendingCreditPurchaseFromHono<br>convex-mutation: attachCheckoutFromHono<br>convex-mutation: markPaymentFailedFromHono |
 | `apps/workspace/convex/calendar/lifecycle.ts` | type: CalendarEventInput<br>type: CalendarEventPatch<br>function: createCalendarEvent<br>function: updateCalendarEvent<br>function: deleteCalendarEvent |
 | `apps/workspace/convex/calendar/presentation.ts` | function: presentCalendarEvent |
 | `apps/workspace/convex/calendar/read.ts` | convex-query: list<br>convex-query: listRange<br>convex-query: listUpcoming<br>convex-query: listByProject<br>convex-query: get<br>convex-query: listBySpace<br>convex-query: statsInRange |
@@ -1093,6 +1312,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/clients/read.ts` | convex-query: list<br>convex-query: listPaged<br>convex-query: stats<br>convex-query: options<br>convex-query: get |
 | `apps/workspace/convex/clients/validators.ts` | value: clientTypeValidator<br>value: clientStatusValidator<br>value: clientPriorityValidator<br>value: storedClientPriorityValidator<br>type: ClientPriority<br>function: normalizeClientPriority<br>value: visibilityValidator<br>value: clientPipelineStageValidator<br>type: ClientPipelineStage<br>function: resolveClientPipelineStage<br>value: clientInputValidator<br>value: clientPatchValidator<br>value: clientValidator |
 | `apps/workspace/convex/clients/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono<br>convex-internalMutation: createInternal<br>convex-internalMutation: updateInternal<br>convex-internalMutation: deleteInternal |
+| `apps/workspace/convex/crm/identity.ts` | function: normalizeCompanyKey<br>function: assertLeadConvertible |
+| `apps/workspace/convex/crm/lifecycle.ts` | convex-mutation: createLead<br>convex-mutation: updateLeadStatus<br>convex-mutation: createCompany<br>convex-mutation: createContact<br>convex-mutation: convertLead |
+| `apps/workspace/convex/crm/read.ts` | convex-query: listLeads<br>convex-query: listCompanies<br>convex-query: listContacts<br>convex-query: overview |
+| `apps/workspace/convex/crm/search.ts` | function: leadSearchProjection<br>function: companySearchProjection<br>function: contactSearchProjection |
+| `apps/workspace/convex/crm/validators.ts` | value: leadStatusValidator<br>value: leadValidator<br>value: companyValidator<br>value: contactValidator |
 | `apps/workspace/convex/customFields/access.ts` | function: customFieldPermissionResource<br>function: assertCustomFieldTargetPermission |
 | `apps/workspace/convex/customFields/read.ts` | convex-query: listByOrganization<br>convex-query: listByOrganizationForTable |
 | `apps/workspace/convex/customFields/values_read.ts` | convex-query: listByRecord<br>convex-query: listByOrganization |
@@ -1101,8 +1325,22 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/dashboard/read.ts` | convex-query: overview |
 | `apps/workspace/convex/deals/read.ts` | convex-query: list<br>convex-query: get<br>convex-query: options<br>convex-query: stats |
 | `apps/workspace/convex/deals/validators.ts` | value: dealStageValidator<br>value: dealStatusValidator<br>value: dealPriorityValidator<br>value: dealInputValidator<br>value: dealValidator |
-| `apps/workspace/convex/deals/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono<br>convex-internalMutation: createInternal<br>convex-internalMutation: updateInternal<br>convex-internalMutation: deleteInternal |
+| `apps/workspace/convex/deals/write.ts` | type: DealInput<br>function: createDealFromDomainCommand<br>convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono<br>convex-internalMutation: createInternal<br>convex-internalMutation: updateInternal<br>convex-internalMutation: deleteInternal |
+| `apps/workspace/convex/delivery/lifecycle.ts` | convex-mutation: createProposal<br>convex-mutation: sendProposal<br>convex-mutation: acceptProposal<br>convex-mutation: sendContract<br>convex-mutation: signContract<br>convex-mutation: activateEngagement<br>convex-mutation: linkProject<br>convex-mutation: createDeliverable<br>convex-mutation: submitDeliverable<br>convex-mutation: decideApproval<br>convex-mutation: createChangeOrder<br>convex-mutation: submitChangeOrder<br>convex-mutation: recordConcern<br>convex-mutation: updateConcern<br>convex-mutation: invitePortalIdentity<br>convex-mutation: grantPortalAccess |
+| `apps/workspace/convex/delivery/read.ts` | convex-query: listProposals<br>convex-query: listContracts<br>convex-query: listEngagements<br>convex-query: engagementDetail |
+| `apps/workspace/convex/delivery/search.ts` | function: proposalSearchProjection<br>function: contractSearchProjection<br>function: engagementSearchProjection<br>function: deliverableSearchProjection |
+| `apps/workspace/convex/delivery/timeEntries.ts` | convex-mutation: recordTimeEntry<br>convex-mutation: submitTimeEntry<br>convex-mutation: decideTimeEntry<br>convex-query: listTimeEntries |
+| `apps/workspace/convex/delivery/transitions.ts` | type: CommercialLifecycle<br>function: assertCommercialTransition<br>function: assertProposalAcceptable<br>function: nextAgreedAmount |
+| `apps/workspace/convex/delivery/validators.ts` | value: commercialModelValidator<br>value: proposalStatusValidator<br>value: contractStatusValidator<br>value: engagementStatusValidator<br>value: deliveryHealthValidator<br>value: deliverableStatusValidator<br>value: approvalStatusValidator<br>value: changeOrderStatusValidator<br>value: concernTypeValidator<br>value: concernSeverityValidator<br>value: concernStatusValidator<br>value: proposalValidator<br>value: contractValidator<br>value: engagementValidator<br>value: deliverableValidator<br>value: engagementProjectValidator<br>value: approvalValidator<br>value: changeOrderValidator<br>value: concernValidator<br>value: timeEntryValidator |
+| `apps/workspace/convex/devSeed/projectManagement.ts` | convex-internalMutation: seedProjectManagementPortfolio |
 | `apps/workspace/convex/email.ts` | value: resend<br>function: getTransactionalFromEmail<br>function: getUpdatesFromEmail<br>function: getAppUrl |
+| `apps/workspace/convex/finance/access.ts` | function: financeAccess |
+| `apps/workspace/convex/finance/calculation.ts` | value: FX_SCALE<br>function: convertToBase<br>function: calculateTax<br>function: assertBalanced |
+| `apps/workspace/convex/finance/commands.ts` | convex-mutation: configureFinance<br>convex-mutation: createTaxRule<br>convex-mutation: openAccountingPeriod<br>convex-mutation: createBudget<br>convex-mutation: createInvoice<br>convex-mutation: postInvoice<br>convex-mutation: createInvoiceFromTime<br>convex-mutation: recordInvoicePayment<br>convex-mutation: createExpense<br>convex-mutation: createVendor<br>convex-mutation: payExpense<br>convex-mutation: createEstimate<br>convex-mutation: acceptEstimate<br>convex-mutation: receiveRetainer<br>convex-mutation: applyRetainer<br>convex-mutation: createBankAccount<br>convex-mutation: importBankTransaction<br>convex-mutation: reconcileBankTransaction<br>convex-mutation: postExpense<br>convex-mutation: closeAccountingPeriod<br>convex-mutation: reverseJournal |
+| `apps/workspace/convex/finance/ledger.ts` | type: LedgerLineInput<br>function: requireFinanceSettings<br>function: systemAccount<br>function: assertAccountingDateOpen<br>function: postJournal<br>function: financeError |
+| `apps/workspace/convex/finance/read.ts` | convex-query: overview<br>convex-query: records<br>convex-query: profitability |
+| `apps/workspace/convex/finance/search.ts` | function: invoiceSearchProjection<br>function: expenseSearchProjection<br>function: paymentSearchProjection |
+| `apps/workspace/convex/finance/validators.ts` | value: accountTypeValidator<br>value: accountSystemKeyValidator<br>value: accountingPeriodStatusValidator<br>value: documentStatusValidator<br>value: estimateStatusValidator<br>value: paymentStatusValidator<br>value: journalStatusValidator<br>value: taxCalculationValidator<br>value: scopeTypeValidator<br>value: bankTransactionStatusValidator |
 | `apps/workspace/convex/inbox/read.ts` | convex-query: listChannels<br>convex-query: getChannel<br>convex-query: listMessages<br>convex-query: listMessagesPage<br>convex-query: getThread |
 | `apps/workspace/convex/inbox/validators.ts` | value: channelTypeValidator<br>value: channelVisibilityValidator<br>value: channelInputValidator<br>value: channelValidator<br>value: messageAttachmentValidator<br>value: messageInputValidator<br>value: messageValidator<br>value: threadValidator |
 | `apps/workspace/convex/inbox/write.ts` | convex-mutation: createChannel<br>convex-mutation: updateChannel<br>convex-mutation: deleteChannel<br>convex-mutation: sendMessage<br>convex-mutation: updateMessage<br>convex-mutation: deleteMessage<br>convex-mutation: addReaction<br>convex-mutation: removeReaction<br>convex-mutation: pinMessage<br>convex-mutation: unpinMessage<br>convex-mutation: createThread |
@@ -1130,29 +1368,35 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/mcp/validators.ts` | value: mcpResourceValidator<br>value: mcpActionValidator<br>value: mcpPermissionValidator<br>value: mcpConnectionPrincipalTypeValidator<br>value: mcpScopeTypeValidator<br>value: mcpScopeValidator<br>value: createMcpConnectionInputValidator<br>value: updateMcpConnectionInputValidator<br>value: mcpConnectionValidator<br>type: McpResource<br>type: McpAction<br>type: McpPermission<br>type: McpScope |
 | `apps/workspace/convex/media/attachment.ts` | function: attachMediaToResource<br>function: updateMediaAsset<br>function: removeMediaAsset<br>function: createMediaFolderForResource<br>function: deleteMediaFolderForResource |
 | `apps/workspace/convex/media/data.ts` | type: MediaResourceType<br>function: getMediaAsset<br>function: getMediaFolder<br>function: listResourceMedia<br>function: orderedResourceMedia<br>function: listResourceMediaFolders<br>function: orderedResourceMediaFolders<br>function: selectCoverUrl |
-| `apps/workspace/convex/media/read.ts` | convex-query: listForResource<br>convex-query: getForDelete<br>convex-query: listFoldersForResource<br>convex-query: getForPublicRoute<br>convex-query: getForAuthorizedRoute |
+| `apps/workspace/convex/media/read.ts` | function: isPublicMediaAvailable<br>convex-query: listForResource<br>convex-query: getForDelete<br>convex-query: listFoldersForResource<br>convex-query: getForPublicRoute<br>convex-query: getForAuthorizedRoute |
 | `apps/workspace/convex/media/resourcePolicy.ts` | function: permissionResourceForMedia<br>function: assertMediaPermission<br>function: assertMediaResourceExists<br>function: clearExistingCover<br>function: mediaAssetsInFolder<br>function: clearMediaFolderAssignments<br>function: assertFolderBelongsToResource |
 | `apps/workspace/convex/media/validators.ts` | value: mediaKindValidator<br>value: mediaResourceTypeValidator<br>value: mediaShareVisibilityValidator<br>value: mediaFolderValidator<br>value: mediaAssetValidator<br>value: attachMediaInputValidator<br>value: updateMediaInputValidator<br>value: createMediaFolderInputValidator |
 | `apps/workspace/convex/media/write.ts` | convex-mutation: attachFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: removeFromHono<br>convex-mutation: createFolderFromHono<br>convex-mutation: deleteFolderFromHono |
 | `apps/workspace/convex/memory.ts` | convex-query: list<br>convex-mutation: put<br>convex-mutation: deleteMemory |
 | `apps/workspace/convex/migrations/backfillOrganizationTaskVisibility.ts` | function: legacyTaskVisibilityPatch<br>convex-internalMutation: runBatch |
-| `apps/workspace/convex/migrations/backfillRecordState.ts` | convex-query: previewWorkspaceRecordStateBackfill<br>convex-mutation: backfillWorkspaceRecordState |
+| `apps/workspace/convex/migrations/backfillRecordState.ts` | convex-internalQuery: previewWorkspaceRecordStateBackfill<br>convex-internalMutation: backfillWorkspaceRecordState |
 | `apps/workspace/convex/migrations/backfillTaskAssignments.ts` | convex-internalMutation: runBatch |
 | `apps/workspace/convex/migrations/migrateToOrganizationSpaces.ts` | convex-internalMutation: migrateToOrganizationSpaces |
+| `apps/workspace/convex/migrations/prepareAgencyCutover.ts` | convex-internalMutation: runBatch |
 | `apps/workspace/convex/migrations/purgeLegacyAssetMedia.ts` | convex-internalMutation: purgeAllLegacyAssetMedia |
 | `apps/workspace/convex/migrations/purgeLegacyMcpConnections.ts` | convex-internalMutation: purgeLegacyMcpConnections |
-| `apps/workspace/convex/migrations/removeAssets.ts` | convex-mutation: archiveLegacyAssets |
+| `apps/workspace/convex/migrations/removeAssets.ts` | convex-internalMutation: archiveLegacyAssets |
 | `apps/workspace/convex/modelization/data.ts` | type: WorkflowSeed<br>type: SavedViewSeed<br>type: SurfaceSeed<br>type: SurfaceTabSeed<br>function: ensureWorkflowDefinition<br>function: ensureWorkflowState<br>function: ensureSavedView<br>function: ensureSurface<br>function: ensureSurfaceTab<br>function: listActiveSurfaceTabs |
 | `apps/workspace/convex/modelization/read.ts` | convex-query: getSurfaceByKey<br>convex-query: listSurfaceTabs<br>convex-query: listSavedViews<br>convex-query: listWorkflowStates |
 | `apps/workspace/convex/modelization/validators.ts` | value: seedWorkspaceDefaultsResultValidator<br>value: surfaceValidator<br>value: surfaceTabValidator<br>value: savedViewValidator<br>value: workflowStateValidator |
 | `apps/workspace/convex/modelization/write.ts` | convex-mutation: seedWorkspaceDefaults |
+| `apps/workspace/convex/navigation/catalog.ts` | type: NavigationCatalogDomain<br>value: IMPLEMENTED_NAVIGATION_CATALOG |
+| `apps/workspace/convex/navigation/projection.ts` | type: NavigationLayoutLayer<br>function: buildAuthorizedNavigationProjection |
+| `apps/workspace/convex/navigation/read.ts` | convex-query: getAuthorizedProjection |
+| `apps/workspace/convex/navigation/validators.ts` | value: navigationDomainIdValidator<br>value: navigationRailModeValidator<br>value: navigationNodeValidator<br>value: navigationDomainValidator<br>value: authorizedNavigationProjectionValidator |
+| `apps/workspace/convex/navigation/write.ts` | convex-mutation: updateMyOverlay<br>convex-mutation: updateOrganizationLayout |
 | `apps/workspace/convex/notifications/dispatch.ts` | convex-internalMutation: dispatchJob<br>convex-internalMutation: recoverDueJobs |
 | `apps/workspace/convex/notifications/helpers.ts` | type: NotificationCategory<br>type: NotificationSourceType<br>type: NotificationTrigger<br>type: ReminderRule<br>value: defaultNotificationCategories<br>value: defaultReminderRules<br>function: userPrincipalKey<br>function: organizationPrincipalKey<br>function: recipientKey<br>function: tokenLast4<br>function: defaultPreference<br>function: normalizeReminderRules<br>function: getPreference<br>function: getEffectivePreference<br>function: scheduledAtForRule<br>function: cancelQueuedJobsForSource<br>function: createNotificationJob<br>function: scheduleCalendarEventReminders<br>function: scheduleTaskReminders<br>function: nextRecurringTime<br>function: scheduleManualNotification |
-| `apps/workspace/convex/notifications/inbox.ts` | convex-query: listPrimary<br>convex-mutation: markRead<br>convex-mutation: markAllRead |
-| `apps/workspace/convex/notifications/inbox_events.ts` | function: newlyAssignedUserIds<br>function: richTextMemberMentionIds<br>function: newlyMentionedUserIds<br>function: createNotificationEvent<br>function: emitTaskAssignmentEvents<br>function: emitMessageMentionEvents<br>function: emitRichTextMentionEvents |
+| `apps/workspace/convex/notifications/inbox.ts` | function: eventMatchesAttentionView<br>convex-query: listAttention<br>convex-query: listReplies<br>convex-mutation: transitionEvent<br>convex-mutation: markRead<br>convex-mutation: markAllRead |
+| `apps/workspace/convex/notifications/inbox_events.ts` | function: newlyAssignedUserIds<br>function: richTextMemberMentionIds<br>function: newlyMentionedUserIds<br>function: createNotificationEvent<br>function: emitTaskAssignmentEvents<br>function: emitMessageMentionEvents<br>function: emitThreadReplyEvents<br>function: threadReplyRecipientIds<br>function: emitRichTextMentionEvents |
 | `apps/workspace/convex/notifications/push.ts` | value: pushNotifications |
 | `apps/workspace/convex/notifications/read.ts` | convex-query: getMyStatus<br>convex-query: getMyPreferences<br>convex-query: getOrganizationPreferences<br>convex-query: listMySchedules |
-| `apps/workspace/convex/notifications/validators.ts` | value: notificationEventKindValidator<br>value: notificationEventResourceTypeValidator<br>value: notificationEventValidator<br>value: notificationCategoryValidator<br>value: notificationSourceTypeValidator<br>value: notificationTriggerValidator<br>value: notificationJobTriggerValidator<br>value: quietHoursValidator<br>value: reminderRuleValidator<br>value: notificationCategoriesValidator<br>value: notificationPreferenceInputValidator<br>value: notificationPreferenceValidator<br>value: notificationPreferenceSurfaceValidator<br>value: notificationDeviceValidator<br>value: notificationScheduleInputValidator<br>value: notificationScheduleValidator<br>value: notificationJobPayloadValidator |
+| `apps/workspace/convex/notifications/validators.ts` | value: notificationEventKindValidator<br>value: notificationEventLaneValidator<br>value: notificationEventDispositionValidator<br>value: notificationEventResourceTypeValidator<br>value: notificationEventValidator<br>value: notificationCategoryValidator<br>value: notificationSourceTypeValidator<br>value: notificationTriggerValidator<br>value: notificationJobTriggerValidator<br>value: quietHoursValidator<br>value: reminderRuleValidator<br>value: notificationCategoriesValidator<br>value: notificationPreferenceInputValidator<br>value: notificationPreferenceValidator<br>value: notificationPreferenceSurfaceValidator<br>value: notificationDeviceValidator<br>value: notificationScheduleInputValidator<br>value: notificationScheduleValidator<br>value: notificationJobPayloadValidator |
 | `apps/workspace/convex/notifications/write.ts` | convex-mutation: registerDevice<br>convex-mutation: removeDevice<br>convex-mutation: upsertMyPreferences<br>convex-mutation: upsertOrganizationPreferences<br>convex-mutation: createSchedule<br>convex-mutation: updateSchedule<br>convex-mutation: cancelSchedule<br>convex-mutation: ensureDefaultPreferences |
 | `apps/workspace/convex/opportunities/read.ts` | convex-query: list<br>convex-query: get<br>convex-query: options<br>convex-query: stats |
 | `apps/workspace/convex/opportunities/validators.ts` | value: opportunityPriorityValidator<br>value: opportunityStageValidator<br>value: opportunityStatusValidator<br>value: opportunityInputValidator<br>value: opportunityValidator |
@@ -1169,7 +1413,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/organizations/inviteLinks/read.ts` | convex-query: listPending<br>convex-query: countPendingByRole<br>convex-query: getByTokenHash |
 | `apps/workspace/convex/organizations/inviteLinks/validators.ts` | value: organizationInviteLinkStatusValidator<br>value: organizationInviteLinkValidator<br>value: createOrganizationInviteLinkInputValidator<br>value: createOrganizationInviteLinkFromTokenInputValidator |
 | `apps/workspace/convex/organizations/inviteLinks/write.ts` | convex-mutation: createInviteLinkFromHono<br>convex-mutation: createInviteLinkFromToken<br>convex-mutation: acceptInviteLinkFromHono<br>convex-mutation: cancelInviteLinkFromHono |
-| `apps/workspace/convex/organizations/profile/access.ts` | function: assertOrganizationPermission<br>function: assertOrganizationResourcePermission<br>function: canUseOrganizationResourceAction<br>convex-query: canUpdateProfile<br>convex-query: canUseResourceAction<br>convex-query: getCapabilities |
+| `apps/workspace/convex/organizations/profile/access.ts` | function: assertOrganizationPermission<br>function: assertOrganizationOwner<br>function: assertOrganizationResourcePermission<br>function: canUseOrganizationResourceAction<br>convex-query: canUpdateProfile<br>convex-query: canUseResourceAction<br>convex-query: getCapabilities |
 | `apps/workspace/convex/organizations/profile/data.ts` | function: findOrganizationProfile |
 | `apps/workspace/convex/organizations/profile/read.ts` | convex-query: getProfile |
 | `apps/workspace/convex/organizations/profile/validators.ts` | value: organizationProfileValidator<br>value: updateOrganizationProfileInputValidator<br>value: emptyOrganizationProfile |
@@ -1189,37 +1433,80 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/pipeline_stages/read.ts` | convex-query: list |
 | `apps/workspace/convex/pipeline_stages/write.ts` | convex-mutation: create<br>convex-mutation: update<br>convex-mutation: remove<br>convex-mutation: reorder<br>convex-mutation: seedDefaults |
 | `apps/workspace/convex/platform/access.ts` | function: assertPlatformAdmin<br>convex-query: canUsePlatformAdminAction |
+| `apps/workspace/convex/platform/rollout.ts` | convex-query: getAgencyOs<br>convex-mutation: setAgencyOs |
+| `apps/workspace/convex/portal/access.ts` | type: PortalCapability<br>function: hashPortalToken<br>function: resolvePortalAccess |
+| `apps/workspace/convex/portal/commands.ts` | convex-mutation: issueSession<br>convex-mutation: activateSession<br>convex-mutation: submitRequest<br>convex-mutation: decideDeliveryApproval |
+| `apps/workspace/convex/portal/read.ts` | convex-query: engagement |
 | `apps/workspace/convex/projectDashboards.ts` | function: applyDashboardPatch<br>function: readAuthorizedDashboard<br>function: requireUpdatableDashboardProject<br>convex-query: get<br>convex-mutation: upsert |
 | `apps/workspace/convex/projectSpaces/read.ts` | convex-query: listByOrganization<br>convex-query: list<br>convex-query: get<br>convex-query: listBySpace |
 | `apps/workspace/convex/projectSpaces/validators.ts` | value: projectSpaceInputValidator<br>value: projectSpaceValidator |
 | `apps/workspace/convex/projectSpaces/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono |
+| `apps/workspace/convex/projectWorkspace/data.ts` | value: PROJECT_WORKSPACE_SURFACE_KEY<br>type: ProjectWorkspaceViewType<br>function: isProjectWorkspaceViewType<br>function: canonicalProjectWorkspaceRoute |
+| `apps/workspace/convex/projectWorkspace/read.ts` | function: projectWorkspaceTabProjection<br>function: readableProjectWorkspaceTabs<br>convex-query: getSurfaceProjection<br>convex-query: getProjectManagementTree |
+| `apps/workspace/convex/projectWorkspace/validators.ts` | value: projectWorkspaceViewTypeValidator<br>value: projectWorkspaceTabCapabilitiesValidator<br>value: projectWorkspaceTabValidator<br>value: projectWorkspaceSurfaceProjectionValidator<br>value: projectWorkspaceCreateInputValidator<br>value: projectManagementTreeProjectionValidator |
+| `apps/workspace/convex/projectWorkspace/write.ts` | convex-mutation: ensureProjectWorkspaceDefaults<br>convex-mutation: createAndAttachView<br>convex-mutation: renameViewTab<br>convex-mutation: reorderViewTabs<br>convex-mutation: duplicateViewTab<br>convex-mutation: detachViewTab<br>convex-mutation: updateViewConfig<br>convex-mutation: createDefaultRouteView |
 | `apps/workspace/convex/projects/read.ts` | convex-query: list<br>convex-query: listPaged<br>convex-query: stats<br>convex-query: options<br>convex-query: listByClient<br>convex-query: get<br>convex-query: taskCounts<br>convex-query: listBySpace<br>convex-query: listAccessibleBySpaceMembership |
 | `apps/workspace/convex/projects/rollup.ts` | function: validateStrictTaskDates<br>function: updateProjectRollup |
 | `apps/workspace/convex/projects/validators.ts` | value: projectStatusValidator<br>value: projectHealthValidator<br>value: visibilityValidator<br>type: ProjectVisibility<br>type: StoredProjectVisibility<br>function: normalizeProjectVisibility<br>value: projectInputValidator<br>value: projectValidator |
 | `apps/workspace/convex/projects/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono<br>convex-internalMutation: createInternal<br>convex-internalMutation: updateInternal<br>convex-internalMutation: deleteInternal |
+| `apps/workspace/convex/reports/access.ts` | function: reportSourceResources<br>function: canReadReportSource<br>function: assertReportSourceAccess<br>function: assertReportScopeAccess<br>function: assertReportRead<br>function: assertReportManage |
+| `apps/workspace/convex/reports/commands.ts` | convex-mutation: createReport<br>convex-mutation: updateReport<br>convex-mutation: setReportGrants<br>convex-mutation: scheduleReport |
+| `apps/workspace/convex/reports/read.ts` | convex-query: list<br>convex-query: overview<br>convex-query: schedules |
+| `apps/workspace/convex/reports/validators.ts` | value: reportSourceValidator<br>value: reportVisibilityValidator<br>value: reportScopeValidator<br>value: reportCadenceValidator |
 | `apps/workspace/convex/requireAuth.ts` | function: requireAuth<br>function: getAuth |
-| `apps/workspace/convex/savedViews/data.ts` | function: scopeForInput<br>function: presentSavedView<br>function: listViewsForUser<br>function: getDefaultView |
-| `apps/workspace/convex/savedViews/read.ts` | convex-query: list<br>convex-query: get<br>convex-query: getDefault |
-| `apps/workspace/convex/savedViews/validators.ts` | value: userTableViewScopeValidator<br>value: userTableViewConfigValidator<br>value: userTableViewValidator<br>value: createUserTableViewInputValidator<br>value: updateUserTableViewInputValidator |
-| `apps/workspace/convex/savedViews/write.ts` | convex-mutation: create<br>convex-mutation: update<br>convex-mutation: remove<br>convex-mutation: setDefault<br>function: assertSavedViewScope |
+| `apps/workspace/convex/resourcePlanning/access.ts` | function: resourcePlanningAccess |
+| `apps/workspace/convex/resourcePlanning/capacity.ts` | type: IntervalAmount<br>function: assertInterval<br>function: overlapRatio<br>function: proratedMinutes<br>function: capacitySummary |
+| `apps/workspace/convex/resourcePlanning/commands.ts` | convex-mutation: createSkill<br>convex-mutation: createContractor<br>convex-mutation: assignSkill<br>convex-mutation: setCapacity<br>convex-mutation: allocateResource<br>convex-mutation: requestLeave<br>convex-mutation: cancelAllocation<br>convex-mutation: decideLeave<br>convex-mutation: createRateCard<br>convex-mutation: addRateCardEntry<br>convex-mutation: createHiringDemand<br>convex-mutation: createScenario |
+| `apps/workspace/convex/resourcePlanning/read.ts` | convex-query: catalog<br>convex-query: schedule<br>convex-query: principalAvailability<br>convex-query: overview |
+| `apps/workspace/convex/resourcePlanning/validators.ts` | value: principalTypeValidator<br>value: allocationStatusValidator<br>value: leaveStatusValidator<br>value: contractorStatusValidator<br>value: demandStatusValidator<br>value: scenarioStatusValidator<br>value: rateCardScopeValidator<br>value: skillValidator<br>value: contractorValidator<br>value: capacityPeriodValidator<br>value: allocationValidator<br>value: leavePeriodValidator<br>value: rateCardValidator<br>value: hiringDemandValidator<br>value: scenarioValidator |
+| `apps/workspace/convex/savedViews/data.ts` | function: scopeForInput<br>function: presentSavedView<br>function: listViewsForUser<br>function: listViewRecordsForUser<br>function: getDefaultView |
+| `apps/workspace/convex/savedViews/read.ts` | convex-query: list<br>convex-query: get<br>convex-query: getDefault<br>convex-query: listGrants |
+| `apps/workspace/convex/savedViews/validators.ts` | value: userTableViewScopeValidator<br>value: userTableViewConfigValidator<br>value: savedViewSharingModeValidator<br>value: savedViewGrantInputValidator<br>value: savedViewGrantValidator<br>value: userTableViewValidator<br>value: createUserTableViewInputValidator<br>value: updateUserTableViewInputValidator |
+| `apps/workspace/convex/savedViews/write.ts` | convex-mutation: create<br>convex-mutation: update<br>convex-mutation: remove<br>convex-mutation: setDefault<br>convex-mutation: share<br>convex-mutation: makePersonal |
 | `apps/workspace/convex/schema/automations.ts` | value: automationNodeValidator<br>value: automationEdgeValidator<br>value: automationViewportValidator<br>value: automationTables |
 | `apps/workspace/convex/schema/billing.ts` | value: billingTables |
+| `apps/workspace/convex/schema/crm.ts` | value: crmTables |
 | `apps/workspace/convex/schema/custom_fields.ts` | value: customFieldTables |
+| `apps/workspace/convex/schema/delivery.ts` | value: deliveryTables |
 | `apps/workspace/convex/schema/docs.ts` | value: docsTables |
 | `apps/workspace/convex/schema/domains.ts` | value: domainTables |
+| `apps/workspace/convex/schema/finance.ts` | value: financeTables |
 | `apps/workspace/convex/schema/maintenance.ts` | value: maintenanceTables |
 | `apps/workspace/convex/schema/media.ts` | value: mediaTables |
+| `apps/workspace/convex/schema/navigation.ts` | value: navigationTables |
 | `apps/workspace/convex/schema/organization.ts` | value: organizationTables |
 | `apps/workspace/convex/schema/partner.ts` | value: partnerTables |
+| `apps/workspace/convex/schema/reports.ts` | value: reportTables |
+| `apps/workspace/convex/schema/resourcePlanning.ts` | value: resourcePlanningTables |
+| `apps/workspace/convex/schema/search.ts` | value: searchTables |
 | `apps/workspace/convex/schema/theories.ts` | value: theoriesTables |
 | `apps/workspace/convex/schema/users.ts` | value: userTables |
-| `apps/workspace/convex/schema/validators.ts` | value: workOsRecordResourceValidator<br>value: recordStateValidator<br>value: scopeTypeValidator<br>value: workspaceVisibilityValidator<br>value: viewTypeValidator<br>value: savedViewValueValidator<br>value: savedViewFilterValidator<br>value: savedViewColumnValidator<br>value: savedViewConfigValidator<br>value: workOsCustomFieldTypeValidator<br>value: workOsCustomFieldOptionValidator<br>value: workOsCustomFieldDefinitionValidator<br>value: workOsCustomFieldValueValidator |
+| `apps/workspace/convex/schema/validators.ts` | value: workOsRecordResourceValidator<br>value: recordStateValidator<br>value: scopeTypeValidator<br>value: workspaceVisibilityValidator<br>value: viewTypeValidator<br>value: savedViewValueValidator<br>value: savedViewFilterValidator<br>value: savedViewColumnValidator<br>value: savedViewDashboardWidgetValidator<br>value: projectSavedViewSettingsValidator<br>value: savedViewConfigValidator<br>value: workOsCustomFieldTypeValidator<br>value: workOsCustomFieldOptionValidator<br>value: workOsCustomFieldDefinitionValidator<br>value: workOsCustomFieldValueValidator |
 | `apps/workspace/convex/schema/views.ts` | value: viewTables |
 | `apps/workspace/convex/schema_utils.ts` | value: IndexPatterns<br>value: QueryOptimization<br>function: checkIndexCoverage<br>function: indexName |
+| `apps/workspace/convex/search/accessContext.ts` | convex-query: resolve |
+| `apps/workspace/convex/search/adapters/attachment.ts` | function: attachmentSearchProjection |
+| `apps/workspace/convex/search/adapters/project.ts` | function: projectPrincipalKeys<br>function: projectSearchProjection |
+| `apps/workspace/convex/search/adapters/shared.ts` | function: searchLocale<br>function: normalizedKeywords<br>function: searchDateValue |
+| `apps/workspace/convex/search/adapters/task.ts` | function: taskPrincipalKeys<br>function: taskSearchProjection |
+| `apps/workspace/convex/search/extraction.ts` | value: MAX_EXTRACTION_SOURCE_BYTES<br>value: MAX_EXTRACTED_TEXT_CHARS<br>function: enqueueMediaSecurityScan<br>convex-internalMutation: claimSecurityJob<br>convex-internalQuery: loadSecuritySource<br>convex-internalMutation: completeSecurityJob<br>convex-internalMutation: failSecurityJob<br>convex-internalMutation: claimExtractionJob<br>convex-internalQuery: loadExtractionSource<br>convex-internalMutation: completeExtractionJob<br>convex-internalMutation: failExtractionJob<br>function: cleanupAttachmentSearch<br>function: refreshAttachmentSearchProjection<br>convex-mutation: retryDeadLetters<br>convex-mutation: reprocessAttachment |
+| `apps/workspace/convex/search/extractionState.ts` | value: MAX_EXTRACTION_ATTEMPTS<br>function: failedExtractionState |
+| `apps/workspace/convex/search/extractionWorker.ts` | convex-internalAction: processSecurityBatch<br>convex-internalAction: processExtractionBatch<br>function: fetchSourceBytes<br>function: assertAllowedSourceUrl |
+| `apps/workspace/convex/search/hydrate.ts` | function: highestScoringCandidates<br>function: isCurrentSearchCandidate<br>convex-query: candidates |
+| `apps/workspace/convex/search/indexPolicy.ts` | function: shouldExternallyIndex<br>function: searchIndexName |
+| `apps/workspace/convex/search/outbox.ts` | convex-internalMutation: claimNext<br>convex-internalQuery: loadProjection<br>convex-internalQuery: loadPolicy<br>convex-internalQuery: indexSettingsVersion<br>convex-internalMutation: markIndexConfigured<br>convex-internalMutation: complete<br>convex-internalMutation: fail |
+| `apps/workspace/convex/search/outboxState.ts` | value: MAX_SEARCH_OUTBOX_ATTEMPTS<br>function: failedOutboxState |
+| `apps/workspace/convex/search/projection.ts` | function: writeSearchProjection<br>function: tombstoneSearchResource |
+| `apps/workspace/convex/search/read.ts` | convex-query: policy<br>convex-query: health |
+| `apps/workspace/convex/search/reindex.ts` | convex-mutation: start<br>convex-internalMutation: processNextBatch<br>convex-mutation: retryDeadLetters |
+| `apps/workspace/convex/search/savedQueries.ts` | convex-query: listSaved<br>convex-query: listRecent<br>convex-mutation: save<br>convex-mutation: remove<br>convex-mutation: recordRecent<br>convex-mutation: recordResultOpened<br>function: normalizeSearchConfiguration<br>function: searchConfigurationFingerprint<br>function: searchConfigurationFilterCount |
+| `apps/workspace/convex/search/validators.ts` | value: searchResourceTypeValidator<br>value: searchScopeTypeValidator<br>value: searchSensitivityValidator<br>value: searchOutboxStatusValidator<br>value: searchQueryConfigurationValidator<br>value: searchProjectionFields<br>value: searchProjectionInputValidator<br>value: searchProjectionValidator<br>value: searchOutboxEventValidator<br>value: searchPolicyValidator<br>value: searchCandidateInputValidator<br>value: hydratedSearchResultValidator |
+| `apps/workspace/convex/search/worker.ts` | convex-internalAction: processBatch |
+| `apps/workspace/convex/search/write.ts` | convex-mutation: rebuildProjection<br>convex-mutation: updatePolicy |
 | `apps/workspace/convex/security/backfill.ts` | convex-query: listDataSecurityBackfillJobs<br>convex-mutation: startDataSecurityBackfill<br>convex-internalQuery: readBatch<br>convex-internalAction: runBackfillBatch<br>convex-internalMutation: applyBatch<br>convex-mutation: runDataSecurityBackfill |
 | `apps/workspace/convex/security/backfillTargets.ts` | value: BACKFILL_TARGETS<br>type: BackfillTarget<br>type: BackfillPatch<br>type: BackfillPatchResult<br>function: createBackfillPatchesForTarget<br>function: readBackfillTargetPage<br>function: normalizeBackfillTargetId |
 | `apps/workspace/convex/security/clientPii.ts` | type: ClientPiiInput<br>function: protectClientPii<br>function: protectClientPiiPatch<br>function: revealClientPii |
-| `apps/workspace/convex/security/organizationData.ts` | function: redactSensitiveText<br>function: encryptedPlaceholder<br>function: protectOrganizationText<br>function: revealOrganizationText<br>function: protectOrganizationJson<br>function: revealOrganizationJson |
+| `apps/workspace/convex/security/organizationData.ts` | function: redactSensitiveText<br>function: encryptedPlaceholder<br>function: protectOrganizationText<br>function: organizationLookupFingerprint<br>function: revealOrganizationText<br>function: protectOrganizationJson<br>function: revealOrganizationJson |
 | `apps/workspace/convex/serviceTokens.ts` | function: configuredServiceToken<br>function: timingSafeEqualStrings<br>function: assertWorkspaceServiceToken<br>function: assertConvexBridgeToken<br>function: assertAdminConvexServiceToken |
 | `apps/workspace/convex/shared/present.ts` | function: presentWorkspaceRecord<br>function: timestampMilliseconds<br>function: isoDate<br>function: isoTime<br>function: stripDeletedFields<br>function: presentBaseRecord |
 | `apps/workspace/convex/shared/softDelete.ts` | function: isActive<br>function: filterActive<br>function: activeRows<br>function: sortByUpdated<br>function: sortByCreated<br>function: paginateActive |
@@ -1253,13 +1540,21 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/clients/create/page.tsx` | function: CreateClientPage |
 | `apps/workspace/src/app/[locale]/(app)/clients/layout.tsx` | function: ClientsLayout |
 | `apps/workspace/src/app/[locale]/(app)/clients/page.tsx` | function: ClientsPage |
+| `apps/workspace/src/app/[locale]/(app)/crm/companies/page.tsx` | function: CompaniesPage |
+| `apps/workspace/src/app/[locale]/(app)/crm/contacts/page.tsx` | function: ContactsPage |
+| `apps/workspace/src/app/[locale]/(app)/crm/contracts/page.tsx` | function: ContractsPage |
+| `apps/workspace/src/app/[locale]/(app)/crm/leads/page.tsx` | function: LeadsPage |
+| `apps/workspace/src/app/[locale]/(app)/crm/proposals/page.tsx` | function: ProposalsPage |
 | `apps/workspace/src/app/[locale]/(app)/deals/[id]/page.tsx` | function: DealDetailPage |
 | `apps/workspace/src/app/[locale]/(app)/deals/page.tsx` | function: DealsPage |
+| `apps/workspace/src/app/[locale]/(app)/delivery/page.tsx` | function: DeliveryPage |
 | `apps/workspace/src/app/[locale]/(app)/docs/[docId]/page.tsx` | function: DocEditorPage |
 | `apps/workspace/src/app/[locale]/(app)/docs/layout.tsx` | function: DocsLayout |
 | `apps/workspace/src/app/[locale]/(app)/docs/page.tsx` | function: DocsPage |
 | `apps/workspace/src/app/[locale]/(app)/error.tsx` | function: AppError |
+| `apps/workspace/src/app/[locale]/(app)/finance/page.tsx` | function: FinancePage |
 | `apps/workspace/src/app/[locale]/(app)/inbox/activity/page.tsx` | function: ChatActivityPage |
+| `apps/workspace/src/app/[locale]/(app)/inbox/assigned-comments/page.tsx` | function: AssignedCommentsPage |
 | `apps/workspace/src/app/[locale]/(app)/inbox/channels/page.tsx` | function: ChannelsPage |
 | `apps/workspace/src/app/[locale]/(app)/inbox/layout.tsx` | function: InboxLayout |
 | `apps/workspace/src/app/[locale]/(app)/inbox/page.tsx` | function: InboxPage |
@@ -1274,24 +1569,45 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/opportunities/[id]/page.tsx` | function: OpportunityDetailsPage |
 | `apps/workspace/src/app/[locale]/(app)/opportunities/page.tsx` | function: OpportunitiesPage |
 | `apps/workspace/src/app/[locale]/(app)/organization/activity/page.tsx` | function: OrganizationActivityPage |
+| `apps/workspace/src/app/[locale]/(app)/organization/admin-config/page.tsx` | function: AdminConfigurationPage |
 | `apps/workspace/src/app/[locale]/(app)/organization/channels/page.tsx` | function: OrganizationChannelsPage |
 | `apps/workspace/src/app/[locale]/(app)/organization/custom-permissions/page.tsx` | function: OrganizationCustomPermissionsPage |
 | `apps/workspace/src/app/[locale]/(app)/organization/page.tsx` | function: OrganizationPage |
+| `apps/workspace/src/app/[locale]/(app)/organization/search-policy/page.tsx` | function: SearchPolicyPage |
 | `apps/workspace/src/app/[locale]/(app)/organization/spaces/page.tsx` | function: OrganizationSpacesPage |
 | `apps/workspace/src/app/[locale]/(app)/profile/page.tsx` | function: ProfilePage |
+| `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/edit/page.tsx` | function: ProjectEditPage |
 | `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/layout.tsx` | function: ProjectLayout |
+| `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/page.tsx` | function: ProjectDetailPage |
+| `apps/workspace/src/app/[locale]/(app)/projects/board/[savedViewId]/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/board/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/calendar/[savedViewId]/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/calendar/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/dashboard/[savedViewId]/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/dashboard/page.tsx` | function: Page |
 | `apps/workspace/src/app/[locale]/(app)/projects/layout.tsx` | function: ProjectsLayout |
+| `apps/workspace/src/app/[locale]/(app)/projects/list/[savedViewId]/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/list/page.tsx` | function: Page |
 | `apps/workspace/src/app/[locale]/(app)/projects/page.tsx` | function: ProjectsPage |
+| `apps/workspace/src/app/[locale]/(app)/projects/table/[savedViewId]/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/table/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/timeline/[savedViewId]/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/timeline/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/reports/page.tsx` | function: ReportsPage |
+| `apps/workspace/src/app/[locale]/(app)/resources/page.tsx` | function: ResourcesPage |
+| `apps/workspace/src/app/[locale]/(app)/search/page.tsx` | function: SearchCenterPage |
 | `apps/workspace/src/app/[locale]/(app)/settings/[section]/page.tsx` | function: SettingsSectionPage |
 | `apps/workspace/src/app/[locale]/(app)/settings/page.tsx` | function: SettingsIndexPage |
 | `apps/workspace/src/app/[locale]/(app)/spaces/page.tsx` | function: SpacesRoute |
 | `apps/workspace/src/app/[locale]/(app)/tasks/[id]/page.tsx` | function: TaskDetailsPage |
 | `apps/workspace/src/app/[locale]/(app)/tasks/board/page.tsx` | function: TaskBoardPage |
+| `apps/workspace/src/app/[locale]/(app)/tasks/calendar/page.tsx` | function: TaskCalendarPage |
 | `apps/workspace/src/app/[locale]/(app)/tasks/layout.tsx` | function: TasksLayout |
 | `apps/workspace/src/app/[locale]/(app)/tasks/list/page.tsx` | function: TaskListPage |
 | `apps/workspace/src/app/[locale]/(app)/tasks/loading.tsx` | function: TasksViewLoading |
 | `apps/workspace/src/app/[locale]/(app)/tasks/page.tsx` | function: TasksPage |
 | `apps/workspace/src/app/[locale]/(app)/tasks/table/page.tsx` | function: TaskTablePage |
+| `apps/workspace/src/app/[locale]/(app)/tasks/timeline/page.tsx` | function: TaskTimelinePage |
 | `apps/workspace/src/app/[locale]/(app)/team/page.tsx` | function: TeamPage |
 | `apps/workspace/src/app/[locale]/(app)/theories/page.tsx` | function: TheoriesPage |
 | `apps/workspace/src/app/[locale]/(app)/time-tracking/page.tsx` | function: TimeTrackingPage |
@@ -1382,7 +1698,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/components/layout/sidebar/components/identity-avatar.tsx` | function: IdentityAvatar |
 | `apps/workspace/src/components/layout/sidebar/components/nav-tooltip.tsx` | function: NavTooltip |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-chat-panel.tsx` | function: SidebarChatPanel |
-| `apps/workspace/src/components/layout/sidebar/components/sidebar-domain-panels.tsx` | function: SidebarTasksPanel<br>function: SidebarCalendarPanel<br>function: SidebarClientsPanel<br>function: SidebarDealsPanel<br>function: SidebarDocsPanel |
+| `apps/workspace/src/components/layout/sidebar/components/sidebar-domain-panels.tsx` | function: SidebarTasksPanel<br>function: SidebarCalendarPanel<br>function: SidebarProjectsPanel<br>function: SidebarAutomationsPanel<br>function: SidebarAdminPanel<br>function: SidebarDocsPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel.tsx` | function: SidebarInboxPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel/channel-filter.ts` | function: filterChannelsByScope<br>function: groupInboxChannels |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel/channel-section.tsx` | function: ChannelSection |
@@ -1395,12 +1711,13 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-panel-mode-switch.tsx` | function: SidebarPanelModeSwitch |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-panel-mode.ts` | type: SecondaryPanelMode<br>type: SecondaryPanelRouteMemory<br>value: DEFAULT_SECONDARY_PANEL_ROUTES<br>function: getSecondaryPanelModeForHref<br>function: buildCurrentModeHref<br>function: getSecondaryPanelModeHref |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-project-panel.tsx` | function: SidebarProjectPanel |
+| `apps/workspace/src/components/layout/sidebar/components/sidebar-projected-domain-links.tsx` | function: SidebarProjectedDomainLinks |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-rail-skeleton.tsx` | function: SidebarRailSkeleton |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-rail.tsx` | function: SidebarRail |
-| `apps/workspace/src/components/layout/sidebar/components/sidebar-secondary-panel.tsx` | function: clampSidebarWidth<br>function: sidebarWidthStorageKey<br>function: SidebarSecondaryPanel |
+| `apps/workspace/src/components/layout/sidebar/components/sidebar-secondary-panel.tsx` | function: clampSidebarWidth<br>function: SidebarSecondaryPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-space-panel.tsx` | function: SidebarSpacePanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-workspace-switcher.tsx` | function: SidebarWorkspaceSwitcher |
-| `apps/workspace/src/components/layout/sidebar/config/nav.config.ts` | type: SidebarNavItem<br>type: SidebarNavGroup<br>value: sidebarStaticNav<br>value: sidebarPrimaryNav<br>value: sidebarNavGroups<br>value: sidebarSpaceNav<br>value: sidebarProjectNav<br>value: sidebarComingSoonNav<br>value: sidebarWorkspaceNav<br>value: sidebarVisibleThreadLimit<br>value: sidebarOrganizationListLimit |
+| `apps/workspace/src/components/layout/sidebar/config/navigation-icon-registry.ts` | type: NavigationIcon<br>function: navigationIcon |
 | `apps/workspace/src/components/layout/sidebar/hooks/use-organization-switch.ts` | function: useOrganizationSwitch |
 | `apps/workspace/src/components/layout/sidebar/lib/sidebar-utils.ts` | function: sidebarInitials<br>function: isGeneratedOrganizationName |
 | `apps/workspace/src/components/layout/sidebar/lib/types.ts` | type: AgentThread<br>type: BetterAuthOrganization |
@@ -1427,7 +1744,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/components/layout/workspace-global-search/components/search-rows.tsx` | function: SearchGroup<br>function: SearchRow |
 | `apps/workspace/src/components/layout/workspace-global-search/config/search-navigation.config.ts` | value: globalSearchPageSize<br>type: GlobalSearchNavigationAction<br>type: GlobalSearchResult<br>function: buildGlobalSearchNavigationActions |
 | `apps/workspace/src/components/layout/workspace-global-search/hooks/use-global-search-shortcuts.ts` | function: useGlobalSearchShortcuts<br>function: useGlobalSearchFocus |
-| `apps/workspace/src/components/layout/workspace-global-search/lib/search-utils.ts` | function: isTypingTarget<br>function: normalizeSearchText<br>function: matchesNavigationAction<br>function: toProjectSearchResult<br>function: toClientSearchResult |
+| `apps/workspace/src/components/layout/workspace-global-search/lib/search-utils.ts` | function: isTypingTarget<br>function: normalizeSearchText<br>function: matchesNavigationAction<br>function: toProjectSearchResult<br>function: toClientSearchResult<br>function: toAuthorizedSearchResult |
 | `apps/workspace/src/components/layout/workspace-global-search/workspace-global-search.tsx` | function: WorkspaceGlobalSearch |
 | `apps/workspace/src/components/layout/workspace-link.tsx` | function: WorkspaceLink |
 | `apps/workspace/src/components/loading-ui/skeleton-loading-ui.tsx` | function: Skeleton<br>function: SidebarHeaderSkeleton<br>function: SidebarSectionSkeleton<br>function: SidebarItemSkeleton<br>function: SidebarListItemSkeleton<br>function: AiChatPanelSkeleton<br>function: SpacesPanelSkeleton<br>function: ProjectsPanelSkeleton<br>function: TasksPanelSkeleton<br>function: CalendarPanelSkeleton<br>function: ClientsPanelSkeleton<br>function: OpportunitiesPanelSkeleton<br>function: DealsPanelSkeleton<br>function: DocsPanelSkeleton<br>function: IndexPanelSkeleton |
@@ -1481,11 +1798,12 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/components/shared/page-toolbar.tsx` | interface: PageTab<br>interface: PageToolbarProps<br>function: PageToolbar<br>function: ToolbarSearch<br>function: ToolbarButton<br>function: ToolbarGhostButton<br>function: ToolbarViewToggle |
 | `apps/workspace/src/components/shared/pipeline.tsx` | interface: PipelineColumn<br>interface: PipelineCardProps<br>interface: PipelineProps<br>function: Pipeline |
 | `apps/workspace/src/components/shared/plan-card/plan-card.tsx` | type: PlanCardProps<br>function: PlanCard |
+| `apps/workspace/src/components/shared/project-management-tree/project-management-tree.tsx` | type: ProjectManagementTreeProjection<br>type: ProjectManagementTreeProps<br>function: ProjectManagementTree |
 | `apps/workspace/src/components/shared/query-debug.ts` | type: QueryDebugMetadata<br>type: QueryDebugDetail<br>function: normalizeQueryDebugDetails |
 | `apps/workspace/src/components/shared/record-modal.tsx` | function: RecordModal<br>function: RecordFieldRow |
 | `apps/workspace/src/components/shared/resource-workspace/resource-view-menu.tsx` | function: ResourceViewMenu |
 | `apps/workspace/src/components/shared/resource-workspace/resource-workspace-layout.tsx` | type: ResourceWorkspaceLayoutProps<br>function: useResourceWorkspaceExtension<br>function: ResourceWorkspaceLayout |
-| `apps/workspace/src/components/shared/resource-workspace/types.ts` | type: ResourceWorkspaceView<br>type: ResourceWorkspaceAction<br>type: ResourceViewCatalogSection<br>type: ResourceViewCatalogItem<br>type: ResourceWorkspaceConfig |
+| `apps/workspace/src/components/shared/resource-workspace/types.ts` | type: ResourceWorkspaceView<br>type: ResourceWorkspaceViewAction<br>type: ResourceWorkspaceAction<br>type: ResourceViewCatalogSection<br>type: ResourceViewCatalogItem<br>type: ResourceWorkspaceConfig |
 | `apps/workspace/src/components/shared/review-input.tsx` | type: ReviewInputUser<br>type: ReviewInputSubmission<br>type: ReviewInputProps |
 | `apps/workspace/src/components/shared/share-popover/components/share-invite-dialog.tsx` | function: ShareInviteDialog |
 | `apps/workspace/src/components/shared/share-popover/components/share-mcp-dialog.tsx` | function: ShareMcpDialog |
@@ -1552,10 +1870,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/auth/components/verify-email-client.tsx` | function: VerifyEmailClient |
 | `apps/workspace/src/domains/auth/hooks/use-account-context.ts` | function: AccountProvider<br>function: useAccountContext<br>function: useOptionalAccountContext<br>function: useOrgId<br>function: useUserId |
 | `apps/workspace/src/domains/auth/hooks/use-auth-flow.ts` | type: AuthFlowPhase<br>type: SocialProvider<br>function: useAuthFlow |
-| `apps/workspace/src/domains/auth/hooks/use-organization-entry.ts` | type: UserOrganizationInvitation<br>function: organizationSlugFromName<br>function: useOrganizationEntry |
+| `apps/workspace/src/domains/auth/hooks/use-organization-entry.ts` | type: UserOrganizationInvitation<br>function: useOrganizationEntry |
 | `apps/workspace/src/domains/auth/lib/account-normalizers.ts` | type: AccountContextValue<br>value: defaultAccountNotifications<br>function: accountInitials |
 | `apps/workspace/src/domains/auth/lib/auth-error-utils.ts` | type: SocialProvider<br>value: socialProviderStrategies<br>value: socialRedirectFallbackMs<br>type: AuthErrorMessageKey<br>type: ExternalVerification<br>function: externalVerificationRedirectUrl<br>function: assignExternalRedirect<br>function: localizedAuthError<br>function: isAlreadySignedInError<br>function: toLocalizedPath<br>function: toRouterHref |
 | `apps/workspace/src/domains/auth/organization-context.ts` | interface: OrganizationContext<br>function: OrganizationProvider<br>function: useOrganizationContext<br>function: useOptionalOrganizationContext<br>function: useOrgId |
+| `apps/workspace/src/domains/auth/organization-creation.ts` | function: organizationSlugFromName<br>function: organizationSlugCandidate<br>function: isOrganizationSlugConflict<br>function: createOrganizationWithUniqueSlug |
 | `apps/workspace/src/domains/auth/organization-selection.ts` | type: OrganizationSelection<br>type: AuthResult<br>function: requireOrganizationResult<br>function: selectExistingOrganization<br>function: createAndSelectOrganization<br>function: completeOrganizationEntry |
 | `apps/workspace/src/domains/auth/server-auth-routing.ts` | function: redirectAuthenticatedUserFromAuthEntry<br>function: redirectInvalidChooseOrganizationAccess |
 | `apps/workspace/src/domains/auth/utils/auth-callback-url.ts` | function: createLocaleAuthCallbackUrl<br>function: resolveAuthEntryCallbackUrl |
@@ -1566,6 +1885,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/automations/components/automation-component-palette.tsx` | function: AutomationComponentPalette |
 | `apps/workspace/src/domains/automations/components/automation-inspector.tsx` | function: AutomationInspector |
 | `apps/workspace/src/domains/automations/components/automation-library-dialog.tsx` | function: AutomationLibraryDialog |
+| `apps/workspace/src/domains/automations/components/automation-operations.tsx` | function: AutomationOperations |
 | `apps/workspace/src/domains/automations/components/automation-save-status.tsx` | function: AutomationSaveStatus |
 | `apps/workspace/src/domains/automations/components/automation-step-node.tsx` | function: AutomationStepNode |
 | `apps/workspace/src/domains/automations/components/automations-screen.tsx` | function: AutomationsScreen |
@@ -1573,9 +1893,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/automations/types.ts` | type: AutomationNodeKind<br>type: AutomationNodeType<br>type: AutomationNodeData<br>type: AutomationRecord<br>type: AutomationPersistenceStatus |
 | `apps/workspace/src/domains/billing/api/billing-requests.ts` | function: getBillingOverviewRequest<br>function: getBillingUsageRequest<br>function: createCheckoutRequest<br>function: getPaymentStatusRequest |
 | `apps/workspace/src/domains/billing/components/billing-metric-pill.tsx` | function: BillingMetricPill |
-| `apps/workspace/src/domains/billing/config/plans.config.ts` | value: DEFAULT_BILLING_PLAN_ID<br>value: LEGACY_QENTRAH_PLAN_ID<br>value: DODO_PRODUCT_GOOD_MONTHLY<br>value: DODO_PRODUCT_GOOD_YEARLY<br>value: DODO_PRODUCT_BETTER_MONTHLY<br>value: DODO_PRODUCT_BETTER_YEARLY<br>value: PLAN_CURRENCY<br>type: BillingPlanId<br>type: BillingPlan<br>type: BillingPlanAccess<br>value: GOOD_MONTHLY_PLAN<br>value: GOOD_YEARLY_PLAN<br>value: BETTER_MONTHLY_PLAN<br>value: BETTER_YEARLY_PLAN<br>value: CUSTOM_MONTHLY_PLAN<br>value: CUSTOM_YEARLY_PLAN<br>value: QENTRAH_PLAN_ID<br>value: DODO_PRODUCT_ID<br>value: PRICE_PER_SEAT<br>value: QENTRAH_PLAN<br>value: BILLING_PLANS<br>type: BillingSubscription<br>type: Payment<br>type: BillingOverview<br>type: OrganizationBillingUsage<br>type: BillingUsageState |
+| `apps/workspace/src/domains/billing/components/billing-screen.tsx` | function: BillingScreen |
+| `apps/workspace/src/domains/billing/config/plans.config.ts` | value: DEFAULT_BILLING_PLAN_ID<br>value: LEGACY_QENTRAH_PLAN_ID<br>value: DODO_PRODUCT_GOOD_MONTHLY<br>value: DODO_PRODUCT_GOOD_YEARLY<br>value: DODO_PRODUCT_BETTER_MONTHLY<br>value: DODO_PRODUCT_BETTER_YEARLY<br>value: PLAN_CURRENCY<br>type: BillingPlanId<br>type: BillingPlanAccess<br>type: BillingPlan<br>value: FREE_PLAN<br>value: GOOD_MONTHLY_PLAN<br>value: GOOD_YEARLY_PLAN<br>value: BETTER_MONTHLY_PLAN<br>value: BETTER_YEARLY_PLAN<br>value: CUSTOM_MONTHLY_PLAN<br>value: CUSTOM_YEARLY_PLAN<br>value: QENTRAH_PLAN_ID<br>value: DODO_PRODUCT_ID<br>value: PRICE_PER_SEAT<br>value: QENTRAH_PLAN<br>value: BILLING_PLANS<br>type: BillingSubscription<br>type: Payment<br>type: BillingOverview<br>type: OrganizationBillingUsage<br>type: BillingUsageState |
 | `apps/workspace/src/domains/billing/hooks/use-billing-checkout.ts` | function: useBillingCheckout |
 | `apps/workspace/src/domains/billing/hooks/use-billing-queries.ts` | function: useBillingOverview<br>function: useBillingUsage |
+| `apps/workspace/src/domains/billing/hooks/use-organization-entitlements.ts` | function: useOrganizationEntitlements |
 | `apps/workspace/src/domains/billing/lib/billing-formatters.ts` | type: BillingLocale<br>function: billingDateLabel<br>function: subscriptionTone<br>function: billingPriceLabel<br>function: seatTotalLabel<br>function: billingPricePerSeatLabel |
 | `apps/workspace/src/domains/billing/lib/billing-helpers.ts` | function: normalizePlanId<br>function: getPlanById<br>function: isYearlyPlan<br>function: isContactSales<br>function: planDisplayName<br>function: getPlanAccess<br>function: canInviteMember<br>function: canCreateAiCard<br>function: canUseEnterpriseControls<br>function: billableMemberUnits<br>function: subscriptionTotalForMembers<br>function: totalPriceForSeats<br>function: fallbackBillingOverview<br>function: fallbackBillingUsage |
 | `apps/workspace/src/domains/cache/hooks/use-optimistic-invalidation.ts` | type: ResourceType<br>type: InvalidationTarget<br>function: useOptimisticInvalidation |
@@ -1630,6 +1952,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/clients/store/client-invoices.types.ts` | type: ClientInvoiceStatus<br>interface: ClientInvoicePayload<br>interface: ClientInvoice |
 | `apps/workspace/src/domains/clients/store/clients.types.ts` | type: Priority<br>type: PipelineStage<br>type: ClientAssetLinkStatus<br>interface: ClientAssetLink<br>type: ClientTaskStatus<br>interface: ClientTask |
 | `apps/workspace/src/domains/clients/validation/client.schema.ts` | value: clientSchema<br>interface: ClientFormValues |
+| `apps/workspace/src/domains/crm/components/crm-directory-screen.tsx` | function: CrmDirectoryScreen |
 | `apps/workspace/src/domains/custom-fields/api/custom-fields.ts` | type: CustomFieldDefinition<br>type: CustomFieldValue<br>function: useCustomFieldDefinitionsQuery<br>function: useCustomFieldDefinitionsForTableQuery<br>function: useCustomFieldValuesQuery<br>function: useAllCustomFieldValuesQuery<br>function: useCreateCustomFieldDefinitionMutation<br>function: useUpdateCustomFieldDefinitionMutation<br>function: useDeleteCustomFieldDefinitionMutation<br>function: useUpsertCustomFieldValueMutation<br>function: useDeleteCustomFieldValueMutation |
 | `apps/workspace/src/domains/custom-fields/components/custom-fields-settings.tsx` | function: CustomFieldsSettings |
 | `apps/workspace/src/domains/custom-fields/config/field-types.config.ts` | value: CUSTOM_FIELD_TYPES<br>value: CUSTOM_FIELD_RECORD_TYPES |
@@ -1647,6 +1970,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/deals/lib/deal-view-model.ts` | value: dealStages<br>value: activeDealStages<br>value: dealViews<br>function: stageTone<br>function: priorityTone<br>function: formatValue<br>function: formatTotalValue<br>function: formFromDeal<br>function: dealValuesForStage<br>function: matchesDealSearch |
 | `apps/workspace/src/domains/deals/store/deals.types.ts` | type: DealStats<br>type: DealFormValues |
 | `apps/workspace/src/domains/deals/validation/deal.schema.ts` | value: dealStageSchema<br>value: dealStatusSchema<br>value: dealPrioritySchema<br>value: dealSchema<br>type: DealSchemaValues |
+| `apps/workspace/src/domains/delivery/components/commercial-lifecycle-screen.tsx` | function: CommercialLifecycleScreen |
+| `apps/workspace/src/domains/delivery/components/delivery-screen.tsx` | function: DeliveryScreen |
 | `apps/workspace/src/domains/docs/api/docs.ts` | function: useDocsQuery<br>function: useDocQuery<br>function: useDocSearchQuery<br>function: useDocFoldersQuery<br>function: docFolderPayloadFromForm<br>function: createDocRequest<br>function: updateDocRequest<br>function: useUpdateDocMutation<br>function: deleteDocRequest<br>function: moveDocRequest<br>function: createDocFolderRequest<br>function: renameDocFolderRequest<br>function: deleteDocFolderRequest |
 | `apps/workspace/src/domains/docs/components/DocsPageRedesigned.tsx` | function: DocsPageRedesigned |
 | `apps/workspace/src/domains/docs/components/custom-fields-modal.tsx` | function: CustomFieldsModal |
@@ -1672,6 +1997,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/eve/client.ts` | function: getEveClient |
 | `apps/workspace/src/domains/eve/hooks/use-eve-chat.ts` | type: FlattenedMessage<br>type: EveActionProgressItem<br>type: EveActionProgress<br>function: useEveChat |
 | `apps/workspace/src/domains/eve/threads-store.ts` | interface: ThreadStorageEntry<br>interface: ThreadMeta<br>function: threadKey<br>function: indexKey<br>function: threadBelongsToOrg<br>function: listThreads<br>function: getThread<br>function: saveThread<br>function: deleteThread<br>function: renameThread<br>function: generateThreadId |
+| `apps/workspace/src/domains/finance/components/finance-command-panel.tsx` | function: FinanceCommandPanel |
+| `apps/workspace/src/domains/finance/components/finance-screen.tsx` | function: FinanceScreen |
 | `apps/workspace/src/domains/inbox/api/inbox.ts` | type: ChannelPayload<br>type: MessagePayload<br>function: useListChannels<br>function: useGetChannel<br>function: createChannelRequest<br>function: updateChannelRequest<br>function: deleteChannelRequest<br>function: useListMessages<br>function: usePaginatedMessages<br>function: sendMessageRequest<br>function: updateMessageRequest<br>function: deleteMessageRequest<br>function: addReactionRequest<br>function: removeReactionRequest<br>function: pinMessageRequest<br>function: unpinMessageRequest<br>function: useGetThread<br>function: createThreadRequest |
 | `apps/workspace/src/domains/inbox/components/ai-reply-bubble.tsx` | function: AiReplyBubble |
 | `apps/workspace/src/domains/inbox/components/channel-info-modal.tsx` | type: ChannelSettingsInput<br>function: ChannelInfoModal |
@@ -1681,12 +2008,12 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/inbox/components/create-channel-modal.tsx` | function: CreateChannelModal |
 | `apps/workspace/src/domains/inbox/components/create-channel-wizard.tsx` | function: CreateChannelWizard |
 | `apps/workspace/src/domains/inbox/components/inbox-activity-screen.tsx` | function: InboxActivityScreen |
+| `apps/workspace/src/domains/inbox/components/inbox-assigned-comments-screen.tsx` | function: InboxAssignedCommentsScreen |
 | `apps/workspace/src/domains/inbox/components/inbox-channel-screen.tsx` | function: InboxChannelScreen |
 | `apps/workspace/src/domains/inbox/components/inbox-channels-screen.tsx` | function: InboxChannelsScreen |
 | `apps/workspace/src/domains/inbox/components/inbox-command-palette.tsx` | function: InboxCommandPalette |
 | `apps/workspace/src/domains/inbox/components/inbox-empty-state.tsx` | function: InboxEmptyState |
 | `apps/workspace/src/domains/inbox/components/inbox-posts-screen.tsx` | function: InboxPostsScreen |
-| `apps/workspace/src/domains/inbox/components/inbox-primary-items.ts` | type: PrimaryFilter<br>type: NotificationEvent<br>type: PrimaryInboxItem<br>function: buildPrimaryInboxItems |
 | `apps/workspace/src/domains/inbox/components/inbox-primary-screen.tsx` | function: InboxPrimaryScreen |
 | `apps/workspace/src/domains/inbox/components/inbox-replies-screen.tsx` | function: InboxRepliesScreen |
 | `apps/workspace/src/domains/inbox/components/inbox-route-header.tsx` | function: InboxRouteHeader |
@@ -1700,6 +2027,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/inbox/components/search-filter-bar.tsx` | function: SearchFilterBar |
 | `apps/workspace/src/domains/inbox/hooks/use-ai-mention-reply.ts` | function: useAiMentionReply<br>function: hasAiMention |
 | `apps/workspace/src/domains/inbox/hooks/use-composer-mention-options.ts` | function: useComposerMentionOptions |
+| `apps/workspace/src/domains/inbox/hooks/use-inbox-attention.ts` | type: InboxAttentionView<br>type: InboxAttentionFilter<br>type: InboxReplyStatus<br>function: useInboxAttention<br>function: useInboxReplies |
 | `apps/workspace/src/domains/inbox/hooks/use-inbox-message-sound.ts` | function: useInboxMessageSound |
 | `apps/workspace/src/domains/inbox/hooks/use-inbox.ts` | function: useChannelsQuery<br>function: useChannelQuery<br>function: useCreateChannelMutation<br>function: useUpdateChannelMutation<br>function: useDeleteChannelMutation<br>function: useMessagesQuery<br>function: useLoadMoreMessages<br>function: useSendMessageMutation<br>function: usePinMessageMutation<br>function: useUnpinMessageMutation<br>function: useUpdateMessageMutation<br>function: useDeleteMessageMutation<br>function: useAddReactionMutation<br>function: useRemoveReactionMutation<br>function: useThreadQuery<br>function: useCreateThreadMutation<br>function: useInboxState |
 | `apps/workspace/src/domains/inbox/lib/ai-response-format.ts` | function: formatAiResponseText |
@@ -1737,7 +2065,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/media/media-upload-view-model.ts` | type: UploadQueueStatus<br>type: MediaUploadLabels<br>type: UploadQueueItem<br>value: defaultMediaUploadLabels<br>function: mergeMediaUploadLabels<br>function: mediaUploadAccept<br>function: userFacingUploadError<br>function: createQueueItem<br>function: appendUploadQueueItems<br>function: uploadQueueItemsById<br>function: markUploadQueueItemUploading<br>function: markUploadQueueItemUploaded<br>function: markUploadQueueItemFailed<br>function: markUploadQueueBatchFailed<br>function: removeUploadQueueItem<br>function: queuedUploadItemIds<br>function: uploadFileSizeLabel<br>function: selectAcceptedMediaFiles<br>function: resourceMediaUploadState<br>function: removePendingMediaFileAt<br>function: uploadQueueStatusPresentation |
 | `apps/workspace/src/domains/navigation/canonical-redirect.ts` | type: PageSearchParams<br>function: buildCanonicalRedirectPath |
 | `apps/workspace/src/domains/navigation/navigation-context.tsx` | function: NavigationProvider<br>function: useNavigation |
-| `apps/workspace/src/domains/navigation/route-catalog.ts` | type: RailItemId<br>value: ROUTE_IDS<br>type: RouteId<br>interface: RouteCatalogEntry<br>value: ROUTE_CATALOG<br>function: getRouteEntry<br>function: getRouteId<br>function: getActiveRailItem<br>function: getSupportedPersistentParams<br>function: isInternalHref |
+| `apps/workspace/src/domains/navigation/route-catalog.ts` | type: RailItemId<br>value: ROUTE_IDS<br>type: RouteId<br>interface: RouteCatalogEntry<br>value: ROUTE_CATALOG<br>function: getRouteEntry<br>function: getRouteId<br>function: getActiveRailItem<br>function: getSupportedPersistentParams<br>function: getRoutePath<br>function: getRoutePathById<br>function: isInternalHref |
 | `apps/workspace/src/domains/navigation/types.ts` | type: NavLevel<br>interface: NavState<br>interface: NavActions |
 | `apps/workspace/src/domains/navigation/workspace-route-policy.ts` | type: WorkspaceRouteClass<br>interface: LocalizedPath<br>function: splitLocalizedPath<br>function: classifyWorkspaceRoute<br>function: localizedEvePath<br>function: isLocalizedWorkspaceRoot<br>function: getSubdomainLabel<br>function: buildSignInPath<br>value: workspaceRoutePolicy |
 | `apps/workspace/src/domains/notifications/api/notifications.ts` | type: NotificationCategory<br>type: NotificationSourceType<br>type: NotificationTrigger<br>type: NotificationPreference<br>type: NotificationSchedule<br>type: PushDeviceStatus<br>value: defaultNotificationPreference<br>function: getPushDeviceStatus<br>function: getMyNotificationPreferences<br>function: updateMyNotificationPreferences<br>function: getOrganizationNotificationPreferences<br>function: updateOrganizationNotificationPreferences<br>function: listNotificationSchedules |
@@ -1769,6 +2097,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/organization/api/update-profile.ts` | function: updateOrganizationProfileRequest |
 | `apps/workspace/src/domains/organization/api/use-update-profile.ts` | function: useUpdateOrganizationProfileMutation |
 | `apps/workspace/src/domains/organization/components/accept-invite-screen.tsx` | function: AcceptInviteScreen |
+| `apps/workspace/src/domains/organization/components/admin-configuration-screen.tsx` | function: AdminConfigurationScreen |
 | `apps/workspace/src/domains/organization/components/organization-logo-uploader.tsx` | function: OrganizationLogoUploader |
 | `apps/workspace/src/domains/organization/components/panels/agent-links-panel.tsx` | function: AgentLinksPanel |
 | `apps/workspace/src/domains/organization/components/panels/api-keys-panel.tsx` | function: ApiKeysPanel |
@@ -1813,8 +2142,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/profile/profile-view-model.ts` | type: ProfileTab<br>type: ProfileTabSpec<br>type: ProfileRolePresentation<br>value: profileTabs<br>function: profileInitials<br>function: profileFormValues<br>function: profileRolePresentation<br>function: profileNotificationEntries |
 | `apps/workspace/src/domains/profile/store/profile.types.ts` | interface: ProfileSettings |
 | `apps/workspace/src/domains/profile/validation/profile.schema.ts` | value: profileSchema<br>type: ProfileFormValues |
+| `apps/workspace/src/domains/projects/api/project-workspace.ts` | function: useProjectWorkspaceSurface<br>function: useCreateProjectViewTab<br>function: useRenameProjectViewTab<br>function: useDuplicateProjectViewTab<br>function: useDetachProjectViewTab<br>function: useReorderProjectViewTabs<br>function: useUpdateProjectViewConfig |
 | `apps/workspace/src/domains/projects/api/projects.ts` | value: PROJECTS_PAGE_SIZE<br>function: useProjectsPagedQuery<br>function: useProjectsIndexQuery<br>function: useProjectOptionsQueryResult<br>function: useProjectQuery<br>function: useProjectTaskCounts<br>value: projectApi<br>value: createProjectRequest<br>value: updateProjectRequest<br>value: deleteProjectRequest |
-| `apps/workspace/src/domains/projects/components/ProjectsPageRedesigned.tsx` | function: ProjectsPageRedesigned |
 | `apps/workspace/src/domains/projects/components/add-project-widget-modal.tsx` | type: ProjectWidgetType<br>interface: ProjectWidgetOption<br>function: AddProjectWidgetModal |
 | `apps/workspace/src/domains/projects/components/add-widget-modal.tsx` | type: WidgetType<br>interface: WidgetOption<br>function: AddWidgetModal |
 | `apps/workspace/src/domains/projects/components/client-picker-modal.tsx` | function: ClientPickerModal |
@@ -1838,15 +2167,21 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/projects/components/project-list-view.tsx` | function: ProjectListView |
 | `apps/workspace/src/domains/projects/components/project-overview-sidebar.tsx` | function: ProjectOverviewSidebar |
 | `apps/workspace/src/domains/projects/components/project-pickers.tsx` | function: ProjectStatusPicker<br>function: ProjectHealthPicker<br>type: ClientOption<br>function: ClientInlinePicker |
+| `apps/workspace/src/domains/projects/components/project-resource-layout.tsx` | function: ProjectResourceLayout |
 | `apps/workspace/src/domains/projects/components/project-tabs.tsx` | function: ProjectTabs |
 | `apps/workspace/src/domains/projects/components/project-tags-settings.tsx` | function: ProjectTagsSettings |
 | `apps/workspace/src/domains/projects/components/projects-overview-dashboard.tsx` | function: ProjectsOverviewDashboard |
 | `apps/workspace/src/domains/projects/components/projects-page-skeleton.tsx` | function: ProjectsPageSkeleton |
 | `apps/workspace/src/domains/projects/components/projects-router.tsx` | function: ProjectsRouter |
+| `apps/workspace/src/domains/projects/components/views/project-board-view.tsx` | function: ProjectBoardView |
+| `apps/workspace/src/domains/projects/components/views/project-calendar-view.tsx` | function: ProjectCalendarView |
+| `apps/workspace/src/domains/projects/components/views/project-dashboard-view.tsx` | function: ProjectDashboardView |
+| `apps/workspace/src/domains/projects/components/views/project-list-collection-view.tsx` | function: ProjectListCollectionView |
+| `apps/workspace/src/domains/projects/components/views/project-table-view.tsx` | function: ProjectTableView |
+| `apps/workspace/src/domains/projects/components/views/project-timeline-view.tsx` | function: ProjectTimelineView |
+| `apps/workspace/src/domains/projects/components/views/project-view-states.tsx` | function: ProjectViewLoading<br>function: ProjectViewError<br>function: ProjectViewEmpty |
 | `apps/workspace/src/domains/projects/components/views/shared.ts` | value: STATUS_COLORS<br>value: PRIORITY_COLORS<br>function: statusStyleFor<br>function: priorityStyleFor<br>value: COUNTRY_FLAGS |
-| `apps/workspace/src/domains/projects/components/views/task-calendar-view.tsx` | function: TaskCalendarView |
 | `apps/workspace/src/domains/projects/components/views/task-map-view.tsx` | function: TaskMapView |
-| `apps/workspace/src/domains/projects/components/views/task-timeline-view.tsx` | function: TaskTimelineView |
 | `apps/workspace/src/domains/projects/components/widgets/assignee-widget.tsx` | function: AssigneeWidget |
 | `apps/workspace/src/domains/projects/components/widgets/bookmarks-widget.tsx` | function: BookmarksWidget |
 | `apps/workspace/src/domains/projects/components/widgets/budget-chart-widget.tsx` | function: BudgetChartWidget |
@@ -1865,15 +2200,26 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/projects/components/widgets/workload-chart-widget.tsx` | function: WorkloadChartWidget |
 | `apps/workspace/src/domains/projects/hooks/use-current-project-id.ts` | function: normalizeCurrentProjectId<br>function: useCurrentProjectId |
 | `apps/workspace/src/domains/projects/hooks/use-dashboard-persistence.ts` | interface: DashboardConfig<br>function: mergeDashboardPatches<br>function: useDashboardPersistence |
+| `apps/workspace/src/domains/projects/hooks/use-project-collection-view.ts` | function: useProjectCollectionView |
 | `apps/workspace/src/domains/projects/hooks/use-project-switcher.ts` | function: useProjectSwitcher |
 | `apps/workspace/src/domains/projects/lib/project-view-model.ts` | value: projectFilters<br>value: projectViews<br>value: monthFormatter<br>value: weekdayFormatter<br>function: toggleProjectAssetType<br>function: matchesProjectSearch<br>function: projectFormDefaults<br>function: parseIsoDate<br>function: projectDateDisplayLabel<br>function: nextProjectCalendarMonth<br>function: projectWeekdayLabels<br>function: formatIsoDate<br>function: calendarDaysForMonth<br>function: statusTone<br>function: projectDocumentAssets<br>function: projectLocationLabel<br>function: projectInventoryMetrics<br>function: projectMovementWidth<br>function: compactProjectDetailRows |
 | `apps/workspace/src/domains/projects/store/projects.types.ts` | type: Project |
-| `apps/workspace/src/domains/projects/validation/project.schema.ts` | value: projectStatuses<br>value: projectHealths<br>value: projectSchema<br>type: ProjectFormValues |
+| `apps/workspace/src/domains/projects/validation/project.schema.ts` | value: projectStatuses<br>value: projectHealths<br>value: projectSchema<br>type: ProjectFormInput<br>type: ProjectFormValues |
+| `apps/workspace/src/domains/projects/workspace/project-workspace.ts` | value: PROJECT_VIEW_TYPES<br>type: ProjectViewType<br>type: ProjectWorkspaceSurfaceTab<br>type: ProjectWorkspaceSurfaceProjection<br>function: isProjectViewType<br>function: projectViewRoute<br>function: defaultProjectViewConfig |
+| `apps/workspace/src/domains/reports/components/reports-screen.tsx` | function: ReportsScreen |
+| `apps/workspace/src/domains/resource-planning/components/resource-planning-command-panel.tsx` | function: ResourcePlanningCommandPanel |
+| `apps/workspace/src/domains/resource-planning/components/resource-planning-screen.tsx` | function: ResourcePlanningScreen |
 | `apps/workspace/src/domains/resources/fetch.ts` | function: workspaceFetch<br>function: workspaceMutation |
 | `apps/workspace/src/domains/resources/hooks.ts` | function: useWorkspacePagedResource<br>function: useWorkspaceIndexedResource<br>function: useWorkspaceResource<br>function: useWorkspaceResourceResult |
 | `apps/workspace/src/domains/resources/resource-api-factory.ts` | type: ResourceApiConfig<br>type: ResourceApi<br>function: createResourceApi |
 | `apps/workspace/src/domains/resources/routing.ts` | function: organizationApiPath |
 | `apps/workspace/src/domains/resources/types.ts` | type: WorkspaceResourceFilters |
+| `apps/workspace/src/domains/search/api/saved-searches.ts` | type: SavedSearch<br>type: RecentSearch<br>function: useSavedSearches<br>function: useRecentSearches<br>function: useSavedSearchCommands |
+| `apps/workspace/src/domains/search/api/search.ts` | function: useAuthorizedSearchQuery |
+| `apps/workspace/src/domains/search/components/search-center-screen.tsx` | function: SearchCenterScreen |
+| `apps/workspace/src/domains/search/components/search-policy-screen.tsx` | function: SearchPolicyScreen |
+| `apps/workspace/src/domains/search/normalization.ts` | function: normalizeSearchText |
+| `apps/workspace/src/domains/search/search-center-state.ts` | function: searchConfigurationFromParams<br>function: paramsFromSearchConfiguration<br>function: searchFilterCount<br>function: dateInputValue |
 | `apps/workspace/src/domains/settings/components/workspace-settings-screen.tsx` | function: WorkspaceSettingsScreen |
 | `apps/workspace/src/domains/settings/config/settings-navigation.ts` | value: SETTINGS_SECTIONS<br>type: SettingsSectionId<br>function: isSettingsSection |
 | `apps/workspace/src/domains/spaces/api/spaces.ts` | interface: Space<br>function: useWorkspaceSpacesQuery<br>function: useSpaceOptionsQuery<br>function: useSpaceQuery<br>function: createSpaceRequest<br>function: updateSpaceRequest<br>function: deleteSpaceRequest |
@@ -1892,8 +2238,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/storage/use-indexeddb-config.ts` | interface: UseIndexedDbConfigOptions<br>function: useIndexedDbConfig |
 | `apps/workspace/src/domains/storage/use-local-config.ts` | function: useLocalConfig |
 | `apps/workspace/src/domains/tasks/api/fields.ts` | type: WorkOsCustomFieldType<br>interface: CustomFieldOption<br>interface: CustomFieldDefinition<br>value: POPULAR_FIELD_TYPES<br>value: ALL_FIELD_TYPES<br>function: useFieldDefinitionsQuery<br>function: useFieldValuesQuery<br>function: createCustomFieldRequest<br>function: updateCustomFieldDisplayRequest<br>function: deleteCustomFieldRequest<br>function: setCustomFieldValueRequest |
-| `apps/workspace/src/domains/tasks/api/saved-views.ts` | type: SavedViewResourceType<br>type: SavedViewType<br>type: SavedViewFilterValue<br>interface: SavedViewConfig<br>type: SavedViewScope<br>interface: SavedViewRecord<br>interface: ListSavedViewsArgs<br>function: useSavedViewsQuery<br>function: useDefaultSavedViewQuery<br>interface: CreateSavedViewInput<br>function: useCreateSavedViewMutation<br>interface: UpdateSavedViewInput<br>function: useUpdateSavedViewMutation<br>function: useDeleteSavedViewMutation<br>function: useSetDefaultSavedViewMutation |
 | `apps/workspace/src/domains/tasks/api/tasks.ts` | type: GroupBy<br>function: readPersistedGroupBy<br>function: writePersistedGroupBy<br>function: useTasksQuery<br>function: useTaskWorkspaceQuery<br>function: useTasksGroupedQuery<br>function: useTaskStatsQuery<br>function: useTaskQuery<br>function: taskPayloadFromForm<br>function: taskFormValuesFromRecord<br>value: taskApi<br>value: createTaskRequest<br>value: updateTaskRequest<br>value: deleteTaskRequest<br>function: assignTasksToProjectRequest<br>function: bulkTasksRequest |
+| `apps/workspace/src/domains/tasks/components/saved-view-sharing-dialog.tsx` | function: SavedViewSharingDialog |
 | `apps/workspace/src/domains/tasks/components/saved-views-dropdown.tsx` | interface: SavedViewsDropdownProps<br>function: SavedViewsDropdown |
 | `apps/workspace/src/domains/tasks/components/slash-command-menu.tsx` | interface: SlashMenuItem<br>function: SlashCommandMenu<br>function: getSlashCommandItems |
 | `apps/workspace/src/domains/tasks/components/task-calendar-skeleton.tsx` | function: TaskCalendarSkeleton |
@@ -1903,7 +2249,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/tasks/components/task-list-skeleton.tsx` | function: TaskListSkeleton |
 | `apps/workspace/src/domains/tasks/components/task-pickers.tsx` | function: StatusPicker<br>function: PriorityPicker<br>function: AssigneePicker<br>type: ProjectOption<br>function: ProjectPicker |
 | `apps/workspace/src/domains/tasks/components/task-resource-layout.tsx` | function: TaskResourceLayout |
-| `apps/workspace/src/domains/tasks/components/task-route-adapters.tsx` | function: TaskBoardRouteAdapter<br>function: TaskListRouteAdapter<br>function: TaskTableRouteAdapter |
+| `apps/workspace/src/domains/tasks/components/task-route-adapters.tsx` | function: TaskBoardRouteAdapter<br>function: TaskListRouteAdapter<br>function: TaskTableRouteAdapter<br>function: TaskCalendarRouteAdapter<br>function: TaskTimelineRouteAdapter |
 | `apps/workspace/src/domains/tasks/components/task-table-fields-panel.tsx` | function: TaskTableFieldsPanel |
 | `apps/workspace/src/domains/tasks/components/task-table-filter-rules.tsx` | type: FilterField<br>type: FilterOperator<br>interface: FilterRule<br>function: FilterRulesEditor<br>function: applyFilterRules |
 | `apps/workspace/src/domains/tasks/components/task-table-skeleton.tsx` | function: TaskTableSkeleton |
@@ -1911,9 +2257,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/tasks/components/task-timeline-skeleton.tsx` | function: TaskTimelineSkeleton |
 | `apps/workspace/src/domains/tasks/components/task-workspace-provider.tsx` | function: TaskWorkspaceProvider<br>function: useTaskWorkspace |
 | `apps/workspace/src/domains/tasks/components/views/task-board-view.tsx` | function: TaskBoardView |
+| `apps/workspace/src/domains/tasks/components/views/task-calendar-workspace-view.tsx` | function: TaskCalendarWorkspaceView |
 | `apps/workspace/src/domains/tasks/components/views/task-list-view.tsx` | function: TaskListView |
 | `apps/workspace/src/domains/tasks/components/views/task-route-shared.tsx` | function: TaskRouteState<br>function: TaskRoutePagination |
 | `apps/workspace/src/domains/tasks/components/views/task-table-view.tsx` | function: TaskTableView |
+| `apps/workspace/src/domains/tasks/components/views/task-timeline-workspace-view.tsx` | function: TaskTimelineWorkspaceView |
 | `apps/workspace/src/domains/tasks/components/views/task-view-frame.tsx` | function: TaskViewFrame |
 | `apps/workspace/src/domains/tasks/hooks/use-task-mention-options.ts` | function: useTaskMentionOptions<br>function: useMemberOptions |
 | `apps/workspace/src/domains/tasks/hooks/use-task-mutations.ts` | interface: CreateTaskInput<br>function: patchTaskInListData<br>function: useTaskMutations |
@@ -1925,6 +2273,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/tasks/tasks.types.ts` | type: TaskVisibility<br>type: TaskRecord<br>type: TaskFormValues<br>type: TaskStats |
 | `apps/workspace/src/domains/tasks/workspace/task-bulk.ts` | type: TaskBulkAction<br>type: TaskBulkFailureReason<br>interface: TaskBulkOutcome<br>interface: TaskBulkResult<br>type: TaskBulkCommand |
 | `apps/workspace/src/domains/tasks/workspace/task-quick-create.ts` | interface: TaskQuickCreateDraft<br>interface: TaskQuickCreateResult<br>type: TaskQuickCreateCommand<br>function: normalizeTaskQuickCreateDraft<br>function: runTaskQuickCreate |
+| `apps/workspace/src/domains/tasks/workspace/task-schedule.ts` | type: ScheduledTask<br>function: dateKey<br>function: scheduleTasks<br>function: timelineRange<br>function: timelinePosition |
 | `apps/workspace/src/domains/tasks/workspace/task-workspace-state.ts` | type: TaskWorkspaceState<br>function: resolveTaskWorkspaceState |
 | `apps/workspace/src/domains/tasks/workspace/task-workspace-view-state.ts` | value: taskWorkspaceFilters<br>type: TaskWorkspaceGroup<br>type: TaskWorkspaceSort<br>type: TaskWorkspaceDirection<br>interface: TaskWorkspaceViewState<br>value: defaultTaskWorkspaceViewState<br>function: parseTaskWorkspaceViewState<br>function: writeTaskWorkspaceViewState<br>function: resolveTaskWorkspaceViewHref<br>function: taskWorkspaceStateToSavedView<br>function: taskWorkspaceStateFromSavedView<br>function: selectTaskWorkspaceRecords |
 | `apps/workspace/src/domains/team/components/TeamPageRedesigned.tsx` | type: TeamSurfaceState<br>value: teamAvailableViews<br>value: teamHeaderActions<br>function: buildTeamRows<br>function: getTeamSurfaceState<br>function: normalizeTeamRole<br>function: teamPermissionState<br>function: teamRolePresentation<br>function: TeamPageRedesigned |
@@ -1946,6 +2295,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/usage/components/usage-state-panel.tsx` | function: UsageStatePanel |
 | `apps/workspace/src/domains/usage/config/usage-tabs.config.ts` | type: UsageTab<br>value: USAGE_TABS |
 | `apps/workspace/src/domains/usage/lib/usage-formatters.ts` | type: UsageLocale<br>type: UsagePlanIntervalLabels<br>function: usageMoneyLabel<br>function: usageDateLabel<br>function: usagePlanPriceLabel |
+| `apps/workspace/src/domains/views/api/saved-views.ts` | type: SavedViewResourceType<br>type: SavedViewType<br>type: SavedViewFilterValue<br>type: SavedViewDashboardWidget<br>type: ProjectSavedViewSettings<br>interface: SavedViewConfig<br>type: SavedViewScope<br>interface: SavedViewRecord<br>interface: ListSavedViewsArgs<br>function: useSavedViewsQuery<br>function: useDefaultSavedViewQuery<br>function: useTrackedViewMutation<br>interface: CreateSavedViewInput<br>function: useCreateSavedViewMutation<br>interface: UpdateSavedViewInput<br>interface: SavedViewGrant<br>function: useSavedViewGrantsQuery<br>function: useUpdateSavedViewMutation<br>function: useDeleteSavedViewMutation<br>function: useSetDefaultSavedViewMutation<br>function: useShareSavedViewMutation<br>function: useMakeSavedViewPersonalMutation |
 | `apps/workspace/src/domains/work-os/components/work-os-module-screen.tsx` | function: WorkOsModuleScreen |
 | `apps/workspace/src/domains/work-os/components/work-os-record-drawer.tsx` | function: WorkOsRecordDrawer |
 | `apps/workspace/src/domains/work-os/components/work-os-record-picker.tsx` | type: WorkOsPickerOption<br>function: WorkOsRecordPicker |
@@ -1991,11 +2341,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/server/auth/auth-request.ts` | type: AuthRequestSession<br>type: AuthRequestContext<br>function: runWithAuthHeaders<br>function: getRequestHeaders<br>value: authRequestStore<br>function: isAuthenticated<br>function: getConvexToken<br>function: fetchAuthenticatedQuery<br>function: fetchAuthenticatedMutation<br>function: fetchAuthenticatedAction<br>function: callBetterAuth<br>function: getAuthRequestSession<br>function: getSessionUserId |
 | `apps/workspace/src/server/config/agent-runtime.ts` | function: normalizeOpenRouterModelId<br>function: parseOpenRouterModelList<br>function: getOpenRouterModelCandidates<br>value: agentRuntimeConfig |
 | `apps/workspace/src/server/convex/http-client.ts` | value: convexHttp<br>value: convexCalls |
-| `apps/workspace/src/server/domains/billing/handlers/billing.ts` | function: handleGetBillingSubscription<br>function: handleGetBillingUsage<br>function: handleCreateCheckout<br>function: handleGetPaymentStatus<br>function: handleDodoWebhook |
+| `apps/workspace/src/server/domains/billing/handlers/billing.ts` | function: handleGetBillingSubscription<br>function: handleSchedulePlanChange<br>function: handleSubscriptionCancellation<br>function: handleCreateCustomerPortal<br>function: handleCreateCreditCheckout<br>function: handleGetBillingUsage<br>function: handleCreateCheckout<br>function: handleGetPaymentStatus |
 | `apps/workspace/src/server/domains/billing/routing.ts` | value: billingRouter |
 | `apps/workspace/src/server/domains/billing/services/billing-period.ts` | function: nextBillingPeriod |
-| `apps/workspace/src/server/domains/billing/services/billing.ts` | type: OrganizationBillingUsage<br>function: getBillingSubscription<br>function: getBillingUsage<br>function: recordAgentCreditUsage<br>function: createBillingCheckout<br>function: getBillingPaymentStatus<br>function: processDodoWebhook |
-| `apps/workspace/src/server/domains/billing/validation/billing.schema.ts` | value: billingCheckoutSchema<br>value: dodoWebhookSchema<br>type: BillingCheckoutPayload<br>type: DodoWebhookPayload |
+| `apps/workspace/src/server/domains/billing/services/billing.ts` | function: getBillingSubscription<br>function: getBillingUsage<br>function: recordAgentCreditUsage<br>function: createBillingCheckout<br>function: getBillingPaymentStatus<br>function: createCreditPurchaseCheckout<br>function: createCustomerPortal<br>function: setSubscriptionCancellation<br>function: scheduleSubscriptionPlan<br>function: syncSubscriptionSeats |
+| `apps/workspace/src/server/domains/billing/validation/billing.schema.ts` | value: billingCheckoutSchema<br>value: billingCreditCheckoutSchema<br>value: billingCancellationSchema<br>value: billingPlanChangeSchema<br>type: BillingCheckoutPayload<br>type: BillingCreditCheckoutPayload |
 | `apps/workspace/src/server/domains/calendar/handlers/calendar-read.ts` | function: handleReadCalendarEvents<br>function: handleReadCalendarStats<br>function: handleReadCalendarIndex<br>function: handleReadUpcomingCalendarEvents |
 | `apps/workspace/src/server/domains/calendar/validation/calendar.schema.ts` | value: calendarEventPayloadSchema<br>type: CalendarEventPayload<br>function: floatingDateTimeToTimestamp |
 | `apps/workspace/src/server/domains/clientFollowUps/handlers/follow-ups.ts` | function: handleMarkFollowUpComplete |
@@ -2020,6 +2370,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/server/domains/docs/services/doc-folders.ts` | function: createDocFolder<br>function: renameDocFolder<br>function: deleteDocFolder |
 | `apps/workspace/src/server/domains/docs/services/docs.ts` | function: createDoc<br>function: updateDoc<br>function: deleteDoc<br>function: moveDoc |
 | `apps/workspace/src/server/domains/docs/validation/doc.schema.ts` | value: docPayloadSchema<br>type: DocPayload<br>value: docMoveSchema<br>type: DocMovePayload<br>value: docFolderPayloadSchema<br>type: DocFolderPayload<br>value: docFolderRenameSchema<br>type: DocFolderRenamePayload |
+| `apps/workspace/src/server/domains/finance/handlers/finance.ts` | function: handleFinanceOverview<br>function: handleFinanceRecords<br>function: handleCreateFinanceInvoice<br>function: handlePostFinanceInvoice<br>function: handleRecordFinancePayment |
+| `apps/workspace/src/server/domains/finance/validation/finance.schema.ts` | value: financeInvoiceCommandSchema<br>value: financePaymentCommandSchema |
 | `apps/workspace/src/server/domains/inbox/handlers/inbox.ts` | function: handleSendMessage<br>function: handleUpdateMessage<br>function: handleDeleteMessage<br>function: handleAddReaction<br>function: handleRemoveReaction<br>function: handlePinMessage<br>function: handleUnpinMessage<br>function: handleCreateThread |
 | `apps/workspace/src/server/domains/inbox/validation/inbox.schema.ts` | value: channelPayloadSchema<br>value: messagePayloadSchema<br>value: messageContentPayloadSchema<br>value: reactionPayloadSchema<br>value: threadPayloadSchema<br>type: ChannelPayload<br>type: MessagePayload<br>type: MessageContentPayload<br>type: ReactionPayload<br>type: ThreadPayload |
 | `apps/workspace/src/server/domains/media/handlers/media.ts` | function: handleDeleteMedia<br>function: handleAttachMedia<br>function: handleCreateMediaFolder<br>function: handleDeleteMediaFolder |
@@ -2042,6 +2394,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/server/domains/organization/handlers/workspace-read-surface.ts` | function: readOrganizationId<br>function: workspaceOrganizationReadJson<br>function: workspaceReadJsonForOrganization<br>function: workspacePagedListReadJson<br>function: workspaceIndexedListReadJson<br>function: readWorkspaceListQuery<br>function: readWorkspaceIdParam<br>function: readBoundedOptionalLimit |
 | `apps/workspace/src/server/domains/organization/routing/domains/billing.ts` | value: billingSubRouter |
 | `apps/workspace/src/server/domains/organization/routing/domains/crud.ts` | value: crudSubRouter |
+| `apps/workspace/src/server/domains/organization/routing/domains/finance.ts` | value: financeSubRouter |
 | `apps/workspace/src/server/domains/organization/routing/domains/mcp.ts` | value: mcpSubRouter |
 | `apps/workspace/src/server/domains/organization/routing/domains/media.ts` | value: mediaSubRouter |
 | `apps/workspace/src/server/domains/organization/routing/domains/notifications.ts` | value: notificationsSubRouter |
@@ -2073,6 +2426,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/server/domains/partnerApps/services/resources.ts` | function: readOrganizationApiKeyResource<br>function: writeOrganizationApiKeyResource |
 | `apps/workspace/src/server/domains/partnerApps/validation/admin-partner-app.schema.ts` | value: oauthClientRuntimeSyncSchema<br>type: OAuthClientRuntimeSyncPayload |
 | `apps/workspace/src/server/domains/partnerApps/validation/partner-app.schema.ts` | value: authorizePartnerConnectionSchema<br>value: updatePartnerConnectionSchema<br>value: createPartnerWebhookEndpointSchema<br>value: inboundWebhookSchema<br>type: AuthorizePartnerConnectionPayload<br>type: UpdatePartnerConnectionPayload<br>type: CreatePartnerWebhookEndpointPayload |
+| `apps/workspace/src/server/domains/portal/handlers/portal.ts` | function: handleActivatePortalSession<br>function: handlePortalEngagement<br>function: handlePortalRequest<br>function: handlePortalApproval |
+| `apps/workspace/src/server/domains/portal/routing/router.ts` | value: portalRouter |
 | `apps/workspace/src/server/domains/profile/handlers/update-avatar.ts` | function: handleUpdateCurrentUserAvatar |
 | `apps/workspace/src/server/domains/profile/handlers/update-profile.ts` | function: handleUpdateCurrentUserProfile |
 | `apps/workspace/src/server/domains/profile/routing/router.ts` | value: profileRouter |
@@ -2083,6 +2438,12 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/server/domains/projects/handlers/projects-read.ts` | function: handleReadProjects<br>function: handleReadProjectStats<br>function: handleReadProjectsIndex<br>function: handleReadProjectOptions<br>function: handleReadProject<br>function: handleReadProjectTaskCounts |
 | `apps/workspace/src/server/domains/projects/services/project-business-rules.ts` | value: projectBusinessRules |
 | `apps/workspace/src/server/domains/projects/validation/project.schema.ts` | value: projectPayloadSchema<br>type: ProjectPayload |
+| `apps/workspace/src/server/domains/search/handlers/search.ts` | function: handleSearch |
+| `apps/workspace/src/server/domains/search/meilisearch-adapter.ts` | class: MeilisearchSearchAdapter |
+| `apps/workspace/src/server/domains/search/search-provider.ts` | function: searchDocumentKey |
+| `apps/workspace/src/server/domains/search/search-runtime.ts` | function: createConfiguredSearchProvider |
+| `apps/workspace/src/server/domains/search/search-service.ts` | function: searchAuthorizedResources |
+| `apps/workspace/src/server/domains/search/validation/search-query.schema.ts` | value: searchGatewayQuerySchema<br>type: SearchGatewayQuery |
 | `apps/workspace/src/server/domains/spaces/handlers/spaces-junction.ts` | function: handleReadSpaces<br>function: handleReadSpace |
 | `apps/workspace/src/server/domains/spaces/handlers/spaces-read.ts` | function: handleReadSpaceOptions |
 | `apps/workspace/src/server/domains/spaces/handlers/spaces.ts` | function: handleCreateSpace<br>function: handleUpdateSpace<br>function: handleDeleteSpace |
@@ -2167,11 +2528,17 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/brand-identity/src/index.ts` | type: BrandLocale<br>type: BrandProduct<br>type: BrandRoute<br>value: brandIdentity<br>function: brandLabel<br>function: brandProductName<br>function: brandEnvName<br>function: brandRouteSlug<br>function: brandRoutePath<br>function: brandDomainUrl<br>function: readBrandEnv<br>function: brandCssVariables |
 | `packages/domain-contracts/src/calendar.ts` | value: calendarEventTypeSchema<br>value: calendarEventStatusSchema<br>value: calendarEventInputObjectSchema<br>value: calendarEventInputSchema<br>value: calendarEventPatchObjectSchema<br>value: calendarEventPatchSchema<br>type: CalendarEventInput<br>type: CalendarEventPatch<br>type: CalendarEventType<br>type: CalendarEventStatus |
 | `packages/domain-contracts/src/clients.ts` | value: clientTypeSchema<br>value: clientStatusSchema<br>value: clientPrioritySchema<br>value: clientPipelineStageSchema<br>value: visibilitySchema<br>value: clientInputSchema<br>value: clientPatchObjectSchema<br>value: clientPatchSchema<br>value: clientRecordSchema<br>type: ClientType<br>type: ClientStatus<br>type: ClientPriority<br>type: ClientPipelineStage<br>type: Visibility<br>type: ClientInput<br>type: ClientPatch<br>type: ClientRecord<br>type: ClientSummary |
+| `packages/domain-contracts/src/crm.ts` | value: leadStatusSchema<br>value: leadInputSchema<br>value: companyInputSchema<br>value: contactInputSchema<br>type: LeadStatus<br>type: LeadInput<br>type: CompanyInput<br>type: ContactInput |
 | `packages/domain-contracts/src/deals.ts` | value: dealStageSchema<br>value: dealStatusSchema<br>value: dealPrioritySchema<br>value: dealInputSchema<br>value: dealRecordSchema<br>type: DealStage<br>type: DealStatus<br>type: DealPriority<br>type: DealInput<br>type: DealRecord<br>type: DealSummary<br>type: DealStats<br>value: crmDealStageSchema<br>value: crmDealRelationTypeSchema<br>value: crmClientPreviewSchema<br>value: crmBrokerPreviewSchema<br>value: crmProjectPreviewSchema<br>value: crmDealInputSchema<br>value: crmUpdateDealInputSchema<br>value: crmUpdateDealStageInputSchema<br>value: crmUpdateDealNotesInputSchema<br>value: crmUpdateDealFollowUpInputSchema<br>value: crmAddDealDocumentInputSchema<br>value: crmAssetDealsInputSchema<br>value: crmArchiveDealInputSchema<br>type: CrmDealInput<br>type: CrmUpdateDealInput<br>type: CrmUpdateDealStageInput<br>type: CrmUpdateDealNotesInput<br>type: CrmUpdateDealFollowUpInput<br>type: CrmAddDealDocumentInput<br>type: CrmAssetDealsInput<br>type: CrmArchiveDealInput<br>type: CrmDealRelationType<br>type: CrmClientPreview<br>type: CrmBrokerPreview<br>type: CrmProjectPreview |
+| `packages/domain-contracts/src/delivery.ts` | value: commercialModelSchema<br>value: proposalStatusSchema<br>value: contractStatusSchema<br>value: engagementStatusSchema<br>value: deliveryHealthSchema<br>value: deliverableStatusSchema<br>value: approvalStatusSchema<br>value: changeOrderStatusSchema<br>value: concernTypeSchema<br>value: concernSeveritySchema<br>value: concernStatusSchema<br>value: proposalInputSchema<br>value: contractTermsSchema<br>value: deliverableInputSchema<br>value: changeOrderInputSchema<br>type: CommercialModel<br>type: ProposalStatus<br>type: ContractStatus<br>type: EngagementStatus<br>type: DeliveryHealth<br>type: DeliverableStatus<br>type: ApprovalStatus<br>type: ChangeOrderStatus<br>type: ProposalInput<br>type: ContractTerms<br>type: DeliverableInput<br>type: ChangeOrderInput |
+| `packages/domain-contracts/src/finance.ts` | value: financeCurrencySchema<br>value: financeAmountSchema<br>value: financePositiveAmountSchema<br>value: financeAccountTypeSchema<br>value: financeScopeTypeSchema<br>value: taxCalculationSchema<br>value: invoiceLineInputSchema<br>type: FinanceAccountType<br>type: FinanceScopeType<br>type: InvoiceLineInput |
+| `packages/domain-contracts/src/navigation.ts` | value: navigationDomainIdSchema<br>value: navigationRailModeSchema<br>value: navigationNodeTypeSchema<br>value: navigationNodeSchema<br>value: navigationDomainSchema<br>value: authorizedNavigationProjectionSchema<br>value: navigationOverlayInputSchema<br>type: NavigationDomainId<br>type: NavigationRailMode<br>type: NavigationNodeType<br>type: NavigationDomain<br>type: AuthorizedNavigationProjection<br>type: NavigationOverlayInput<br>interface: NavigationNode |
 | `packages/domain-contracts/src/projects.ts` | value: projectStatusSchema<br>value: projectHealthSchema<br>value: projectVisibilitySchema<br>value: projectInputSchema<br>value: projectRecordSchema<br>type: ProjectStatus<br>type: ProjectHealth<br>type: ProjectVisibility<br>type: ProjectInput<br>type: ProjectRecord<br>type: ProjectSummary |
+| `packages/domain-contracts/src/resource-planning.ts` | value: resourcePrincipalTypeSchema<br>value: resourceAllocationStatusSchema<br>value: resourceLeaveStatusSchema<br>value: resourceSkillLevelSchema<br>value: resourceIntervalSchema<br>value: resourceAllocationInputSchema<br>type: ResourcePrincipalType<br>type: ResourceAllocationStatus<br>type: ResourceLeaveStatus<br>type: ResourceAllocationInput |
+| `packages/domain-contracts/src/search.ts` | value: searchResourceTypeSchema<br>value: searchScopeTypeSchema<br>value: searchSensitivitySchema<br>value: searchOutboxStatusSchema<br>value: searchProjectionSchema<br>value: searchPolicySchema<br>type: SearchResourceType<br>type: SearchScopeType<br>type: SearchSensitivity<br>type: SearchOutboxStatus<br>type: SearchProjection<br>type: SearchPolicy<br>interface: SearchCandidate<br>value: hydratedSearchResultSchema<br>type: HydratedSearchResult<br>interface: SearchFilterConfiguration<br>interface: SearchQuery<br>interface: SearchProvider<br>interface: EmbeddingAdapter<br>type: MalwareVerdict<br>interface: MalwareScanAdapter<br>interface: ContentExtractionAdapter |
 | `packages/domain-contracts/src/spaces.ts` | value: spaceVisibilitySchema<br>value: spaceProjectVisibilitySchema<br>value: spaceInputSchema<br>value: spaceRecordSchema<br>type: SpaceVisibility<br>type: SpaceProjectVisibility<br>type: SpaceInput<br>type: SpaceRecord |
-| `packages/domain-contracts/src/subscriptionPricing.ts` | type: SubscriptionPlanId<br>type: BillingCycle<br>type: CreditPackId<br>type: AiModelClass<br>type: UsageMeterKind<br>type: BillingProviderId<br>type: SubscriptionEntitlements<br>type: GlobalSubscriptionPlan<br>type: MarketBillingVariant<br>type: CreditPack<br>type: AiCreditCalculationInput<br>type: AiCreditCalculation<br>type: CreditBalance<br>type: AppliedCreditUsage<br>value: DEFAULT_SUBSCRIPTION_PLAN_ID<br>value: DEFAULT_BILLING_CYCLE<br>function: getGlobalPlan<br>function: listGlobalPlans<br>function: getMarketPricing<br>function: getCreditPack<br>function: listCreditPacks<br>function: includedCreditCardsForPlan<br>function: canAddCreditCardsToPlan<br>function: listAddOnCreditCards<br>function: resolveSubscriptionEntitlements<br>function: normalizeBillingSelection<br>function: billingSelectionKey<br>function: aiModelClass<br>function: calculateAiCredits<br>function: applyUsageToCreditBalance |
-| `packages/domain-contracts/src/subscriptionPricingConfig.ts` | value: CREDIT_PACKS<br>value: MODEL_CLASS_CONFIG<br>value: FALLBACK_MODEL_CREDIT_MULTIPLIER<br>value: CREDIT_CARD_UNIT_SIZE |
+| `packages/domain-contracts/src/subscriptionPricing.ts` | type: SubscriptionPlanId<br>type: BillingCycle<br>type: BillingPlanKey<br>type: CreditPackId<br>type: AiModelClass<br>type: UsageMeterKind<br>type: BillingProviderId<br>type: SubscriptionStatus<br>type: EntitlementKey<br>type: SubscriptionEntitlements<br>type: EnterpriseEntitlementOverrides<br>type: OrganizationEntitlements<br>type: EntitlementDecision<br>type: GlobalSubscriptionPlan<br>type: MarketBillingVariant<br>type: CreditPack<br>type: CreditPurchase<br>type: CreditReservation<br>type: AiCreditCalculationInput<br>type: AiCreditCalculation<br>type: CreditBalance<br>type: AppliedCreditUsage<br>value: DEFAULT_SUBSCRIPTION_PLAN_ID<br>value: DEFAULT_BILLING_CYCLE<br>function: getGlobalPlan<br>function: listGlobalPlans<br>function: getMarketPricing<br>function: getCreditPack<br>function: listCreditPacks<br>function: includedCreditCardsForPlan<br>function: canAddCreditCardsToPlan<br>function: listAddOnCreditCards<br>function: resolveSubscriptionEntitlements<br>function: resolveOrganizationEntitlements<br>function: decideEntitlement<br>function: normalizeBillingSelection<br>function: normalizeBillingPlanKey<br>function: subscriptionPlanIdForBillingKey<br>function: billingCycleForKey<br>function: billingSelectionKey<br>function: aiModelClass<br>function: calculateAiCredits<br>function: creditsForProviderCost<br>function: customCreditPurchase<br>function: applyUsageToCreditBalance |
+| `packages/domain-contracts/src/subscriptionPricingConfig.ts` | value: CREDIT_PACKS<br>value: MODEL_CLASS_CONFIG<br>value: FALLBACK_MODEL_CREDIT_MULTIPLIER<br>value: CREDIT_CARD_UNIT_SIZE<br>value: CREDITS_PER_USD<br>value: MIN_CUSTOM_CREDIT_PURCHASE_USD<br>value: MAX_CUSTOM_CREDIT_PURCHASE_USD |
 | `packages/domain-contracts/src/tasks.ts` | value: taskPrioritySchema<br>value: taskStatusSchema<br>type: TaskVisibility<br>function: defaultTaskVisibility<br>value: checklistItemSchema<br>value: taskInputObjectSchema<br>value: taskInputSchema<br>value: taskPatchObjectSchema<br>value: taskPatchSchema<br>value: taskRecordSchema<br>type: TaskStatus<br>type: TaskPriority<br>type: ChecklistItem<br>type: TaskInput<br>type: TaskPatch<br>type: TaskRecord<br>type: TaskSummary |
 | `packages/location-map/src/react/LocationPicker.tsx` | function: LocationPicker |
 | `packages/location-map/src/react/LocationPreview.tsx` | function: LocationPreview |

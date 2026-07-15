@@ -1,6 +1,6 @@
 import type { AutomationNodeData } from "./types";
 
-export type AutomationGroup = "Tasks" | "Documents" | "Clients" | "Integrations";
+export type AutomationGroup = "Tasks" | "Documents" | "Clients" | "Integrations" | "Lifecycle";
 export type AutomationIconName = "play" | "webhook" | "task" | "document" | "client";
 
 export type AutomationComponentDefinition = {
@@ -16,6 +16,7 @@ export type AutomationComponentDefinition = {
 export const automationComponents: AutomationComponentDefinition[] = [
   { id: "manual", group: "Integrations", kind: "trigger", label: "Run manually", description: "Start from the Qentrah editor.", icon: "play", defaultConfig: {} },
   { id: "webhook", group: "Integrations", kind: "trigger", label: "Incoming webhook", description: "Start from Zapier, Make, or another app.", icon: "webhook", defaultConfig: {} },
+  { id: "domain_event", group: "Lifecycle", kind: "trigger", label: "Domain event", description: "Start from an authorized CRM, delivery, resource, or finance transition.", icon: "play", defaultConfig: { eventType: "engagement.activated" } },
   { id: "update_task", group: "Tasks", kind: "action", label: "Update task", description: "Change a task status using a fixed ID or trigger payload.", icon: "task", defaultConfig: { status: "in_progress" } },
   { id: "create_task", group: "Tasks", kind: "action", label: "Create task", description: "Create a new task with a title, status, and priority.", icon: "task", defaultConfig: { title: "Follow up", status: "todo", priority: "normal" } },
   { id: "create_document", group: "Documents", kind: "action", label: "Create document", description: "Create a workspace document from an incoming workflow.", icon: "document", defaultConfig: { title: "New document" } },

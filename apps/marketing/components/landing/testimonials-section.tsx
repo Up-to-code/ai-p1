@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
-import { testimonials, isLocale } from "@/lib/content";
+import { isLocale } from "@/lib/content";
+import { useMarketingContent } from "@/components/marketing/marketing-content-provider";
 
 export function TestimonialsSection() {
   const localeRaw = useLocale();
   const locale = isLocale(localeRaw) ? localeRaw : "en";
-  const t = testimonials[locale];
+  const { testimonials: t } = useMarketingContent();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);

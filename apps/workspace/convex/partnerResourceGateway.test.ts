@@ -61,13 +61,9 @@ function createFakeCtx(seed: Record<string, Record<string, any>[]> = {}) {
     }),
     query: vi.fn((table: string) => ({
       withIndex: vi.fn((_index: string, build: any) => {
-        build({
-          eq: () => ({
-            eq: () => ({
-              eq: () => undefined,
-            }),
-          }),
-        });
+        const indexRange = { eq: vi.fn() };
+        indexRange.eq.mockReturnValue(indexRange);
+        build(indexRange);
         return {
           take: vi.fn(async (limit: number) => {
             operations.takeLimits.push(limit);

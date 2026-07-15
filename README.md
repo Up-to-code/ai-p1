@@ -49,7 +49,6 @@ Run an application from the repository root:
 ```bash
 npm run dev:ws
 npm run dev:marketing
-npm run dev:mcp-gateway
 npm run dev:zapier
 npm run dev:mobile
 ```
@@ -81,3 +80,12 @@ npm --workspace @qentrah/workspace run check:convex-runtime
 - npm workspaces for monorepo dependency management.
 
 Qentrah is private and proprietary.
+
+## Repository policies
+
+- [Contributing](CONTRIBUTING.md)
+- [Security](SECURITY.md)
+- [Open-source readiness](docs/compliance/open-source-readiness.md)
+
+The repository remains private and proprietary until a project license is
+selected and the publication gates in the readiness document are complete.

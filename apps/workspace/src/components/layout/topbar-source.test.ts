@@ -23,7 +23,7 @@ describe("workspace topbar source", () => {
     const source = readSource("src/components/layout/workspace-global-search/config/search-navigation.config.ts");
     const expectedActions = [
       '{ id: "workspace", label: "Workspace", href: "/ws", icon: Building2 }',
-      '{ id: "ai", label: "AI", href: "/ai", icon: Bot }',
+      '{ id: "ai", label: "AI", href: "/ai", icon: QentrahAiIcon }',
       '{ id: "clients", label: labels.clients, href: "/clients", icon: UserRound }',
       '{ id: "deals", label: labels.deals, href: "/deals", icon: BadgeDollarSign }',
       '{ id: "projects", label: labels.projects, href: "/projects", icon: BriefcaseBusiness }',

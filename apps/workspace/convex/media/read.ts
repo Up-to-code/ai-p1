@@ -10,6 +10,10 @@ import {
 import { assertMediaPermission } from "./resourcePolicy";
 import { mediaAssetValidator, mediaFolderValidator, mediaResourceTypeValidator } from "./validators";
 
+export function isPublicMediaAvailable(asset: { shareVisibility?: string; malwareScanStatus?: string }) {
+  return (asset.shareVisibility ?? "private") === "public" && asset.malwareScanStatus === "clean";
+}
+
 export const listForResource = query({
   args: {
     organizationId: v.string(),
@@ -74,7 +78,7 @@ export const getForPublicRoute = query({
   ),
   handler: async (ctx, args) => {
     const asset = await getMediaAsset(ctx, args.mediaId);
-    if (!asset || (asset.shareVisibility ?? "private") !== "public") return null;
+    if (!asset || !isPublicMediaAvailable(asset)) return null;
 
     const profile = await ctx.db
       .query("organizations")

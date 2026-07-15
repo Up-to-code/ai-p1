@@ -61,6 +61,8 @@ export const viewTables = {
     scopeType: scopeTypeValidator,
     scopeId: v.optional(v.string()),
     visibility: workspaceVisibilityValidator,
+    sharingMode: v.optional(v.union(v.literal("personal"), v.literal("shared"), v.literal("protected"))),
+    revision: v.optional(v.number()),
     config: savedViewConfigValidator,
     isDefault: v.optional(v.boolean()),
     sourceTemplateId: v.optional(v.string()),
@@ -74,8 +76,25 @@ export const viewTables = {
   })
     .index("by_resource_scope_state", ["organizationId", "resourceType", "scopeType", "scopeId", "recordState"])
     .index("by_owner_resource", ["organizationId", "ownerUserId", "resourceType"])
+    .index("by_resource_state", ["organizationId", "resourceType", "recordState", "updatedAt"])
     .index("by_default", ["organizationId", "resourceType", "scopeType", "scopeId", "isDefault"])
     .index("by_state_updated", ["organizationId", "recordState", "updatedAt"]),
+
+  savedViewGrants: defineTable({
+    organizationId: v.string(),
+    viewId: v.id("savedViews"),
+    principalType: v.union(v.literal("user"), v.literal("team")),
+    principalId: v.string(),
+    access: v.union(v.literal("read"), v.literal("configure")),
+    recordState: recordStateValidator,
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_view_principal", ["organizationId", "viewId", "principalType", "principalId"])
+    .index("by_principal_view", ["organizationId", "principalType", "principalId", "viewId"])
+    .index("by_view_state", ["organizationId", "viewId", "recordState"]),
 
   workflowDefinitions: defineTable({
     organizationId: v.string(),

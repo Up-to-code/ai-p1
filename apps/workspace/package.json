@@ -20,12 +20,15 @@
     "dev:convex": "convex dev",
     "dev:convex:once": "convex dev --once",
     "codegen:convex": "convex codegen",
+    "prebuild": "node scripts/check-production-env.mjs",
     "build": "npm --workspace @qentrah/location-map --include-workspace-root=false run build && npm --workspace @qentrah/mcp-contracts --include-workspace-root=false run build && npm --workspace @qentrah/our-platform-components --include-workspace-root=false run build && npm --workspace @qentrah/ui --include-workspace-root=false run build && next build && node scripts/ensure-vercel-manifest.mjs",
+    "check:production-env": "node scripts/check-production-env.mjs",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
     "check:convex-runtime": "node scripts/check-convex-runtime.mjs",
     "test": "vitest run",
+    "test:agency-readiness": "vitest run convex/access/*.test.ts convex/automations/*.test.ts convex/crm/*.test.ts convex/delivery/*.test.ts convex/finance/*.test.ts convex/navigation/*.test.ts convex/portal/*.test.ts convex/resourcePlanning/*.test.ts convex/savedViews/*.test.ts convex/search/*.test.ts convex/security/*.test.ts src/domains/navigation/*.test.ts src/domains/search/*.test.ts src/server/domains/search/*.test.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {

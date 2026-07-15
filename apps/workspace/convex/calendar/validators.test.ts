@@ -4,7 +4,11 @@ import {
   calendarEventInputSchema,
   calendarEventPatchSchema,
 } from "@qentrah/domain-contracts";
-import { calendarEventInputValidator, calendarEventPatchValidator } from "./validators";
+import {
+  calendarEventInputValidator,
+  calendarEventPatchValidator,
+  calendarEventValidator,
+} from "./validators";
 
 const sortedKeys = (value: Record<string, unknown>) => Object.keys(value).sort();
 
@@ -27,5 +31,11 @@ describe("Calendar executable contract parity", () => {
     expect(calendarEventPatchSchema.safeParse({ title: "Renamed" }).success).toBe(true);
     expect(calendarEventPatchSchema.safeParse({}).success).toBe(false);
     expect(calendarEventPatchSchema.safeParse({ organizationId: "org_other" }).success).toBe(false);
+  });
+
+  it("returns persisted Space scope and soft-delete metadata", () => {
+    expect(calendarEventValidator.fields).toHaveProperty("spaceId");
+    expect(calendarEventValidator.fields).toHaveProperty("deletedAt");
+    expect(calendarEventInputValidator.fields).not.toHaveProperty("spaceId");
   });
 });

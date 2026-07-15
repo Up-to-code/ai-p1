@@ -4,12 +4,9 @@ import { query } from "../../_generated/server";
 import { getAuthUser, safeGetAuthUser } from "../../auth";
 import {
   assertCanPerformOrganizationAction,
-  assertCanAccessSpace,
-  assertCanPerformSpaceAction,
-  assertCanAccessProject,
-  assertCanPerformProjectAction,
   getOrganizationRole,
 } from "../../permissions";
+import type { Action, Resource } from "../../permissions";
 
 type OrganizationAction = "read" | "update";
 type OrganizationPermissionResource =
@@ -30,7 +27,9 @@ type OrganizationPermissionResource =
   | "apiKey"
   | "oauthApp"
   | "space"
-  | "channel";
+  | "channel"
+  | "finance"
+  | "report";
 
 const capabilitiesReturnValidator = v.object({
   canReadOrganization: v.boolean(),
@@ -78,6 +77,19 @@ export async function assertOrganizationPermission(
   await assertOrganizationResourcePermission(ctx, organizationId, "organization", action);
 }
 
+/** Financial changes are intentionally narrower than general organization updates. */
+export async function assertOrganizationOwner(
+  ctx: QueryCtx | MutationCtx,
+  organizationId: string,
+) {
+  const user = await getAuthUser(ctx);
+  const role = await getOrganizationRole(ctx, organizationId, user._id);
+  if (role !== "owner") {
+    throw new Error("Only an organization owner can manage billing.");
+  }
+  return user;
+}
+
 export async function assertOrganizationResourcePermission(
   ctx: QueryCtx | MutationCtx,
   organizationId: string,
@@ -89,8 +101,8 @@ export async function assertOrganizationResourcePermission(
     ctx,
     organizationId,
     user._id,
-    resource as any,
-    action as any,
+    resource as Resource,
+    action as Action,
   );
 }
 
@@ -107,11 +119,11 @@ export async function canUseOrganizationResourceAction(
       ctx,
       organizationId,
       user._id,
-      resource as any,
-      action as any,
+      resource as Resource,
+      action as Action,
     );
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -152,6 +164,8 @@ export const canUseResourceAction = query({
       v.literal("apiKey"),
       v.literal("oauthApp"),
       v.literal("space"),
+      v.literal("finance"),
+      v.literal("report"),
     ),
     action: v.string(),
   },

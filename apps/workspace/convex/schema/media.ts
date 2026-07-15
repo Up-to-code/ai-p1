@@ -30,6 +30,11 @@ export const mediaTables = {
     publicDisabledAt: v.optional(v.number()),
     sortOrder: v.number(),
     isCover: v.boolean(),
+    malwareScanStatus: v.optional(v.union(v.literal("unverified"), v.literal("pending"), v.literal("clean"), v.literal("infected"), v.literal("failed"))),
+    malwareScanner: v.optional(v.string()),
+    malwareScannerVersion: v.optional(v.string()),
+    malwareScannedAt: v.optional(v.number()),
+    quarantinedAt: v.optional(v.number()),
     spaceId: v.optional(v.string()),
     createdByUserId: v.string(),
     createdAt: v.number(),
@@ -39,6 +44,7 @@ export const mediaTables = {
     .index("by_organization_resource", ["organizationId", "resourceType", "resourceId"])
     .index("by_organization_space", ["organizationId", "spaceId"])
     .index("by_key", ["key"])
+    .index("by_security_status", ["organizationId", "malwareScanStatus", "updatedAt"])
     .index("by_updated", ["updatedAt"]),
 
   mediaFolders: defineTable({

@@ -7,8 +7,6 @@ import { useLocalConfig } from "@/domains/storage";
 import { Box } from "lucide-react";
 import { ViewSwitcherTabs, type ViewItem, type ViewType } from "@/components/shared/view-system";
 import { ProjectDashboard } from "./project-dashboard";
-import { TaskCalendarView } from "./views/task-calendar-view";
-import { TaskTimelineView } from "./views/task-timeline-view";
 import { TaskMapView } from "./views/task-map-view";
 import { TaskViewFrame } from "@/domains/tasks/components/views/task-view-frame";
 import { TASK_STAGES, normalizeTaskStatus } from "@/domains/tasks/tasks.constants";
@@ -143,9 +141,9 @@ export function ProjectDetailOverview({ projectId }: ProjectDetailOverviewProps)
 
       <div className="flex-1 min-h-0 px-4">
         {activeType === "dashboard" && <ProjectDashboard projectId={projectId} />}
-        {(["table", "list", "board"] as const).includes(activeType as "table" | "list" | "board") && (
+        {(["table", "list", "board", "calendar", "timeline"] as const).includes(activeType as "table" | "list" | "board" | "calendar" | "timeline") && (
           <TaskViewFrame
-            tab={{ id: activeView?.id ?? "project-task-view", type: activeType as "table" | "list" | "board" }}
+            tab={{ id: activeView?.id ?? "project-task-view", type: activeType as "table" | "list" | "board" | "calendar" | "timeline" }}
             tasks={tasks}
             stages={TASK_STAGES}
             organizationId={workspaceOrganizationId}
@@ -158,14 +156,12 @@ export function ProjectDetailOverview({ projectId }: ProjectDetailOverviewProps)
             onTasksBulk={bulkTasks}
           />
         )}
-        {activeType === "calendar" && <TaskCalendarView projectId={projectId} organizationId={workspaceOrganizationId ?? ""} />}
-        {activeType === "timeline" && <TaskTimelineView projectId={projectId} organizationId={workspaceOrganizationId ?? ""} />}
         {activeType === "map" && <TaskMapView projectId={projectId} organizationId={workspaceOrganizationId ?? ""} />}
       </div>
     </div>
   );
 }
 
-export { TaskCalendarView, TaskTimelineView, TaskMapView };
+export { TaskMapView };
 
 export type { ViewItem, ViewType };

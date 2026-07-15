@@ -9,6 +9,8 @@ import { TaskBoardView } from "./task-board-view";
 import { TaskListView } from "./task-list-view";
 import type { TaskQuickCreateCommand } from "../../workspace/task-quick-create";
 import type { TaskBulkCommand } from "../../workspace/task-bulk";
+import { TaskCalendarWorkspaceView } from "./task-calendar-workspace-view";
+import { TaskTimelineWorkspaceView } from "./task-timeline-workspace-view";
 
 interface TaskViewFrameProps {
   tab: ViewItem;
@@ -36,9 +38,9 @@ export function TaskViewFrame({ tab, tasks, stages, organizationId, projectId, s
     case "list":
       return <TaskListView tasks={tasks} memberOptions={memberOptions} onTaskOpen={onTaskOpen} onTaskUpdate={onTaskUpdate} onTaskCreate={onTaskCreate} onTaskMove={onCardMove} />;
     case "calendar":
-      return <ViewLoading style="calendar" message="Calendar view coming soon" />;
+      return <TaskCalendarWorkspaceView tasks={tasks} onTaskOpen={onTaskOpen} />;
     case "timeline":
-      return <ViewLoading style="table" message="Timeline view coming soon" />;
+      return <TaskTimelineWorkspaceView tasks={tasks} onTaskOpen={onTaskOpen} />;
     default:
       return <ViewLoading style="skeleton" message={`${tab.type} view coming soon`} />;
   }

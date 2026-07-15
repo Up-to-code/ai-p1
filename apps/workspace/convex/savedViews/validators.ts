@@ -13,6 +13,21 @@ export const userTableViewScopeValidator = v.union(
 );
 
 export const userTableViewConfigValidator = savedViewConfigValidator;
+export const savedViewSharingModeValidator = v.union(
+  v.literal("personal"),
+  v.literal("shared"),
+  v.literal("protected"),
+);
+export const savedViewGrantInputValidator = v.object({
+  principalType: v.union(v.literal("user"), v.literal("team")),
+  principalId: v.string(),
+  access: v.union(v.literal("read"), v.literal("configure")),
+});
+export const savedViewGrantValidator = v.object({
+  principalType: v.union(v.literal("user"), v.literal("team")),
+  principalId: v.string(),
+  access: v.union(v.literal("read"), v.literal("configure")),
+});
 
 export const userTableViewValidator = v.object({
   _id: v.id("savedViews"),
@@ -29,6 +44,12 @@ export const userTableViewValidator = v.object({
   spaceId: v.optional(v.string()),
   config: userTableViewConfigValidator,
   isDefault: v.optional(v.boolean()),
+  sharingMode: savedViewSharingModeValidator,
+  revision: v.number(),
+  canConfigure: v.boolean(),
+  canShare: v.boolean(),
+  canDelete: v.boolean(),
+  canSetDefault: v.boolean(),
   createdAt: v.number(),
   updatedAt: v.number(),
 });
@@ -45,6 +66,7 @@ export const createUserTableViewInputValidator = v.object({
   spaceId: v.optional(v.string()),
   config: userTableViewConfigValidator,
   isDefault: v.optional(v.boolean()),
+  sharingMode: v.optional(savedViewSharingModeValidator),
 });
 
 export const updateUserTableViewInputValidator = v.object({

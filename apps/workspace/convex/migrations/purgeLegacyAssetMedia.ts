@@ -1,8 +1,8 @@
 import { v } from "convex/values";
 import { internalMutation } from "../_generated/server";
 
-type StoredResource = "organization" | "client" | "project" | "deal" | "calendar" | "task" | "media" | "space";
-type StoredApiKeyResource = Exclude<StoredResource, "deal"> | "document";
+type StoredResource = "organization" | "client" | "project" | "deal" | "calendar" | "task" | "media" | "space" | "finance" | "report";
+type StoredApiKeyResource = "organization" | "client" | "project" | "calendar" | "task" | "media" | "space" | "document";
 type StoredPermission = {
   resource: StoredResource;
   actions: Array<"read" | "create" | "update" | "delete">;

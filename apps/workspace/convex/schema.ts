@@ -11,6 +11,13 @@ import { maintenanceTables } from "./schema/maintenance";
 import { theoriesTables } from "./schema/theories";
 import { viewTables } from "./schema/views";
 import { automationTables } from "./schema/automations";
+import { navigationTables } from "./schema/navigation";
+import { searchTables } from "./schema/search";
+import { deliveryTables } from "./schema/delivery";
+import { crmTables } from "./schema/crm";
+import { resourcePlanningTables } from "./schema/resourcePlanning";
+import { financeTables } from "./schema/finance";
+import { reportTables } from "./schema/reports";
 
 // App tables are organization-scoped so user identity never owns business data directly.
 export default defineSchema({
@@ -26,4 +33,11 @@ export default defineSchema({
   ...maintenanceTables,
   ...viewTables,
   ...automationTables,
+  ...navigationTables,
+  ...searchTables,
+  ...deliveryTables,
+  ...crmTables,
+  ...resourcePlanningTables,
+  ...financeTables,
+  ...reportTables,
 });

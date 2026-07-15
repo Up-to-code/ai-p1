@@ -7,39 +7,47 @@ import { Logo } from "@/components/logo";
 import { Link } from "@/i18n/routing";
 import { Bot, CalendarDays, CheckSquare2, ChevronDown, FileText, FolderKanban, Inbox, Menu, Sparkles, Users, X } from "lucide-react";
 import { getLocalizedWorkspaceUrl } from "@/lib/workspace-links";
-import { marketingNav, isLocale, productUrls } from "@/lib/content";
+import { isLocale, productUrls } from "@/lib/content";
+import { useMarketingContent } from "@/components/marketing/marketing-content-provider";
 
 export function Navbar() {
   const localeRaw = useLocale();
   const locale = isLocale(localeRaw) ? localeRaw : "en";
-  const nav = marketingNav[locale];
+  const { navigation: nav } = useMarketingContent();
   const signInUrl = getLocalizedWorkspaceUrl(locale, "sign-in");
   const signUpUrl = getLocalizedWorkspaceUrl(locale, "sign-up");
-  const signUpLabel = locale === "ar" ? "ابدأ مجاناً" : locale === "fr" ? "Commencer" : "Start free";
-  const salesLabel = locale === "ar" ? "تحدث إلى المبيعات" : locale === "fr" ? "Demander une démo" : "Talk to sales";
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPlatformOpen, setIsPlatformOpen] = useState(false);
 
-  const labels = locale === "ar"
-    ? { announcement: "جديد: وكلاء ذكاء يعملون داخل سياق مساحة عملك", platform: "المنصة", ai: "وكلاء الذكاء", solutions: "الحلول", resources: "المصادر", pricing: "التسعير", enterprise: "للمؤسسات", explore: "استكشف المنصة", structure: "نظّم العمل", coordinate: "نسّق الفريق", intelligence: "الذكاء والسياق" }
-    : locale === "fr"
-      ? { announcement: "Nouveau : des agents IA qui travaillent dans le contexte de votre espace", platform: "Plateforme", ai: "Agents IA", solutions: "Solutions", resources: "Ressources", pricing: "Tarifs", enterprise: "Entreprise", explore: "Découvrir la plateforme", structure: "Structurer le travail", coordinate: "Coordonner l’équipe", intelligence: "IA et contexte" }
-      : { announcement: "NEW: Scoped AI agents that work inside your workspace context", platform: "Platform", ai: "AI Agents", solutions: "Solutions", resources: "Resources", pricing: "Pricing", enterprise: "Enterprise", explore: "Explore the platform", structure: "Structure work", coordinate: "Coordinate teams", intelligence: "AI and context" };
-
+  const platformItemConfig = [
+    { href: "#connected-platform", icon: FolderKanban },
+    { href: "#connected-platform", icon: FolderKanban },
+    { href: "#connected-platform", icon: CheckSquare2 },
+    { href: "#connected-platform", icon: FileText },
+    { href: "#connected-platform", icon: Inbox },
+    { href: "#connected-platform", icon: CalendarDays },
+    { href: "#scoped-agents", icon: Bot },
+    { href: "#ai-solutions", icon: Sparkles },
+    { href: "#operational-outcomes", icon: Users },
+  ] as const;
+  const platformItems = platformItemConfig.map((item, index) => ({
+    ...item,
+    ...nav.platformItems[index],
+  }));
   const platformGroups = [
-    { title: labels.structure, items: [{ label: "Spaces", description: "Organize teams and related work", href: "#connected-platform", icon: FolderKanban }, { label: "Projects", description: "Plan outcomes, owners, and progress", href: "#connected-platform", icon: FolderKanban }, { label: "Tasks", description: "Move work from idea to done", href: "#connected-platform", icon: CheckSquare2 }] },
-    { title: labels.coordinate, items: [{ label: "Docs", description: "Keep knowledge beside the work", href: "#connected-platform", icon: FileText }, { label: "Inbox", description: "See updates that need attention", href: "#connected-platform", icon: Inbox }, { label: "Calendar", description: "Coordinate time and deadlines", href: "#connected-platform", icon: CalendarDays }] },
-    { title: labels.intelligence, items: [{ label: "Scoped AI agents", description: "Delegate work within permissions", href: "#scoped-agents", icon: Bot }, { label: "Automations", description: "Run repeatable workflows", href: "#ai-solutions", icon: Sparkles }, { label: "Permissions", description: "Control access at every level", href: "#operational-outcomes", icon: Users }] },
+    { title: nav.structure, items: platformItems.slice(0, 3) },
+    { title: nav.coordinate, items: platformItems.slice(3, 6) },
+    { title: nav.intelligence, items: platformItems.slice(6, 9) },
   ];
 
   const mobileNavItems = [
-    { label: labels.platform, href: "#connected-platform", kind: "anchor" },
-    { label: labels.ai, href: "#scoped-agents", kind: "anchor" },
-    { label: labels.solutions, href: "#ai-solutions", kind: "anchor" },
-    { label: labels.resources, href: "/docs", kind: "route" },
-    { label: labels.pricing, href: "/pricing", kind: "route" },
-    { label: labels.enterprise, href: productUrls.contact, kind: "external" },
+    { label: nav.platform, href: "#connected-platform", kind: "anchor" },
+    { label: nav.ai, href: "#scoped-agents", kind: "anchor" },
+    { label: nav.solutions, href: "#ai-solutions", kind: "anchor" },
+    { label: nav.resources, href: "/docs", kind: "route" },
+    { label: nav.pricing, href: "/pricing", kind: "route" },
+    { label: nav.enterprise, href: productUrls.contact, kind: "external" },
   ] as const;
 
   useEffect(() => {
@@ -51,26 +59,26 @@ export function Navbar() {
   return (
     <header className={cn("fixed inset-x-0 top-0 z-50 bg-white transition-shadow duration-200", isScrolled && "shadow-[0_8px_30px_rgba(0,0,0,.06)]")} onMouseLeave={() => setIsPlatformOpen(false)}>
       <a href="#scoped-agents" className="hidden h-7 items-center justify-center gap-2 bg-[#F6F7F8] px-4 text-[10px] font-medium text-[#202020] no-underline lg:flex">
-        {labels.announcement}<span aria-hidden="true">→</span>
+        {nav.announcement}<span aria-hidden="true">→</span>
       </a>
       <div className="mx-auto flex h-[64px] w-full max-w-[1220px] items-center gap-7 px-6 lg:px-8">
         <Logo />
 
-        <nav className="hidden flex-1 items-center gap-1 lg:flex" aria-label="Main navigation">
+        <nav className="hidden flex-1 items-center gap-1 lg:flex" aria-label={nav.mainNavigation}>
           <button type="button" aria-expanded={isPlatformOpen} onClick={() => setIsPlatformOpen((open) => !open)} onMouseEnter={() => setIsPlatformOpen(true)} className="inline-flex h-10 items-center gap-1.5 rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] transition hover:bg-[#F6F7F8] hover:text-[#202020]">
-            {labels.platform}<ChevronDown className="h-3.5 w-3.5" />
+            {nav.platform}<ChevronDown className="h-3.5 w-3.5" />
           </button>
-          <a href="#scoped-agents" className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{labels.ai}</a>
-          <a href="#ai-solutions" className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{labels.solutions}</a>
-          <Link href="/docs" className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{labels.resources}</Link>
-          <Link href="/pricing" className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{labels.pricing}</Link>
-          <a href={productUrls.contact} className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{labels.enterprise}</a>
+          <a href="#scoped-agents" className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{nav.ai}</a>
+          <a href="#ai-solutions" className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{nav.solutions}</a>
+          <Link href="/docs" className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{nav.resources}</Link>
+          <Link href="/pricing" className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{nav.pricing}</Link>
+          <a href={productUrls.contact} className="inline-flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold text-[#4d4d4d] no-underline transition hover:bg-[#F6F7F8] hover:text-[#202020]">{nav.enterprise}</a>
         </nav>
 
         <div className="ms-auto flex items-center gap-2">
-          <a href={productUrls.contact} className="hidden h-10 items-center px-3 text-[13px] font-semibold text-[#4d4d4d] transition-colors hover:text-[#202020] md:inline-flex">{salesLabel}</a>
+          <a href={productUrls.contact} className="hidden h-10 items-center px-3 text-[13px] font-semibold text-[#4d4d4d] transition-colors hover:text-[#202020] md:inline-flex">{nav.sales}</a>
           <a href={signInUrl} className="hidden h-10 items-center rounded-lg bg-[#F6F7F8] px-4 text-[13px] font-semibold text-[#202020] no-underline transition hover:bg-[#eceeef] md:inline-flex">{nav.signIn}</a>
-          <a href={signUpUrl} className="hidden h-10 items-center rounded-lg bg-[#202020] px-4 text-[13px] font-semibold text-white no-underline transition hover:bg-[#333] active:scale-[0.98] md:inline-flex">{signUpLabel}</a>
+          <a href={signUpUrl} className="hidden h-10 items-center rounded-lg bg-[#202020] px-4 text-[13px] font-semibold text-white no-underline transition hover:bg-[#333] active:scale-[0.98] md:inline-flex">{nav.signUp}</a>
           <button type="button" aria-expanded={isMenuOpen} aria-label={isMenuOpen ? nav.closeMenu : nav.openMenu} onClick={() => setIsMenuOpen((open) => !open)} className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-[#F6F7F8] text-[#202020] lg:hidden">
             {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>
@@ -119,7 +127,7 @@ export function Navbar() {
           </nav>
           <div className="mt-4 grid grid-cols-2 gap-2">
             <a href={signInUrl} className="flex h-11 items-center justify-center rounded-lg bg-[#F6F7F8] text-sm font-semibold text-[#202020] no-underline">{nav.signIn}</a>
-            <a href={signUpUrl} className="flex h-11 items-center justify-center rounded-lg bg-[#202020] text-sm font-semibold text-white no-underline">{signUpLabel}</a>
+            <a href={signUpUrl} className="flex h-11 items-center justify-center rounded-lg bg-[#202020] text-sm font-semibold text-white no-underline">{nav.signUp}</a>
           </div>
         </div>
       )}

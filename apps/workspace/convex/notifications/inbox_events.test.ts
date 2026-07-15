@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  threadReplyRecipientIds,
   newlyAssignedUserIds,
   newlyMentionedUserIds,
   richTextMemberMentionIds,
@@ -7,6 +8,11 @@ import {
 } from "./inbox_events";
 
 describe("primary inbox event recipients", () => {
+  it("notifies existing thread participants once and never notifies the author", () => {
+    expect(
+      threadReplyRecipientIds(["author", "member", "member", "other"], "author"),
+    ).toEqual(["member", "other"]);
+  });
   it("normalizes singular and plural task assignees", () => {
     expect(taskAssigneeIds({
       assigneeUserId: "user-1",

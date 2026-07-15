@@ -4,49 +4,14 @@ import { ArrowRight, Check } from "lucide-react";
 import { useLocale } from "next-intl";
 
 import { Link } from "@/i18n/routing";
+import { useMarketingContent } from "@/components/marketing/marketing-content-provider";
 import { getLocalizedWorkspaceUrl } from "@/lib/workspace-links";
 import { AnimatedTetrahedron } from "./animated-tetrahedron";
-
-const copy = {
-  en: {
-    kicker: "YOUR WORKSPACE STARTS HERE",
-    title: "Ready to bring your team’s work into one place?",
-    body: "Bring your spaces, projects, tasks, documents, and AI agents into one connected operating workspace.",
-    primary: "Start your workspace",
-    sales: "Talk to sales",
-    note: "Free to start. No credit card required.",
-    points: ["Create your first space", "Invite your team", "Keep every decision in context"],
-    visualLabel: "CONNECTED WORKSPACE",
-    visualTitle: "Everything moves together",
-  },
-  ar: {
-    kicker: "مساحة عملك تبدأ هنا",
-    title: "جاهز لتجمع عمل فريقك في مكان واحد؟",
-    body: "اجمع مساحاتك ومشاريعك ومهامك ومستنداتك ووكلاء الذكاء في مساحة تشغيل مترابطة.",
-    primary: "أنشئ مساحة عملك",
-    sales: "تحدث إلى المبيعات",
-    note: "ابدأ مجاناً. لا تحتاج إلى بطاقة ائتمان.",
-    points: ["أنشئ مساحتك الأولى", "ادعُ فريقك", "احتفظ بسياق كل قرار"],
-    visualLabel: "مساحة عمل مترابطة",
-    visualTitle: "كل شيء يتحرك معاً",
-  },
-  fr: {
-    kicker: "VOTRE ESPACE COMMENCE ICI",
-    title: "Prêt à réunir le travail de votre équipe ?",
-    body: "Réunissez espaces, projets, tâches, documents et agents IA dans un environnement opérationnel connecté.",
-    primary: "Créer mon espace",
-    sales: "Contacter l’équipe",
-    note: "Commencez gratuitement. Aucune carte bancaire requise.",
-    points: ["Créez votre premier espace", "Invitez votre équipe", "Gardez chaque décision en contexte"],
-    visualLabel: "ESPACE CONNECTÉ",
-    visualTitle: "Tout avance ensemble",
-  },
-} as const;
 
 export function CtaSection() {
   const locale = useLocale();
   const language = locale === "ar" ? "ar" : locale === "fr" ? "fr" : "en";
-  const current = copy[language];
+  const current = useMarketingContent().landingPage.cta;
   const signUpUrl = getLocalizedWorkspaceUrl(locale, "sign-up");
 
   return (

@@ -57,6 +57,7 @@ function lifecycleContext(seed: Array<Record<string, unknown>> = []) {
     query: vi.fn((table: string) => ({
       withIndex: vi.fn(() => ({
         first: vi.fn(async () => records.get("project_space_1") ?? null),
+        unique: vi.fn(async () => null),
         collect: vi.fn(async () => [...records.values()].filter((record) => record._table === table)),
       })),
     })),

@@ -1,10 +1,10 @@
 "use client";
 
-import { FileText, ListChecks, Plus, UserRound, Webhook } from "lucide-react";
+import { FileText, ListChecks, Plus, UserRound, Webhook, Workflow } from "lucide-react";
 import { automationComponents, type AutomationComponentDefinition, type AutomationGroup } from "../catalog";
 
-const groups: AutomationGroup[] = ["Tasks", "Documents", "Clients", "Integrations"];
-const iconByGroup = { Tasks: ListChecks, Documents: FileText, Clients: UserRound, Integrations: Webhook };
+const groups: AutomationGroup[] = ["Tasks", "Documents", "Clients", "Integrations", "Lifecycle"];
+const iconByGroup = { Tasks: ListChecks, Documents: FileText, Clients: UserRound, Integrations: Webhook, Lifecycle: Workflow };
 
 export function AutomationComponentPalette({ onAdd }: { onAdd: (component: AutomationComponentDefinition) => void }) {
   return (

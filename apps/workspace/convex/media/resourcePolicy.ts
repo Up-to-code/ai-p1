@@ -9,6 +9,7 @@ export function permissionResourceForMedia(resourceType: MediaResourceType) {
   if (resourceType === "project") return "project";
   if (resourceType === "calendarEvent") return "calendar";
   if (resourceType === "task") return "task";
+  if (resourceType === "space") return "space";
   return "client";
 }
 
@@ -52,6 +53,14 @@ export async function assertMediaResourceExists(
     const event = await ctx.db.get(resourceId as Id<"calendarEvents">);
     if (!event || event.organizationId !== organizationId || event.deletedAt) {
       throw new Error("Calendar event was not found.");
+    }
+    return;
+  }
+
+  if (resourceType === "space") {
+    const space = await ctx.db.get(resourceId as Id<"spaces">);
+    if (!space || space.organizationId !== organizationId || space.deletedAt) {
+      throw new Error("Space was not found.");
     }
     return;
   }

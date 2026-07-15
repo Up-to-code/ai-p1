@@ -1,21 +1,13 @@
-import { Marquee } from "@/components/ui/marquee";
+"use client";
 
-const toolBrands = [
-  { name: "WhatsApp", url: "https://www.whatsapp.com/" },
-  { name: "Telegram", url: "https://telegram.org/" },
-  { name: "n8n", url: "https://n8n.io/" },
-  { name: "Zapier", url: "https://zapier.com" },
-  { name: "Slack", url: "https://slack.com" },
-  { name: "HubSpot", url: "https://www.hubspot.com/" },
-  { name: "Google Sheets", url: "https://www.google.com/sheets/about/" },
-  { name: "Airtable", url: "https://airtable.com/" },
-  { name: "Notion", url: "https://www.notion.so/" },
-  { name: "Webhooks", url: "https://webhook.site/" },
-];
+import { Marquee } from "@/components/ui/marquee";
+import { useMarketingContent } from "@/components/marketing/marketing-content-provider";
 
 const LogoCloud = () => {
+  const cloud = useMarketingContent().landingPage.support.logoCloud;
+
   return (
-    <div className="w-full border-y border-[var(--q-border)] bg-[var(--q-card)] py-8 md:py-10">
+    <div aria-label={cloud.label} className="w-full border-y border-[var(--q-border)] bg-[var(--q-card)] py-8 md:py-10">
       <div className="mx-auto max-w-7xl overflow-hidden">
         <div className="flex items-center justify-center overflow-hidden">
           <Marquee
@@ -24,17 +16,17 @@ const LogoCloud = () => {
             pauseOnHover
             repeat={3}
           >
-            {toolBrands.map((tool) => (
+            {cloud.items.map(({ image, name }) => (
               <span
-                key={tool.name}
+                key={name}
                 className="flex items-center gap-2.5 whitespace-nowrap text-base font-semibold text-[var(--q-text-secondary)] grayscale transition duration-200 hover:text-[var(--q-text-primary)] hover:grayscale-0"
               >
                 <img
                   alt=""
                   className="h-6 w-6 object-contain"
-                  src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(tool.url)}&sz=128`}
+                  src={image}
                 />
-                <span>{tool.name}</span>
+                <span>{name}</span>
               </span>
             ))}
           </Marquee>

@@ -27,6 +27,8 @@ coverage
 .vercel
 .infisical.json
 .env*
+!**/.env.example
+!**/.env.local.example
 
 .eve
 .kiro/

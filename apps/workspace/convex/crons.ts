@@ -10,4 +10,32 @@ crons.interval(
   {},
 );
 
+crons.interval(
+  "process search indexing outbox",
+  { minutes: 1 },
+  internal.search.worker.processBatch,
+  {},
+);
+
+crons.interval(
+  "process search reindex jobs",
+  { minutes: 1 },
+  internal.search.reindex.processNextBatch,
+  {},
+);
+
+crons.interval(
+  "scan uploaded media for malware",
+  { minutes: 1 },
+  internal.search.extractionWorker.processSecurityBatch,
+  {},
+);
+
+crons.interval(
+  "extract authorized attachment content",
+  { minutes: 1 },
+  internal.search.extractionWorker.processExtractionBatch,
+  {},
+);
+
 export default crons;

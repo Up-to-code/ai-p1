@@ -19,6 +19,8 @@ import type {
   createMediaFolderInputValidator,
   updateMediaInputValidator,
 } from "./validators";
+import { assertOrganizationStorageAvailable } from "../billing/storage";
+import { cleanupAttachmentSearch, enqueueMediaSecurityScan, refreshAttachmentSearchProjection } from "../search/extraction";
 
 type AttachMediaInput = typeof attachMediaInputValidator.type;
 type UpdateMediaInput = typeof updateMediaInputValidator.type;
@@ -49,6 +51,7 @@ export async function attachMediaToResource(
 ): Promise<Doc<"mediaAssets">> {
   await assertMediaPermission(ctx, args.organizationId, args.input.resourceType, "update");
   await assertMediaResourceExists(ctx, args.organizationId, args.input.resourceType, args.input.resourceId);
+  await assertOrganizationStorageAvailable(ctx, args.organizationId, args.input.size);
 
   const now = Date.now();
   if (args.input.folderId) {
@@ -82,6 +85,7 @@ export async function attachMediaToResource(
     shareVisibility: "private",
     sortOrder: existing.length,
     isCover: shouldCover,
+    malwareScanStatus: "pending",
     createdByUserId: args.actorUserId,
     createdAt: now,
     updatedAt: now,
@@ -99,6 +103,7 @@ export async function attachMediaToResource(
 
   const asset = await ctx.db.get(id);
   if (!asset) throw new Error("Media asset could not be created.");
+  await enqueueMediaSecurityScan(ctx, asset);
   return asset;
 }
 
@@ -146,6 +151,7 @@ export async function updateMediaAsset(
 
   const updated = await ctx.db.get(args.mediaId);
   if (!updated) throw new Error("Media asset was not found.");
+  await refreshAttachmentSearchProjection(ctx, updated);
   return updated;
 }
 
@@ -160,6 +166,7 @@ export async function removeMediaAsset(
 
   await assertMediaPermission(ctx, args.organizationId, asset.resourceType, "update");
 
+  await cleanupAttachmentSearch(ctx, args.organizationId, args.mediaId);
   await ctx.db.delete(args.mediaId);
   await insertMediaAudit(
     ctx,

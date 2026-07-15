@@ -6,7 +6,7 @@ describe("route catalog", () => {
   it("selects the active rail item without confusing /ws with nested routes", () => {
     expect(getActiveRailItem("/ws")).toBe("home");
     expect(getActiveRailItem("/ws-extra")).toBeNull();
-    expect(getActiveRailItem("/ai")).toBe("home");
+    expect(getActiveRailItem("/ai")).toBe("ai");
     expect(getRouteId("/ws")).toBe("ws");
     expect(getRouteId("/ai")).toBe("ai");
   });
@@ -14,17 +14,32 @@ describe("route catalog", () => {
   it("matches nested canonical routes and locale-prefixed routes", () => {
     expect(getRouteId("/tasks/123")).toBe("tasks");
     expect(getRouteId("/ar/projects/123/overview")).toBe("projects");
+    expect(getRouteId("/en/search")).toBe("search");
+    expect(getRouteId("/en/inbox/replies")).toBe("inboxReplies");
+    expect(getRouteId("/en/inbox/assigned-comments")).toBe("inboxAssignedComments");
+    expect(getRouteId("/en/crm/proposals")).toBe("proposals");
+    expect(getRouteId("/en/crm/leads")).toBe("leads");
+    expect(getRouteId("/en/crm/companies")).toBe("companies");
+    expect(getRouteId("/en/crm/contacts")).toBe("contacts");
+    expect(getRouteId("/ar/crm/contracts")).toBe("contracts");
+    expect(getActiveRailItem("/en/delivery/engagements")).toBeNull();
+    expect(getActiveRailItem("/en/search")).toBe("home");
     expect(getRouteId("/organization-extra")).toBeNull();
   });
 
-  it("maps legacy opportunity routes to the canonical Deals rail item", () => {
-    expect(getActiveRailItem("/clients")).toBe("clients");
-    expect(getActiveRailItem("/clients/123")).toBe("clients");
+  it("keeps non-project domains addressable without assigning them a launcher domain", () => {
+    expect(getActiveRailItem("/clients")).toBeNull();
+    expect(getActiveRailItem("/clients/123")).toBeNull();
     expect(getRouteId("/opportunities")).toBe("deals");
-    expect(getActiveRailItem("/opportunities")).toBe("deals");
-    expect(getActiveRailItem("/opportunities/123")).toBe("deals");
-    expect(getActiveRailItem("/deals")).toBe("deals");
-    expect(getActiveRailItem("/deals/123")).toBe("deals");
+    expect(getActiveRailItem("/opportunities")).toBeNull();
+    expect(getActiveRailItem("/opportunities/123")).toBeNull();
+    expect(getActiveRailItem("/deals")).toBeNull();
+    expect(getActiveRailItem("/deals/123")).toBeNull();
+    expect(getActiveRailItem("/crm/leads")).toBeNull();
+    expect(getActiveRailItem("/delivery")).toBeNull();
+    expect(getActiveRailItem("/resources")).toBeNull();
+    expect(getActiveRailItem("/finance")).toBeNull();
+    expect(getActiveRailItem("/reports")).toBeNull();
   });
 
   it("resolves reviewed legacy aliases to the intended destination", () => {
@@ -45,7 +60,7 @@ describe("route catalog", () => {
     expect(forwardPersistentParams("/ai", current)).toBe("/ai?mode=ai&threadId=t1&state=encoded");
     expect(forwardPersistentParams("/inbox", current)).toBe("/inbox");
     expect(forwardPersistentParams("/spaces", current)).toBe("/spaces");
-    expect(forwardPersistentParams("/projects", current)).toBe("/projects");
+    expect(forwardPersistentParams("/projects", current)).toBe("/projects?space=s1");
     expect(forwardPersistentParams("/clients", current)).toBe("/clients");
     expect(forwardPersistentParams("/opportunities", current)).toBe("/opportunities");
     expect(forwardPersistentParams("/deals", current)).toBe("/deals");

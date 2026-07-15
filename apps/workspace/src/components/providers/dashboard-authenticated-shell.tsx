@@ -75,7 +75,9 @@ export function DashboardAuthenticatedShell({
   });
 
   const shouldShowLoading =
-    (session.workspace.status === "loadingSession" && !loadingTimedOut) ||
+    ((session.workspace.status === "loadingSession" ||
+      session.workspace.status === "convexAuthLoading") &&
+      !loadingTimedOut) ||
     isAuthHandoffPending ||
     (authRedirect && !hasRedirected);
 

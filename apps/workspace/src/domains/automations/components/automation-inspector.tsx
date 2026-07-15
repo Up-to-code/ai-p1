@@ -41,11 +41,19 @@ export function AutomationInspector({ node, workflow, onChange }: Props) {
               id="trigger-type"
               className="h-9 w-full rounded-md border bg-background px-3 text-sm"
               value={node.data.type}
-              onChange={(event) => onChange({ type: event.target.value as "manual" | "webhook", label: event.target.value === "webhook" ? "Incoming webhook" : "Run manually" })}
+              onChange={(event) => onChange({ type: event.target.value as "manual" | "webhook" | "domain_event", label: event.target.value === "webhook" ? "Incoming webhook" : event.target.value === "domain_event" ? "Domain event" : "Run manually" })}
             >
               <option value="manual">Manual</option>
               <option value="webhook">Webhook (Zapier)</option>
+              <option value="domain_event">Domain event</option>
             </select>
+          </div>
+        )}
+        {node.data.type === "domain_event" && (
+          <div className="space-y-1.5">
+            <Label htmlFor="event-type">Canonical event type</Label>
+            <Input id="event-type" value={node.data.config.eventType ?? ""} onChange={(event) => setConfig("eventType", event.target.value)} placeholder="engagement.activated" />
+            <p className="text-xs text-muted-foreground">Examples: proposal.accepted, engagement.activated, deliverable.approved, change_order.approved, invoice.posted, payment.recorded.</p>
           </div>
         )}
         {node.data.type === "webhook" && (

@@ -4,6 +4,7 @@ import type { Doc } from "../_generated/dataModel";
 import { getAuthUser } from "../auth";
 import { canActorUseMcpPermission, resolveScopePolicy } from "./scopePolicy";
 import { mcpPermissionValidator, mcpScopeValidator, type McpPermission } from "./validators";
+import { assertOrganizationEntitlement } from "../billing/access";
 
 const MAX_PROFILES = 100;
 
@@ -98,6 +99,12 @@ export const create = mutation({
       )
       .take(MAX_PROFILES);
     if (existing.length >= MAX_PROFILES) profileError("MCP_PROFILE_LIMIT", "You have reached the MCP profile limit.");
+    await assertOrganizationEntitlement(ctx, {
+      organizationId: args.organizationId,
+      key: "agent_link",
+      used: existing.length,
+      requestedUnits: 1,
+    });
     const permissions = await permittedProfile(ctx, args.organizationId, user._id, args.scope, args.permissions);
     const now = Date.now();
     const id = await ctx.db.insert("mcpConnectionProfiles", {

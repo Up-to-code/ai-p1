@@ -12,6 +12,7 @@ export type StoredCreditBalance = {
   subscriptionCreditsUsed: number;
   addOnCreditsGranted: number;
   addOnCreditsUsed: number;
+  reservedCredits?: number;
   currentPeriodStartAt?: number;
   currentPeriodEndAt?: number;
   updatedAt: number;
@@ -38,6 +39,7 @@ export type CreditUsageSummary = {
   addOnCreditsGranted: number;
   addOnCreditsUsed: number;
   addOnCreditsRemaining: number;
+  reservedCredits: number;
   currentPeriodStartAt?: number;
   currentPeriodEndAt?: number;
 };
@@ -66,6 +68,7 @@ export function creditUsageSummary(input: {
   );
   const addOnCreditsGranted = nonNegativeInteger(input.balance?.addOnCreditsGranted);
   const addOnCreditsUsed = Math.min(addOnCreditsGranted, nonNegativeInteger(input.balance?.addOnCreditsUsed));
+  const reservedCredits = nonNegativeInteger(input.balance?.reservedCredits);
 
   return {
     subscriptionCreditsGranted,
@@ -74,6 +77,7 @@ export function creditUsageSummary(input: {
     addOnCreditsGranted,
     addOnCreditsUsed,
     addOnCreditsRemaining: addOnCreditsGranted - addOnCreditsUsed,
+    reservedCredits,
     currentPeriodStartAt: input.balance?.currentPeriodStartAt ?? input.currentPeriodStartAt,
     currentPeriodEndAt: input.balance?.currentPeriodEndAt ?? input.currentPeriodEndAt,
   };

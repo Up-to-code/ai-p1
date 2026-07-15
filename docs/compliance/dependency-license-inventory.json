@@ -1,0 +1,825 @@
+{
+  "generatedFrom": "package-lock.json",
+  "packageCount": 3567,
+  "allowedLicenses": [
+    "MIT",
+    "Apache-2.0",
+    "ISC",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "0BSD"
+  ],
+  "recordedExceptionCount": 97,
+  "unknownCount": 21,
+  "violationCount": 0,
+  "recordedExceptions": [
+    {
+      "name": "@expo-google-fonts/cairo",
+      "version": "0.4.2",
+      "license": "MIT AND OFL-1.1",
+      "path": "node_modules/@expo-google-fonts/cairo",
+      "review": "Font attribution and redistribution review recorded."
+    },
+    {
+      "name": "@expo-google-fonts/manrope",
+      "version": "0.4.2",
+      "license": "MIT AND OFL-1.1",
+      "path": "node_modules/@expo-google-fonts/manrope",
+      "review": "Font attribution and redistribution review recorded."
+    },
+    {
+      "name": "@img/sharp-libvips-darwin-arm64",
+      "version": "1.2.4",
+      "license": "LGPL-3.0-or-later",
+      "path": "node_modules/@img/sharp-libvips-darwin-arm64",
+      "review": "Sharp platform binary boundary; dynamic linking and distribution review recorded."
+    },
+    {
+      "name": "@img/sharp-libvips-darwin-x64",
+      "version": "1.2.4",
+      "license": "LGPL-3.0-or-later",
+      "path": "node_modules/@img/sharp-libvips-darwin-x64",
+      "review": "Sharp platform binary boundary; dynamic linking and distribution review recorded."
+    },
+    {
+      "name": "@img/sharp-libvips-linux-arm",
+      "version": "1.2.4",
+      "license": "LGPL-3.0-or-later",
+      "path": "node_modules/@img/sharp-libvips-linux-arm",
+      "review": "Sharp platform binary boundary; dynamic linking and distribution review recorded."
+    },
+    {
+      "name": "@img/sharp-libvips-linux-arm64",
+      "version": "1.2.4",
+      "license": "LGPL-3.0-or-later",
+      "path": "node_modules/@img/sharp-libvips-linux-arm64",
+      "review": "Sharp platform binary boundary; dynamic linking and distribution review recorded."
+    },
+    {
+      "name": "@img/sharp-libvips-linux-ppc64",
+      "version": "1.2.4",
+      "license": "LGPL-3.0-or-later",
+      "path": "node_modules/@img/sharp-libvips-linux-ppc64",
+      "review": "Sharp platform binary boundary; dynamic linking and distribution review recorded."
+    },
+    {
+      "name": "@img/sharp-libvips-linux-riscv64",
+      "version": "1.2.4",
+      "license": "LGPL-3.0-or-later",
+      "path": "node_modules/@img/sharp-libvips-linux-riscv64",
+      "review": "Sharp platform binary boundary; dynamic linking and distribution review recorded."
+    },
+    {
+      "name": "@img/sharp-libvips-linux-s390x",
+      "version": "1.2.4",
+      "license": "LGPL-3.0-or-later",
+      "path": "node_modules/@img/sharp-libvips-linux-s390x",
+      "review": "Sharp platform binary boundary; dynamic linking and distribution review recorded."
+    },
+    {
+      "name": "@img/sharp-libvips-linux-x64",
+      "version": "1.2.4",
+      "license": "LGPL-3.0-or-later",
+      "path": "node_modules/@img/sharp-libvips-linux-x64",
+      "review": "Sharp platform binary boundary; dynamic linking and distribution review recorded."
+    },
+    {
+      "name": "@img/sharp-libvips-linuxmusl-arm64",
+      "version": "1.2.4",
+      "license": "LGPL-3.0-or-later",
+      "path": "node_modules/@img/sharp-libvips-linuxmusl-arm64",
+      "review": "Sharp platform binary boundary; dynamic linking and distribution review recorded."
+    },
+    {
+      "name": "@img/sharp-libvips-linuxmusl-x64",
+      "version": "1.2.4",
+      "license": "LGPL-3.0-or-later",
+      "path": "node_modules/@img/sharp-libvips-linuxmusl-x64",
+      "review": "Sharp platform binary boundary; dynamic linking and distribution review recorded."
+    },
+    {
+      "name": "@img/sharp-wasm32",
+      "version": "0.34.5",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later AND MIT",
+      "path": "node_modules/@img/sharp-wasm32",
+      "review": "Sharp WASM platform boundary review recorded."
+    },
+    {
+      "name": "@img/sharp-win32-arm64",
+      "version": "0.34.5",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "path": "node_modules/@img/sharp-win32-arm64",
+      "review": "Sharp platform binary boundary; dynamic linking and distribution review recorded."
+    },
+    {
+      "name": "@img/sharp-win32-ia32",
+      "version": "0.34.5",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "path": "node_modules/@img/sharp-win32-ia32",
+      "review": "Sharp platform binary boundary; dynamic linking and distribution review recorded."
+    },
+    {
+      "name": "@img/sharp-win32-x64",
+      "version": "0.34.5",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "path": "node_modules/@img/sharp-win32-x64",
+      "review": "Sharp platform binary boundary; dynamic linking and distribution review recorded."
+    },
+    {
+      "name": "@sentry/cli",
+      "version": "2.58.6",
+      "license": "FSL-1.1-MIT",
+      "path": "node_modules/@sentry/cli",
+      "review": "Sentry CLI build tooling; version and production boundary must remain pinned."
+    },
+    {
+      "name": "@sentry/cli-darwin",
+      "version": "2.58.6",
+      "license": "FSL-1.1-MIT",
+      "path": "node_modules/@sentry/cli-darwin",
+      "review": "Sentry CLI build tooling; version and production boundary must remain pinned."
+    },
+    {
+      "name": "@sentry/cli-linux-arm",
+      "version": "2.58.6",
+      "license": "FSL-1.1-MIT",
+      "path": "node_modules/@sentry/cli-linux-arm",
+      "review": "Sentry CLI build tooling; version and production boundary must remain pinned."
+    },
+    {
+      "name": "@sentry/cli-linux-arm64",
+      "version": "2.58.6",
+      "license": "FSL-1.1-MIT",
+      "path": "node_modules/@sentry/cli-linux-arm64",
+      "review": "Sentry CLI build tooling; version and production boundary must remain pinned."
+    },
+    {
+      "name": "@sentry/cli-linux-i686",
+      "version": "2.58.6",
+      "license": "FSL-1.1-MIT",
+      "path": "node_modules/@sentry/cli-linux-i686",
+      "review": "Sentry CLI build tooling; version and production boundary must remain pinned."
+    },
+    {
+      "name": "@sentry/cli-linux-x64",
+      "version": "2.58.6",
+      "license": "FSL-1.1-MIT",
+      "path": "node_modules/@sentry/cli-linux-x64",
+      "review": "Sentry CLI build tooling; version and production boundary must remain pinned."
+    },
+    {
+      "name": "@sentry/cli-win32-arm64",
+      "version": "2.58.6",
+      "license": "FSL-1.1-MIT",
+      "path": "node_modules/@sentry/cli-win32-arm64",
+      "review": "Sentry CLI build tooling; version and production boundary must remain pinned."
+    },
+    {
+      "name": "@sentry/cli-win32-i686",
+      "version": "2.58.6",
+      "license": "FSL-1.1-MIT",
+      "path": "node_modules/@sentry/cli-win32-i686",
+      "review": "Sentry CLI build tooling; version and production boundary must remain pinned."
+    },
+    {
+      "name": "@sentry/cli-win32-x64",
+      "version": "2.58.6",
+      "license": "FSL-1.1-MIT",
+      "path": "node_modules/@sentry/cli-win32-x64",
+      "review": "Sentry CLI build tooling; version and production boundary must remain pinned."
+    },
+    {
+      "name": "@vercel/analytics",
+      "version": "1.6.1",
+      "license": "MPL-2.0",
+      "path": "node_modules/@vercel/analytics",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "argparse",
+      "version": "2.0.1",
+      "license": "Python-2.0",
+      "path": "node_modules/argparse",
+      "review": "Legacy permissive license exception recorded."
+    },
+    {
+      "name": "axe-core",
+      "version": "4.12.1",
+      "license": "MPL-2.0",
+      "path": "node_modules/axe-core",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "big-integer",
+      "version": "1.6.52",
+      "license": "Unlicense",
+      "path": "node_modules/big-integer",
+      "review": "Public-domain-equivalent exception recorded."
+    },
+    {
+      "name": "binaryextensions",
+      "version": "6.11.0",
+      "license": "Artistic-2.0",
+      "path": "node_modules/binaryextensions",
+      "review": "Recorded for legal review; transitive tooling only."
+    },
+    {
+      "name": "caniuse-lite",
+      "version": "1.0.30001805",
+      "license": "CC-BY-4.0",
+      "path": "node_modules/caniuse-lite",
+      "review": "Browser compatibility dataset attribution review recorded."
+    },
+    {
+      "name": "chownr",
+      "version": "3.0.0",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/chownr",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "editions",
+      "version": "6.22.0",
+      "license": "Artistic-2.0",
+      "path": "node_modules/editions",
+      "review": "Recorded for legal review; transitive tooling only."
+    },
+    {
+      "name": "fast-sha256",
+      "version": "1.3.0",
+      "license": "Unlicense",
+      "path": "node_modules/fast-sha256",
+      "review": "Public-domain-equivalent exception recorded."
+    },
+    {
+      "name": "glob",
+      "version": "13.0.6",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/glob",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "gsap",
+      "version": "3.15.0",
+      "license": "Standard 'no charge' license: https://gsap.com/standard-license.",
+      "path": "node_modules/gsap",
+      "review": "GSAP runtime is an explicit source-available/commercial-boundary exception; legal confirmation remains required before distribution."
+    },
+    {
+      "name": "isexe",
+      "version": "3.1.5",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/@dotenvx/dotenvx/node_modules/isexe",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "isexe",
+      "version": "3.1.5",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/@npmcli/git/node_modules/isexe",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "isexe",
+      "version": "3.1.5",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/@npmcli/promise-spawn/node_modules/isexe",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "isexe",
+      "version": "3.1.5",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/@npmcli/run-script/node_modules/isexe",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "isexe",
+      "version": "3.1.5",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/app-builder-lib/node_modules/isexe",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "isexe",
+      "version": "4.0.0",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/node-gyp/node_modules/isexe",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "jackspeak",
+      "version": "3.4.3",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/jackspeak",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "json-metaschema",
+      "version": "1.3.0",
+      "license": "Public Domain",
+      "path": "node_modules/json-metaschema",
+      "review": "Public-domain package metadata recorded."
+    },
+    {
+      "name": "jsonify",
+      "version": "0.0.1",
+      "license": "Public Domain",
+      "path": "node_modules/jsonify",
+      "review": "Public-domain package metadata recorded."
+    },
+    {
+      "name": "language-subtag-registry",
+      "version": "0.3.23",
+      "license": "CC0-1.0",
+      "path": "node_modules/language-subtag-registry",
+      "review": "Public-domain dedication recorded."
+    },
+    {
+      "name": "lightningcss",
+      "version": "1.27.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/react-native-css-interop/node_modules/lightningcss",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss",
+      "version": "1.32.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/lightningcss",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-android-arm64",
+      "version": "1.32.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/lightningcss-android-arm64",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-darwin-arm64",
+      "version": "1.27.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/react-native-css-interop/node_modules/lightningcss-darwin-arm64",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-darwin-arm64",
+      "version": "1.32.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/lightningcss-darwin-arm64",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-darwin-x64",
+      "version": "1.27.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/react-native-css-interop/node_modules/lightningcss-darwin-x64",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-darwin-x64",
+      "version": "1.32.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/lightningcss-darwin-x64",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-freebsd-x64",
+      "version": "1.27.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/react-native-css-interop/node_modules/lightningcss-freebsd-x64",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-freebsd-x64",
+      "version": "1.32.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/lightningcss-freebsd-x64",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-linux-arm-gnueabihf",
+      "version": "1.27.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/react-native-css-interop/node_modules/lightningcss-linux-arm-gnueabihf",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-linux-arm-gnueabihf",
+      "version": "1.32.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/lightningcss-linux-arm-gnueabihf",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-linux-arm64-gnu",
+      "version": "1.27.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/react-native-css-interop/node_modules/lightningcss-linux-arm64-gnu",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-linux-arm64-gnu",
+      "version": "1.32.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/lightningcss-linux-arm64-gnu",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-linux-arm64-musl",
+      "version": "1.27.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/react-native-css-interop/node_modules/lightningcss-linux-arm64-musl",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-linux-arm64-musl",
+      "version": "1.32.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/lightningcss-linux-arm64-musl",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-linux-x64-gnu",
+      "version": "1.27.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/react-native-css-interop/node_modules/lightningcss-linux-x64-gnu",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-linux-x64-gnu",
+      "version": "1.32.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/lightningcss-linux-x64-gnu",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-linux-x64-musl",
+      "version": "1.27.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/react-native-css-interop/node_modules/lightningcss-linux-x64-musl",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-linux-x64-musl",
+      "version": "1.32.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/lightningcss-linux-x64-musl",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-win32-arm64-msvc",
+      "version": "1.27.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/react-native-css-interop/node_modules/lightningcss-win32-arm64-msvc",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-win32-arm64-msvc",
+      "version": "1.32.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/lightningcss-win32-arm64-msvc",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-win32-x64-msvc",
+      "version": "1.27.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/react-native-css-interop/node_modules/lightningcss-win32-x64-msvc",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lightningcss-win32-x64-msvc",
+      "version": "1.32.0",
+      "license": "MPL-2.0",
+      "path": "node_modules/lightningcss-win32-x64-msvc",
+      "review": "File-level copyleft dependency review recorded."
+    },
+    {
+      "name": "lru-cache",
+      "version": "11.5.2",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/path-scurry/node_modules/lru-cache",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "mdn-data",
+      "version": "2.0.14",
+      "license": "CC0-1.0",
+      "path": "node_modules/mdn-data",
+      "review": "Public-domain dedication recorded."
+    },
+    {
+      "name": "minimatch",
+      "version": "10.2.5",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/minimatch",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "minipass",
+      "version": "7.1.3",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/@sentry/webpack-plugin/node_modules/path-scurry/node_modules/minipass",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "minipass",
+      "version": "7.1.3",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/minipass",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "minipass-flush",
+      "version": "1.0.7",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/minipass-flush",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "package-json-from-dist",
+      "version": "1.0.1",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/package-json-from-dist",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "path-scurry",
+      "version": "1.11.1",
+      "license": "BlueOak-1.0.0",
+      "path": "apps/zapier/node_modules/path-scurry",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "path-scurry",
+      "version": "1.11.1",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/@npmcli/map-workspaces/node_modules/path-scurry",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "path-scurry",
+      "version": "1.11.1",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/@npmcli/package-json/node_modules/path-scurry",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "path-scurry",
+      "version": "1.11.1",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/@npmcli/run-script/node_modules/path-scurry",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "path-scurry",
+      "version": "1.11.1",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/@sentry/webpack-plugin/node_modules/path-scurry",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "path-scurry",
+      "version": "1.11.1",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/archiver-utils/node_modules/path-scurry",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "path-scurry",
+      "version": "1.11.1",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/cacache/node_modules/path-scurry",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "path-scurry",
+      "version": "2.0.2",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/path-scurry",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "postal-mime",
+      "version": "2.7.4",
+      "license": "MIT-0",
+      "path": "node_modules/postal-mime",
+      "review": "Permissive exception recorded."
+    },
+    {
+      "name": "sax",
+      "version": "1.6.0",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/sax",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "spdx-exceptions",
+      "version": "2.5.0",
+      "license": "CC-BY-3.0",
+      "path": "node_modules/spdx-exceptions",
+      "review": "Metadata dataset attribution review recorded."
+    },
+    {
+      "name": "spdx-license-ids",
+      "version": "3.0.23",
+      "license": "CC0-1.0",
+      "path": "node_modules/spdx-license-ids",
+      "review": "Public-domain dedication recorded."
+    },
+    {
+      "name": "stream-buffers",
+      "version": "2.2.0",
+      "license": "Unlicense",
+      "path": "node_modules/stream-buffers",
+      "review": "Public-domain-equivalent exception recorded."
+    },
+    {
+      "name": "tar",
+      "version": "7.5.20",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/tar",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "textextensions",
+      "version": "6.11.0",
+      "license": "Artistic-2.0",
+      "path": "node_modules/textextensions",
+      "review": "Recorded for legal review; transitive tooling only."
+    },
+    {
+      "name": "truncate-utf8-bytes",
+      "version": "1.0.2",
+      "license": "WTFPL",
+      "path": "node_modules/truncate-utf8-bytes",
+      "review": "Permissive exception recorded."
+    },
+    {
+      "name": "version-range",
+      "version": "4.15.0",
+      "license": "Artistic-2.0",
+      "path": "node_modules/version-range",
+      "review": "Recorded for legal review; transitive tooling only."
+    },
+    {
+      "name": "yallist",
+      "version": "5.0.0",
+      "license": "BlueOak-1.0.0",
+      "path": "node_modules/tar/node_modules/yallist",
+      "review": "Recorded permissive exception."
+    },
+    {
+      "name": "zapier-platform-cli",
+      "version": "19.0.0",
+      "license": "SEE LICENSE IN LICENSE",
+      "path": "node_modules/zapier-platform-cli",
+      "review": "Zapier SDK/tooling boundary requires its bundled license and version to remain pinned."
+    },
+    {
+      "name": "zapier-platform-core",
+      "version": "19.0.0",
+      "license": "SEE LICENSE IN LICENSE",
+      "path": "node_modules/zapier-platform-core",
+      "review": "Zapier SDK/tooling boundary requires its bundled license and version to remain pinned."
+    },
+    {
+      "name": "zapier-platform-schema",
+      "version": "19.0.0",
+      "license": "SEE LICENSE IN LICENSE",
+      "path": "node_modules/zapier-platform-schema",
+      "review": "Zapier SDK/tooling boundary requires its bundled license and version to remain pinned."
+    }
+  ],
+  "unknown": [
+    {
+      "name": "@dodopayments/convex",
+      "version": "0.2.12",
+      "license": "UNKNOWN",
+      "path": "node_modules/@dodopayments/convex"
+    },
+    {
+      "name": "@qentrah/auth",
+      "version": "unknown",
+      "license": "UNKNOWN",
+      "path": "node_modules/@qentrah/auth"
+    },
+    {
+      "name": "@qentrah/brand-identity",
+      "version": "unknown",
+      "license": "UNKNOWN",
+      "path": "node_modules/@qentrah/brand-identity"
+    },
+    {
+      "name": "@qentrah/domain-contracts",
+      "version": "unknown",
+      "license": "UNKNOWN",
+      "path": "node_modules/@qentrah/domain-contracts"
+    },
+    {
+      "name": "@qentrah/location-map",
+      "version": "unknown",
+      "license": "UNKNOWN",
+      "path": "node_modules/@qentrah/location-map"
+    },
+    {
+      "name": "@qentrah/marketing",
+      "version": "unknown",
+      "license": "UNKNOWN",
+      "path": "node_modules/@qentrah/marketing"
+    },
+    {
+      "name": "@qentrah/mcp-contracts",
+      "version": "unknown",
+      "license": "UNKNOWN",
+      "path": "node_modules/@qentrah/mcp-contracts"
+    },
+    {
+      "name": "@qentrah/mobile",
+      "version": "unknown",
+      "license": "UNKNOWN",
+      "path": "node_modules/@qentrah/mobile"
+    },
+    {
+      "name": "@qentrah/our-platform-components",
+      "version": "unknown",
+      "license": "UNKNOWN",
+      "path": "node_modules/@qentrah/our-platform-components"
+    },
+    {
+      "name": "@qentrah/partner-auth-core",
+      "version": "unknown",
+      "license": "UNKNOWN",
+      "path": "node_modules/@qentrah/partner-auth-core"
+    },
+    {
+      "name": "@qentrah/partner-workspace-sync",
+      "version": "unknown",
+      "license": "UNKNOWN",
+      "path": "node_modules/@qentrah/partner-workspace-sync"
+    },
+    {
+      "name": "@qentrah/platform-core",
+      "version": "unknown",
+      "license": "UNKNOWN",
+      "path": "node_modules/@qentrah/platform-core"
+    },
+    {
+      "name": "@qentrah/ui",
+      "version": "unknown",
+      "license": "UNKNOWN",
+      "path": "node_modules/@qentrah/ui"
+    },
+    {
+      "name": "@qentrah/workspace",
+      "version": "unknown",
+      "license": "UNKNOWN",
+      "path": "node_modules/@qentrah/workspace"
+    },
+    {
+      "name": "@qentrah/zapier-app",
+      "version": "unknown",
+      "license": "UNKNOWN",
+      "path": "node_modules/@qentrah/zapier-app"
+    },
+    {
+      "name": "base-64",
+      "version": "0.1.0",
+      "license": "UNKNOWN",
+      "path": "node_modules/base-64"
+    },
+    {
+      "name": "cli-table",
+      "version": "0.3.11",
+      "license": "UNKNOWN",
+      "path": "node_modules/cli-table"
+    },
+    {
+      "name": "exit",
+      "version": "0.1.2",
+      "license": "UNKNOWN",
+      "path": "node_modules/exit"
+    },
+    {
+      "name": "fly-import",
+      "version": "0.4.1",
+      "license": "UNKNOWN",
+      "path": "node_modules/fly-import"
+    },
+    {
+      "name": "urlsafe-base64",
+      "version": "1.0.0",
+      "license": "UNKNOWN",
+      "path": "node_modules/urlsafe-base64"
+    },
+    {
+      "name": "which-package-manager",
+      "version": "0.0.1",
+      "license": "UNKNOWN",
+      "path": "node_modules/which-package-manager"
+    }
+  ],
+  "violations": []
+}
