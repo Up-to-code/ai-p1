@@ -15,6 +15,10 @@ describe("development Project portfolio seed safety", () => {
     );
     expect(source).toContain("existingMarker");
     expect(source).toContain("alreadySeeded: true");
+    expect(source).toContain("repairDevelopmentProjectViews");
+    expect(source).toContain("isSystemDefault: false");
+    expect(source).toContain("isRemovable: true");
+    expect(source).toContain('sharingMode: "shared"');
   });
 
   it("covers the complete Project-management development graph", () => {

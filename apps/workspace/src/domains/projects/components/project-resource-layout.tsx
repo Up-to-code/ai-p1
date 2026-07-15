@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   CalendarDays,
   Columns3,
@@ -40,6 +41,7 @@ import {
   useRenameProjectViewTab,
   useReorderProjectViewTabs,
 } from "../api/project-workspace";
+import { useProjectsIndexQuery } from "../api/projects";
 import {
   defaultProjectViewConfig,
   isProjectViewType,
@@ -94,11 +96,13 @@ function savedViewForSharing(tab: ProjectWorkspaceSurfaceTab): SavedViewRecord {
 
 export function ProjectResourceLayout({ children }: { children: React.ReactNode }) {
   const session = useAuthSession();
+  const t = useTranslations("Projects.workspace");
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
   const organizationId = session.workspace.organizationId ?? undefined;
   const surfaceQuery = useProjectWorkspaceSurface(organizationId);
+  const projectIndex = useProjectsIndexQuery(organizationId);
   const createView = useCreateProjectViewTab();
   const renameView = useRenameProjectViewTab();
   const duplicateView = useDuplicateProjectViewTab();
@@ -174,7 +178,9 @@ export function ProjectResourceLayout({ children }: { children: React.ReactNode 
   const config: ResourceWorkspaceConfig = {
     resourceId: "projects",
     title: "Projects",
-    count: surfaceQuery.isLoading ? "Loading views…" : `${projection?.tabs.length ?? 0} saved view${projection?.tabs.length === 1 ? "" : "s"}`,
+    count: projectIndex.queryStatus === "loading"
+      ? t("loadingProjects")
+      : t("projectCount", { count: projectIndex.stats?.total ?? projectIndex.results.length }),
     activeViewId: activeTab?.id ?? `base:${activeType}`,
     views,
     actions: [{ id: "new-project", label: "New project", icon: <Plus className="h-3.5 w-3.5" />, onClick: () => setCreateProjectOpen(true), variant: "primary" }],

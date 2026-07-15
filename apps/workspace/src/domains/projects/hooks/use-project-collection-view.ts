@@ -18,6 +18,19 @@ const PROJECT_STATUSES = new Set<ProjectStatus>([
   "completed",
   "archived",
 ]);
+const PROJECT_SORT_FIELDS = new Set<keyof Project>([
+  "name",
+  "status",
+  "health",
+  "progress",
+  "startDate",
+  "endDate",
+  "budget",
+  "currency",
+  "ownerUserId",
+  "createdAt",
+  "updatedAt",
+]);
 
 function configuredStatus(config: ReturnType<typeof defaultProjectViewConfig>) {
   const filter = config.filters?.find((item) => item.field === "status" && item.operator === "equals");
@@ -55,16 +68,28 @@ export function useProjectCollectionView(
     ? (queryStatus as ProjectStatus)
     : configuredStatus(config);
   const search = params.get("search") ?? config.search;
+  const requestedSort = params.get("sort");
+  const sortBy = requestedSort && PROJECT_SORT_FIELDS.has(requestedSort as keyof Project)
+    ? requestedSort
+    : config.sortBy;
+  const requestedDirection = params.get("direction");
+  const sortDirection = requestedDirection === "asc" || requestedDirection === "desc"
+    ? requestedDirection
+    : config.sortDirection;
   const projectsQuery = useProjectsIndexQuery(organizationId, { status, search });
   const projects = useMemo(
-    () => sortProjects(projectsQuery.results, config.sortBy, config.sortDirection),
-    [config.sortBy, config.sortDirection, projectsQuery.results],
+    () => sortProjects(projectsQuery.results, sortBy, sortDirection),
+    [projectsQuery.results, sortBy, sortDirection],
   );
   return {
     organizationId,
     tab,
     config,
     projects,
+    search: search ?? "",
+    filterStatus: status,
+    sortBy,
+    sortDirection: sortDirection ?? "desc",
     status: projectsQuery.status,
     queryStatus: projectsQuery.queryStatus,
     errorMessage: projectsQuery.errorMessage,

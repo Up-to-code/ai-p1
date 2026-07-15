@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useTrackedViewMutation, type SavedViewConfig } from "@/domains/views";
@@ -11,16 +11,22 @@ import type {
 } from "../workspace/project-workspace";
 
 export function useProjectWorkspaceSurface(organizationId?: string) {
+  const { isAuthenticated } = useConvexAuth();
   const ensureDefaults = useMutation(
     api.projectWorkspace.write.ensureProjectWorkspaceDefaults,
   );
   const backfillStarted = useRef<string | null>(null);
   const data = useQuery(
     api.projectWorkspace.read.getSurfaceProjection,
-    organizationId ? { organizationId } : "skip",
+    organizationId && isAuthenticated ? { organizationId } : "skip",
   ) as ProjectWorkspaceSurfaceProjection | null | undefined;
   useEffect(() => {
-    if (!organizationId || data !== null || backfillStarted.current === organizationId) {
+    if (
+      !organizationId ||
+      !isAuthenticated ||
+      data !== null ||
+      backfillStarted.current === organizationId
+    ) {
       return;
     }
     // One-time compatibility seam for Organizations created before the
@@ -28,10 +34,12 @@ export function useProjectWorkspaceSurface(organizationId?: string) {
     // idempotent; the reactive query supplies the authoritative result.
     backfillStarted.current = organizationId;
     void ensureDefaults({ organizationId });
-  }, [data, ensureDefaults, organizationId]);
+  }, [data, ensureDefaults, isAuthenticated, organizationId]);
   return {
     data,
-    isLoading: Boolean(organizationId) && (data === undefined || data === null),
+    isLoading:
+      Boolean(organizationId) &&
+      (!isAuthenticated || data === undefined || data === null),
     isMissing: data === null,
   };
 }

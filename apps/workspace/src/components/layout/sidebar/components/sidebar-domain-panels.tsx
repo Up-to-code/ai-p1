@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { FileText, ListTodo, Plus } from "lucide-react";
-import { useQuery as useConvexQuery } from "convex/react";
+import { useConvexAuth, useQuery as useConvexQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { NavigationDomainId } from "@qentrah/domain-contracts";
 import { useTranslations } from "next-intl";
@@ -69,9 +69,10 @@ export function SidebarCalendarPanel() {
 
 export function SidebarProjectsPanel() {
   const organizationId = useAuthSession().workspace.organizationId ?? undefined;
+  const { isAuthenticated } = useConvexAuth();
   const projection = useConvexQuery(
     api.projectWorkspace.read.getProjectManagementTree,
-    organizationId ? { organizationId } : "skip",
+    organizationId && isAuthenticated ? { organizationId } : "skip",
   ) as ProjectManagementTreeProjection | undefined;
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(
     () => new Set(["spaces"]),

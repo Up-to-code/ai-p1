@@ -58,4 +58,17 @@ describe("Project Workspace architecture guards", () => {
     expect(taskAdapter).toContain('export * from "@/domains/views"');
     expect(taskAdapter).not.toContain("useQuery(");
   });
+
+  it("renders the All Projects table from truthful project data and persisted view configuration", () => {
+    const tableView = read("src/domains/projects/components/views/project-table-view.tsx");
+    const collectionView = read("src/domains/projects/hooks/use-project-collection-view.ts");
+
+    expect(tableView).toContain("listOrganizationMembers");
+    expect(tableView).toContain("useUpdateProjectViewConfig");
+    expect(tableView).toContain("StatusPill");
+    expect(tableView).toContain("columnVisibility");
+    expect(tableView).not.toContain("String(value)");
+    expect(collectionView).toContain('params.get("sort")');
+    expect(collectionView).toContain('params.get("direction")');
+  });
 });

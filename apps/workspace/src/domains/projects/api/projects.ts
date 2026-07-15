@@ -7,17 +7,21 @@ import {
   useWorkspaceResourceResult,
 } from "@/domains/resources/workspace-resource-request";
 import { createResourceApi } from "@/domains/resources/resource-api-factory";
-import type { Project, ProjectStatus, ProjectHealth } from "../store/projects.types";
+import type { Project, ProjectStatus } from "../store/projects.types";
 import type { ProjectFormValues } from "../validation/project.schema";
 
 export const PROJECTS_PAGE_SIZE = 30;
 
 type ProjectStats = {
   total: number;
-  approved: number;
-  pending: number;
-  draft: number;
-  rejected: number;
+  planned: number;
+  active: number;
+  paused: number;
+  completed: number;
+  archived: number;
+  onTrack: number;
+  atRisk: number;
+  blocked: number;
 };
 
 export function useProjectsPagedQuery(organizationId?: string, options?: { status?: ProjectStatus; search?: string }) {

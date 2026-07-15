@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internalMutation } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
+import type { MutationCtx } from "../_generated/server";
 import {
   ensureSavedView,
   ensureSurface,
@@ -95,6 +96,90 @@ const resultValidator = v.object({
   notifications: v.number(),
 });
 
+async function repairDevelopmentProjectViews(
+  ctx: MutationCtx,
+  organizationId: string,
+  actorUserId: string,
+  now: number,
+) {
+  const views = await ctx.db
+    .query("savedViews")
+    .withIndex("by_resource_scope_state", (q) =>
+      q
+        .eq("organizationId", organizationId)
+        .eq("resourceType", "project")
+        .eq("scopeType", "workspace")
+        .eq("scopeId", undefined)
+        .eq("recordState", "active"),
+    )
+    .collect();
+  const defaultColumns = [
+    "name",
+    "status",
+    "health",
+    "progress",
+    "ownerUserId",
+    "startDate",
+    "endDate",
+    "budget",
+    "updatedAt",
+  ];
+
+  for (const view of views) {
+    if (view.sourceTemplateId === "default:workspace:project-table") {
+      if (JSON.stringify(view.config.columnOrder) !== JSON.stringify(defaultColumns)) {
+        await ctx.db.patch(view._id, {
+          config: {
+            ...view.config,
+            sortBy: "updatedAt",
+            sortDirection: "desc",
+            density: "normal",
+            columnOrder: defaultColumns,
+            project: { ...view.config.project, visibleFields: defaultColumns },
+          },
+          revision: (view.revision ?? 1) + 1,
+          updatedAt: now,
+        });
+      }
+      continue;
+    }
+    if (!view.sourceTemplateId?.startsWith("development:workspace:project-")) {
+      continue;
+    }
+    const needsRepair =
+      view.isSystemDefault !== false ||
+      view.isRemovable !== true ||
+      view.ownerUserId !== actorUserId ||
+      view.sharingMode !== "shared";
+    if (needsRepair) {
+      await ctx.db.patch(view._id, {
+        ownerUserId: actorUserId,
+        visibility: "organization",
+        sharingMode: "shared",
+        isDefault: false,
+        isSystemDefault: false,
+        isRemovable: true,
+        revision: (view.revision ?? 1) + 1,
+        updatedAt: now,
+      });
+    }
+    const tabs = await ctx.db
+      .query("surfaceTabs")
+      .withIndex("by_saved_view", (q) =>
+        q.eq("organizationId", organizationId).eq("savedViewId", view._id),
+      )
+      .collect();
+    for (const tab of tabs) {
+      if (tab.recordState !== "active") continue;
+      await ctx.db.patch(tab._id, {
+        ownerUserId: actorUserId,
+        visibility: "organization",
+        updatedAt: now,
+      });
+    }
+  }
+}
+
 /**
  * Creates a deterministic, idempotent development portfolio for the requested
  * Better Auth identity. This is internal-only and requires an explicit safety
@@ -120,6 +205,12 @@ export const seedProjectManagementPortfolio = internalMutation({
     if (!organization) throw new Error("The development Organization was not found.");
     if (!profile) throw new Error("The target development user profile was not found.");
     if (existingMarker) {
+      await repairDevelopmentProjectViews(
+        ctx,
+        args.organizationId,
+        args.targetUserId,
+        Date.now(),
+      );
       return { alreadySeeded: true, spaces: 0, projects: 0, tasks: 0, documents: 0, calendarEvents: 0, milestones: 0, channels: 0, messages: 0, savedViews: 0, notifications: 0 };
     }
 
@@ -557,6 +648,7 @@ export const seedProjectManagementPortfolio = internalMutation({
       if (view.created) counts.savedViews += 1;
       await ensureSurfaceTab(ctx, { organizationId: args.organizationId, surfaceId: surface.id, actorUserId, savedViewId: view.id, now, seed: { label: seed.name, icon: seed.icon, order: 100 + order * 10, tabType: "savedView", savedViewTemplateId: `development:workspace:project-${seed.viewType}` } });
     }
+    await repairDevelopmentProjectViews(ctx, args.organizationId, actorUserId, now);
 
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,

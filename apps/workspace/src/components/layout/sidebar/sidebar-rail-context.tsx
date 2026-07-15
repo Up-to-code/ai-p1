@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import type { AuthorizedNavigationProjection } from "@qentrah/domain-contracts";
 import { api } from "@convex/_generated/api";
 import { usePathname } from "@/i18n/routing";
@@ -33,9 +33,10 @@ export function SidebarRailProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const session = useAuthSession();
   const organizationId = session.workspace.organizationId ?? undefined;
+  const { isAuthenticated } = useConvexAuth();
   const navigationProjection = useQuery(
     api.navigation.read.getAuthorizedProjection,
-    organizationId ? { organizationId } : "skip",
+    organizationId && isAuthenticated ? { organizationId } : "skip",
   ) as AuthorizedNavigationProjection | undefined;
   const updateOverlay = useMutation(api.navigation.write.updateMyOverlay);
   const matchedRailItem = getActiveRailItem(pathname);
@@ -110,7 +111,9 @@ export function SidebarRailProvider({ children }: { children: ReactNode }) {
         activeRailItem,
         secondaryPanelMode,
         navigationProjection,
-        isNavigationLoading: Boolean(organizationId && navigationProjection === undefined),
+        isNavigationLoading: Boolean(
+          organizationId && (!isAuthenticated || navigationProjection === undefined),
+        ),
         secondaryPanelWidth,
         toggleMain,
         openRailItem,
