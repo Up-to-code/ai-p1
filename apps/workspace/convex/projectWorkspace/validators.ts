@@ -80,12 +80,8 @@ export const projectManagementTreeProjectionValidator = v.object({
     })),
     documents: v.array(v.object({ id: v.id("docs"), title: v.string(), route: v.string() })),
   })),
-  channels: v.array(v.object({ id: v.string(), name: v.string(), route: v.string(), scope: v.string() })),
-  directMessages: v.array(v.object({ id: v.string(), name: v.string(), route: v.string() })),
   capabilities: v.object({
     canCreateSpace: v.boolean(),
     canCreateProject: v.boolean(),
-    canCreateChannel: v.boolean(),
-    canCreateDirectMessage: v.boolean(),
   }),
 });

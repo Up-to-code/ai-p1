@@ -7,7 +7,6 @@ import { resolveSpaceAccess } from "../access/space";
 import { resolveProjectAccess } from "../access/project";
 import { resolveProjectSpaceAccess } from "../access/projectSpace";
 import { resolveDocumentAccess } from "../access/document";
-import { resolveChannelAccess } from "../access/channel";
 import { canPerformOrganizationAction } from "../permissions";
 import { requireServerActor } from "../access/actor";
 import { assertCanReadSavedViewScope } from "../access/savedView";
@@ -154,26 +153,23 @@ export const getProjectManagementTree = query({
   handler: async (ctx, args) => {
     await assertOrganizationPermission(ctx, args.organizationId, "read");
     const actor = await requireServerActor(ctx);
-    const [spaceAccess, projectAccess, projectSpaceAccess, documentAccess, channelAccess] = await Promise.all([
+    const [spaceAccess, projectAccess, projectSpaceAccess, documentAccess] = await Promise.all([
       resolveSpaceAccess(ctx, args.organizationId),
       resolveProjectAccess(ctx, args.organizationId),
       resolveProjectSpaceAccess(ctx, args.organizationId),
       resolveDocumentAccess(ctx, args.organizationId),
-      resolveChannelAccess(ctx, args.organizationId),
     ]);
-    const [spaceRows, projectRows, linkRows, documentRows, channelRows, taskRows] = await Promise.all([
+    const [spaceRows, projectRows, linkRows, documentRows, taskRows] = await Promise.all([
       ctx.db.query("spaces").withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId)).take(200),
       ctx.db.query("projects").withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId)).take(300),
       ctx.db.query("projectSpaces").withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId)).take(800),
       ctx.db.query("docs").withIndex("by_organization", (q) => q.eq("organizationId", args.organizationId)).take(500),
-      ctx.db.query("channels").withIndex("by_organization", (q) => q.eq("organizationId", args.organizationId)).take(500),
       ctx.db.query("tasks").withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId)).take(2_000),
     ]);
     const spaces = spaceAccess.filterReadable(spaceRows.filter((space) => !space.deletedAt && space.recordState !== "deleted"));
     const projects = projectAccess.filterReadable(projectRows.filter((project) => !project.deletedAt && project.recordState !== "deleted"));
     const links = await projectSpaceAccess.filterReadableLinks(linkRows.filter((link) => !link.deletedAt && link.recordState === "active"));
     const documents = await documentAccess.filterReadableDocuments(documentRows.filter((document) => !document.deletedAt));
-    const channels = await channelAccess.filterReadable(channelRows);
     const projectIds = new Set(projects.map((project) => project._id));
     const taskCounts = new Map<string, number>();
     for (const task of taskRows) {
@@ -210,13 +206,9 @@ export const getProjectManagementTree = query({
           documents: [...new Map(spaceDocuments.map((document) => [document._id, document])).values()].map((document) => ({ id: document._id, title: document.title, route: `/docs/${document._id}` })),
         };
       }),
-      channels: channels.filter((channel) => channel.type !== "dm").map((channel) => ({ id: channel.id, name: channel.name, route: `/channels/${channel.id}`, scope: channel.type })),
-      directMessages: channels.filter((channel) => channel.type === "dm").map((channel) => ({ id: channel.id, name: channel.name, route: `/channels/${channel.id}` })),
       capabilities: {
         canCreateSpace: await canPerformOrganizationAction(ctx, args.organizationId, actor.userId, "space", "create"),
         canCreateProject: await canPerformOrganizationAction(ctx, args.organizationId, actor.userId, "project", "create"),
-        canCreateChannel: await canPerformOrganizationAction(ctx, args.organizationId, actor.userId, "channel", "create"),
-        canCreateDirectMessage: true,
       },
     };
   },

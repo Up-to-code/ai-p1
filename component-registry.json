@@ -1278,7 +1278,7 @@
       "name": "ProjectManagementTree",
       "path": "apps/workspace/src/components/shared/project-management-tree/project-management-tree.tsx",
       "kind": "shared-ui",
-      "summary": "Stateless hierarchical renderer for an authorized Project-management navigation projection, including Spaces, Projects, documents, Channels, direct messages, counts, and create actions.",
+      "summary": "Stateless hierarchical renderer for an authorized Project-management navigation projection, including Spaces, Projects, documents, counts, and create actions.",
       "usedIn": [
         "components/layout/sidebar/components/sidebar-domain-panels"
       ],
@@ -1290,7 +1290,7 @@
         "onCreateProject"
       ],
       "createdAt": "2026-07-15",
-      "notes": "Rendering-only. Convex projectWorkspace.getProjectManagementTree filters every Space, Project, Document, and Channel before this component receives the payload. Expansion remains UI-only state in the domain adapter."
+      "notes": "Rendering-only. Convex projectWorkspace.getProjectManagementTree filters every Space, Project, and Document before this component receives the payload. Messaging remains owned and rendered by Inbox. Expansion remains UI-only state in the domain adapter."
     },
     {
       "name": "ResourceViewMenu",

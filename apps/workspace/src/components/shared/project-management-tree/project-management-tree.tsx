@@ -5,8 +5,6 @@ import {
   ChevronRight,
   FileText,
   FolderKanban,
-  Hash,
-  MessageCircle,
   Plus,
 } from "lucide-react";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
@@ -28,13 +26,9 @@ export type ProjectManagementTreeProjection = {
     }>;
     documents: Array<{ id: string; title: string; route: string }>;
   }>;
-  channels: Array<{ id: string; name: string; route: string; scope: string }>;
-  directMessages: Array<{ id: string; name: string; route: string }>;
   capabilities: {
     canCreateSpace: boolean;
     canCreateProject: boolean;
-    canCreateChannel: boolean;
-    canCreateDirectMessage: boolean;
   };
 };
 
@@ -72,14 +66,6 @@ export function ProjectManagementTree({ projection, expandedIds, onToggle, onCre
       {projection.spaces.length === 0 ? <p className="px-2 py-1 text-xs text-muted-foreground">No accessible spaces</p> : null}
       {projection.capabilities.canCreateSpace ? <button type="button" onClick={onCreateSpace} className="flex h-7 w-full items-center gap-2 rounded-md px-2 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"><Plus className="h-3 w-3" />New space</button> : null}
       {projection.capabilities.canCreateProject ? <button type="button" onClick={onCreateProject} className="flex h-7 w-full items-center gap-2 rounded-md px-2 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"><Plus className="h-3 w-3" />New project</button> : null}
-    </Section>
-    <Section label="Channels" icon={<Hash className="h-3 w-3" />} open={expandedIds.has("channels")} onToggle={() => onToggle("channels")}>
-      {projection.channels.map((channel) => <TreeLink key={channel.id} href={channel.route} icon={<Hash className="h-3 w-3" />} label={channel.name} />)}
-      {projection.capabilities.canCreateChannel ? <TreeLink href="/inbox?new=true" icon={<Plus className="h-3 w-3" />} label="Add channel" /> : null}
-    </Section>
-    <Section label="Direct messages" icon={<MessageCircle className="h-3 w-3" />} open={expandedIds.has("direct-messages")} onToggle={() => onToggle("direct-messages")}>
-      {projection.directMessages.map((message) => <TreeLink key={message.id} href={message.route} icon={<MessageCircle className="h-3 w-3" />} label={message.name} />)}
-      {projection.capabilities.canCreateDirectMessage ? <TreeLink href="/channels?new=dm" icon={<Plus className="h-3 w-3" />} label="New message" /> : null}
     </Section>
   </nav>;
 }

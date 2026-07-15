@@ -19,8 +19,18 @@ describe("Project Workspace architecture guards", () => {
     expect(readApi).toContain("resolveSpaceAccess");
     expect(readApi).toContain("resolveProjectAccess");
     expect(readApi).toContain("resolveDocumentAccess");
-    expect(readApi).toContain("resolveChannelAccess");
     expect(readApi).toContain("filterReadable");
+  });
+
+  it("keeps the Projects sidebar scoped to project-management records", () => {
+    const readApi = read("convex/projectWorkspace/read.ts");
+    const treeRenderer = read("src/components/shared/project-management-tree/project-management-tree.tsx");
+
+    expect(readApi).not.toContain('ctx.db.query("channels")');
+    expect(readApi).not.toContain("resolveChannelAccess");
+    expect(treeRenderer).not.toContain('label="Channels"');
+    expect(treeRenderer).not.toContain('label="Direct messages"');
+    expect(treeRenderer).not.toContain('label="New message"');
   });
 
   it("keeps tab lifecycle invariants in one transactional command module", () => {

@@ -39,7 +39,7 @@ export function SidebarProjectsPanel() {
     organizationId ? { organizationId } : "skip",
   ) as ProjectManagementTreeProjection | undefined;
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(
-    () => new Set(["spaces", "channels", "direct-messages"]),
+    () => new Set(["spaces"]),
   );
   const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
