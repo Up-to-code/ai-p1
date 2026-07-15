@@ -10,6 +10,7 @@ import {
 } from "./validators";
 import { assertCommercialTransition, assertProposalAcceptable, nextAgreedAmount } from "./transitions";
 import { contractSearchProjection, deliverableSearchProjection, engagementSearchProjection, proposalSearchProjection } from "./search";
+import { emitAutomationEvent } from "../automations/events";
 
 const proposalInputValidator = v.object({
   dealId: v.id("deals"), title: v.string(), scope: v.string(), commercialModel: commercialModelValidator,
@@ -91,6 +92,7 @@ export const acceptProposal = mutation({
     if (!contract || !accepted) throw new Error("Commercial handoff failed.");
     await Promise.all([contractSearchProjection(ctx, contract), proposalSearchProjection(ctx, accepted)]);
     await audit(ctx, args.organizationId, actor.userId, "proposal.accept", proposal._id, `Accepted proposal and created contract ${contract.title}.`, now);
+    await emitAutomationEvent(ctx, { organizationId: args.organizationId, eventType: "proposal.accepted", resourceType: "proposal", resourceId: String(proposal._id), payload: { contractId: String(contract._id), clientId: String(contract.clientId) }, actorUserId: actor.userId });
     return contract;
   },
 });
@@ -126,6 +128,7 @@ export const activateEngagement = mutation({
     if (!engagement || !activeContract) throw new Error("Engagement activation failed.");
     await Promise.all([engagementSearchProjection(ctx, engagement), contractSearchProjection(ctx, activeContract)]);
     await audit(ctx, args.organizationId, access.actor.userId, "engagement.activate", engagementId, `Activated engagement ${engagement.name}.`, now);
+    await emitAutomationEvent(ctx, { organizationId: args.organizationId, eventType: "engagement.activated", resourceType: "engagement", resourceId: String(engagementId), payload: { contractId: String(contract._id), clientId: String(contract.clientId) }, actorUserId: access.actor.userId });
     return engagement;
   },
 });
@@ -222,6 +225,7 @@ export const decideApproval = mutation({
       }
     }
     await audit(ctx, args.organizationId, access.actor.userId, `delivery.approval.${args.decision}`, approval._id, `${args.decision === "approved" ? "Approved" : "Rejected"} ${approval.resourceType.replace("_", " ")}.`, now);
+    await emitAutomationEvent(ctx, { organizationId: args.organizationId, eventType: `${approval.resourceType}.${args.decision}`, resourceType: approval.resourceType, resourceId: approval.resourceId, payload: { engagementId: String(engagement._id), approvalId: String(approval._id) }, actorUserId: access.actor.userId });
     return { status: args.decision };
   },
 });

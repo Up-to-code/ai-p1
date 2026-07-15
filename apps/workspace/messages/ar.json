@@ -593,7 +593,9 @@
       "scenarios": "السيناريوهات",
       "rateCards": "بطاقات الأسعار",
       "resourceReports": "تقارير الموارد"
-      ,"financeOverview": "نظرة عامة على المالية", "projectBudgets": "ميزانيات المشاريع", "engagementBudgets": "ميزانيات الارتباطات", "estimates": "التقديرات", "expenses": "المصروفات", "invoices": "الفواتير", "payments": "المدفوعات", "retainers": "الدفعات المقدمة", "accountsReceivable": "الحسابات المدينة", "accountsPayable": "الحسابات الدائنة", "vendors": "الموردون", "banking": "الخدمات المصرفية", "reconciliation": "التسوية", "chartOfAccounts": "دليل الحسابات", "journalEntries": "قيود اليومية", "generalLedger": "دفتر الأستاذ العام", "tax": "الضرائب", "periodClose": "إقفال الفترة", "financialReports": "التقارير المالية"
+      ,"financeOverview": "نظرة عامة على المالية", "projectBudgets": "ميزانيات المشاريع", "engagementBudgets": "ميزانيات الارتباطات", "estimates": "التقديرات", "expenses": "المصروفات", "invoices": "الفواتير", "payments": "المدفوعات", "retainers": "الدفعات المقدمة", "accountsReceivable": "الحسابات المدينة", "accountsPayable": "الحسابات الدائنة", "vendors": "الموردون", "banking": "الخدمات المصرفية", "reconciliation": "التسوية", "chartOfAccounts": "دليل الحسابات", "journalEntries": "قيود اليومية", "generalLedger": "دفتر الأستاذ العام", "tax": "الضرائب", "periodClose": "إقفال الفترة", "financialReports": "التقارير المالية",
+      "executive": "تنفيذي", "sales": "المبيعات", "pipeline": "خط المبيعات", "resourceUtilization": "استغلال الموارد", "projectProfitability": "ربحية المشاريع", "clientProfitability": "ربحية العملاء", "savedReports": "التقارير المحفوظة", "scheduledReports": "التقارير المجدولة", "reportBuilder": "منشئ التقارير",
+      "workflows": "سير العمل", "activeRuns": "التشغيلات النشطة", "approvals": "الموافقات", "failures": "الإخفاقات", "runHistory": "سجل التشغيل", "webhooks": "خطافات الويب", "connections": "الاتصالات", "usageAndLimits": "الاستخدام والحدود", "newConversation": "محادثة جديدة", "agents": "الوكلاء", "agentRuns": "تشغيلات الوكلاء", "pendingApprovals": "الموافقات المعلقة", "tools": "الأدوات", "knowledgeSources": "مصادر المعرفة", "aiSettings": "إعدادات الذكاء"
     },
     "threads": {
       "newThread": "محادثة جديدة",
@@ -4741,6 +4743,11 @@
     "views": { "overview": "نظرة عامة على المالية", "project-budgets": "ميزانيات المشاريع", "engagement-budgets": "ميزانيات الارتباطات", "estimates": "التقديرات", "rate-cards": "بطاقات الأسعار", "expenses": "المصروفات", "invoices": "الفواتير", "payments": "المدفوعات", "retainers": "الدفعات المقدمة", "receivable": "الحسابات المدينة", "payable": "الحسابات الدائنة", "vendors": "الموردون", "banking": "الخدمات المصرفية", "reconciliation": "التسوية", "chart-of-accounts": "دليل الحسابات", "journal-entries": "قيود اليومية", "ledger": "دفتر الأستاذ العام", "tax": "الضرائب", "period-close": "إقفال الفترة", "reports": "التقارير المالية" },
     "metrics": { "receivable": "الحسابات المدينة", "payable": "الحسابات الدائنة", "revenue": "إيراد الاستحقاق", "profit": "ربح الاستحقاق", "cash": "الحركة النقدية", "unreconciled": "غير مسوّى" },
     "post": "ترحيل", "accept": "قبول", "close": "إقفال الفترة", "reverse": "عكس", "manualReversal": "قيد عكسي تصحيحي يدوي"
+  },
+  "Reports": {
+    "eyebrow": "ذكاء الوكالة", "description": "إسقاطات تشغيلية ومالية محكومة بصلاحيات المصدر. مشاركة التقرير لا تمنح صلاحية لسجلاته المصدرية.", "loading": "جارٍ تحميل التقارير…", "emptySaved": "لا توجد تقارير محفوظة مصرح بها.", "emptyScheduled": "لا توجد جداول تقارير مصرح بها.", "builderHint": "أنشئ وعدّل تعريفات التقارير عبر أوامر تراعي صلاحيات المصدر؛ تحمي التقارير المحمية الإعداد دون تجميد البيانات الحية.",
+    "views": { "executive": "تنفيذي", "sales": "المبيعات", "pipeline": "خط المبيعات", "delivery": "التسليم", "resource_utilization": "استغلال الموارد", "capacity": "الطاقة", "project_profitability": "ربحية المشاريع", "client_profitability": "ربحية العملاء", "finance": "المالية", "tax": "الضرائب", "saved": "التقارير المحفوظة", "scheduled": "التقارير المجدولة", "builder": "منشئ التقارير" },
+    "metrics": { "clients": "العملاء", "deals": "الصفقات", "pipelineValue": "قيمة خط المبيعات", "debits": "المدين", "credits": "الدائن", "ledgerLines": "سطور الأستاذ", "capacityMinutes": "دقائق الطاقة", "allocatedMinutes": "الدقائق المخصصة", "utilizationPercent": "نسبة الاستغلال", "projects": "المشاريع", "engagements": "الارتباطات" }
   },
   "NotFound": {
     "metadataTitle": "الصفحة غير موجودة",

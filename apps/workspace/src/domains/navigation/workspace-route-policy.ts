@@ -32,6 +32,7 @@ const protectedSegments = new Set([
   "projects",
   "resources",
   "finance",
+  "reports",
   "search",
   "settings",
   "spaces",

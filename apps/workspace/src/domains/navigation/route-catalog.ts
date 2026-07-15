@@ -35,6 +35,7 @@ export const ROUTE_IDS = [
   "contacts",
   "resources",
   "finance",
+  "reports",
 ] as const;
 
 export type RouteId = (typeof ROUTE_IDS)[number];
@@ -66,7 +67,7 @@ export const ROUTE_CATALOG: readonly RouteCatalogEntry[] = [
   { id: "projects", path: "/projects", persistentParams: [], railItem: "projects" },
   { id: "search", path: "/search", persistentParams: [], railItem: "home" },
   { id: "organization", path: "/organization", persistentParams: [], railItem: "admin" },
-  { id: "automations", path: "/automations", persistentParams: [], railItem: "automations" },
+  { id: "automations", path: "/automations", persistentParams: ["view"], railItem: "automations" },
   { id: "team", path: "/team", persistentParams: [], railItem: "admin" },
   { id: "billing", path: "/billing", persistentParams: [], railItem: "admin" },
   { id: "usage", path: "/usage", persistentParams: [], railItem: "admin" },
@@ -83,6 +84,7 @@ export const ROUTE_CATALOG: readonly RouteCatalogEntry[] = [
   { id: "delivery", path: "/delivery", persistentParams: [], railItem: "delivery" },
   { id: "resources", path: "/resources", persistentParams: ["view", "start", "end"], railItem: "resources" },
   { id: "finance", path: "/finance", persistentParams: ["view", "scope", "scopeId", "start", "end"], railItem: "finance" },
+  { id: "reports", path: "/reports", persistentParams: ["view", "report", "start", "end"], railItem: "reports" },
 ];
 
 function normalizePath(pathname: string): string | null {

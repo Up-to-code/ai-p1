@@ -597,7 +597,9 @@
       "scenarios": "Scenarios",
       "rateCards": "Rate cards",
       "resourceReports": "Resource reports"
-      ,"financeOverview": "Finance overview", "projectBudgets": "Project budgets", "engagementBudgets": "Engagement budgets", "estimates": "Estimates", "expenses": "Expenses", "invoices": "Invoices", "payments": "Payments", "retainers": "Retainers", "accountsReceivable": "Accounts receivable", "accountsPayable": "Accounts payable", "vendors": "Vendors", "banking": "Banking", "reconciliation": "Reconciliation", "chartOfAccounts": "Chart of accounts", "journalEntries": "Journal entries", "generalLedger": "General ledger", "tax": "Tax", "periodClose": "Period close", "financialReports": "Financial reports"
+      ,"financeOverview": "Finance overview", "projectBudgets": "Project budgets", "engagementBudgets": "Engagement budgets", "estimates": "Estimates", "expenses": "Expenses", "invoices": "Invoices", "payments": "Payments", "retainers": "Retainers", "accountsReceivable": "Accounts receivable", "accountsPayable": "Accounts payable", "vendors": "Vendors", "banking": "Banking", "reconciliation": "Reconciliation", "chartOfAccounts": "Chart of accounts", "journalEntries": "Journal entries", "generalLedger": "General ledger", "tax": "Tax", "periodClose": "Period close", "financialReports": "Financial reports",
+      "executive": "Executive", "sales": "Sales", "pipeline": "Pipeline", "resourceUtilization": "Resource utilization", "projectProfitability": "Project profitability", "clientProfitability": "Client profitability", "savedReports": "Saved reports", "scheduledReports": "Scheduled reports", "reportBuilder": "Report builder",
+      "workflows": "Workflows", "activeRuns": "Active runs", "approvals": "Approvals", "failures": "Failures", "runHistory": "Run history", "webhooks": "Webhooks", "connections": "Connections", "usageAndLimits": "Usage and limits", "newConversation": "New conversation", "agents": "Agents", "agentRuns": "Agent runs", "pendingApprovals": "Pending approvals", "tools": "Tools", "knowledgeSources": "Knowledge sources", "aiSettings": "AI settings"
     },
     "threads": {
       "newThread": "New thread",
@@ -4759,6 +4761,11 @@
     "views": { "overview": "Finance overview", "project-budgets": "Project budgets", "engagement-budgets": "Engagement budgets", "estimates": "Estimates", "rate-cards": "Rate cards", "expenses": "Expenses", "invoices": "Invoices", "payments": "Payments", "retainers": "Retainers", "receivable": "Accounts receivable", "payable": "Accounts payable", "vendors": "Vendors", "banking": "Banking", "reconciliation": "Reconciliation", "chart-of-accounts": "Chart of accounts", "journal-entries": "Journal entries", "ledger": "General ledger", "tax": "Tax", "period-close": "Period close", "reports": "Financial reports" },
     "metrics": { "receivable": "Accounts receivable", "payable": "Accounts payable", "revenue": "Accrual revenue", "profit": "Accrual profit", "cash": "Cash movement", "unreconciled": "Unreconciled" },
     "post": "Post", "accept": "Accept", "close": "Close period", "reverse": "Reverse", "manualReversal": "Manual correcting reversal"
+  },
+  "Reports": {
+    "eyebrow": "Agency intelligence", "description": "Source-authorized operational and financial projections. Sharing a report never grants access to its source records.", "loading": "Loading reports…", "emptySaved": "No authorized saved reports.", "emptyScheduled": "No authorized report schedules.", "builderHint": "Create and edit report definitions through the source-aware report commands; protected reports preserve configuration without freezing live data.",
+    "views": { "executive": "Executive", "sales": "Sales", "pipeline": "Pipeline", "delivery": "Delivery", "resource_utilization": "Resource utilization", "capacity": "Capacity", "project_profitability": "Project profitability", "client_profitability": "Client profitability", "finance": "Finance", "tax": "Tax", "saved": "Saved reports", "scheduled": "Scheduled reports", "builder": "Report builder" },
+    "metrics": { "clients": "Clients", "deals": "Deals", "pipelineValue": "Pipeline value", "debits": "Debits", "credits": "Credits", "ledgerLines": "Ledger lines", "capacityMinutes": "Capacity minutes", "allocatedMinutes": "Allocated minutes", "utilizationPercent": "Utilization percent", "projects": "Projects", "engagements": "Engagements" }
   },
   "NotFound": {
     "metadataTitle": "Page not found",

@@ -6,11 +6,11 @@
 
 ## Inventory summary
 
-- Source files scanned: 1754
-- Files exposing interfaces: 1483
-- Convex registered functions: 446
-- Application routes: 105
-- Hono/Convex HTTP registrations: 205
+- Source files scanned: 1769
+- Files exposing interfaces: 1498
+- Convex registered functions: 462
+- Application routes: 106
+- Hono/Convex HTTP registrations: 210
 - Eve/MCP tool entries: 118
 - Package commands: 88
 
@@ -168,6 +168,7 @@
 | `/:locale/privacy` | page | `apps/marketing/app/(site)/[locale]/privacy/page.tsx` |
 | `/:locale/profile` | page | `apps/workspace/src/app/[locale]/(app)/profile/page.tsx` |
 | `/:locale/projects` | page | `apps/workspace/src/app/[locale]/(app)/projects/page.tsx` |
+| `/:locale/reports` | page | `apps/workspace/src/app/[locale]/(app)/reports/page.tsx` |
 | `/:locale/resources` | page | `apps/workspace/src/app/[locale]/(app)/resources/page.tsx` |
 | `/:locale/search` | page | `apps/workspace/src/app/[locale]/(app)/search/page.tsx` |
 | `/:locale/settings` | page | `apps/workspace/src/app/[locale]/(app)/settings/page.tsx` |
@@ -416,6 +417,10 @@ fully composed path.
 | GET | `/organizations/:organizationId/tasks/:taskId` | `apps/workspace/src/server/domains/partnerApps/routing/router.ts` |
 | PATCH | `/organizations/:organizationId/tasks/:taskId` | `apps/workspace/src/server/domains/partnerApps/routing/router.ts` |
 | POST | `/organizations/:organizationId/webhooks/inbound` | `apps/workspace/src/server/domains/partnerApps/routing/router.ts` |
+| GET | `/engagements/:engagementId` | `apps/workspace/src/server/domains/portal/routing/router.ts` |
+| POST | `/engagements/:engagementId/approvals/:approvalId` | `apps/workspace/src/server/domains/portal/routing/router.ts` |
+| POST | `/engagements/:engagementId/requests` | `apps/workspace/src/server/domains/portal/routing/router.ts` |
+| POST | `/session/activate` | `apps/workspace/src/server/domains/portal/routing/router.ts` |
 | PATCH | `/` | `apps/workspace/src/server/domains/profile/routing/router.ts` |
 | PATCH | `/avatar` | `apps/workspace/src/server/domains/profile/routing/router.ts` |
 | GET | `/push-devices` | `apps/workspace/src/server/domains/profile/routing/router.ts` |
@@ -429,6 +434,7 @@ fully composed path.
 | MOUNT | `/organizations` | `apps/workspace/src/server/routing/v1/router.ts` |
 | MOUNT | `/partner` | `apps/workspace/src/server/routing/v1/router.ts` |
 | MOUNT | `/partner-apps` | `apps/workspace/src/server/routing/v1/router.ts` |
+| MOUNT | `/portal` | `apps/workspace/src/server/routing/v1/router.ts` |
 | MOUNT | `/profile` | `apps/workspace/src/server/routing/v1/router.ts` |
 
 ## Convex functions
@@ -436,10 +442,14 @@ fully composed path.
 | Exposure | Export | Source |
 | --- | --- | --- |
 | internalAction | `rotateKeys` | `apps/workspace/convex/auth.ts` |
+| mutation | `decideApproval` | `apps/workspace/convex/automations/execute.ts` |
+| internalMutation | `processPendingEvents` | `apps/workspace/convex/automations/execute.ts` |
 | mutation | `runManual` | `apps/workspace/convex/automations/execute.ts` |
 | internalMutation | `runWebhook` | `apps/workspace/convex/automations/execute.ts` |
 | query | `list` | `apps/workspace/convex/automations/read.ts` |
 | query | `listRuns` | `apps/workspace/convex/automations/read.ts` |
+| query | `organizationRuns` | `apps/workspace/convex/automations/read.ts` |
+| query | `pendingApprovals` | `apps/workspace/convex/automations/read.ts` |
 | mutation | `create` | `apps/workspace/convex/automations/write.ts` |
 | mutation | `remove` | `apps/workspace/convex/automations/write.ts` |
 | mutation | `save` | `apps/workspace/convex/automations/write.ts` |
@@ -756,6 +766,11 @@ fully composed path.
 | mutation | `seedDefaults` | `apps/workspace/convex/pipeline_stages/write.ts` |
 | mutation | `update` | `apps/workspace/convex/pipeline_stages/write.ts` |
 | query | `canUsePlatformAdminAction` | `apps/workspace/convex/platform/access.ts` |
+| mutation | `activateSession` | `apps/workspace/convex/portal/commands.ts` |
+| mutation | `decideDeliveryApproval` | `apps/workspace/convex/portal/commands.ts` |
+| mutation | `issueSession` | `apps/workspace/convex/portal/commands.ts` |
+| mutation | `submitRequest` | `apps/workspace/convex/portal/commands.ts` |
+| query | `engagement` | `apps/workspace/convex/portal/read.ts` |
 | query | `get` | `apps/workspace/convex/projectDashboards.ts` |
 | mutation | `upsert` | `apps/workspace/convex/projectDashboards.ts` |
 | query | `get` | `apps/workspace/convex/projects/read.ts` |
@@ -780,6 +795,13 @@ fully composed path.
 | mutation | `createFromHono` | `apps/workspace/convex/projectSpaces/write.ts` |
 | mutation | `deleteFromHono` | `apps/workspace/convex/projectSpaces/write.ts` |
 | mutation | `updateFromHono` | `apps/workspace/convex/projectSpaces/write.ts` |
+| mutation | `createReport` | `apps/workspace/convex/reports/commands.ts` |
+| mutation | `scheduleReport` | `apps/workspace/convex/reports/commands.ts` |
+| mutation | `setReportGrants` | `apps/workspace/convex/reports/commands.ts` |
+| mutation | `updateReport` | `apps/workspace/convex/reports/commands.ts` |
+| query | `list` | `apps/workspace/convex/reports/read.ts` |
+| query | `overview` | `apps/workspace/convex/reports/read.ts` |
+| query | `schedules` | `apps/workspace/convex/reports/read.ts` |
 | mutation | `addRateCardEntry` | `apps/workspace/convex/resourcePlanning/commands.ts` |
 | mutation | `allocateResource` | `apps/workspace/convex/resourcePlanning/commands.ts` |
 | mutation | `assignSkill` | `apps/workspace/convex/resourcePlanning/commands.ts` |
@@ -1206,10 +1228,12 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/auth/organization.ts` | function: createOrganizationPlugin |
 | `apps/workspace/convex/auth/runtime.ts` | type: BetterAuthRuntimeContext<br>function: asBetterAuthAdapterContext<br>value: AUTH_JWT_ALGORITHM<br>function: resolveBetterAuthRuntime<br>function: resolveSocialProviders |
 | `apps/workspace/convex/auth/topology.ts` | function: resolveConvexAuthTopology |
-| `apps/workspace/convex/automations/execute.ts` | convex-mutation: runManual<br>convex-internalMutation: runWebhook |
+| `apps/workspace/convex/automations/commandAdapter.ts` | function: executeAutomationAction<br>function: automationActionNeedsApproval |
+| `apps/workspace/convex/automations/events.ts` | function: emitAutomationEvent |
+| `apps/workspace/convex/automations/execute.ts` | convex-mutation: runManual<br>convex-mutation: decideApproval<br>convex-internalMutation: runWebhook<br>convex-internalMutation: processPendingEvents |
 | `apps/workspace/convex/automations/graph.ts` | function: orderedReachableActions<br>function: graphProblem |
 | `apps/workspace/convex/automations/layout.ts` | function: mergeAutomationPositions<br>function: automationLayoutUnchanged |
-| `apps/workspace/convex/automations/read.ts` | convex-query: list<br>convex-query: listRuns |
+| `apps/workspace/convex/automations/read.ts` | convex-query: list<br>convex-query: listRuns<br>convex-query: organizationRuns<br>convex-query: pendingApprovals |
 | `apps/workspace/convex/automations/validators.ts` | value: automationDocumentValidator<br>value: automationRunDocumentValidator |
 | `apps/workspace/convex/automations/write.ts` | convex-mutation: create<br>convex-mutation: save<br>convex-mutation: saveLayout<br>convex-mutation: setEnabled<br>convex-mutation: remove |
 | `apps/workspace/convex/betterAuth.ts` | value: betterAuthClient |
@@ -1372,6 +1396,9 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/pipeline_stages/read.ts` | convex-query: list |
 | `apps/workspace/convex/pipeline_stages/write.ts` | convex-mutation: create<br>convex-mutation: update<br>convex-mutation: remove<br>convex-mutation: reorder<br>convex-mutation: seedDefaults |
 | `apps/workspace/convex/platform/access.ts` | function: assertPlatformAdmin<br>convex-query: canUsePlatformAdminAction |
+| `apps/workspace/convex/portal/access.ts` | type: PortalCapability<br>function: hashPortalToken<br>function: resolvePortalAccess |
+| `apps/workspace/convex/portal/commands.ts` | convex-mutation: issueSession<br>convex-mutation: activateSession<br>convex-mutation: submitRequest<br>convex-mutation: decideDeliveryApproval |
+| `apps/workspace/convex/portal/read.ts` | convex-query: engagement |
 | `apps/workspace/convex/projectDashboards.ts` | function: applyDashboardPatch<br>function: readAuthorizedDashboard<br>function: requireUpdatableDashboardProject<br>convex-query: get<br>convex-mutation: upsert |
 | `apps/workspace/convex/projectSpaces/read.ts` | convex-query: listByOrganization<br>convex-query: list<br>convex-query: get<br>convex-query: listBySpace |
 | `apps/workspace/convex/projectSpaces/validators.ts` | value: projectSpaceInputValidator<br>value: projectSpaceValidator |
@@ -1380,6 +1407,10 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/projects/rollup.ts` | function: validateStrictTaskDates<br>function: updateProjectRollup |
 | `apps/workspace/convex/projects/validators.ts` | value: projectStatusValidator<br>value: projectHealthValidator<br>value: visibilityValidator<br>type: ProjectVisibility<br>type: StoredProjectVisibility<br>function: normalizeProjectVisibility<br>value: projectInputValidator<br>value: projectValidator |
 | `apps/workspace/convex/projects/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono<br>convex-internalMutation: createInternal<br>convex-internalMutation: updateInternal<br>convex-internalMutation: deleteInternal |
+| `apps/workspace/convex/reports/access.ts` | function: assertReportSourceAccess<br>function: assertReportScopeAccess<br>function: assertReportRead<br>function: assertReportManage |
+| `apps/workspace/convex/reports/commands.ts` | convex-mutation: createReport<br>convex-mutation: updateReport<br>convex-mutation: setReportGrants<br>convex-mutation: scheduleReport |
+| `apps/workspace/convex/reports/read.ts` | convex-query: list<br>convex-query: overview<br>convex-query: schedules |
+| `apps/workspace/convex/reports/validators.ts` | value: reportSourceValidator<br>value: reportVisibilityValidator<br>value: reportScopeValidator<br>value: reportCadenceValidator |
 | `apps/workspace/convex/requireAuth.ts` | function: requireAuth<br>function: getAuth |
 | `apps/workspace/convex/resourcePlanning/access.ts` | function: resourcePlanningAccess |
 | `apps/workspace/convex/resourcePlanning/capacity.ts` | type: IntervalAmount<br>function: assertInterval<br>function: overlapRatio<br>function: proratedMinutes<br>function: capacitySummary |
@@ -1403,6 +1434,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/schema/navigation.ts` | value: navigationTables |
 | `apps/workspace/convex/schema/organization.ts` | value: organizationTables |
 | `apps/workspace/convex/schema/partner.ts` | value: partnerTables |
+| `apps/workspace/convex/schema/reports.ts` | value: reportTables |
 | `apps/workspace/convex/schema/resourcePlanning.ts` | value: resourcePlanningTables |
 | `apps/workspace/convex/schema/search.ts` | value: searchTables |
 | `apps/workspace/convex/schema/theories.ts` | value: theoriesTables |
@@ -1503,6 +1535,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/layout.tsx` | function: ProjectLayout |
 | `apps/workspace/src/app/[locale]/(app)/projects/layout.tsx` | function: ProjectsLayout |
 | `apps/workspace/src/app/[locale]/(app)/projects/page.tsx` | function: ProjectsPage |
+| `apps/workspace/src/app/[locale]/(app)/reports/page.tsx` | function: ReportsPage |
 | `apps/workspace/src/app/[locale]/(app)/resources/page.tsx` | function: ResourcesPage |
 | `apps/workspace/src/app/[locale]/(app)/search/page.tsx` | function: SearchCenterPage |
 | `apps/workspace/src/app/[locale]/(app)/settings/[section]/page.tsx` | function: SettingsSectionPage |
@@ -1607,7 +1640,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/components/layout/sidebar/components/identity-avatar.tsx` | function: IdentityAvatar |
 | `apps/workspace/src/components/layout/sidebar/components/nav-tooltip.tsx` | function: NavTooltip |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-chat-panel.tsx` | function: SidebarChatPanel |
-| `apps/workspace/src/components/layout/sidebar/components/sidebar-domain-panels.tsx` | function: SidebarTasksPanel<br>function: SidebarCalendarPanel<br>function: SidebarProjectsPanel<br>function: SidebarCrmPanel<br>function: SidebarDeliveryPanel<br>function: SidebarResourcesPanel<br>function: SidebarFinancePanel<br>function: SidebarAutomationsPanel<br>function: SidebarAdminPanel<br>function: SidebarDocsPanel |
+| `apps/workspace/src/components/layout/sidebar/components/sidebar-domain-panels.tsx` | function: SidebarTasksPanel<br>function: SidebarCalendarPanel<br>function: SidebarProjectsPanel<br>function: SidebarCrmPanel<br>function: SidebarDeliveryPanel<br>function: SidebarResourcesPanel<br>function: SidebarFinancePanel<br>function: SidebarReportsPanel<br>function: SidebarAutomationsPanel<br>function: SidebarAdminPanel<br>function: SidebarDocsPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel.tsx` | function: SidebarInboxPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel/channel-filter.ts` | function: filterChannelsByScope<br>function: groupInboxChannels |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel/channel-section.tsx` | function: ChannelSection |
@@ -1793,6 +1826,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/automations/components/automation-component-palette.tsx` | function: AutomationComponentPalette |
 | `apps/workspace/src/domains/automations/components/automation-inspector.tsx` | function: AutomationInspector |
 | `apps/workspace/src/domains/automations/components/automation-library-dialog.tsx` | function: AutomationLibraryDialog |
+| `apps/workspace/src/domains/automations/components/automation-operations.tsx` | function: AutomationOperations |
 | `apps/workspace/src/domains/automations/components/automation-save-status.tsx` | function: AutomationSaveStatus |
 | `apps/workspace/src/domains/automations/components/automation-step-node.tsx` | function: AutomationStepNode |
 | `apps/workspace/src/domains/automations/components/automations-screen.tsx` | function: AutomationsScreen |
@@ -2101,6 +2135,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/projects/lib/project-view-model.ts` | value: projectFilters<br>value: projectViews<br>value: monthFormatter<br>value: weekdayFormatter<br>function: toggleProjectAssetType<br>function: matchesProjectSearch<br>function: projectFormDefaults<br>function: parseIsoDate<br>function: projectDateDisplayLabel<br>function: nextProjectCalendarMonth<br>function: projectWeekdayLabels<br>function: formatIsoDate<br>function: calendarDaysForMonth<br>function: statusTone<br>function: projectDocumentAssets<br>function: projectLocationLabel<br>function: projectInventoryMetrics<br>function: projectMovementWidth<br>function: compactProjectDetailRows |
 | `apps/workspace/src/domains/projects/store/projects.types.ts` | type: Project |
 | `apps/workspace/src/domains/projects/validation/project.schema.ts` | value: projectStatuses<br>value: projectHealths<br>value: projectSchema<br>type: ProjectFormValues |
+| `apps/workspace/src/domains/reports/components/reports-screen.tsx` | function: ReportsScreen |
 | `apps/workspace/src/domains/resource-planning/components/resource-planning-command-panel.tsx` | function: ResourcePlanningCommandPanel |
 | `apps/workspace/src/domains/resource-planning/components/resource-planning-screen.tsx` | function: ResourcePlanningScreen |
 | `apps/workspace/src/domains/resources/fetch.ts` | function: workspaceFetch<br>function: workspaceMutation |
@@ -2320,6 +2355,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/server/domains/partnerApps/services/resources.ts` | function: readOrganizationApiKeyResource<br>function: writeOrganizationApiKeyResource |
 | `apps/workspace/src/server/domains/partnerApps/validation/admin-partner-app.schema.ts` | value: oauthClientRuntimeSyncSchema<br>type: OAuthClientRuntimeSyncPayload |
 | `apps/workspace/src/server/domains/partnerApps/validation/partner-app.schema.ts` | value: authorizePartnerConnectionSchema<br>value: updatePartnerConnectionSchema<br>value: createPartnerWebhookEndpointSchema<br>value: inboundWebhookSchema<br>type: AuthorizePartnerConnectionPayload<br>type: UpdatePartnerConnectionPayload<br>type: CreatePartnerWebhookEndpointPayload |
+| `apps/workspace/src/server/domains/portal/handlers/portal.ts` | function: handleActivatePortalSession<br>function: handlePortalEngagement<br>function: handlePortalRequest<br>function: handlePortalApproval |
+| `apps/workspace/src/server/domains/portal/routing/router.ts` | value: portalRouter |
 | `apps/workspace/src/server/domains/profile/handlers/update-avatar.ts` | function: handleUpdateCurrentUserAvatar |
 | `apps/workspace/src/server/domains/profile/handlers/update-profile.ts` | function: handleUpdateCurrentUserProfile |
 | `apps/workspace/src/server/domains/profile/routing/router.ts` | value: profileRouter |

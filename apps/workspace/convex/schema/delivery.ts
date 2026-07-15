@@ -68,6 +68,19 @@ export const deliveryTables = {
     status: v.union(v.literal("active"), v.literal("revoked")), createdByUserId: v.string(), createdAt: v.number(), updatedAt: v.number(), revokedAt: v.optional(v.number()),
   }).index("by_identity_engagement", ["organizationId", "portalIdentityId", "engagementId"])
     .index("by_engagement_status", ["organizationId", "engagementId", "status"]),
+  portalSessions: defineTable({
+    organizationId: v.string(), portalIdentityId: v.id("portalIdentities"), tokenHash: v.string(),
+    status: v.union(v.literal("active"), v.literal("revoked")), expiresAt: v.number(),
+    createdByUserId: v.string(), createdAt: v.number(), lastUsedAt: v.optional(v.number()), revokedAt: v.optional(v.number()),
+  }).index("by_token_hash", ["tokenHash"])
+    .index("by_identity_status", ["organizationId", "portalIdentityId", "status"]),
+  portalRequests: defineTable({
+    organizationId: v.string(), portalIdentityId: v.id("portalIdentities"), engagementId: v.id("engagements"),
+    type: v.union(v.literal("comment"), v.literal("upload")), resourceType: v.string(), resourceId: v.string(),
+    body: v.optional(v.string()), mediaId: v.optional(v.id("mediaAssets")), status: v.union(v.literal("submitted"), v.literal("accepted"), v.literal("rejected")),
+    createdAt: v.number(), updatedAt: v.number(), decidedByUserId: v.optional(v.string()), decidedAt: v.optional(v.number()),
+  }).index("by_engagement_status", ["organizationId", "engagementId", "status", "createdAt"])
+    .index("by_identity_created", ["organizationId", "portalIdentityId", "createdAt"]),
   deliveryTimeEntries: defineTable({
     organizationId: v.string(), engagementId: v.id("engagements"), projectId: v.id("projects"), taskId: v.optional(v.id("tasks")), userId: v.string(), workDate: v.number(), minutes: v.number(), description: v.optional(v.string()), billable: v.boolean(), status: v.union(v.literal("draft"), v.literal("submitted"), v.literal("approved"), v.literal("rejected"), v.literal("invoiced")), rateCardEntryId: v.optional(v.id("resourceRateCardEntries")), invoiceId: v.optional(v.id("financeInvoices")), approvedByUserId: v.optional(v.string()), approvedAt: v.optional(v.number()), ...owned,
   }).index("by_project_date", ["organizationId", "projectId", "workDate"])

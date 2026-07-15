@@ -22,7 +22,9 @@ type OrganizationResource =
   | "integration"
   | "apiKey"
   | "oauthApp"
-  | "space";
+  | "space"
+  | "finance"
+  | "report";
 
 export class OrganizationActionError extends Error {
   status: number;

@@ -29,6 +29,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { workspaceAssets } from "@/lib/assets/workspace-assets";
+import { SidebarProjectedDomainLinks } from "./sidebar-projected-domain-links";
 
 function formatTime(ts: number): string {
   const diff = Date.now() - ts;
@@ -161,6 +162,7 @@ export function SidebarChatPanel() {
       }
     >
       <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="border-b border-border/60 px-1.5 py-2"><SidebarProjectedDomainLinks domainId="ai" /></div>
         <div className="flex items-center justify-between px-3 pb-1.5 pt-3">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Recent</p>
           {!loading && threads.length > 0 ? <span className="text-[10px] tabular-nums text-muted-foreground/60">{threads.length}</span> : null}

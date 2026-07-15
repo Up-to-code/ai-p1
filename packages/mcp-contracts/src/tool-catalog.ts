@@ -8,7 +8,9 @@ export type McpPermissionResource =
   | "deal"
   | "calendar"
   | "task"
-  | "media";
+  | "media"
+  | "finance"
+  | "report";
 
 export type McpPermissionAction = "read" | "create" | "update" | "delete";
 
@@ -47,7 +49,7 @@ function safetyForTool(input: {
     return {
       riskLevel: "read",
       approvalRequirement: "none",
-      dataSensitivity: input.resource === "client" || input.resource === "deal" ? "pii" : "public_business",
+      dataSensitivity: input.resource === "client" || input.resource === "deal" ? "pii" : input.resource === "finance" || input.resource === "report" ? "private_organization" : "public_business",
     };
   }
 
@@ -57,6 +59,10 @@ function safetyForTool(input: {
       approvalRequirement: "admin",
       dataSensitivity: "private_organization",
     };
+  }
+
+  if (input.resource === "finance") {
+    return { riskLevel: "admin", approvalRequirement: "admin", dataSensitivity: "private_organization" };
   }
 
   if (input.destructive || input.action === "delete") {

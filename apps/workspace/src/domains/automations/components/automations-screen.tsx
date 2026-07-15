@@ -19,6 +19,8 @@ import { AutomationLibraryDialog } from "./automation-library-dialog";
 import { AutomationComponentPalette } from "./automation-component-palette";
 import { useState } from "react";
 import { AutomationSaveStatus } from "./automation-save-status";
+import { useSearchParams } from "next/navigation";
+import { AutomationOperations } from "./automation-operations";
 
 const nodeTypes = { automationStep: AutomationStepNode };
 
@@ -141,5 +143,7 @@ function AutomationsWorkspace() {
 }
 
 export function AutomationsScreen() {
+  const view = useSearchParams().get("view") ?? "workflows";
+  if (["active-runs", "approvals", "failures", "history", "webhooks", "connections", "usage"].includes(view)) return <AutomationOperations view={view} />;
   return <ReactFlowProvider><AutomationsWorkspace /></ReactFlowProvider>;
 }

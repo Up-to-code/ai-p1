@@ -21,6 +21,7 @@ import {
   SidebarDeliveryPanel,
   SidebarResourcesPanel,
   SidebarFinancePanel,
+  SidebarReportsPanel,
 } from "./sidebar-domain-panels";
 
 const MIN_WIDTH = 188;
@@ -89,6 +90,7 @@ export function SidebarSecondaryPanel() {
             {activeRailItem === "delivery" && <SidebarDeliveryPanel />}
             {activeRailItem === "resources" && <SidebarResourcesPanel />}
             {activeRailItem === "finance" && <SidebarFinancePanel />}
+            {activeRailItem === "reports" && <SidebarReportsPanel />}
             {activeRailItem === "docs" && <SidebarDocsPanel />}
             {activeRailItem === "inbox" && <SidebarInboxPanel />}
             {activeRailItem === "automations" && <SidebarAutomationsPanel />}

@@ -37,6 +37,8 @@ const resources: Array<{ id: McpResource; label: string; actions: McpAction[] }>
   { id: "task", label: "Tasks", actions: ["read", "create", "update", "delete"] },
   { id: "calendar", label: "Calendar", actions: ["read", "create", "update", "delete"] },
   { id: "media", label: "Media", actions: ["read", "create", "update", "delete"] },
+  { id: "finance", label: "Finance", actions: ["read"] },
+  { id: "report", label: "Reports", actions: ["read"] },
 ];
 const actions: McpAction[] = ["read", "create", "update", "delete"];
 

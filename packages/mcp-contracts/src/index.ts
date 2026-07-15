@@ -7,6 +7,8 @@ export const mcpResources = [
   "deal",
   "calendar",
   "media",
+  "finance",
+  "report",
 ] as const;
 
 export const mcpActions = ["read", "create", "update", "delete"] as const;

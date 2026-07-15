@@ -4,6 +4,7 @@ export type AutomationNodeKind = "trigger" | "action";
 export type AutomationNodeType =
   | "manual"
   | "webhook"
+  | "domain_event"
   | "update_task"
   | "create_task"
   | "create_document"

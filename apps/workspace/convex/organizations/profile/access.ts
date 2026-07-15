@@ -28,7 +28,8 @@ type OrganizationPermissionResource =
   | "oauthApp"
   | "space"
   | "channel"
-  | "finance";
+  | "finance"
+  | "report";
 
 const capabilitiesReturnValidator = v.object({
   canReadOrganization: v.boolean(),
@@ -164,6 +165,7 @@ export const canUseResourceAction = query({
       v.literal("oauthApp"),
       v.literal("space"),
       v.literal("finance"),
+      v.literal("report"),
     ),
     action: v.string(),
   },

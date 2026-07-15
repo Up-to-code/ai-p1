@@ -24,7 +24,8 @@ export type Resource =
   | "apiKey"
   | "oauthApp"
   | "channel"
-  | "finance";
+  | "finance"
+  | "report";
 
 export type Action = "create" | "read" | "update" | "delete";
 
@@ -49,6 +50,7 @@ export const permissions = {
     oauthApp: "oauthApp",
     channel: "channel",
     finance: "finance",
+    report: "report",
   },
   actions: {
     create: "create",
@@ -358,6 +360,7 @@ const memberActions: Record<Resource, Action[]> = {
   oauthApp: ["read"],
   channel: ["read"],
   finance: [],
+  report: ["create", "read"],
 };
 
 function deniedPermissionResult(
