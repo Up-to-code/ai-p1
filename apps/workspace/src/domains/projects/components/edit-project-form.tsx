@@ -235,7 +235,7 @@ export function EditProjectForm({ project, isOpen, onSuccess, onCancel }: EditPr
 
       toast({ title: t("editSuccess", { defaultMessage: "Project Updated" }), type: "success" });
       onSuccess?.();
-      router.push(`/projects/${project.id}/overview`);
+      router.push(`/projects/${project.id}`);
     } catch (error) {
       logger.error("project.update_failed", { error });
       toast({ title: t("editFailed", { defaultMessage: "Failed to update project" }), type: "error" });

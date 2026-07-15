@@ -255,7 +255,7 @@ export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProject
 
       const newProjectId = response?.project?.id || (response as Record<string, unknown>)?.id || ((response as Record<string, unknown>)?.project as Record<string, unknown> | undefined)?._id;
       if (newProjectId) {
-        router.push(`/projects/${newProjectId}/overview`);
+        router.push(`/projects/${newProjectId}`);
       } else {
         router.push("/projects");
       }

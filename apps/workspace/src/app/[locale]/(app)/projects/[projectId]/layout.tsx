@@ -52,7 +52,7 @@ function EditPageWrapper({ projectId }: { projectId: string }) {
 
   function handleClose() {
     setIsOpen(false);
-    router.push(`/projects/${projectId}/overview`);
+    router.push(`/projects/${projectId}`);
   }
 
   return (

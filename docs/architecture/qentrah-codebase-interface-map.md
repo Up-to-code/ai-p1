@@ -6,10 +6,10 @@
 
 ## Inventory summary
 
-- Source files scanned: 1806
-- Files exposing interfaces: 1532
+- Source files scanned: 1808
+- Files exposing interfaces: 1534
 - Convex registered functions: 478
-- Application routes: 120
+- Application routes: 122
 - Hono/Convex HTTP registrations: 210
 - Eve/MCP tool entries: 118
 - Package commands: 91
@@ -173,6 +173,8 @@
 | `/:locale/privacy` | page | `apps/marketing/app/(site)/[locale]/privacy/page.tsx` |
 | `/:locale/profile` | page | `apps/workspace/src/app/[locale]/(app)/profile/page.tsx` |
 | `/:locale/projects` | page | `apps/workspace/src/app/[locale]/(app)/projects/page.tsx` |
+| `/:locale/projects/:projectId` | page | `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/page.tsx` |
+| `/:locale/projects/:projectId/edit` | page | `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/edit/page.tsx` |
 | `/:locale/projects/board` | page | `apps/workspace/src/app/[locale]/(app)/projects/board/page.tsx` |
 | `/:locale/projects/board/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/projects/board/[savedViewId]/page.tsx` |
 | `/:locale/projects/calendar` | page | `apps/workspace/src/app/[locale]/(app)/projects/calendar/page.tsx` |
@@ -1574,7 +1576,9 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/organization/search-policy/page.tsx` | function: SearchPolicyPage |
 | `apps/workspace/src/app/[locale]/(app)/organization/spaces/page.tsx` | function: OrganizationSpacesPage |
 | `apps/workspace/src/app/[locale]/(app)/profile/page.tsx` | function: ProfilePage |
+| `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/edit/page.tsx` | function: ProjectEditPage |
 | `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/layout.tsx` | function: ProjectLayout |
+| `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/page.tsx` | function: ProjectDetailPage |
 | `apps/workspace/src/app/[locale]/(app)/projects/board/[savedViewId]/page.tsx` | function: Page |
 | `apps/workspace/src/app/[locale]/(app)/projects/board/page.tsx` | function: Page |
 | `apps/workspace/src/app/[locale]/(app)/projects/calendar/[savedViewId]/page.tsx` | function: Page |
