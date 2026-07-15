@@ -2,6 +2,7 @@
   "name": "@qentrah/marketing",
   "version": "0.1.0",
   "private": true,
+  "license": "BUSL-1.1",
   "scripts": {
     "contentful:models": "node scripts/sync-contentful-models.mjs",
     "contentful:audit": "node scripts/sync-contentful-models.mjs --audit",

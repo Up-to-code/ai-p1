@@ -1,0 +1,19 @@
+{
+  "release": "v0.1.0",
+  "status": "pending",
+  "approved": false,
+  "approvedBy": null,
+  "approvedAt": null,
+  "scope": [
+    "BSL-1.1 parameters and Additional Use Grant",
+    "Apache-2.0 Change License and July 15, 2030 Change Date",
+    "Harmony individual and entity CLA adaptations",
+    "trademark policy and private asset exclusions",
+    "CLA Assistant signer-data disclosure",
+    "dependency license exceptions and unknown licenses",
+    "copyright and binary asset provenance",
+    "secret rotation and clean all-ref scan evidence",
+    "commercial licensing model"
+  ],
+  "note": "Counsel must replace the pending values with a recorded approval. Do not treat this template as legal approval."
+}

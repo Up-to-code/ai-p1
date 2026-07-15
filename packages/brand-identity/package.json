@@ -2,6 +2,7 @@
   "name": "@qentrah/brand-identity",
   "version": "0.1.0",
   "private": true,
+  "license": "BUSL-1.1",
   "description": "Shared brand identity configuration for Qentrah apps.",
   "type": "module",
   "sideEffects": false,

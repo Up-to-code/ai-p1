@@ -2,6 +2,7 @@
   "name": "@qentrah/our-platform-components",
   "version": "0.1.0",
   "private": true,
+  "license": "BUSL-1.1",
   "description": "Shared Qentrah platform components — pipeline board, widget grid, and more.",
   "type": "module",
   "sideEffects": false,

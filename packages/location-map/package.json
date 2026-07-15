@@ -2,6 +2,7 @@
   "name": "@qentrah/location-map",
   "version": "0.1.0",
   "private": true,
+  "license": "BUSL-1.1",
   "description": "Shared Mapbox location picker and preview components for Qentrah workspace flows.",
   "type": "module",
   "sideEffects": false,

@@ -2,6 +2,7 @@
   "name": "qentrah",
   "version": "0.1.0",
   "private": true,
+  "license": "BUSL-1.1",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -15,12 +16,15 @@
     "dev:mobile": "npm --workspace @qentrah/mobile run start",
     "dev:zapier": "npm --workspace @qentrah/zapier-app run dev",
     "brand:assets": "node scripts/brand-assets.mjs",
+    "assets:public": "node scripts/public-media-assets.mjs",
     "brand:scan": "node scripts/brand-scan.mjs",
     "brand:sync": "node scripts/brand-sync.mjs",
     "docs:codebase-map": "node scripts/generate-codebase-interface-map.mjs",
     "docs:codebase-map:check": "node scripts/generate-codebase-interface-map.mjs --check",
     "licenses:generate": "node scripts/check-dependency-licenses.mjs",
     "licenses:check": "node scripts/check-dependency-licenses.mjs --check",
+    "licenses:project:check": "node scripts/check-project-license.mjs",
+    "publication:check": "node scripts/check-project-license.mjs --strict",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",

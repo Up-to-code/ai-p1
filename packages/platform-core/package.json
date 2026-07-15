@@ -2,6 +2,7 @@
   "name": "@qentrah/platform-core",
   "version": "0.1.0",
   "private": true,
+  "license": "BUSL-1.1",
   "description": "Shared Qentrah platform primitives for auth, session contracts, errors, locale, and app adapters.",
   "type": "module",
   "sideEffects": false,

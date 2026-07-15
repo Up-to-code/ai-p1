@@ -2,6 +2,7 @@
   "name": "@qentrah/mobile",
   "version": "0.1.0",
   "private": true,
+  "license": "BUSL-1.1",
   "main": "expo-router/entry",
   "scripts": {
     "start": "QENTRAH_MOBILE_ENV=development npx expo start --clear --max-workers 1",
