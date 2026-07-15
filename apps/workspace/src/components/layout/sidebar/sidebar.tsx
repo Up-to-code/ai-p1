@@ -8,11 +8,11 @@ import { SidebarSecondaryPanel } from "./components/sidebar-secondary-panel";
 import { useSidebarRail } from "./sidebar-rail-context";
 
 export function Sidebar() {
-  const { activeRailItem, closeAll, isNavigationLoading, railMode, secondaryPanelWidth } = useSidebarRail();
+  const { activeRailItem, closeAll, isNavigationLoading, secondaryPanelWidth } = useSidebarRail();
   const session = useAuthSession();
 
   const isLoading = session.workspace.status === "loadingSession" || !session.workspace.organizationId || isNavigationLoading;
-  const railWidth = railMode === "expanded" ? 208 : 48;
+  const railWidth = 48;
 
   return (
     <div

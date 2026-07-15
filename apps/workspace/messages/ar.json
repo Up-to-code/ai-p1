@@ -459,6 +459,12 @@
     "skipStep": "تخطي هذه الخطوة",
     "saveAndExit": "حفظ وخروج"
   },
+  "AutomationsComingSoon": {
+    "eyebrow": "الأتمتة",
+    "title": "الأتمتة",
+    "stateTitle": "قريباً",
+    "description": "نعيد تصميم سير عمل الأتمتة ليكون واجهة تشغيل مركزة وموثوقة. لن تتوفر أدوات التحرير وسجل التشغيل وخطافات الويب والاتصالات قبل اكتمال هذا العقد."
+  },
   "Sidebar": {
     "groups": {
       "workspace": "مساحة العمل",
@@ -508,6 +514,16 @@
     "resizePanel": "تغيير عرض الشريط الجانبي",
     "defaultOrganizationName": "المؤسسة",
     "workspaces": "مساحات العمل",
+    "aiPanel": {
+      "title": "الذكاء الاصطناعي",
+      "agents": "الوكلاء",
+      "comingSoon": "قريباً",
+      "searchPlaceholder": "ابحث في المحادثات الأخيرة",
+      "recent": "الأخيرة",
+      "noMatches": "لا توجد محادثات تطابق البحث",
+      "emptyTitle": "ذكاء كانترا",
+      "emptyDescription": "استخدم اسأل الذكاء في الشريط العلوي لبدء محادثة بسياق مساحة العمل."
+    },
     "domainPanels": {
       "projects": {
         "title": "المشاريع",
@@ -536,8 +552,9 @@
         "audit": "سجل التدقيق"
       }
     },
-    "nodes": {
-      "overview": "نظرة عامة",
+  "nodes": {
+    "comingSoon": "قريباً",
+    "overview": "نظرة عامة",
       "myWork": "عملي",
       "needsAttention": "بحاجة إلى انتباه",
       "projects": "المشاريع",

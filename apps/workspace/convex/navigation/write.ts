@@ -55,7 +55,7 @@ export const updateMyOverlay = mutation({
       aliases: args.input.aliases
         ? normalizedAliases(args.input.aliases)
         : existing?.aliases ?? {},
-      railMode: args.input.railMode ?? existing?.railMode ?? "expanded" as const,
+      railMode: args.input.railMode ?? existing?.railMode ?? "compact" as const,
       secondaryPanelWidth: args.input.secondaryPanelWidth === undefined
         ? existing?.secondaryPanelWidth ?? 248
         : Math.min(360, Math.max(188, Math.round(args.input.secondaryPanelWidth))),

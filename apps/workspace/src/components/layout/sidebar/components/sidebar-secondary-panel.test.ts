@@ -28,4 +28,9 @@ describe("secondary sidebar server-synced width", () => {
     expect(source).not.toContain("useEffect");
     expect(source).toContain("dragWidth ?? secondaryPanelWidth");
   });
+
+  it("removes closed panel controls from the interaction tree", () => {
+    expect(source).toContain("{isOpen ? (");
+    expect(source.indexOf("{isOpen ? (")).toBeLessThan(source.indexOf("<SidebarChatPanel />"));
+  });
 });

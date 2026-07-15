@@ -75,36 +75,38 @@ export function SidebarSecondaryPanel() {
       )}
       style={{ width: isOpen ? width : 0 }}
     >
-      <div className="flex h-full min-w-0 flex-col overflow-hidden" style={{ width }}>
-        {secondaryPanelMode === "ai" ? (
-          <SidebarChatPanel />
-        ) : (
-          <>
-            {activeRailItem === "home" && <WorkspaceSidebarPanel />}
-            {activeRailItem === "spaces" && !showProject && <SidebarSpacePanel />}
-            {activeRailItem === "projects" && !showProject && <SidebarProjectsPanel />}
-            {showProject && <SidebarProjectPanel />}
-            {activeRailItem === "tasks" && <SidebarTasksPanel />}
-            {activeRailItem === "calendar" && <SidebarCalendarPanel />}
-            {activeRailItem === "crm" && <SidebarCrmPanel />}
-            {activeRailItem === "delivery" && <SidebarDeliveryPanel />}
-            {activeRailItem === "resources" && <SidebarResourcesPanel />}
-            {activeRailItem === "finance" && <SidebarFinancePanel />}
-            {activeRailItem === "reports" && <SidebarReportsPanel />}
-            {activeRailItem === "docs" && <SidebarDocsPanel />}
-            {activeRailItem === "inbox" && <SidebarInboxPanel />}
-            {activeRailItem === "automations" && <SidebarAutomationsPanel />}
-            {activeRailItem === "admin" && <SidebarAdminPanel />}
-          </>
-        )}
-      </div>
       {isOpen ? (
-        <button
-          type="button"
-          aria-label={t("resizePanel")}
-          onPointerDown={startResize}
-          className="absolute right-0 top-0 hidden h-full w-1 cursor-col-resize bg-transparent hover:bg-[var(--q-bg-tertiary)] md:block"
-        />
+        <>
+          <div className="flex h-full min-w-0 flex-col overflow-hidden" style={{ width }}>
+            {secondaryPanelMode === "ai" ? (
+              <SidebarChatPanel />
+            ) : (
+              <>
+                {activeRailItem === "home" && <WorkspaceSidebarPanel />}
+                {activeRailItem === "spaces" && !showProject && <SidebarSpacePanel />}
+                {activeRailItem === "projects" && !showProject && <SidebarProjectsPanel />}
+                {showProject && <SidebarProjectPanel />}
+                {activeRailItem === "tasks" && <SidebarTasksPanel />}
+                {activeRailItem === "calendar" && <SidebarCalendarPanel />}
+                {activeRailItem === "crm" && <SidebarCrmPanel />}
+                {activeRailItem === "delivery" && <SidebarDeliveryPanel />}
+                {activeRailItem === "resources" && <SidebarResourcesPanel />}
+                {activeRailItem === "finance" && <SidebarFinancePanel />}
+                {activeRailItem === "reports" && <SidebarReportsPanel />}
+                {activeRailItem === "docs" && <SidebarDocsPanel />}
+                {activeRailItem === "inbox" && <SidebarInboxPanel />}
+                {activeRailItem === "automations" && <SidebarAutomationsPanel />}
+                {activeRailItem === "admin" && <SidebarAdminPanel />}
+              </>
+            )}
+          </div>
+          <button
+            type="button"
+            aria-label={t("resizePanel")}
+            onPointerDown={startResize}
+            className="absolute right-0 top-0 hidden h-full w-1 cursor-col-resize bg-transparent hover:bg-[var(--q-bg-tertiary)] md:block"
+          />
+        </>
       ) : null}
     </div>
   );

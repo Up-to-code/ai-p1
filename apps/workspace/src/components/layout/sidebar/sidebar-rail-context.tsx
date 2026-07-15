@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from "react";
 import { useMutation, useQuery } from "convex/react";
-import type { AuthorizedNavigationProjection, NavigationRailMode } from "@qentrah/domain-contracts";
+import type { AuthorizedNavigationProjection } from "@qentrah/domain-contracts";
 import { api } from "@convex/_generated/api";
 import { usePathname } from "@/i18n/routing";
 import { useAuthSession } from "@/domains/auth";
@@ -18,11 +18,9 @@ interface SidebarRailContextType {
   secondaryPanelMode: SecondaryPanelMode;
   navigationProjection: AuthorizedNavigationProjection | undefined;
   isNavigationLoading: boolean;
-  railMode: NavigationRailMode;
   secondaryPanelWidth: number;
   toggleMain: () => void;
   openRailItem: (item: RailItemId) => void;
-  setRailMode: (mode: NavigationRailMode) => Promise<void>;
   setSecondaryPanelWidth: (width: number) => Promise<void>;
   setSecondaryPanelMode: (mode: SecondaryPanelMode) => void;
   closeAll: () => void;
@@ -40,23 +38,24 @@ export function SidebarRailProvider({ children }: { children: ReactNode }) {
     organizationId ? { organizationId } : "skip",
   ) as AuthorizedNavigationProjection | undefined;
   const updateOverlay = useMutation(api.navigation.write.updateMyOverlay);
-  const [activeRailItem, setActiveRailItem] = useState<RailItemId>(null);
-  const [secondaryPanelMode, setSecondaryPanelMode] = useState<SecondaryPanelMode>("workspace");
-  const [manualItem, setManualItem] = useState<RailItemId | null>(null);
-  const prevDomainRef = useRef<RailItemId>(null);
-  const prevRouteIdRef = useRef<RouteId | null>(null);
+  const matchedRailItem = getActiveRailItem(pathname);
+  const routeId: RouteId | null = getRouteId(pathname);
+  const [panelOverride, setPanelOverride] = useState<{
+    pathname: string;
+    item: RailItemId;
+  } | null>(null);
+  const [modeOverride, setModeOverride] = useState<{
+    pathname: string;
+    mode: SecondaryPanelMode;
+  } | null>(null);
+  const activeRailItem = panelOverride?.pathname === pathname
+    ? panelOverride.item
+    : matchedRailItem;
+  const secondaryPanelMode = modeOverride?.pathname === pathname
+    ? modeOverride.mode
+    : routeId === "ai" ? "ai" : "workspace";
   const lastActivePanelRef = useRef<RailItemId>("home"); // Remember last active panel
-  const railMode = navigationProjection?.railMode ?? "expanded";
   const secondaryPanelWidth = navigationProjection?.secondaryPanelWidth ?? 248;
-
-  const setRailMode = useCallback(async (mode: NavigationRailMode) => {
-    if (!organizationId) return;
-    try {
-      await updateOverlay({ organizationId, input: { railMode: mode } });
-    } catch (error) {
-      logger.error("navigation.rail_mode_update_failed", { organizationId, mode, error });
-    }
-  }, [organizationId, updateOverlay]);
 
   const setSecondaryPanelWidth = useCallback(async (width: number) => {
     if (!organizationId) return;
@@ -67,73 +66,43 @@ export function SidebarRailProvider({ children }: { children: ReactNode }) {
     }
   }, [organizationId, updateOverlay]);
 
-  // Sync from pathname, respecting manual overrides on same domain
-  useEffect(() => {
-    const matched = getActiveRailItem(pathname);
-    const routeId = getRouteId(pathname);
-    const prevDomain = prevDomainRef.current;
-    const prevRouteId = prevRouteIdRef.current;
-    prevDomainRef.current = matched;
-    prevRouteIdRef.current = routeId;
-
-    setSecondaryPanelMode(routeId === "ai" ? "ai" : "workspace");
-
-    // If user manually opened something and domain didn't change, respect it
-    if (manualItem !== null && matched === prevDomain && routeId === prevRouteId) return;
-
-    // Remember the last active panel from pathname
-    if (matched !== null) {
-      lastActivePanelRef.current = matched;
-    }
-
-    setActiveRailItem(matched);
-    setManualItem(null);
-  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const toggleMain = useCallback(() => {
-    setActiveRailItem((prev) => {
-      if (prev === null) {
-        // Restore the last active panel when reopening the secondary panel.
-        const lastPanel = lastActivePanelRef.current;
-        setManualItem(lastPanel);
-        return lastPanel;
-      }
-      // Remember the current panel before closing
-      if (prev !== null) {
-        lastActivePanelRef.current = prev;
-      }
-      setManualItem(null);
-      return null;
-    });
-  }, []);
+    if (activeRailItem === null) {
+      setPanelOverride({ pathname, item: lastActivePanelRef.current });
+      return;
+    }
+    lastActivePanelRef.current = activeRailItem;
+    setPanelOverride({ pathname, item: null });
+  }, [activeRailItem, pathname]);
 
   const openRailItem = useCallback((item: RailItemId) => {
-    setSecondaryPanelMode(item === "ai" ? "ai" : "workspace");
-    setActiveRailItem((prev) => {
-      if (prev === item) {
-        setManualItem(null);
-        return null;
-      }
-      setManualItem(item);
+    setModeOverride({ pathname, mode: item === "ai" ? "ai" : "workspace" });
+    if (activeRailItem === item) {
       lastActivePanelRef.current = item;
-      return item;
-    });
-  }, []);
+      setPanelOverride({ pathname, item: null });
+      return;
+    }
+    lastActivePanelRef.current = item;
+    setPanelOverride({ pathname, item });
+  }, [activeRailItem, pathname]);
+
+  const setSecondaryPanelMode = useCallback((mode: SecondaryPanelMode) => {
+    setModeOverride({ pathname, mode });
+  }, [pathname]);
 
   const closeAll = useCallback(() => {
     if (activeRailItem !== null) {
       lastActivePanelRef.current = activeRailItem;
     }
-    setManualItem(null);
-    setActiveRailItem(null);
-  }, [activeRailItem]);
+    setPanelOverride({ pathname, item: null });
+  }, [activeRailItem, pathname]);
 
   const closeSecondaryOnly = useCallback(() => {
     if (activeRailItem !== null) {
       lastActivePanelRef.current = activeRailItem;
     }
-    setActiveRailItem(null);
-  }, [activeRailItem]);
+    setPanelOverride({ pathname, item: null });
+  }, [activeRailItem, pathname]);
 
   return (
     <SidebarRailContext.Provider
@@ -142,11 +111,9 @@ export function SidebarRailProvider({ children }: { children: ReactNode }) {
         secondaryPanelMode,
         navigationProjection,
         isNavigationLoading: Boolean(organizationId && navigationProjection === undefined),
-        railMode,
         secondaryPanelWidth,
         toggleMain,
         openRailItem,
-        setRailMode,
         setSecondaryPanelWidth,
         setSecondaryPanelMode,
         closeAll,

@@ -83,7 +83,9 @@ export function buildAuthorizedNavigationProjection(input: {
       input.organizationLayout?.version ?? 0,
       input.userOverlay?.version ?? 0,
     ),
-    railMode: input.userOverlay?.railMode ?? input.organizationLayout?.railMode ?? "expanded",
+    // The launcher is intentionally icon-only. Older layout preferences remain
+    // readable for migration compatibility but cannot expand the primary rail.
+    railMode: "compact",
     secondaryPanelWidth: input.userOverlay?.secondaryPanelWidth
       ?? input.organizationLayout?.secondaryPanelWidth
       ?? 248,

@@ -458,6 +458,12 @@
     "skipStep": "Skip this step",
     "saveAndExit": "Save and Exit"
   },
+  "AutomationsComingSoon": {
+    "eyebrow": "Automation",
+    "title": "Automations",
+    "stateTitle": "Coming soon",
+    "description": "Automation workflows are being redesigned as a focused, reliable operating surface. Editors, run history, webhooks, and connections stay unavailable until that contract is ready."
+  },
   "Sidebar": {
     "groups": {
       "workspace": "Workspace",
@@ -512,6 +518,16 @@
     "resizePanel": "Resize sidebar",
     "defaultOrganizationName": "Organization",
     "workspaces": "Workspaces",
+    "aiPanel": {
+      "title": "AI",
+      "agents": "Agents",
+      "comingSoon": "Coming soon",
+      "searchPlaceholder": "Search recent chats",
+      "recent": "Recent",
+      "noMatches": "No conversations match your search",
+      "emptyTitle": "Qentrah AI",
+      "emptyDescription": "Use Ask AI in the top bar to start a conversation with workspace context."
+    },
     "domainPanels": {
       "projects": {
         "title": "Projects",
@@ -540,8 +556,9 @@
         "audit": "Audit log"
       }
     },
-    "nodes": {
-      "overview": "Overview",
+  "nodes": {
+    "comingSoon": "Coming soon",
+    "overview": "Overview",
       "myWork": "My work",
       "needsAttention": "Needs attention",
       "projects": "Projects",

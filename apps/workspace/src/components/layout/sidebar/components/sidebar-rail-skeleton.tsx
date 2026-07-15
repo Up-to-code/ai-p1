@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/loading-ui";
 
 export function SidebarRailSkeleton() {
   return (
-    <aside className="relative z-40 flex h-screen w-14 shrink-0 flex-col overflow-hidden bg-secondary">
+    <aside className="relative z-40 flex h-screen w-12 shrink-0 flex-col overflow-hidden bg-secondary">
       {/* Organization header skeleton */}
       <div className="flex h-14 shrink-0 items-center justify-center border-b border-sidebar-border">
         <Skeleton className="h-8 w-8 rounded-xl" />

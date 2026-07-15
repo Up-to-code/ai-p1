@@ -9,10 +9,9 @@ import {
   Trash2,
   Link,
   Search,
-  Plus,
-  Plug,
-  ChevronRight,
+  Bot,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useWorkspaceRouter } from "@/hooks/use-workspace-router";
 import { listThreads, deleteThread, renameThread } from "@/domains/eve";
@@ -29,7 +28,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { workspaceAssets } from "@/lib/assets/workspace-assets";
-import { SidebarProjectedDomainLinks } from "./sidebar-projected-domain-links";
 
 function formatTime(ts: number): string {
   const diff = Date.now() - ts;
@@ -44,6 +42,7 @@ function formatTime(ts: number): string {
 }
 
 export function SidebarChatPanel() {
+  const t = useTranslations("Sidebar.aiPanel");
   const router = useWorkspaceRouter();
   const searchParams = useSearchParams();
   const activeThreadId = searchParams.get("threadId");
@@ -63,8 +62,17 @@ export function SidebarChatPanel() {
   }, [orgId]);
 
   useEffect(() => {
-    if (orgId) loadThreads();
-  }, [loadThreads, orgId]);
+    if (!orgId) return;
+    let cancelled = false;
+    void listThreads(orgId).then((result) => {
+      if (cancelled) return;
+      setThreads(result);
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [orgId]);
 
   useEffect(() => {
     if (!orgId) return;
@@ -89,11 +97,6 @@ export function SidebarChatPanel() {
     e.stopPropagation();
     const url = `${window.location.origin}/ai?threadId=${id}`;
     navigator.clipboard.writeText(url);
-  };
-
-  const handleNewChat = () => {
-    // Clear threadId and state so the workspace router doesn't forward the old thread
-    router.push("/ai", { extraParams: { threadId: "", state: "" } });
   };
 
   const handleRename = async (id: string, newTitle: string) => {
@@ -132,39 +135,27 @@ export function SidebarChatPanel() {
 
   return (
     <SidebarPanelLayout
-      title="AI"
+      title={t("title")}
       bodyClassName="p-0"
-      header={
-        <div className="px-2.5 py-3">
-          <button
-            type="button"
-            onClick={handleNewChat}
-            className="flex h-9 w-full items-center gap-2 rounded-lg bg-[var(--q-sidebar-accent)] px-2.5 text-xs font-semibold text-[var(--q-sidebar-accent-foreground)]"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span className="flex-1 text-left">Ask or create</span>
-            <ChevronRight className="h-3.5 w-3.5 opacity-50" />
-          </button>
-        </div>
-      }
       primaryAction={
         <div className="relative">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search recent chats" value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 rounded-md border-transparent bg-transparent pl-8 text-[11px] shadow-none focus-visible:border-[var(--q-sidebar-border)] focus-visible:bg-[var(--q-sidebar-accent)] focus-visible:ring-0" />
+          <Input placeholder={t("searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 rounded-md border-transparent bg-transparent pl-8 text-[11px] shadow-none focus-visible:border-[var(--q-sidebar-border)] focus-visible:bg-[var(--q-sidebar-accent)] focus-visible:ring-0" />
         </div>
-      }
-      footer={
-        <button type="button" onClick={() => router.push("/web-apps")} className="flex h-9 w-full items-center gap-2 px-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
-          <Plug className="h-3.5 w-3.5" />
-          <span className="flex-1 text-left">Connections</span>
-          <ChevronRight className="h-3.5 w-3.5 opacity-50" />
-        </button>
       }
     >
       <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="border-b border-border/60 px-1.5 py-2"><SidebarProjectedDomainLinks domainId="ai" /></div>
+        <div className="border-b border-border/60 p-2">
+          <div className="flex items-center gap-2 rounded-lg bg-[var(--q-sidebar-accent)] px-2.5 py-2.5">
+            <Bot className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="flex-1 text-xs font-medium">{t("agents")}</span>
+            <span className="rounded-full bg-background px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+              {t("comingSoon")}
+            </span>
+          </div>
+        </div>
         <div className="flex items-center justify-between px-3 pb-1.5 pt-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Recent</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{t("recent")}</p>
           {!loading && threads.length > 0 ? <span className="text-[10px] tabular-nums text-muted-foreground/60">{threads.length}</span> : null}
         </div>
 
@@ -281,7 +272,7 @@ export function SidebarChatPanel() {
           ) : search.trim() ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-xs text-muted-foreground">
-                No conversations match your search
+                {t("noMatches")}
               </p>
             </div>
           ) : (
@@ -296,9 +287,8 @@ export function SidebarChatPanel() {
                   className="h-[22px] w-[22px] object-contain"
                 />
               </span>
-              <p className="text-xs font-semibold text-foreground">Start with Qentrah AI</p>
-              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">Ask about your workspace, plan work, or take action with context.</p>
-              <button type="button" onClick={handleNewChat} className="mt-3 text-[11px] font-semibold text-foreground hover:underline">Start conversation →</button>
+              <p className="text-xs font-semibold text-foreground">{t("emptyTitle")}</p>
+              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{t("emptyDescription")}</p>
             </div>
           )}
         </div>

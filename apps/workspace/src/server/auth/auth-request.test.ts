@@ -93,4 +93,27 @@ describe("better auth server bridge", () => {
 
     vi.unstubAllGlobals();
   });
+
+  it("keeps development auth calls on the active loopback request origin", async () => {
+    const fetchMock = vi.fn(async () => new Response(
+      JSON.stringify({ session: { userId: "user_1" } }),
+      { status: 200, headers: { "content-type": "application/json" } },
+    ));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await runWithAuthHeaders(
+      new Headers({
+        cookie: "better-auth.session_token=test-session",
+        referer: "http://localhost:3001/en/team",
+      }),
+      () => callBetterAuth("/get-session"),
+    );
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      new URL("http://localhost:3001/api/auth/get-session"),
+      expect.objectContaining({ method: "GET" }),
+    );
+
+    vi.unstubAllGlobals();
+  });
 });

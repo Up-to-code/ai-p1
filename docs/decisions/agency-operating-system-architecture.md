@@ -48,11 +48,18 @@ Convex. Semantic search is an intentionally unimplemented future Adapter.
 
 ## Domain launcher
 
-The canonical top-level order is Home, Inbox, Spaces, Projects, Tasks, Docs,
-Calendar, CRM, Delivery, Resources, Finance, Reports, Automations, AI, and
-Admin. The rail supports expanded icon-and-label and compact icon modes. Each
-domain owns a specific contextual sidebar tree; leaf resources remain real,
-bookmarkable routes.
+The canonical top-level order is Home, Inbox, Projects, Tasks, Docs, Calendar,
+CRM, Delivery, Resources, Finance, Reports, Automations, and Admin. The primary
+rail is permanently compact and icon-only; its accessible labels are exposed
+through tooltips and assistive text. The independently closable secondary panel
+owns domain-specific navigation.
+
+Space remains part of the Organization → Space → Project hierarchy but is a
+workspace context, not a top-level launcher domain. Space selection and its
+channels, Projects, documents, and calendars appear inside the relevant domain
+panels. AI likewise remains a secondary-panel mode and top-bar action rather
+than a duplicate launcher domain. Automations reserves a truthful coming-soon
+surface until its editor and operating contracts are ready.
 
 ## Data and accounting invariants
 

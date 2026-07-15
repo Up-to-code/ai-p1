@@ -25,7 +25,7 @@ describe("Authorized Navigation Projection", () => {
       userOverlay: {
         domainOrder: ["tasks"],
         aliases: { "domain:tasks": "My work" },
-        railMode: "compact",
+        railMode: "expanded",
         secondaryPanelWidth: 312,
         version: 4,
       },
@@ -35,6 +35,18 @@ describe("Authorized Navigation Projection", () => {
     expect(result.railMode).toBe("compact");
     expect(result.layoutVersion).toBe(4);
     expect(result.secondaryPanelWidth).toBe(312);
+  });
+
+  it("keeps the launcher compact regardless of legacy layout preferences", () => {
+    const result = buildAuthorizedNavigationProjection({
+      organizationId: "org_1",
+      allowedDomainIds: new Set(["home"]),
+      catalog: IMPLEMENTED_NAVIGATION_CATALOG,
+      organizationLayout: { railMode: "expanded" },
+      userOverlay: { railMode: "expanded" },
+    });
+
+    expect(result.railMode).toBe("compact");
   });
 
   it("appends newly introduced allowed domains in canonical order", () => {

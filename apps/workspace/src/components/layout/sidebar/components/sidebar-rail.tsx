@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsRight, PanelLeftClose, PanelRightOpen } from "lucide-react";
+import { ChevronsRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { useAuthSession } from "@/domains/auth";
@@ -21,21 +21,17 @@ export function SidebarRail() {
   const {
     activeRailItem,
     navigationProjection,
-    railMode,
     openRailItem,
     closeAll,
     toggleMain,
-    setRailMode,
   } = useSidebarRail();
-  const isExpanded = railMode === "expanded";
   const isRtl = isRtlLocale(locale);
 
   return (
     <aside
-      data-rail-mode={railMode}
+      data-rail-mode="compact"
       className={cn(
-        "relative z-40 hidden h-screen shrink-0 flex-col overflow-hidden border-r border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-sidebar)] transition-[width] duration-200 md:flex",
-        isExpanded ? "w-52" : "w-12",
+        "relative z-40 hidden h-screen w-12 shrink-0 flex-col overflow-hidden border-r border-[color-mix(in_srgb,var(--q-border)_82%,transparent)] bg-[var(--q-sidebar)] md:flex",
         isRtl && "font-cairo",
       )}
     >
@@ -45,14 +41,10 @@ export function SidebarRail() {
             <button
               type="button"
               onClick={toggleMain}
-              className={cn(
-                "flex h-9 items-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground",
-                isExpanded ? "w-full gap-2 px-2" : "w-9 justify-center",
-              )}
+              className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
               aria-label={t("openPanel")}
             >
               <ChevronsRight className="size-[18px] shrink-0 rtl:rotate-180" />
-              {isExpanded ? <span className="truncate text-sm">{t("openPanel")}</span> : null}
             </button>
           </NavTooltip>
         </div>
@@ -75,46 +67,26 @@ export function SidebarRail() {
                   else closeAll();
                 }}
                 className={cn(
-                  "flex h-9 items-center rounded-md transition-colors",
-                  isExpanded ? "w-full gap-2.5 px-2" : "w-9 justify-center",
+                  "flex h-9 w-9 items-center justify-center rounded-md transition-colors",
                   isActive
                     ? "bg-[var(--q-bg-tertiary)] text-foreground"
                     : "text-muted-foreground hover:bg-[var(--q-bg-secondary)] hover:text-foreground",
                 )}
               >
                 <Icon className="size-[18px] shrink-0" />
-                {isExpanded ? <span className="min-w-0 truncate text-sm">{label}</span> : null}
               </WorkspaceLink>
             );
-            return isExpanded
-              ? <div key={domain.id}>{link}</div>
-              : <NavTooltip key={domain.id} label={label}>{link}</NavTooltip>;
+            return <NavTooltip key={domain.id} label={label}>{link}</NavTooltip>;
           })}
         </div>
       </nav>
 
       <div className="flex flex-col gap-1 border-t border-sidebar-border p-1.5">
-        <button
-          type="button"
-          onClick={() => void setRailMode(isExpanded ? "compact" : "expanded")}
-          aria-label={isExpanded ? t("compactRail") : t("expandRail")}
-          className={cn(
-            "flex h-9 items-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground",
-            isExpanded ? "w-full gap-2.5 px-2" : "w-9 justify-center",
-          )}
-        >
-          {isExpanded ? <PanelLeftClose className="size-[18px] shrink-0 rtl:rotate-180" /> : <PanelRightOpen className="size-[18px] shrink-0 rtl:rotate-180" />}
-          {isExpanded ? <span className="truncate text-sm">{t("compactRail")}</span> : null}
-        </button>
-
         <NavTooltip label={session.user.name}>
           <WorkspaceLink
             href="/profile"
             aria-label={session.user.name}
-            className={cn(
-              "flex h-9 items-center rounded-md transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground",
-              isExpanded ? "w-full gap-2.5 px-2" : "w-9 justify-center",
-            )}
+            className="flex h-9 w-9 items-center justify-center rounded-md transition-colors hover:bg-[var(--q-bg-secondary)] hover:text-foreground"
           >
             <IdentityAvatar
               image={session.user.image}
@@ -122,7 +94,6 @@ export function SidebarRail() {
               name={session.user.name}
               size="sm"
             />
-            {isExpanded ? <span className="min-w-0 truncate text-sm">{session.user.name}</span> : null}
           </WorkspaceLink>
         </NavTooltip>
       </div>

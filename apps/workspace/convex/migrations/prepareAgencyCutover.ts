@@ -15,7 +15,7 @@ export const runBatch = internalMutation({
         ctx.db.query("organizationNavigationLayouts").withIndex("by_organization_role", (q) => q.eq("organizationId", organizationId).eq("roleKey", "default")).unique(),
         ctx.db.query("organizationPlatformRollouts").withIndex("by_organization_feature", (q) => q.eq("organizationId", organizationId).eq("featureKey", "agency_os")).unique(),
       ]);
-      if (!layout) { layouts += 1; if (!dryRun) await ctx.db.insert("organizationNavigationLayouts", { organizationId, roleKey: "default", domainOrder: [], hiddenOptionalNodeIds: [], aliases: {}, railMode: "expanded", secondaryPanelWidth: 248, version: 1, updatedByUserId: "system:agency-cutover", createdAt: now, updatedAt: now }); }
+      if (!layout) { layouts += 1; if (!dryRun) await ctx.db.insert("organizationNavigationLayouts", { organizationId, roleKey: "default", domainOrder: [], hiddenOptionalNodeIds: [], aliases: {}, railMode: "compact", secondaryPanelWidth: 248, version: 1, updatedByUserId: "system:agency-cutover", createdAt: now, updatedAt: now }); }
       if (!rollout) { rollouts += 1; if (!dryRun) await ctx.db.insert("organizationPlatformRollouts", { organizationId, featureKey: "agency_os", stage: "canonical", version: 1, updatedByUserId: "system:agency-cutover", createdAt: now, updatedAt: now }); }
       for (const resourceType of resources) {
         let active = false;

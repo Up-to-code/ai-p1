@@ -15,7 +15,6 @@ describe("sidebar source", () => {
     const expectedItems = [
       'id: "home"',
       'id: "inbox"',
-      'id: "spaces"',
       'id: "projects"',
       'id: "tasks"',
       'id: "docs"',
@@ -26,7 +25,6 @@ describe("sidebar source", () => {
       'id: "finance"',
       'id: "reports"',
       'id: "automations"',
-      'id: "ai"',
       'id: "admin"',
     ];
 
@@ -42,10 +40,18 @@ describe("sidebar source", () => {
     const enSidebar = JSON.parse(readSource("messages/en.json"))["Sidebar"];
     const arSidebar = JSON.parse(readSource("messages/ar.json"))["Sidebar"];
 
-    for (const key of ["home", "inbox", "spaces", "projects", "tasks", "docs", "calendar", "crm", "delivery", "resources", "finance", "reports", "automations", "ai", "admin"]) {
+    for (const key of ["home", "inbox", "projects", "tasks", "docs", "calendar", "crm", "delivery", "resources", "finance", "reports", "automations", "admin"]) {
       expect(enSidebar[key], `en:${key}`).toEqual(expect.any(String));
       expect(arSidebar[key], `ar:${key}`).toEqual(expect.any(String));
     }
+  });
+
+  it("keeps the primary rail permanently compact", () => {
+    const source = readSource("src/components/layout/sidebar/components/sidebar-rail.tsx");
+    expect(source).toContain('data-rail-mode="compact"');
+    expect(source).toContain("w-12");
+    expect(source).not.toContain("w-52");
+    expect(source).not.toContain("setRailMode");
   });
 
   it("localizes every projected node label in English and Arabic", () => {

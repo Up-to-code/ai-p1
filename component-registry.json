@@ -17,64 +17,6 @@
       "notes": "Contentful owns only editable presentation; the route keeps its repository fallback when no complete CMS page is available."
     },
     {
-      "name": "AutomationCanvas",
-      "path": "apps/workspace/src/domains/automations/components/automations-screen.tsx",
-      "kind": "domain-shared",
-      "summary": "React Flow automation canvas with draggable trigger/action nodes, connecting lines, zoom controls, minimap, and a step inspector.",
-      "usedIn": [
-        "app/[locale]/(app)/automations"
-      ],
-      "props": [],
-      "createdAt": "2026-07-10",
-      "notes": "Uses the same React Flow foundation as the referenced shadcn AI Canvas; workflow state is persisted in organization-scoped Convex tables."
-    },
-    {
-      "name": "AutomationLibraryDialog",
-      "path": "apps/workspace/src/domains/automations/components/automation-library-dialog.tsx",
-      "kind": "domain-shared",
-      "summary": "Searchable grouped chooser for automation templates and task, document, client, or integration components.",
-      "usedIn": [
-        "domains/automations/components/automations-screen"
-      ],
-      "props": [
-        "open",
-        "mode",
-        "onOpenChange",
-        "onSelectTemplate",
-        "onSelectComponent"
-      ],
-      "createdAt": "2026-07-10",
-      "notes": "One catalog powers both new-workflow templates and insertion of actions between existing nodes."
-    },
-    {
-      "name": "AutomationComponentPalette",
-      "path": "apps/workspace/src/domains/automations/components/automation-component-palette.tsx",
-      "kind": "domain-shared",
-      "summary": "Persistent grouped palette of automation actions with domain-specific icons.",
-      "usedIn": [
-        "domains/automations/components/automations-screen"
-      ],
-      "props": [
-        "onAdd"
-      ],
-      "createdAt": "2026-07-10",
-      "notes": "Reads from the typed automation component catalog so palette, chooser, nodes, inspector, and executor stay aligned."
-    },
-    {
-      "name": "AutomationSaveStatus",
-      "path": "apps/workspace/src/domains/automations/components/automation-save-status.tsx",
-      "kind": "domain-shared",
-      "summary": "Compact accessible persistence indicator for saved, unsaved, saving, and failed automation editor states.",
-      "usedIn": [
-        "domains/automations/components/automations-screen"
-      ],
-      "props": [
-        "status"
-      ],
-      "createdAt": "2026-07-10",
-      "notes": "Reflects both full content autosaves and coalesced canvas-layout writes."
-    },
-    {
       "name": "DocTemplateCover",
       "path": "apps/workspace/src/domains/docs/components/doc-template-cover.tsx",
       "kind": "domain-shared",

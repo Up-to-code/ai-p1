@@ -67,16 +67,6 @@ export const IMPLEMENTED_NAVIGATION_CATALOG: readonly NavigationCatalogDomain[] 
     ],
   },
   {
-    id: "spaces", labelKey: "spaces", iconId: "spaces", routeId: "spaces", required: true, opensPanel: true, readResources: ["space"],
-    nodes: [
-      node("spaces", "spaces.all", "allSpaces", "spaces", "spaces", { required: true }),
-      node("spaces", "spaces.mine", "mySpaces", "my-work", "spaces", { params: { filter: "my" } }),
-      node("spaces", "spaces.favorites", "favorites", "completed", "spaces", { params: { filter: "favorites" } }),
-      node("spaces", "spaces.requests", "accessRequests", "inbox", "spaces", { params: { filter: "requests" } }),
-      node("spaces", "spaces.archived", "archived", "recent", "spaces", { params: { filter: "archived" } }),
-    ],
-  },
-  {
     id: "projects", labelKey: "projects", iconId: "projects", routeId: "projects", required: true, opensPanel: true, readResources: ["project"],
     nodes: [
       node("projects", "projects.portfolio", "portfolio", "overview", "projects", { params: { view: "portfolio" }, required: true }),
@@ -241,31 +231,7 @@ export const IMPLEMENTED_NAVIGATION_CATALOG: readonly NavigationCatalogDomain[] 
   {
     id: "automations", labelKey: "automations", iconId: "automations", routeId: "automations", required: true, opensPanel: true, readResources: ["organization"],
     nodes: [
-      node("automations", "automations.library", "automationLibrary", "automations", "automations", { params: { view: "library" }, required: true }),
-      node("automations", "automations.workflows", "workflows", "automations", "automations", { params: { view: "workflows" }, required: true }),
-      node("automations", "automations.active-runs", "activeRuns", "attention", "automations", { params: { view: "active-runs" } }),
-      node("automations", "automations.approvals", "approvals", "inbox", "automations", { params: { view: "approvals" } }),
-      node("automations", "automations.failures", "failures", "attention", "automations", { params: { view: "failures" } }),
-      node("automations", "automations.history", "runHistory", "recent", "automations", { params: { view: "history" } }),
-      node("automations", "automations.templates", "templates", "templates", "automations", { params: { view: "templates" } }),
-      node("automations", "automations.webhooks", "webhooks", "integrations", "automations", { params: { view: "webhooks" } }),
-      node("automations", "automations.connections", "connections", "integrations", "automations", { params: { view: "connections" } }),
-      node("automations", "automations.usage", "usageAndLimits", "usage", "automations", { params: { view: "usage" } }),
-    ],
-  },
-  {
-    id: "ai", labelKey: "ai", iconId: "ai", routeId: "ai", required: true, opensPanel: true, readResources: ["organization"],
-    nodes: [
-      node("ai", "ai.new", "newConversation", "ai", "ai", { params: { mode: "new" }, required: true }),
-      node("ai", "ai.conversations", "conversations", "ai", "ai", { required: true }),
-      node("ai", "ai.agents", "agents", "members", "ai", { params: { mode: "agents" } }),
-      node("ai", "ai.runs", "agentRuns", "recent", "ai", { params: { mode: "runs" } }),
-      node("ai", "ai.approvals", "pendingApprovals", "inbox", "automations", { params: { view: "approvals" } }),
-      node("ai", "ai.tools", "tools", "automations", "mcp"),
-      node("ai", "ai.mcp", "mcpConnections", "mcp", "mcp"),
-      node("ai", "ai.knowledge", "knowledgeSources", "docs", "docs", { params: { filter: "knowledge" } }),
-      node("ai", "ai.usage", "usage", "usage", "usage"),
-      node("ai", "ai.settings", "aiSettings", "admin", "integrations"),
+      node("automations", "automations.coming-soon", "comingSoon", "automations", "automations", { required: true }),
     ],
   },
   {
