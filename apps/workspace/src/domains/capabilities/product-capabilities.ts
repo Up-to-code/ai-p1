@@ -15,7 +15,7 @@ export const productCapabilities: Readonly<Record<ProductCapability, boolean>> =
   deliveryEconomics: false,
   timeTracking: false,
   inboxPosts: false,
-  inboxReplies: false,
+  inboxReplies: true,
   inboxActivity: false,
 };
 

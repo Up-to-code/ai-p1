@@ -27,6 +27,7 @@ export function SidebarProjectedDomainLinks({
           icon={navigationIcon(node.iconId)}
           label={node.labelOverride ?? t(node.labelKey)}
           extraParams={node.params}
+          exact={node.routeId === "inbox"}
         />
       ))}
     </div>

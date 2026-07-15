@@ -1068,7 +1068,8 @@
         "paramValue",
         "clearParams",
         "extraParams",
-        "iconPicker"
+        "iconPicker",
+        "exact"
       ],
       "createdAt": "2026-07-07",
       "notes": "Extracted from duplicated local PanelLink modules in sidebar domain and inbox panels."

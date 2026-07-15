@@ -23,6 +23,8 @@ import {
   Boxes,
   Truck,
   Landmark,
+  MessageSquareReply,
+  MessageSquareText,
 } from "lucide-react";
 import {
   CalendarIcon,
@@ -54,6 +56,8 @@ const navigationIcons: Readonly<Record<string, NavigationIcon>> = {
   "my-work": CircleUserRound,
   attention: BellRing,
   channels: Hash,
+  replies: MessageSquareReply,
+  comments: MessageSquareText,
   assigned: UserRoundCheck,
   unassigned: UserRoundX,
   overdue: Clock3,

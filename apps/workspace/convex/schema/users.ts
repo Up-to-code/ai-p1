@@ -44,7 +44,19 @@ export const userTables = {
     organizationId: v.string(),
     recipientUserId: v.string(),
     actorUserId: v.string(),
-    kind: v.union(v.literal("task_assigned"), v.literal("mentioned")),
+    kind: v.union(
+      v.literal("task_assigned"),
+      v.literal("mentioned"),
+      v.literal("thread_reply"),
+    ),
+    lane: v.optional(v.union(v.literal("primary"), v.literal("other"))),
+    disposition: v.optional(
+      v.union(
+        v.literal("active"),
+        v.literal("later"),
+        v.literal("cleared"),
+      ),
+    ),
     resourceType: v.union(
       v.literal("task"),
       v.literal("message"),
@@ -60,10 +72,24 @@ export const userTables = {
     href: v.string(),
     dedupeKey: v.string(),
     readAt: v.optional(v.number()),
+    deferredAt: v.optional(v.number()),
+    clearedAt: v.optional(v.number()),
     createdAt: v.number(),
   })
     .index("by_recipient_created", ["organizationId", "recipientUserId", "createdAt"])
     .index("by_recipient_read", ["organizationId", "recipientUserId", "readAt"])
+    .index("by_recipient_disposition_created", [
+      "organizationId",
+      "recipientUserId",
+      "disposition",
+      "createdAt",
+    ])
+    .index("by_recipient_kind_created", [
+      "organizationId",
+      "recipientUserId",
+      "kind",
+      "createdAt",
+    ])
     .index("by_dedupe", ["organizationId", "recipientUserId", "dedupeKey"]),
 
   notificationPreferences: defineTable({

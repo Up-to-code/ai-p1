@@ -464,6 +464,70 @@
     "stateTitle": "Coming soon",
     "description": "Automation workflows are being redesigned as a focused, reliable operating surface. Editors, run history, webhooks, and connections stay unavailable until that contract is ready."
   },
+  "Inbox": {
+    "title": "Inbox",
+    "markAllRead": "Mark all read",
+    "attentionViewsLabel": "Inbox attention views",
+    "views": {
+      "primary": "Primary",
+      "other": "Other",
+      "later": "Later",
+      "cleared": "Cleared"
+    },
+    "filters": {
+      "all": "All",
+      "mentions": "Mentions",
+      "assigned": "Assigned"
+    },
+    "actions": {
+      "later": "Move to later",
+      "clear": "Clear",
+      "restore": "Restore"
+    },
+    "empty": {
+      "primary": { "title": "You're all caught up", "description": "New assignments and mentions that need your attention will appear here." },
+      "other": { "title": "Nothing else needs attention", "description": "Routine workspace notifications will appear here without crowding Primary." },
+      "later": { "title": "Nothing saved for later", "description": "Move an Inbox item here when you want to return to it." },
+      "cleared": { "title": "No cleared items", "description": "Items you clear from the Inbox will remain available here." }
+    },
+    "replies": {
+      "title": "Replies",
+      "description": "Replies from channel threads you participate in.",
+      "markAllRead": "Mark all read",
+      "statusLabel": "Reply status",
+      "unread": "Unread",
+      "read": "Read",
+      "emptyUnreadTitle": "You're all caught up",
+      "emptyUnreadDescription": "New replies in conversations you participate in will appear here.",
+      "emptyReadTitle": "No read replies",
+      "emptyReadDescription": "Replies you have opened will remain available here."
+    },
+    "assignedComments": {
+      "title": "Assigned comments",
+      "description": "Comment actions assigned to you or delegated by you.",
+      "scopeLabel": "Comment assignment scope",
+      "assigned": "Assigned to me",
+      "delegated": "Delegated by me",
+      "emptyTitle": "Comment assignment is not connected yet",
+      "emptyDescription": "Qentrah will show assigned Work comments here after comment assignment becomes an authoritative Work capability. No mock records are displayed."
+    },
+    "sidebar": {
+      "title": "Inbox",
+      "spaces": "Spaces",
+      "channels": "Channels",
+      "organization": "Organization",
+      "projects": "Projects",
+      "directMessages": "Direct messages",
+      "clients": "Clients",
+      "newChannel": "New channel",
+      "noChannels": "No channels yet",
+      "createFirstChannel": "Create the first channel",
+      "noSpaces": "No visible spaces",
+      "noProjects": "No projects",
+      "expandSpace": "Expand {name}",
+      "collapseSpace": "Collapse {name}"
+    }
+  },
   "Sidebar": {
     "groups": {
       "workspace": "Workspace",
@@ -563,6 +627,9 @@
       "needsAttention": "Needs attention",
       "projects": "Projects",
       "primary": "Primary",
+      "inbox": "Inbox",
+      "replies": "Replies",
+      "assignedComments": "Assigned comments",
       "channels": "Channels",
       "allSpaces": "All spaces",
       "allProjects": "All projects",

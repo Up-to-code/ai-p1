@@ -6,10 +6,10 @@
 
 ## Inventory summary
 
-- Source files scanned: 1773
-- Files exposing interfaces: 1502
-- Convex registered functions: 465
-- Application routes: 107
+- Source files scanned: 1775
+- Files exposing interfaces: 1504
+- Convex registered functions: 467
+- Application routes: 108
 - Hono/Convex HTTP registrations: 210
 - Eve/MCP tool entries: 118
 - Package commands: 91
@@ -146,6 +146,7 @@
 | `/:locale/finance` | page | `apps/workspace/src/app/[locale]/(app)/finance/page.tsx` |
 | `/:locale/inbox` | page | `apps/workspace/src/app/[locale]/(app)/inbox/page.tsx` |
 | `/:locale/inbox/activity` | page | `apps/workspace/src/app/[locale]/(app)/inbox/activity/page.tsx` |
+| `/:locale/inbox/assigned-comments` | page | `apps/workspace/src/app/[locale]/(app)/inbox/assigned-comments/page.tsx` |
 | `/:locale/inbox/channels` | page | `apps/workspace/src/app/[locale]/(app)/inbox/channels/page.tsx` |
 | `/:locale/inbox/posts` | page | `apps/workspace/src/app/[locale]/(app)/inbox/posts/page.tsx` |
 | `/:locale/inbox/replies` | page | `apps/workspace/src/app/[locale]/(app)/inbox/replies/page.tsx` |
@@ -695,9 +696,11 @@ fully composed path.
 | mutation | `updateOrganizationLayout` | `apps/workspace/convex/navigation/write.ts` |
 | internalMutation | `dispatchJob` | `apps/workspace/convex/notifications/dispatch.ts` |
 | internalMutation | `recoverDueJobs` | `apps/workspace/convex/notifications/dispatch.ts` |
-| query | `listPrimary` | `apps/workspace/convex/notifications/inbox.ts` |
+| query | `listAttention` | `apps/workspace/convex/notifications/inbox.ts` |
+| query | `listReplies` | `apps/workspace/convex/notifications/inbox.ts` |
 | mutation | `markAllRead` | `apps/workspace/convex/notifications/inbox.ts` |
 | mutation | `markRead` | `apps/workspace/convex/notifications/inbox.ts` |
+| mutation | `transitionEvent` | `apps/workspace/convex/notifications/inbox.ts` |
 | query | `getMyPreferences` | `apps/workspace/convex/notifications/read.ts` |
 | query | `getMyStatus` | `apps/workspace/convex/notifications/read.ts` |
 | query | `getOrganizationPreferences` | `apps/workspace/convex/notifications/read.ts` |
@@ -1363,11 +1366,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/navigation/write.ts` | convex-mutation: updateMyOverlay<br>convex-mutation: updateOrganizationLayout |
 | `apps/workspace/convex/notifications/dispatch.ts` | convex-internalMutation: dispatchJob<br>convex-internalMutation: recoverDueJobs |
 | `apps/workspace/convex/notifications/helpers.ts` | type: NotificationCategory<br>type: NotificationSourceType<br>type: NotificationTrigger<br>type: ReminderRule<br>value: defaultNotificationCategories<br>value: defaultReminderRules<br>function: userPrincipalKey<br>function: organizationPrincipalKey<br>function: recipientKey<br>function: tokenLast4<br>function: defaultPreference<br>function: normalizeReminderRules<br>function: getPreference<br>function: getEffectivePreference<br>function: scheduledAtForRule<br>function: cancelQueuedJobsForSource<br>function: createNotificationJob<br>function: scheduleCalendarEventReminders<br>function: scheduleTaskReminders<br>function: nextRecurringTime<br>function: scheduleManualNotification |
-| `apps/workspace/convex/notifications/inbox.ts` | convex-query: listPrimary<br>convex-mutation: markRead<br>convex-mutation: markAllRead |
-| `apps/workspace/convex/notifications/inbox_events.ts` | function: newlyAssignedUserIds<br>function: richTextMemberMentionIds<br>function: newlyMentionedUserIds<br>function: createNotificationEvent<br>function: emitTaskAssignmentEvents<br>function: emitMessageMentionEvents<br>function: emitRichTextMentionEvents |
+| `apps/workspace/convex/notifications/inbox.ts` | function: eventMatchesAttentionView<br>convex-query: listAttention<br>convex-query: listReplies<br>convex-mutation: transitionEvent<br>convex-mutation: markRead<br>convex-mutation: markAllRead |
+| `apps/workspace/convex/notifications/inbox_events.ts` | function: newlyAssignedUserIds<br>function: richTextMemberMentionIds<br>function: newlyMentionedUserIds<br>function: createNotificationEvent<br>function: emitTaskAssignmentEvents<br>function: emitMessageMentionEvents<br>function: emitThreadReplyEvents<br>function: threadReplyRecipientIds<br>function: emitRichTextMentionEvents |
 | `apps/workspace/convex/notifications/push.ts` | value: pushNotifications |
 | `apps/workspace/convex/notifications/read.ts` | convex-query: getMyStatus<br>convex-query: getMyPreferences<br>convex-query: getOrganizationPreferences<br>convex-query: listMySchedules |
-| `apps/workspace/convex/notifications/validators.ts` | value: notificationEventKindValidator<br>value: notificationEventResourceTypeValidator<br>value: notificationEventValidator<br>value: notificationCategoryValidator<br>value: notificationSourceTypeValidator<br>value: notificationTriggerValidator<br>value: notificationJobTriggerValidator<br>value: quietHoursValidator<br>value: reminderRuleValidator<br>value: notificationCategoriesValidator<br>value: notificationPreferenceInputValidator<br>value: notificationPreferenceValidator<br>value: notificationPreferenceSurfaceValidator<br>value: notificationDeviceValidator<br>value: notificationScheduleInputValidator<br>value: notificationScheduleValidator<br>value: notificationJobPayloadValidator |
+| `apps/workspace/convex/notifications/validators.ts` | value: notificationEventKindValidator<br>value: notificationEventLaneValidator<br>value: notificationEventDispositionValidator<br>value: notificationEventResourceTypeValidator<br>value: notificationEventValidator<br>value: notificationCategoryValidator<br>value: notificationSourceTypeValidator<br>value: notificationTriggerValidator<br>value: notificationJobTriggerValidator<br>value: quietHoursValidator<br>value: reminderRuleValidator<br>value: notificationCategoriesValidator<br>value: notificationPreferenceInputValidator<br>value: notificationPreferenceValidator<br>value: notificationPreferenceSurfaceValidator<br>value: notificationDeviceValidator<br>value: notificationScheduleInputValidator<br>value: notificationScheduleValidator<br>value: notificationJobPayloadValidator |
 | `apps/workspace/convex/notifications/write.ts` | convex-mutation: registerDevice<br>convex-mutation: removeDevice<br>convex-mutation: upsertMyPreferences<br>convex-mutation: upsertOrganizationPreferences<br>convex-mutation: createSchedule<br>convex-mutation: updateSchedule<br>convex-mutation: cancelSchedule<br>convex-mutation: ensureDefaultPreferences |
 | `apps/workspace/convex/opportunities/read.ts` | convex-query: list<br>convex-query: get<br>convex-query: options<br>convex-query: stats |
 | `apps/workspace/convex/opportunities/validators.ts` | value: opportunityPriorityValidator<br>value: opportunityStageValidator<br>value: opportunityStatusValidator<br>value: opportunityInputValidator<br>value: opportunityValidator |
@@ -1521,6 +1524,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/error.tsx` | function: AppError |
 | `apps/workspace/src/app/[locale]/(app)/finance/page.tsx` | function: FinancePage |
 | `apps/workspace/src/app/[locale]/(app)/inbox/activity/page.tsx` | function: ChatActivityPage |
+| `apps/workspace/src/app/[locale]/(app)/inbox/assigned-comments/page.tsx` | function: AssignedCommentsPage |
 | `apps/workspace/src/app/[locale]/(app)/inbox/channels/page.tsx` | function: ChannelsPage |
 | `apps/workspace/src/app/[locale]/(app)/inbox/layout.tsx` | function: InboxLayout |
 | `apps/workspace/src/app/[locale]/(app)/inbox/page.tsx` | function: InboxPage |
@@ -1959,12 +1963,12 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/inbox/components/create-channel-modal.tsx` | function: CreateChannelModal |
 | `apps/workspace/src/domains/inbox/components/create-channel-wizard.tsx` | function: CreateChannelWizard |
 | `apps/workspace/src/domains/inbox/components/inbox-activity-screen.tsx` | function: InboxActivityScreen |
+| `apps/workspace/src/domains/inbox/components/inbox-assigned-comments-screen.tsx` | function: InboxAssignedCommentsScreen |
 | `apps/workspace/src/domains/inbox/components/inbox-channel-screen.tsx` | function: InboxChannelScreen |
 | `apps/workspace/src/domains/inbox/components/inbox-channels-screen.tsx` | function: InboxChannelsScreen |
 | `apps/workspace/src/domains/inbox/components/inbox-command-palette.tsx` | function: InboxCommandPalette |
 | `apps/workspace/src/domains/inbox/components/inbox-empty-state.tsx` | function: InboxEmptyState |
 | `apps/workspace/src/domains/inbox/components/inbox-posts-screen.tsx` | function: InboxPostsScreen |
-| `apps/workspace/src/domains/inbox/components/inbox-primary-items.ts` | type: PrimaryFilter<br>type: NotificationEvent<br>type: PrimaryInboxItem<br>function: buildPrimaryInboxItems |
 | `apps/workspace/src/domains/inbox/components/inbox-primary-screen.tsx` | function: InboxPrimaryScreen |
 | `apps/workspace/src/domains/inbox/components/inbox-replies-screen.tsx` | function: InboxRepliesScreen |
 | `apps/workspace/src/domains/inbox/components/inbox-route-header.tsx` | function: InboxRouteHeader |
@@ -1978,6 +1982,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/inbox/components/search-filter-bar.tsx` | function: SearchFilterBar |
 | `apps/workspace/src/domains/inbox/hooks/use-ai-mention-reply.ts` | function: useAiMentionReply<br>function: hasAiMention |
 | `apps/workspace/src/domains/inbox/hooks/use-composer-mention-options.ts` | function: useComposerMentionOptions |
+| `apps/workspace/src/domains/inbox/hooks/use-inbox-attention.ts` | type: InboxAttentionView<br>type: InboxAttentionFilter<br>type: InboxReplyStatus<br>function: useInboxAttention<br>function: useInboxReplies |
 | `apps/workspace/src/domains/inbox/hooks/use-inbox-message-sound.ts` | function: useInboxMessageSound |
 | `apps/workspace/src/domains/inbox/hooks/use-inbox.ts` | function: useChannelsQuery<br>function: useChannelQuery<br>function: useCreateChannelMutation<br>function: useUpdateChannelMutation<br>function: useDeleteChannelMutation<br>function: useMessagesQuery<br>function: useLoadMoreMessages<br>function: useSendMessageMutation<br>function: usePinMessageMutation<br>function: useUnpinMessageMutation<br>function: useUpdateMessageMutation<br>function: useDeleteMessageMutation<br>function: useAddReactionMutation<br>function: useRemoveReactionMutation<br>function: useThreadQuery<br>function: useCreateThreadMutation<br>function: useInboxState |
 | `apps/workspace/src/domains/inbox/lib/ai-response-format.ts` | function: formatAiResponseText |

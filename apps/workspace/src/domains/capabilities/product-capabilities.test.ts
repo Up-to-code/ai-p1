@@ -20,13 +20,14 @@ describe("product capabilities", () => {
       deliveryEconomics: false,
       timeTracking: false,
       inboxPosts: false,
-      inboxReplies: false,
+      inboxReplies: true,
       inboxActivity: false,
     });
     expect(isProductCapabilityEnabled("deliveryEconomics")).toBe(false);
     expect(productCapabilityFallback("deliveryEconomics")).toBe("/projects");
     expect(isProductCapabilityEnabled("timeTracking")).toBe(false);
     expect(productCapabilityFallback("timeTracking")).toBe("/tasks");
+    expect(isProductCapabilityEnabled("inboxReplies")).toBe(true);
   });
 
   it("does not expose disabled products in enabled sidebar navigation", async () => {
@@ -39,11 +40,9 @@ describe("product capabilities", () => {
     const routes = [
       ["time-tracking/page.tsx", "timeTracking", "TimeTrackingPageRedesigned"],
       ["inbox/posts/page.tsx", "inboxPosts", "InboxPostsScreen"],
-      ["inbox/replies/page.tsx", "inboxReplies", "InboxRepliesScreen"],
       ["inbox/activity/page.tsx", "inboxActivity", "InboxActivityScreen"],
       ["organization/activity/page.tsx", "inboxActivity", "InboxActivityScreen"],
       ["ws/posts/page.tsx", "inboxPosts", "InboxPostsScreen"],
-      ["ws/replies/page.tsx", "inboxReplies", "InboxRepliesScreen"],
       ["ws/activity/page.tsx", "inboxActivity", "InboxActivityScreen"],
     ] as const;
 

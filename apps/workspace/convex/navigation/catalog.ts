@@ -53,17 +53,11 @@ export const IMPLEMENTED_NAVIGATION_CATALOG: readonly NavigationCatalogDomain[] 
   {
     id: "inbox", labelKey: "inbox", iconId: "inbox", routeId: "inbox", required: true, opensPanel: true, readResources: ["channel"],
     nodes: [
-      node("inbox", "inbox.primary", "primary", "inbox", "inbox", { required: true }),
-      node("inbox", "inbox.mentions", "mentions", "attention", "inbox", { params: { filter: "mentions" } }),
-      node("inbox", "inbox.assigned", "assignedToMe", "assigned", "tasks", { params: { filter: "assigned-to-me" } }),
-      node("inbox", "inbox.approvals", "approvalRequests", "inbox", "delivery", { params: { view: "approvals" } }),
-      node("inbox", "inbox.followups", "followUps", "upcoming", "inbox", { params: { filter: "follow-ups" } }),
-      node("inbox", "inbox.saved", "saved", "completed", "inbox", { params: { filter: "saved" } }),
+      node("inbox", "inbox.attention", "inbox", "inbox", "inbox", { required: true }),
+      node("inbox", "inbox.replies", "replies", "replies", "inboxReplies", { required: true }),
+      node("inbox", "inbox.assigned-comments", "assignedComments", "comments", "inboxAssignedComments", { required: true }),
+      node("inbox", "inbox.my-tasks", "myTasks", "my-work", "tasks", { params: { filter: "my" }, required: true }),
       node("inbox", "inbox.channels", "channels", "channels", "channels", { required: true }),
-      node("inbox", "inbox.direct", "directConversations", "members", "channels", { params: { type: "dm" } }),
-      node("inbox", "inbox.team-channels", "teamChannels", "members", "channels", { params: { type: "team" } }),
-      node("inbox", "inbox.space-channels", "spaceChannels", "spaces", "channels", { params: { type: "space" } }),
-      node("inbox", "inbox.project-channels", "projectChannels", "projects", "channels", { params: { type: "project" } }),
     ],
   },
   {

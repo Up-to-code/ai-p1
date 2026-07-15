@@ -3,6 +3,18 @@ import { v } from "convex/values";
 export const notificationEventKindValidator = v.union(
   v.literal("task_assigned"),
   v.literal("mentioned"),
+  v.literal("thread_reply"),
+);
+
+export const notificationEventLaneValidator = v.union(
+  v.literal("primary"),
+  v.literal("other"),
+);
+
+export const notificationEventDispositionValidator = v.union(
+  v.literal("active"),
+  v.literal("later"),
+  v.literal("cleared"),
 );
 
 export const notificationEventResourceTypeValidator = v.union(
@@ -22,6 +34,8 @@ export const notificationEventValidator = v.object({
   recipientUserId: v.string(),
   actorUserId: v.string(),
   kind: notificationEventKindValidator,
+  lane: v.optional(notificationEventLaneValidator),
+  disposition: v.optional(notificationEventDispositionValidator),
   resourceType: notificationEventResourceTypeValidator,
   resourceId: v.string(),
   title: v.string(),
@@ -29,6 +43,8 @@ export const notificationEventValidator = v.object({
   href: v.string(),
   dedupeKey: v.string(),
   readAt: v.optional(v.number()),
+  deferredAt: v.optional(v.number()),
+  clearedAt: v.optional(v.number()),
   createdAt: v.number(),
 });
 

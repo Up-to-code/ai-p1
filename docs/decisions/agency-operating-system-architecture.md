@@ -61,6 +61,13 @@ panels. AI likewise remains a secondary-panel mode and top-bar action rather
 than a duplicate launcher domain. Automations reserves a truthful coming-soon
 surface until its editor and operating contracts are ready.
 
+Inbox is an attention surface, not a second collaboration store. Recipient
+events own Primary, Other, Later, Cleared, and read state. Replies are derived
+from actual Channel thread messages, while Channels/messages/threads remain
+owned by the Inbox collaboration Module. Assigned Comments is route-backed but
+must remain a truthful unavailable state until Work comments own assignment;
+the UI may not synthesize comment records.
+
 ## Data and accounting invariants
 
 - Organization IDs lead tenant indexes and every record access check.

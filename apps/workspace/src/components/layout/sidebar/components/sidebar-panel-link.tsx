@@ -24,6 +24,7 @@ type SidebarPanelLinkProps = {
   clearParams?: string[];
   extraParams?: Record<string, string>;
   iconPicker?: React.ReactNode | ((props: { close: () => void }) => React.ReactNode);
+  exact?: boolean;
 };
 
 export function SidebarPanelLink({
@@ -35,6 +36,7 @@ export function SidebarPanelLink({
   clearParams,
   extraParams: explicitExtraParams,
   iconPicker,
+  exact = false,
 }: SidebarPanelLinkProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -44,7 +46,7 @@ export function SidebarPanelLink({
   const hasMatchingExplicitParams = Object.entries(explicitExtraParams ?? {})
     .every(([key, value]) => searchParams.get(key) === value);
   const isActive =
-    pathname.startsWith(pathPart) &&
+    (exact ? pathname === pathPart : pathname.startsWith(pathPart)) &&
     hasMatchingExplicitParams &&
     (paramKey
       ? searchParams.get(paramKey) === paramValue
