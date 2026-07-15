@@ -22,8 +22,6 @@ const fixedArraySizes = new Map<string, { min: number; max: number }>([
   ["footer.platformLinkLabels", { min: 3, max: 3 }],
   ["footer.workspaceLinkLabels", { min: 1, max: 1 }],
   ["footer.legalLinkLabels", { min: 3, max: 3 }],
-  ["assets.security", { min: 3, max: 3 }],
-  ["assets.agentCapabilities", { min: 3, max: 3 }],
   ["landingPage.platformStory.agentCapabilities", { min: 5, max: 6 }],
   ["landingPage.trust.items", { min: 3, max: 3 }],
   ["landingPage.trust.marks", { min: 2, max: 2 }],
@@ -101,11 +99,6 @@ export function applyContentfulMarketingPayload(
         payload.footer,
         "footer",
       ) as MarketingPresentation["footer"],
-      assets: mergeKnownShape(
-        fallback.presentation.assets,
-        payload.assets,
-        "assets",
-      ) as MarketingPresentation["assets"],
       landingPage: mergeKnownShape(
         fallback.presentation.landingPage,
         payload.landingPage,

@@ -8,6 +8,7 @@ import {
   FileText,
   Gauge,
   Link2,
+  Network,
   MessageSquare,
   Search,
   ShieldCheck,
@@ -38,8 +39,10 @@ const workspaceCells = [
   tone?: "violet" | "blue" | "orange" | "green";
 }>;
 
+const agentVisuals = [Network, Sparkles, ShieldCheck] as const;
+
 export function PlatformStorySections() {
-  const { assets, landingPage } = useMarketingContent();
+  const { landingPage } = useMarketingContent();
   const current = landingPage.platformStory;
   const labels = landingPage.support.workspaceCells;
 
@@ -51,12 +54,14 @@ export function PlatformStorySections() {
             <h2>{current.contextTitle}</h2>
             <p>{current.contextBody}</p>
           </div>
-          <div className="qps-context__media">
-            <img
-              alt={current.contextImageAlt}
-              loading="lazy"
-              src={assets.contextStory}
-            />
+          <div className="qps-context__pains">
+            {current.pains.map(([title, body], index) => (
+              <article key={title}>
+                <span>0{index + 1}</span>
+                <h3>{title}</h3>
+                <p>{body}</p>
+              </article>
+            ))}
           </div>
         </div>
       </PublicSection>
@@ -93,14 +98,14 @@ export function PlatformStorySections() {
           <div className="qps-agent-grid">
             {[0, 1, 4].map((capabilityIndex, index) => {
               const [title, body] = current.agentCapabilities[capabilityIndex];
+              const VisualIcon = agentVisuals[index];
               return (
               <article key={title}>
-                <img
-                  alt=""
-                  aria-hidden="true"
-                  className="qps-agent-visual"
-                  src={assets.agentCapabilities[index]}
-                />
+                <div className="qps-agent-visual" aria-hidden="true">
+                  <VisualIcon />
+                  <span><i /><i /><i /></span>
+                  <strong>0{index + 1}</strong>
+                </div>
                 <h3>{title}</h3>
                 <p>{body}</p>
               </article>
@@ -120,9 +125,9 @@ export function PlatformStorySections() {
         .qps-context .qps-heading h2 { max-inline-size: 24ch; margin-inline: auto; background: linear-gradient(90deg, var(--q-text-primary) 0%, var(--q-text-primary) 42%, var(--q-text-secondary) 100%); background-clip: text; color: transparent; font-size: clamp(2.5rem, 4.1vw, 4.25rem); line-height: 1.04; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         [dir="rtl"] .qps-context .qps-heading h2 { background-image: linear-gradient(270deg, var(--q-text-primary) 0%, var(--q-text-primary) 42%, var(--q-text-secondary) 100%); }
         .qps-context .qps-heading p { max-width: 680px; margin-inline: auto; }
-        .qps-context__media { margin-top: clamp(64px, 7vw, 104px); overflow: visible; background: transparent; }
-        .qps-context__media img { display: block; width: min(1540px, 112%); height: auto; max-width: none; margin-inline: 50%; object-fit: contain; transform: translateX(-50%); }
-        [dir="rtl"] .qps-context__media img { transform: translateX(50%); }
+        .qps-context__pains { display: grid; grid-template-columns: repeat(3, 1fr); max-width: 1220px; margin: clamp(64px, 7vw, 104px) auto 0; border-top: 1px solid var(--q-border); border-inline-start: 1px solid var(--q-border); }
+        .qps-context__pains article { min-height: 270px; padding: 32px; border-inline-end: 1px solid var(--q-border); border-bottom: 1px solid var(--q-border); background: linear-gradient(145deg, var(--q-card), var(--q-bg-secondary)); text-align: start; }
+        .qps-context__pains span { color: var(--q-text-muted); font: 700 10px/1 var(--font-mono); } .qps-context__pains h3 { margin: 88px 0 12px; color: var(--q-text-primary); font-size: 24px; letter-spacing: -.035em; } .qps-context__pains p { max-width: 34ch; margin: 0; color: var(--q-text-secondary); font-size: .9375rem; line-height: 1.6; }
         .qps-platform-grid { display: grid; grid-auto-flow: dense; grid-auto-rows: 112px; grid-template-columns: repeat(10, minmax(86px, 1fr)); max-width: 1440px; margin: 0 auto; border-top: 1px solid var(--q-border); border-inline-start: 1px solid var(--q-border); }
         .qps-platform-cell { position: relative; display: flex; min-height: 112px; flex-direction: column; align-items: center; justify-content: center; gap: 10px; overflow: hidden; border-inline-end: 1px solid var(--q-border); border-bottom: 1px solid var(--q-border); color: var(--q-text-muted); text-align: center; }
         .qps-platform-cell svg { width: 20px; height: 20px; stroke-width: 1.7; }
@@ -149,9 +154,13 @@ export function PlatformStorySections() {
         .qps-agent-grid article { overflow: hidden; padding: 16px 16px 24px; border: 1px solid var(--q-border); border-radius: 20px; background: var(--q-card); }
         .qps-agent-grid h3 { margin: 24px 2px 8px; color: var(--q-text-primary); font-size: 18px; font-weight: 600; letter-spacing: -.025em; }
         .qps-agent-grid p { max-width: 38ch; margin: 0 2px; color: var(--q-text-secondary); font-size: .9375rem; line-height: 1.55; }
-        .qps-agent-visual { display: block; width: 100%; min-height: 270px; aspect-ratio: 362 / 271; border-radius: 14px; background: var(--q-bg-secondary); object-fit: cover; }
+        .qps-agent-visual { position: relative; display: grid; width: 100%; min-height: 270px; place-items: center; overflow: hidden; border-radius: 14px; background: radial-gradient(circle at 50% 45%, #fff 0 8%, transparent 9%), linear-gradient(145deg, #f7f7f7, #e7e7e7); }
+        .qps-agent-visual::before, .qps-agent-visual::after { position: absolute; width: 210px; height: 210px; border: 1px solid #d4d4d4; border-radius: 50%; content: ""; } .qps-agent-visual::after { width: 130px; height: 130px; }
+        .qps-agent-visual > svg { position: relative; z-index: 2; width: 34px; height: 34px; padding: 8px; border-radius: 12px; background: #222; color: #fff; box-sizing: content-box; }
+        .qps-agent-visual > span { position: absolute; right: 18px; bottom: 18px; display: flex; } .qps-agent-visual > span i { width: 27px; height: 27px; margin-inline-start: -7px; border: 3px solid #eee; border-radius: 50%; background: #aaa; } .qps-agent-visual > strong { position: absolute; top: 18px; left: 18px; color: #999; font: 700 10px/1 var(--font-mono); }
+        [dir="rtl"] .qps-agent-visual > strong { right: 18px; left: auto; } [dir="rtl"] .qps-agent-visual > span { right: auto; left: 18px; }
         @media (max-width: 980px) { .qps-platform-grid { grid-template-columns: repeat(5, 1fr); } .qps-platform-cell--blue, .qps-platform-cell--violet, .qps-platform-cell--orange, .qps-platform-cell--green { grid-column: span 2; grid-row: span 2; } .qps-agent-grid { grid-template-columns: repeat(2, 1fr); } .qps-agent-grid article:nth-child(3n) { border-inline-end: 1px solid rgba(255,255,255,.14); } .qps-agent-grid article:nth-child(2n) { border-inline-end: 0; } .qps-agent-grid article:nth-last-child(-n+3) { border-bottom: 1px solid rgba(255,255,255,.14); } .qps-agent-grid article:nth-last-child(-n+2) { border-bottom: 0; } }
-        @media (max-width: 700px) { .qps-agent-grid { grid-template-columns: 1fr; } .qps-context__media { margin-top: 44px; overflow-x: clip; } .qps-context__media img { width: 180%; } .qps-platform-grid { grid-template-columns: repeat(2, 1fr); } .qps-platform-cell--featured { grid-column: span 2; } .qps-agents { border-radius: 20px; } .qps-agents__actions { align-items: stretch; flex-direction: column; padding-inline: 16px; } .qps-agent-grid article, .qps-agent-grid article:nth-child(2n), .qps-agent-grid article:nth-child(3n) { min-height: 250px; border-inline-end: 0; border-bottom: 1px solid rgba(255,255,255,.14); } .qps-agent-grid article:last-child { border-bottom: 0; } }
+        @media (max-width: 700px) { .qps-agent-grid { grid-template-columns: 1fr; } .qps-context__pains { grid-template-columns: 1fr; margin-top: 44px; } .qps-context__pains article { min-height: 210px; } .qps-context__pains h3 { margin-top: 54px; } .qps-platform-grid { grid-template-columns: repeat(2, 1fr); } .qps-platform-cell--featured { grid-column: span 2; } .qps-agents { border-radius: 20px; } .qps-agents__actions { align-items: stretch; flex-direction: column; padding-inline: 16px; } .qps-agent-grid article, .qps-agent-grid article:nth-child(2n), .qps-agent-grid article:nth-child(3n) { min-height: 250px; border-inline-end: 0; border-bottom: 1px solid rgba(255,255,255,.14); } .qps-agent-grid article:last-child { border-bottom: 0; } }
       `}</style>
     </>
   );

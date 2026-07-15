@@ -15,8 +15,10 @@ const solutionTabs = [
   { icon: Sparkles },
 ] as const;
 
+const trustVisuals = [ShieldCheck, LockKeyhole, Workflow] as const;
+
 export function AiOutcomesSections() {
-  const { assets, landingPage } = useMarketingContent();
+  const { landingPage } = useMarketingContent();
   const current = landingPage.aiOutcomes;
   const trust = landingPage.trust;
   const support = landingPage.support;
@@ -38,11 +40,23 @@ export function AiOutcomesSections() {
           </div>
           <figure className="qao-showcase">
             <div className="qao-showcase__media">
-              <img
-                alt={support.showcaseImageAlt}
-                src={assets.solutionsShowcase}
-              />
-              <span>{activeLabel}</span>
+              <aside>
+                {support.solutionTabs.map((label, index) => (
+                  <span className={activeSolution === index ? "is-active" : undefined} key={label}><i />{label}</span>
+                ))}
+              </aside>
+              <main>
+                <header><span>{activeLabel}</span><i /></header>
+                <div className="qao-showcase__board">
+                  {current.solution.bullets.map((item, index) => (
+                    <section key={item}>
+                      <small>0{index + 1}</small>
+                      <article><i /><strong>{item}</strong><span><em /><em /></span></article>
+                      <article className="is-small"><i /><strong>{support.solutionTabs[(activeSolution + index + 1) % support.solutionTabs.length]}</strong></article>
+                    </section>
+                  ))}
+                </div>
+              </main>
             </div>
             <figcaption>
               {current.solution.bullets.map((item, index) => (
@@ -57,16 +71,15 @@ export function AiOutcomesSections() {
         <div className="qao-trust">
           <div className="qao-trust__intro"><p><i />{trust.kicker}</p><h2>{trust.title}</h2><span>{trust.body}</span><div><span><ShieldCheck />{trust.marks[0]}</span><span><LockKeyhole />{trust.marks[1]}</span></div></div>
           <div className="qao-trust__cards">
-            {trust.items.map(([title, body], index) => (
-              <article key={title}>
-                <div><h3>{title}</h3><p>{body}</p></div>
-                <img
-                  alt=""
-                  aria-hidden="true"
-                  src={assets.security[index]}
-                />
-              </article>
-            ))}
+            {trust.items.map(([title, body], index) => {
+              const VisualIcon = trustVisuals[index];
+              return (
+                <article key={title}>
+                  <div><h3>{title}</h3><p>{body}</p></div>
+                  <span className="qao-trust__visual" aria-hidden="true"><VisualIcon /></span>
+                </article>
+              );
+            })}
           </div>
         </div>
         <div className="qao-trust__assurance"><ShieldCheck /><span>{trust.assurance}</span><Link href="/privacy">{current.explore}<ArrowRight /></Link></div>
@@ -89,10 +102,11 @@ export function AiOutcomesSections() {
         .qao-explorer__tabs button[aria-selected="true"]::after { background: white; }
         .qao-explorer__tabs svg { width: 16px; height: 16px; }
         .qao-showcase { margin: 0; overflow: hidden; border-radius: 22px; background: #202020; }
-        .qao-showcase__media { position: relative; height: clamp(420px, 54vw, 700px); overflow: hidden; background: #F6F7F8; }
-        .qao-showcase__media img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: left top; }
-        .qao-showcase__media > span { position: absolute; top: 24px; left: 24px; border-radius: 999px; padding: 9px 14px; background: rgba(32,32,32,.92); color: white; font-size: 12px; font-weight: 700; backdrop-filter: blur(12px); }
-        [dir="rtl"] .qao-showcase__media > span { right: 24px; left: auto; }
+        .qao-showcase__media { position: relative; display: grid; min-height: clamp(420px, 54vw, 640px); grid-template-columns: 190px 1fr; overflow: hidden; background: #f6f7f8; color: #222; }
+        .qao-showcase__media > aside { display: flex; flex-direction: column; gap: 7px; padding: 74px 14px 20px; border-inline-end: 1px solid #dedede; background: #ededed; } .qao-showcase__media > aside span { display: flex; align-items: center; gap: 9px; border-radius: 9px; padding: 10px; color: #777; font-size: 11px; font-weight: 600; } .qao-showcase__media > aside span.is-active { background: white; color: #222; box-shadow: 0 4px 15px rgba(0,0,0,.05); } .qao-showcase__media > aside i { width: 9px; height: 9px; border: 1px solid currentColor; border-radius: 3px; }
+        .qao-showcase__media > main { min-width: 0; padding: 54px 32px 32px; } .qao-showcase__media > main > header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 34px; } .qao-showcase__media > main > header span { font-size: clamp(1.5rem, 3vw, 2.5rem); font-weight: 600; letter-spacing: -.04em; } .qao-showcase__media > main > header i { width: 92px; height: 34px; border-radius: 9px; background: #222; }
+        .qao-showcase__board { display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: 14px; } .qao-showcase__board section { min-width: 0; border-radius: 14px; padding: 12px; background: #e9e9e9; } .qao-showcase__board section > small { display: block; padding: 2px 2px 12px; color: #8c8c8c; font: 700 9px/1 var(--font-mono); }
+        .qao-showcase__board article { display: grid; min-height: 170px; align-content: start; gap: 13px; margin-bottom: 9px; border: 1px solid #ddd; border-radius: 11px; padding: 14px; background: white; box-shadow: 0 7px 20px rgba(0,0,0,.05); } .qao-showcase__board article > i { width: 30px; height: 30px; border-radius: 9px; background: #e3e3e3; } .qao-showcase__board article strong { color: #4c4c4c; font-size: 11px; line-height: 1.45; } .qao-showcase__board article > span { display: flex; margin-top: auto; } .qao-showcase__board article em { width: 24px; height: 24px; margin-inline-end: -6px; border: 2px solid white; border-radius: 50%; background: #aaa; } .qao-showcase__board article.is-small { min-height: 88px; opacity: .72; }
         .qao-showcase figcaption { display: grid; grid-template-columns: repeat(3, 1fr); background: #202020; }
         .qao-showcase figcaption > div { display: grid; min-height: 132px; align-content: center; gap: 10px; padding: 24px 28px; border-inline-end: 1px solid rgba(255,255,255,.12); }
         .qao-showcase figcaption > div:last-child { border-inline-end: 0; }
@@ -114,11 +128,11 @@ export function AiOutcomesSections() {
         .qao-trust__cards { overflow: hidden; border: 1px solid var(--q-border); border-radius: 18px; background: var(--q-card); }
         .qao-trust__cards article { position: relative; display: grid; min-height: 176px; grid-template-columns: 1fr 150px; align-items: center; gap: 24px; overflow: hidden; padding: 28px 24px; border-bottom: 1px solid var(--q-border); }
         .qao-trust__cards article:last-child { border-bottom: 0; } .qao-trust__cards h3 { margin: 0 0 9px; color: var(--q-text-primary); font-size: 21px; font-weight: 600; letter-spacing: -.025em; } .qao-trust__cards p { max-width: 43ch; margin: 0; color: var(--q-text-secondary); font-size: .9375rem; line-height: 1.5; }
-        .qao-trust__cards article > img { position: absolute; right: -8px; bottom: -26px; display: block; width: 164px; height: 164px; object-fit: contain; filter: grayscale(1) contrast(.9); }
-        [dir="rtl"] .qao-trust__cards article > img { right: auto; left: -8px; }
+        .qao-trust__visual { position: absolute; right: 24px; display: grid; width: 94px; height: 94px; place-items: center; border: 1px solid var(--q-border); border-radius: 50%; background: radial-gradient(circle, var(--q-card) 0 34%, var(--q-bg-secondary) 35% 100%); color: var(--q-text-primary); } .qao-trust__visual::after { position: absolute; width: 66px; height: 66px; border: 1px dashed var(--q-border-strong); border-radius: 50%; content: ""; } .qao-trust__visual svg { position: relative; z-index: 1; width: 23px; height: 23px; }
+        [dir="rtl"] .qao-trust__visual { right: auto; left: 24px; }
         .qao-trust__assurance { display: flex; align-items: center; gap: 12px; margin-top: 44px; border-top: 1px solid var(--q-border); padding-top: 24px; color: var(--q-text-secondary); font-size: .9375rem; } .qao-trust__assurance > svg { width: 18px; } .qao-trust__assurance a { display: inline-flex; align-items: center; gap: 8px; margin-inline-start: auto; color: var(--q-text-primary); font-weight: 600; text-decoration: none; } .qao-trust__assurance a svg { width: 15px; }
         @media (max-width: 900px) { .qao-explorer__heading { align-items: start; flex-direction: column; } .qao-trust { grid-template-columns: 1fr; } .qao-solution { grid-template-columns: 1fr; } .qao-outcomes { grid-template-columns: repeat(2, 1fr); } .qao-outcomes__intro { align-items: start; flex-direction: column; } }
-        @media (max-width: 650px) { .qao-explorer__tabs { grid-template-columns: repeat(2, 1fr); } .qao-explorer__tabs button:last-child { grid-column: span 2; } .qao-showcase__media { height: 380px; } .qao-showcase figcaption { grid-template-columns: 1fr; } .qao-showcase figcaption > div { min-height: 96px; border-inline-end: 0; border-bottom: 1px solid rgba(255,255,255,.12); } .qao-showcase figcaption > div:last-child { border-bottom: 0; } .qao-trust__cards article { grid-template-columns: 1fr 72px; padding: 20px; } .qao-trust__cards article > img { width: 72px; height: 72px; } .qao-trust__assurance { align-items: flex-start; flex-wrap: wrap; } .qao-trust__assurance a { width: 100%; margin-inline-start: 30px; } .qao-outcomes { grid-template-columns: 1fr; } .qao-outcomes article { min-height: 220px; } }
+        @media (max-width: 650px) { .qao-explorer__tabs { grid-template-columns: repeat(2, 1fr); } .qao-explorer__tabs button:last-child { grid-column: span 2; } .qao-showcase__media { min-height: 440px; grid-template-columns: 76px 1fr; } .qao-showcase__media > aside { padding-inline: 7px; } .qao-showcase__media > aside span { justify-content: center; font-size: 0; } .qao-showcase__media > main { padding: 42px 14px 20px; } .qao-showcase__media > main > header i { width: 54px; } .qao-showcase__board { grid-template-columns: 1fr 1fr; } .qao-showcase__board section:last-child { display: none; } .qao-showcase figcaption { grid-template-columns: 1fr; } .qao-showcase figcaption > div { min-height: 96px; border-inline-end: 0; border-bottom: 1px solid rgba(255,255,255,.12); } .qao-showcase figcaption > div:last-child { border-bottom: 0; } .qao-trust__cards article { grid-template-columns: 1fr 72px; padding: 20px; } .qao-trust__visual { right: 14px; width: 64px; height: 64px; } [dir="rtl"] .qao-trust__visual { right: auto; left: 14px; } .qao-trust__visual::after { width: 46px; height: 46px; } .qao-trust__assurance { align-items: flex-start; flex-wrap: wrap; } .qao-trust__assurance a { width: 100%; margin-inline-start: 30px; } .qao-outcomes { grid-template-columns: 1fr; } .qao-outcomes article { min-height: 220px; } }
       `}</style>
     </>
   );

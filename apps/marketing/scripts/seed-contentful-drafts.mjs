@@ -19,12 +19,6 @@ const homeHeroIds = {
   fr: "3G61SoVPqLbnyCC8T7lrpg",
 };
 
-const platformStoryIds = {
-  en: "5YUEH3L0rIiUwPqPSqSor3",
-  ar: "3Jwoz3FxOztNSidtiH5RQL",
-  fr: "1JaXwHYrNRjFJfQ9OFZPDN",
-};
-
 const content = {
   en: {
     brand: ["Qentrah", "Qentrah home"],
@@ -147,16 +141,6 @@ await client.connect(new StdioClientTransport({ command: "npx", args: ["-y", "@c
 try {
   const brandLightAssetId = await ensureAsset(client, scope, "Qentrah brand mark · light surface", "logo-derk-color.svg");
   const brandDarkAssetId = await ensureAsset(client, scope, "Qentrah brand mark · dark surface", "logo-dark-mood.svg");
-  const agentImageAssetIds = await Promise.all([
-    ensureAsset(client, scope, "Qentrah agent capability · workspace memory", "landing-images/agent-capability-1.png"),
-    ensureAsset(client, scope, "Qentrah agent capability · context intelligence", "landing-images/agent-capability-2.png"),
-    ensureAsset(client, scope, "Qentrah agent capability · scoped execution", "landing-images/agent-capability-3.png"),
-  ]);
-  for (const platformStoryId of Object.values(platformStoryIds)) {
-    await updateDraft(client, scope, platformStoryId, {
-      agentImages: agentImageAssetIds.map(assetLink),
-    });
-  }
   for (const [siteLocale, copy] of Object.entries(content)) {
     const accentColor = siteLocale === "ar" ? "#6B5CF6" : siteLocale === "fr" ? "#3366CC" : "#555555";
     const nav = copy.nav;
@@ -198,7 +182,7 @@ try {
       label: nav[0], items: logoItemIds.map(link),
     });
     const homeSupportId = await ensureDraft(client, scope, "qentrahHomeSupportBlock", `Home support · ${siteLocale}`, {
-      workspaceCells: copy.workspaceCells, solutionTabs: navigationLabels.slice(0, 5), showcaseImageAlt: home[1], logoCloud: link(logoCloudId), faq: link(faqId),
+      workspaceCells: copy.workspaceCells, solutionTabs: navigationLabels.slice(0, 5), logoCloud: link(logoCloudId), faq: link(faqId),
     });
     const planIds = ["free", "good", "better", "custom"];
     const planNames = siteLocale === "ar" ? ["مجاني", "غير محدود", "الأعمال", "المؤسسات"] : siteLocale === "fr" ? ["Gratuit", "Illimité", "Business", "Entreprise"] : ["Free", "Unlimited", "Business", "Enterprise"];
@@ -261,7 +245,7 @@ try {
       }));
     }
     await updateDraft(client, scope, homeHeroIds[siteLocale], {
-      title: home[0], benefits: benefitEntryIds.map(link), note: home[1], modulesLabel: home[2], modules: navigationLabels.slice(0, 8), imageAlt: home[1],
+      title: home[0], benefits: benefitEntryIds.map(link), note: home[1], modulesLabel: home[2], modules: navigationLabels.slice(0, 8),
     });
     const rootId = await ensureDraft(client, scope, "qentrahFooterBlock", `Marketing site · ${siteLocale}`, {
       locale: siteLocale, brand: link(brandId), navigation: link(navigationId), homePage: link(homePageIds[siteLocale]), homeSupport: link(homeSupportId), pricingPage: link(pricingId), footerTagline: nav[0], description: footer[0], product: footer[1], company: footer[2], legal: footer[4], contact: footer[5], copyright: footer[7], companyLinks: [footer[8]], legalLinks: [copy.legalTitles.privacy, copy.legalTitles.terms, copy.legalTitles.legal], resourceLinks: [footer[8], footer[9], footer[10]],

@@ -50,18 +50,6 @@ function resolveEntry(
   return id ? fieldsOf(entries.get(id)) : null;
 }
 
-function assetUrl(
-  value: unknown,
-  assets: Map<string, ContentfulRecord>,
-): string | undefined {
-  const id = linkId(value);
-  const fields = fieldsOf(id ? assets.get(id) : value);
-  if (!fields || !isRecord(fields.file)) return undefined;
-  const url = text(fields.file.url);
-  if (!url) return undefined;
-  return url.startsWith("//") ? `https:${url}` : url;
-}
-
 function textCards(
   value: unknown,
   entries: Map<string, ContentfulRecord>,
@@ -94,7 +82,6 @@ export function extractContentfulLandingPagePayload(
 
   const includes = isRecord(value.includes) ? value.includes : {};
   const entries = indexById(includes.Entry);
-  const assets = indexById(includes.Asset);
   const hero = resolveEntry(page.hero, entries);
   const platform = resolveEntry(page.platformStory, entries);
   const ai = resolveEntry(page.aiOutcomes, entries);
@@ -103,18 +90,6 @@ export function extractContentfulLandingPagePayload(
 
   if (!hero && !platform && !ai && !trust && !cta) return null;
 
-  const security = Array.isArray(trust?.images)
-    ? trust.images.flatMap((image) => {
-        const url = assetUrl(image, assets);
-        return url ? [url] : [];
-      })
-    : [];
-  const agentImages = Array.isArray(platform?.agentImages)
-    ? platform.agentImages.flatMap((image) => {
-        const url = assetUrl(image, assets);
-        return url ? [url] : [];
-      })
-    : [];
   const agentCapabilities = textCards(platform?.agentCapabilities, entries);
   const trustItems = textCards(trust?.items, entries);
 
@@ -127,20 +102,11 @@ export function extractContentfulLandingPagePayload(
       note: text(hero?.note),
       modulesLabel: text(hero?.modulesLabel),
       modules: textList(hero?.modules),
-      imageAlt: text(hero?.imageAlt),
-    },
-    assets: {
-      homeHero: assetUrl(hero?.image, assets),
-      contextStory: assetUrl(platform?.contextImage, assets),
-      solutionsShowcase: assetUrl(ai?.solutionImage, assets),
-      agentCapabilities: agentImages.length === 3 ? agentImages : undefined,
-      security: security.length === 3 ? security : undefined,
     },
     landingPage: {
       platformStory: {
         contextTitle: text(platform?.contextTitle),
         contextBody: text(platform?.contextBody),
-        contextImageAlt: text(platform?.contextImageAlt),
         platformTitle: text(platform?.platformTitle),
         platformBody: text(platform?.platformBody),
         agentTitle: text(platform?.agentTitle),

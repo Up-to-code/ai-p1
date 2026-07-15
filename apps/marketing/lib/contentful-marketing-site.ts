@@ -224,14 +224,12 @@ export function extractContentfulMarketingSitePayload(value: unknown): Contentfu
       note: text(landingHero.note),
       modulesLabel: text(landingHero.modulesLabel),
       modules: textList(landingHero.modules),
-      imageAlt: text(landingHero.imageAlt),
     },
     landingPage: {
       ...(isRecord(landing?.landingPage) ? landing.landingPage : {}),
       support: {
         workspaceCells: textListSized(homeSupport?.workspaceCells, 32),
         solutionTabs: textListSized(homeSupport?.solutionTabs, 5),
-        showcaseImageAlt: text(homeSupport?.showcaseImageAlt),
         logoCloud: logoCloudPayload(homeSupport?.logoCloud, entries, assets),
         faq: faqPayload(homeSupport?.faq, entries),
       },

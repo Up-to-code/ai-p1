@@ -4,7 +4,6 @@ const platformStoryCopy = {
   en: {
     contextTitle: "Work loses momentum when context is scattered.",
     contextBody: "Projects, tasks, decisions, files, and conversations should move together—not disappear across disconnected tools.",
-    contextImageAlt: "Disconnected tools and scattered work create gaps in team context",
     pains: [
       ["Context switching", "Teams jump between messages, files, and task lists."],
       ["Context missing", "People and AI act without the full workspace history."],
@@ -29,7 +28,6 @@ const platformStoryCopy = {
   ar: {
     contextTitle: "يفقد العمل زخمه عندما يتشتت السياق.",
     contextBody: "يجب أن تتحرك المشاريع والمهام والقرارات والملفات والمحادثات معاً، لا أن تضيع بين أدوات منفصلة.",
-    contextImageAlt: "أدوات منفصلة وعمل متشتت يصنعان فجوات في سياق الفريق",
     pains: [
       ["التنقل بين السياقات", "يتنقل الفريق بين الرسائل والملفات وقوائم المهام."],
       ["سياق مفقود", "يتصرف الأشخاص والذكاء الاصطناعي دون تاريخ مساحة العمل الكامل."],
@@ -54,7 +52,6 @@ const platformStoryCopy = {
   fr: {
     contextTitle: "Le travail ralentit quand le contexte est dispersé.",
     contextBody: "Projets, tâches, décisions, fichiers et conversations doivent avancer ensemble, pas disparaître entre des outils isolés.",
-    contextImageAlt: "Des outils isolés et un travail dispersé créent des ruptures de contexte",
     pains: [
       ["Changement de contexte", "L’équipe passe sans cesse des messages aux fichiers et aux tâches."],
       ["Contexte manquant", "Les personnes et l’IA agissent sans l’historique complet de l’espace."],
@@ -214,7 +211,6 @@ const landingSupportCopy = {
   en: {
     workspaceCells: ["Connected search", "Tasks", "Spaces", "Calendar", "Approvals", "Inbox", "Forms", "Dashboards", "Workflows", "Team spaces", "Reminders", "Project planning", "Team members", "Docs", "Projects", "Goals", "Project status", "Knowledge", "AI agents", "Communication", "Deep search", "Dependencies", "Milestones", "Activity history", "Automations", "Permissions", "Linked work", "Insights", "Templates", "Handoffs", "Scoped access", "MCP tools"],
     solutionTabs: ["Projects", "Team spaces", "Tasks", "Automations", "Insights"],
-    showcaseImageAlt: "Connected workspace with projects, tasks, owners, and team navigation",
     logoCloud: {
       label: "Connect the tools your team already uses",
       items: [
@@ -237,7 +233,6 @@ const landingSupportCopy = {
   ar: {
     workspaceCells: ["بحث مترابط", "المهام", "المساحات", "التقويم", "الموافقات", "البريد الوارد", "النماذج", "لوحات المعلومات", "مسارات العمل", "مساحات الفريق", "التذكيرات", "تخطيط المشاريع", "أعضاء الفريق", "المستندات", "المشاريع", "الأهداف", "حالة المشروع", "المعرفة", "وكلاء الذكاء", "التواصل", "البحث العميق", "الاعتماديات", "المراحل الرئيسية", "سجل النشاط", "الأتمتة", "الصلاحيات", "العمل المترابط", "الرؤى", "القوالب", "عمليات التسليم", "وصول محدد النطاق", "أدوات MCP"],
     solutionTabs: ["المشاريع", "مساحات الفريق", "المهام", "الأتمتة", "الرؤى"],
-    showcaseImageAlt: "مساحة عمل مترابطة تعرض المشاريع والمهام والمسؤولين وتنقل الفريق",
     logoCloud: {
       label: "اربط الأدوات التي يستخدمها فريقك بالفعل",
       items: [toolBrand("واتساب", "https://www.whatsapp.com/"), toolBrand("تيليجرام", "https://telegram.org/"), toolBrand("n8n", "https://n8n.io/"), toolBrand("Zapier", "https://zapier.com"), toolBrand("Slack", "https://slack.com"), toolBrand("HubSpot", "https://www.hubspot.com/"), toolBrand("Google Sheets", "https://www.google.com/sheets/about/"), toolBrand("Airtable", "https://airtable.com/"), toolBrand("Notion", "https://www.notion.so/"), toolBrand("Webhooks", "https://webhook.site/")],
@@ -258,7 +253,6 @@ const landingSupportCopy = {
   fr: {
     workspaceCells: ["Recherche connectée", "Tâches", "Espaces", "Calendrier", "Validations", "Boîte de réception", "Formulaires", "Tableaux de bord", "Flux de travail", "Espaces d’équipe", "Rappels", "Planification", "Membres", "Documents", "Projets", "Objectifs", "Statut projet", "Connaissance", "Agents IA", "Communication", "Recherche avancée", "Dépendances", "Jalons", "Historique", "Automatisations", "Autorisations", "Travail relié", "Analyses", "Modèles", "Relais", "Accès cadré", "Outils MCP"],
     solutionTabs: ["Projets", "Espaces d’équipe", "Tâches", "Automatisations", "Analyses"],
-    showcaseImageAlt: "Espace connecté avec projets, tâches, responsables et navigation d’équipe",
     logoCloud: {
       label: "Connectez les outils déjà utilisés par votre équipe",
       items: [toolBrand("WhatsApp", "https://www.whatsapp.com/"), toolBrand("Telegram", "https://telegram.org/"), toolBrand("n8n", "https://n8n.io/"), toolBrand("Zapier", "https://zapier.com"), toolBrand("Slack", "https://slack.com"), toolBrand("HubSpot", "https://www.hubspot.com/"), toolBrand("Google Sheets", "https://www.google.com/sheets/about/"), toolBrand("Airtable", "https://airtable.com/"), toolBrand("Notion", "https://www.notion.so/"), toolBrand("Webhooks", "https://webhook.site/")],

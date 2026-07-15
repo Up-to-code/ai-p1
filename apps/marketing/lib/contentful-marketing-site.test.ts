@@ -44,7 +44,7 @@ describe("Contentful Marketing site composition", () => {
       footer: { description: "One connected workspace." },
       hero: { title: "Connected work", modules: ["Projects", "Docs"], benefits: [["One context", "Keep delivery connected."]] },
       pricingPage: { eyebrow: "PRICING", headline: ["One ", "workspace", " for ", "delivery"] },
-      landingPage: { support: { workspaceCells, solutionTabs, showcaseImageAlt: "CMS workspace preview", faq: { title: "Questions", items: [["Can I edit this?", "Yes."]] }, logoCloud: { items: [{ name: "Qentrah", image: "https://images.ctfassets.net/brand.svg" }] } } },
+      landingPage: { support: { workspaceCells, solutionTabs, faq: { title: "Questions", items: [["Can I edit this?", "Yes."]] }, logoCloud: { items: [{ name: "Qentrah", image: "https://images.ctfassets.net/brand.svg" }] } } },
       legalPages: [{ pageKey: "privacy", sections: [{ title: "Introduction", body: "Privacy body", bulletItems: ["One"] }] }],
       seoEntries: [{ pageKey: "home", title: "CMS title", socialImage: "https://images.ctfassets.net/brand.svg", socialImageAlt: "Qentrah connected workspace" }],
     });

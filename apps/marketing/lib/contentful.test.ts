@@ -26,9 +26,7 @@ describe("Contentful Marketing payload", () => {
     expect(content.presentation.hero.cta).toBe("Create your workspace");
     expect(content.presentation.hero.eyebrow).toBe("ONE WORKSPACE. EVERY TEAM.");
     expect(content.presentation.footer.tagline).toBe("Work with complete context");
-    expect(content.presentation.assets.homeHero).toBe(
-      "https://images.ctfassets.net/example/hero.png",
-    );
+    expect(content.presentation).not.toHaveProperty("assets");
     expect(content.presentation.landingPage.cta.primary).toBe(
       "Create your workspace",
     );
@@ -50,7 +48,7 @@ describe("Contentful Marketing payload", () => {
 
     expect(content.presentation.hero.cta).toBe("Start free");
     expect(content.presentation.testimonials.length).toBeGreaterThan(0);
-    expect(content.presentation.assets.security).toHaveLength(3);
+    expect(content.presentation).not.toHaveProperty("assets");
     expect(content.presentation.landingPage.cta.points).toHaveLength(3);
     expect(content.presentation.pricingPage.plans).toHaveLength(4);
   });

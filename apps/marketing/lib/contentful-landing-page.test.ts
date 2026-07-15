@@ -8,7 +8,7 @@ const assetLink = (id: string) => ({
 });
 
 describe("Contentful landing-page blocks", () => {
-  it("resolves editor inputs, repeatable cards, and asset references", () => {
+  it("resolves editor inputs and ignores retired landing artwork fields", () => {
     const payload = extractContentfulLandingPagePayload({
       items: [
         {
@@ -95,21 +95,9 @@ describe("Contentful landing-page blocks", () => {
       title: "One connected workspace",
       benefits: [["One context", "Keep every handoff connected."]],
       modules: ["Projects", "Docs"],
-      imageAlt: "A connected workspace",
     });
-    expect(payload?.assets).toMatchObject({
-      homeHero: "https://images.ctfassets.net/hero.png",
-      agentCapabilities: [
-        "https://images.ctfassets.net/agent-1.png",
-        "https://images.ctfassets.net/agent-2.png",
-        "https://images.ctfassets.net/agent-3.png",
-      ],
-      security: [
-        "https://images.ctfassets.net/security-1.png",
-        "https://images.ctfassets.net/security-2.png",
-        "https://images.ctfassets.net/security-3.png",
-      ],
-    });
+    expect(payload).not.toHaveProperty("assets");
+    expect(payload?.hero).not.toHaveProperty("imageAlt");
     expect(payload?.landingPage).toMatchObject({
       platformStory: { contextTitle: "Context stays connected" },
       cta: { primary: "Create your workspace" },

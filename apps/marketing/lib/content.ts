@@ -74,7 +74,6 @@ export type MarketingHeroContent = {
   note: string;
   modulesLabel: string;
   modules: string[];
-  imageAlt: string;
 };
 
 export type Testimonial = {
@@ -156,41 +155,16 @@ export type MarketingSeoEntry = {
   socialImageAlt: string;
 };
 
-export type MarketingAssetContent = {
-  homeHero: string;
-  contextStory: string;
-  solutionsShowcase: string;
-  agentCapabilities: [string, string, string];
-  security: [string, string, string];
-};
-
 export type MarketingPresentation = {
   brand: MarketingBrandContent;
   hero: MarketingHeroContent;
   testimonials: Testimonial[];
   navigation: MarketingNavContent;
   footer: MarketingFooterContent;
-  assets: MarketingAssetContent;
   landingPage: LandingPageContent;
   pricingPage: PricingPageContent;
   legalPages: MarketingLegalPageContent[];
   seoEntries: MarketingSeoEntry[];
-};
-
-const marketingAssets: MarketingAssetContent = {
-  homeHero: "/landing-images/task-section.png",
-  contextStory: "/landing-images/problem-section.png",
-  solutionsShowcase: "/landing-images/solution-section.png",
-  agentCapabilities: [
-    "/landing-images/agent-capability-1.png",
-    "/landing-images/agent-capability-2.png",
-    "/landing-images/agent-capability-3.png",
-  ],
-  security: [
-    "/security/workspace-data.webp",
-    "/security/permission-lock.webp",
-    "/security/scoped-integration.webp",
-  ],
 };
 
 const marketingBrand: Record<Locale, MarketingBrandContent> = {
@@ -217,7 +191,6 @@ const marketingHero: Record<Locale, MarketingHeroContent> = {
     note: "Free to start. No credit card required.",
     modulesLabel: "BUILD YOUR WORKSPACE",
     modules: ["Spaces", "Projects", "Tasks", "Docs", "Inbox", "Calendar", "Dashboards", "AI agents"],
-    imageAlt: "Connected workspace with spaces, projects, tasks, and team navigation",
   },
   ar: {
     eyebrow: "مساحة واحدة. لكل فريق.",
@@ -236,7 +209,6 @@ const marketingHero: Record<Locale, MarketingHeroContent> = {
     note: "ابدأ مجاناً. لا تحتاج إلى بطاقة ائتمان.",
     modulesLabel: "شكّل مساحة عملك",
     modules: ["المساحات", "المشاريع", "المهام", "المستندات", "البريد الوارد", "التقويم", "لوحات المعلومات", "وكلاء الذكاء"],
-    imageAlt: "مساحة مشروع تعرض المهام والحالات والمسؤولين والتنقل",
   },
   fr: {
     eyebrow: "UN ESPACE. TOUTES LES ÉQUIPES.",
@@ -255,7 +227,6 @@ const marketingHero: Record<Locale, MarketingHeroContent> = {
     note: "Commencez gratuitement. Aucune carte bancaire requise.",
     modulesLabel: "COMPOSEZ VOTRE ESPACE",
     modules: ["Espaces", "Projets", "Tâches", "Documents", "Boîte de réception", "Calendrier", "Tableaux de bord", "Agents IA"],
-    imageAlt: "Espace projet avec tâches, statuts, responsables et navigation",
   },
 };
 
@@ -981,7 +952,6 @@ export function getRepositoryMarketingPresentation(
     testimonials: testimonials[locale],
     navigation: marketingNav[locale],
     footer: marketingFooter[locale],
-    assets: marketingAssets,
     landingPage: getRepositoryLandingPageContent(locale),
     pricingPage: getRepositoryPricingPageContent(locale),
     legalPages: [],
