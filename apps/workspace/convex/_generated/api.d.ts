@@ -95,6 +95,7 @@ import type * as delivery_search from "../delivery/search.js";
 import type * as delivery_timeEntries from "../delivery/timeEntries.js";
 import type * as delivery_transitions from "../delivery/transitions.js";
 import type * as delivery_validators from "../delivery/validators.js";
+import type * as devSeed_projectManagement from "../devSeed/projectManagement.js";
 import type * as email from "../email.js";
 import type * as finance_access from "../finance/access.js";
 import type * as finance_calculation from "../finance/calculation.js";
@@ -387,6 +388,7 @@ declare const fullApi: ApiFromModules<{
   "delivery/timeEntries": typeof delivery_timeEntries;
   "delivery/transitions": typeof delivery_transitions;
   "delivery/validators": typeof delivery_validators;
+  "devSeed/projectManagement": typeof devSeed_projectManagement;
   email: typeof email;
   "finance/access": typeof finance_access;
   "finance/calculation": typeof finance_calculation;

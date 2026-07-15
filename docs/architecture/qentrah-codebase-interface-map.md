@@ -6,9 +6,9 @@
 
 ## Inventory summary
 
-- Source files scanned: 1805
-- Files exposing interfaces: 1531
-- Convex registered functions: 477
+- Source files scanned: 1806
+- Files exposing interfaces: 1532
+- Convex registered functions: 478
 - Application routes: 120
 - Hono/Convex HTTP registrations: 210
 - Eve/MCP tool entries: 118
@@ -621,6 +621,7 @@ fully composed path.
 | query | `listTimeEntries` | `apps/workspace/convex/delivery/timeEntries.ts` |
 | mutation | `recordTimeEntry` | `apps/workspace/convex/delivery/timeEntries.ts` |
 | mutation | `submitTimeEntry` | `apps/workspace/convex/delivery/timeEntries.ts` |
+| internalMutation | `seedProjectManagementPortfolio` | `apps/workspace/convex/devSeed/projectManagement.ts` |
 | mutation | `acceptEstimate` | `apps/workspace/convex/finance/commands.ts` |
 | mutation | `applyRetainer` | `apps/workspace/convex/finance/commands.ts` |
 | mutation | `closeAccountingPeriod` | `apps/workspace/convex/finance/commands.ts` |
@@ -1329,6 +1330,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/delivery/timeEntries.ts` | convex-mutation: recordTimeEntry<br>convex-mutation: submitTimeEntry<br>convex-mutation: decideTimeEntry<br>convex-query: listTimeEntries |
 | `apps/workspace/convex/delivery/transitions.ts` | type: CommercialLifecycle<br>function: assertCommercialTransition<br>function: assertProposalAcceptable<br>function: nextAgreedAmount |
 | `apps/workspace/convex/delivery/validators.ts` | value: commercialModelValidator<br>value: proposalStatusValidator<br>value: contractStatusValidator<br>value: engagementStatusValidator<br>value: deliveryHealthValidator<br>value: deliverableStatusValidator<br>value: approvalStatusValidator<br>value: changeOrderStatusValidator<br>value: concernTypeValidator<br>value: concernSeverityValidator<br>value: concernStatusValidator<br>value: proposalValidator<br>value: contractValidator<br>value: engagementValidator<br>value: deliverableValidator<br>value: engagementProjectValidator<br>value: approvalValidator<br>value: changeOrderValidator<br>value: concernValidator<br>value: timeEntryValidator |
+| `apps/workspace/convex/devSeed/projectManagement.ts` | convex-internalMutation: seedProjectManagementPortfolio |
 | `apps/workspace/convex/email.ts` | value: resend<br>function: getTransactionalFromEmail<br>function: getUpdatesFromEmail<br>function: getAppUrl |
 | `apps/workspace/convex/finance/access.ts` | function: financeAccess |
 | `apps/workspace/convex/finance/calculation.ts` | value: FX_SCALE<br>function: convertToBase<br>function: calculateTax<br>function: assertBalanced |
