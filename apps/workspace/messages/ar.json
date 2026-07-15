@@ -578,6 +578,8 @@
     "resizePanel": "تغيير عرض الشريط الجانبي",
     "defaultOrganizationName": "المؤسسة",
     "workspaces": "مساحات العمل",
+    "recentlyEdited": "عُدّل مؤخراً",
+    "noRecentItems": "لا توجد عناصر معدلة مؤخراً",
     "aiPanel": {
       "title": "الذكاء الاصطناعي",
       "agents": "الوكلاء",

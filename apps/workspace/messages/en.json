@@ -582,6 +582,8 @@
     "resizePanel": "Resize sidebar",
     "defaultOrganizationName": "Organization",
     "workspaces": "Workspaces",
+    "recentlyEdited": "Recently edited",
+    "noRecentItems": "No recently edited items",
     "aiPanel": {
       "title": "AI",
       "agents": "Agents",

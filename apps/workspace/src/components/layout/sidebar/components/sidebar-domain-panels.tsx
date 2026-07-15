@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Plus } from "lucide-react";
+import { FileText, ListTodo, Plus } from "lucide-react";
 import { useQuery as useConvexQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { NavigationDomainId } from "@qentrah/domain-contracts";
@@ -11,6 +11,7 @@ import { useAuthSession } from "@/domains/auth";
 import { useDocsQuery } from "@/domains/docs/api/docs";
 import { SpaceCreateForm } from "@/domains/spaces";
 import { CreateProjectForm } from "@/domains/projects/components/create-project-form";
+import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import { ProjectManagementTree, type ProjectManagementTreeProjection } from "@/components/shared";
 import { SidebarPanelLayout } from "./sidebar-panel-layout";
 import { SidebarProjectedDomainLinks } from "./sidebar-projected-domain-links";
@@ -25,7 +26,41 @@ function ProjectedDomainPanel({ domainId }: { domainId: NavigationDomainId }) {
 }
 
 export function SidebarTasksPanel() {
-  return <ProjectedDomainPanel domainId="tasks" />;
+  const t = useTranslations("Sidebar");
+  const organizationId = useAuthSession().workspace.organizationId ?? undefined;
+  const tasksResult = useTasksQuery(organizationId);
+  const recentTasks = [...(tasksResult.data ?? [])]
+    .filter((task) => !task.deletedAt)
+    .sort((left, right) => right.updatedAt - left.updatedAt)
+    .slice(0, 5);
+
+  return (
+    <SidebarPanelLayout title={t("tasks")}>
+      <div className="flex flex-col gap-2">
+        <SidebarProjectedDomainLinks domainId="tasks" />
+        <div className="mx-2 mt-3 border-t border-border/60 pt-3">
+          <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            {t("recentlyEdited")}
+          </p>
+          <div className="space-y-0.5">
+            {recentTasks.map((task) => (
+              <WorkspaceLink
+                key={task.id}
+                href={`/tasks/${task.id}`}
+                className="group flex min-h-8 items-center gap-2 rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-[var(--q-bg-tertiary)] hover:text-foreground"
+              >
+                <ListTodo className="size-3.5 shrink-0 opacity-70" />
+                <span className="min-w-0 flex-1 truncate">{task.title}</span>
+              </WorkspaceLink>
+            ))}
+            {!tasksResult.isLoading && recentTasks.length === 0 ? (
+              <p className="px-2 py-2 text-xs text-muted-foreground">{t("noRecentItems")}</p>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </SidebarPanelLayout>
+  );
 }
 
 export function SidebarCalendarPanel() {
@@ -76,26 +111,6 @@ export function SidebarProjectsPanel() {
   );
 }
 
-export function SidebarCrmPanel() {
-  return <ProjectedDomainPanel domainId="crm" />;
-}
-
-export function SidebarDeliveryPanel() {
-  return <ProjectedDomainPanel domainId="delivery" />;
-}
-
-export function SidebarResourcesPanel() {
-  return <ProjectedDomainPanel domainId="resources" />;
-}
-
-export function SidebarFinancePanel() {
-  return <ProjectedDomainPanel domainId="finance" />;
-}
-
-export function SidebarReportsPanel() {
-  return <ProjectedDomainPanel domainId="reports" />;
-}
-
 export function SidebarAutomationsPanel() {
   return <ProjectedDomainPanel domainId="automations" />;
 }
@@ -105,6 +120,7 @@ export function SidebarAdminPanel() {
 }
 
 export function SidebarDocsPanel() {
+  const t = useTranslations("Sidebar");
   const session = useAuthSession();
   const organizationId = session.workspace.status === "ready" ? (session.workspace.organizationId ?? undefined) : undefined;
   const docsResult = useDocsQuery(organizationId);
@@ -128,7 +144,7 @@ export function SidebarDocsPanel() {
       <div className="flex flex-col gap-2">
         <SidebarProjectedDomainLinks domainId="docs" />
         <div className="mx-2 mt-3 border-t border-border/60 pt-3">
-          <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Recently edited</p>
+          <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">{t("recentlyEdited")}</p>
           <div className="space-y-0.5">
             {recentDocs.map((doc) => (
               <WorkspaceLink
@@ -141,7 +157,7 @@ export function SidebarDocsPanel() {
               </WorkspaceLink>
             ))}
             {!docsResult.isLoading && recentDocs.length === 0 ? (
-              <p className="px-2 py-2 text-xs text-muted-foreground">No recent documents</p>
+              <p className="px-2 py-2 text-xs text-muted-foreground">{t("noRecentItems")}</p>
             ) : null}
           </div>
         </div>

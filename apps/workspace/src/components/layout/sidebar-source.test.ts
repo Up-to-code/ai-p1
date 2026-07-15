@@ -19,11 +19,6 @@ describe("sidebar source", () => {
       'id: "tasks"',
       'id: "docs"',
       'id: "calendar"',
-      'id: "crm"',
-      'id: "delivery"',
-      'id: "resources"',
-      'id: "finance"',
-      'id: "reports"',
       'id: "automations"',
       'id: "admin"',
     ];

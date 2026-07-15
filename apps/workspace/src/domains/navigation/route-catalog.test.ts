@@ -22,19 +22,24 @@ describe("route catalog", () => {
     expect(getRouteId("/en/crm/companies")).toBe("companies");
     expect(getRouteId("/en/crm/contacts")).toBe("contacts");
     expect(getRouteId("/ar/crm/contracts")).toBe("contracts");
-    expect(getActiveRailItem("/en/delivery/engagements")).toBe("delivery");
+    expect(getActiveRailItem("/en/delivery/engagements")).toBeNull();
     expect(getActiveRailItem("/en/search")).toBe("home");
     expect(getRouteId("/organization-extra")).toBeNull();
   });
 
-  it("maps Client, Deal, and legacy Opportunity routes to the CRM domain", () => {
-    expect(getActiveRailItem("/clients")).toBe("crm");
-    expect(getActiveRailItem("/clients/123")).toBe("crm");
+  it("keeps non-project domains addressable without assigning them a launcher domain", () => {
+    expect(getActiveRailItem("/clients")).toBeNull();
+    expect(getActiveRailItem("/clients/123")).toBeNull();
     expect(getRouteId("/opportunities")).toBe("deals");
-    expect(getActiveRailItem("/opportunities")).toBe("crm");
-    expect(getActiveRailItem("/opportunities/123")).toBe("crm");
-    expect(getActiveRailItem("/deals")).toBe("crm");
-    expect(getActiveRailItem("/deals/123")).toBe("crm");
+    expect(getActiveRailItem("/opportunities")).toBeNull();
+    expect(getActiveRailItem("/opportunities/123")).toBeNull();
+    expect(getActiveRailItem("/deals")).toBeNull();
+    expect(getActiveRailItem("/deals/123")).toBeNull();
+    expect(getActiveRailItem("/crm/leads")).toBeNull();
+    expect(getActiveRailItem("/delivery")).toBeNull();
+    expect(getActiveRailItem("/resources")).toBeNull();
+    expect(getActiveRailItem("/finance")).toBeNull();
+    expect(getActiveRailItem("/reports")).toBeNull();
   });
 
   it("resolves reviewed legacy aliases to the intended destination", () => {

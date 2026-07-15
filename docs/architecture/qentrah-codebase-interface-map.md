@@ -1692,7 +1692,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/components/layout/sidebar/components/identity-avatar.tsx` | function: IdentityAvatar |
 | `apps/workspace/src/components/layout/sidebar/components/nav-tooltip.tsx` | function: NavTooltip |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-chat-panel.tsx` | function: SidebarChatPanel |
-| `apps/workspace/src/components/layout/sidebar/components/sidebar-domain-panels.tsx` | function: SidebarTasksPanel<br>function: SidebarCalendarPanel<br>function: SidebarProjectsPanel<br>function: SidebarCrmPanel<br>function: SidebarDeliveryPanel<br>function: SidebarResourcesPanel<br>function: SidebarFinancePanel<br>function: SidebarReportsPanel<br>function: SidebarAutomationsPanel<br>function: SidebarAdminPanel<br>function: SidebarDocsPanel |
+| `apps/workspace/src/components/layout/sidebar/components/sidebar-domain-panels.tsx` | function: SidebarTasksPanel<br>function: SidebarCalendarPanel<br>function: SidebarProjectsPanel<br>function: SidebarAutomationsPanel<br>function: SidebarAdminPanel<br>function: SidebarDocsPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel.tsx` | function: SidebarInboxPanel |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel/channel-filter.ts` | function: filterChannelsByScope<br>function: groupInboxChannels |
 | `apps/workspace/src/components/layout/sidebar/components/sidebar-inbox-panel/channel-section.tsx` | function: ChannelSection |

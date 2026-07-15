@@ -33,4 +33,10 @@ describe("secondary sidebar server-synced width", () => {
     expect(source).toContain("{isOpen ? (");
     expect(source.indexOf("{isOpen ? (")).toBeLessThan(source.indexOf("<SidebarChatPanel />"));
   });
+
+  it("does not render non-project launcher panels", () => {
+    for (const domain of ["Crm", "Delivery", "Resources", "Finance", "Reports"]) {
+      expect(source).not.toContain(`Sidebar${domain}Panel`);
+    }
+  });
 });
