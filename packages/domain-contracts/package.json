@@ -2,6 +2,7 @@
   "name": "@qentrah/domain-contracts",
   "version": "0.1.0",
   "private": true,
+  "license": "BUSL-1.1",
   "description": "Shared Qentrah DTOs, Zod schemas, and server contract types.",
   "type": "module",
   "sideEffects": false,

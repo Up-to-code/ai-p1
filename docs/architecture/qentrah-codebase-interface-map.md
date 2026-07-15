@@ -12,7 +12,7 @@
 - Application routes: 122
 - Hono/Convex HTTP registrations: 210
 - Eve/MCP tool entries: 118
-- Package commands: 91
+- Package commands: 94
 
 ## Package commands
 
@@ -75,12 +75,15 @@
 | qentrah | dev:mobile | `npm --workspace @qentrah/mobile run start` |
 | qentrah | dev:zapier | `npm --workspace @qentrah/zapier-app run dev` |
 | qentrah | brand:assets | `node scripts/brand-assets.mjs` |
+| qentrah | assets:public | `node scripts/public-media-assets.mjs` |
 | qentrah | brand:scan | `node scripts/brand-scan.mjs` |
 | qentrah | brand:sync | `node scripts/brand-sync.mjs` |
 | qentrah | docs:codebase-map | `node scripts/generate-codebase-interface-map.mjs` |
 | qentrah | docs:codebase-map:check | `node scripts/generate-codebase-interface-map.mjs --check` |
 | qentrah | licenses:generate | `node scripts/check-dependency-licenses.mjs` |
 | qentrah | licenses:check | `node scripts/check-dependency-licenses.mjs --check` |
+| qentrah | licenses:project:check | `node scripts/check-project-license.mjs` |
+| qentrah | publication:check | `node scripts/check-project-license.mjs --strict` |
 | qentrah | build | `npm run build --workspaces --if-present` |
 | qentrah | test | `npm run test --workspaces --if-present` |
 | qentrah | typecheck | `npm run typecheck --workspaces --if-present` |

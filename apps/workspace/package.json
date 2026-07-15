@@ -4,6 +4,7 @@
   "description": "Qentrah Workspace desktop app for workspace operations and partner authorization.",
   "author": "Qentrah",
   "private": true,
+  "license": "BUSL-1.1",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "npm --workspace @qentrah/location-map --include-workspace-root=false run build && npm --workspace @qentrah/domain-contracts --include-workspace-root=false run build && concurrently -n next,convex -c cyan,magenta \"next dev\" \"convex dev\"",

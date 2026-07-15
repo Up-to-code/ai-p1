@@ -12,6 +12,8 @@ deferred work.
 - [ ] Authorization is enforced by the server-side domain owner.
 - [ ] No credentials, customer data, production identifiers, or private logs are included.
 - [ ] New dependencies pass the repository license policy.
+- [ ] New or changed assets have approved provenance and contain no protected Qentrah artwork.
+- [ ] Contributor or authorized dependency-bot CLA status is satisfied when external contributions are enabled.
 - [ ] Data migrations are idempotent and have a rollback or mitigation plan, if applicable.
 
 ## Verification
@@ -21,6 +23,7 @@ List the commands and manual checks run.
 - [ ] Focused tests pass.
 - [ ] Type checking passes for affected workspaces.
 - [ ] Generated architecture documentation is current.
+- [ ] `npm run licenses:project:check` passes for distribution-related changes.
 - [ ] UI changes were checked in relevant locales, themes, and viewport sizes.
 
 ## Evidence

@@ -1,25 +1,28 @@
-# Brand Assets
+# Distribution Assets
 
-This folder is the source of truth for Qentrah brand artwork.
+The tracked `source/` directory contains the Qentrah logo used by unmodified source builds. The artwork is publicly visible but is not licensed under BSL; its use is governed by `TRADEMARKS.md` and `source/LICENSE`.
 
-Edit files in `source/`, then run:
+The tracked `community/` directory contains neutral replacement artwork for forks and modified distributions.
+
+Run:
 
 ```bash
 npm run brand:assets
 ```
 
-The sync script generates app-specific outputs for mobile, web, desktop, workspace, marketing, partners, admin, and demo surfaces.
+The sync script generates Qentrah-branded app-specific outputs for mobile, web, desktop, Workspace, Marketing, and partner surfaces by default.
 
-## Source Files
+## Alternative assets
 
-- `source/app-icon-mobile.png`: master mobile app icon artwork.
-- `source/brand-mark.png`: standalone brand mark for raster mobile use.
-- `source/brand-mark.svg`: standalone brand mark for vector mobile use.
-- `source/brand-logo.svg`: full logo for light surfaces.
-- `source/brand-logo-white.svg`: full logo for dark surfaces.
-- `source/mobile-splash-light.png`: mobile splash mark for light mode.
-- `source/mobile-splash-dark.png`: mobile splash mark for dark mode.
+Set `QENTRAH_BRAND_ASSET_DIR` to a directory containing:
 
-## Generated Policy
+- `app-icon.svg` or `app-icon-mobile.png`
+- `brand-mark.svg`
+- `brand-logo.svg`
+- `brand-logo-white.svg`
 
-Mobile app icons keep the source artwork directly. Desktop and web icons use the same artwork with platform-safe inset padding so the mark does not fill the macOS Dock or Windows tile.
+Forks can point this variable at `packages/brand-identity/assets/community`. Official release automation may point it at a private directory containing higher-resolution or release-only masters.
+
+The override is validated before any output is written. Release-only masters must not be copied into this repository. The project-license check allows approved Qentrah logo fingerprints only at canonical source and generated runtime paths.
+
+Modified distributions and forks must supply their own artwork and comply with `TRADEMARKS.md`.
