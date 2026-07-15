@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { requireServerActor } from "../access/actor";
 import { hasOrganizationMembership } from "../permissions";
 import { notificationEventValidator } from "./validators";
@@ -28,7 +29,7 @@ const eventTransitionValidator = v.union(
 type NotificationEvent = Doc<"notificationEvents">;
 
 async function requireOrganizationMember(
-  ctx: Parameters<typeof hasOrganizationMembership>[0],
+  ctx: QueryCtx | MutationCtx,
   organizationId: string,
 ) {
   const actor = await requireServerActor(ctx);
@@ -42,7 +43,7 @@ async function requireOrganizationMember(
 }
 
 async function listRecipientEventsByDisposition(
-  ctx: Parameters<typeof hasOrganizationMembership>[0],
+  ctx: QueryCtx | MutationCtx,
   organizationId: string,
   recipientUserId: string,
   disposition: "active" | "later" | "cleared" | undefined,
@@ -60,7 +61,7 @@ async function listRecipientEventsByDisposition(
 }
 
 async function listRecipientAttentionCandidates(
-  ctx: Parameters<typeof hasOrganizationMembership>[0],
+  ctx: QueryCtx | MutationCtx,
   organizationId: string,
   recipientUserId: string,
   view: "primary" | "other" | "later" | "cleared",
@@ -90,11 +91,11 @@ async function listRecipientAttentionCandidates(
   return [...active, ...legacy].sort((a, b) => b.createdAt - a.createdAt);
 }
 
-function isActive(event: NotificationEvent) {
+function isActive(event: Pick<NotificationEvent, "disposition">) {
   return event.disposition === undefined || event.disposition === "active";
 }
 
-function isAttentionEvent(event: NotificationEvent) {
+function isAttentionEvent(event: Pick<NotificationEvent, "kind">) {
   return event.kind !== "thread_reply";
 }
 

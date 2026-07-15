@@ -92,7 +92,13 @@ const SAVED_VIEW_DEFAULTS: SavedViewSeed[] = [
     name: "Projects",
     description: "Default workspace project table.",
     scopeType: "workspace",
-    config: { sortBy: "updatedAt", sortDirection: "desc", density: "normal", columnOrder: ["name", "status", "health", "ownerUserId", "updatedAt"] },
+    config: {
+      sortBy: "updatedAt",
+      sortDirection: "desc",
+      density: "normal",
+      columnOrder: ["name", "status", "health", "progress", "ownerUserId", "updatedAt"],
+      project: { visibleFields: ["name", "status", "health", "progress", "ownerUserId", "updatedAt"] },
+    },
     isDefault: true,
     sourceTemplateId: "default:workspace:project-table",
   },
@@ -138,6 +144,20 @@ const SAVED_VIEW_DEFAULTS: SavedViewSeed[] = [
 ];
 
 const SURFACE_DEFAULTS: Array<SurfaceSeed & { tabs: SurfaceTabSeed[] }> = [
+  {
+    key: "workspace:projects",
+    title: "Projects",
+    scopeType: "workspace",
+    tabs: [
+      {
+        label: "Table",
+        icon: "table",
+        order: 0,
+        tabType: "savedView",
+        savedViewTemplateId: "default:workspace:project-table",
+      },
+    ],
+  },
   {
     key: "workspace:home",
     title: "Workspace Home",

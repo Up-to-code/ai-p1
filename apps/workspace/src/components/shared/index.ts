@@ -84,4 +84,6 @@ export {
   type ResourceWorkspaceAction,
   type ResourceWorkspaceConfig,
   type ResourceWorkspaceView,
+  type ResourceWorkspaceViewAction,
 } from "./resource-workspace";
+export { ProjectManagementTree, type ProjectManagementTreeProjection, type ProjectManagementTreeProps } from "./project-management-tree";

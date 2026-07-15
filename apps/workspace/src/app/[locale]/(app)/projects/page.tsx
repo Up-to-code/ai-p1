@@ -1,16 +1,27 @@
-import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
-import { ProjectsPageRedesigned } from "@/domains/projects/components/ProjectsPageRedesigned";
-import { ProjectsPageSkeleton } from "@/domains/projects/components/projects-page-skeleton";
+const LEGACY_VIEW_ROUTES: Record<string, string> = {
+  table: "/projects/table",
+  list: "/projects/list",
+  board: "/projects/board",
+  calendar: "/projects/calendar",
+  timeline: "/projects/timeline",
+  dashboard: "/projects/dashboard",
+  portfolio: "/projects/dashboard",
+};
 
-export default function ProjectsPage() {
-  return (
-    <div className="flex h-full flex-col overflow-hidden bg-background">
-      <main className="flex-1 overflow-y-auto px-4 pb-4 pt-2">
-        <Suspense fallback={<ProjectsPageSkeleton />}>
-          <ProjectsPageRedesigned />
-        </Suspense>
-      </main>
-    </div>
-  );
+export default async function ProjectsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const requestedView = typeof params.view === "string" ? params.view : "table";
+  const target = LEGACY_VIEW_ROUTES[requestedView] ?? "/projects/table";
+  const next = new URLSearchParams();
+  if (typeof params.search === "string") next.set("search", params.search);
+  if (typeof params.status === "string") next.set("status", params.status);
+  if (params.filter === "at-risk") next.set("health", "atRisk");
+  if (params.filter === "my") next.set("member", "me");
+  redirect(next.size ? `${target}?${next.toString()}` : target);
 }

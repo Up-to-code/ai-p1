@@ -60,7 +60,12 @@ describe("Convex modelization schema guards", () => {
       expect(write).toContain(`key: "${workflow}"`);
     }
 
-    for (const surface of ["workspace:home", "space:default:main", "project:default:main"]) {
+    for (const surface of [
+      "workspace:home",
+      "workspace:projects",
+      "space:default:main",
+      "project:default:main",
+    ]) {
       expect(write).toContain(`key: "${surface}"`);
     }
 

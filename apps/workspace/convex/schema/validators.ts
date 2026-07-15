@@ -67,6 +67,33 @@ export const savedViewColumnValidator = v.object({
   filterable: v.optional(v.boolean()),
 });
 
+export const savedViewDashboardWidgetValidator = v.object({
+  id: v.string(),
+  widgetType: v.string(),
+  x: v.number(),
+  y: v.number(),
+  width: v.number(),
+  height: v.number(),
+});
+
+export const projectSavedViewSettingsValidator = v.object({
+  visibleFields: v.optional(v.array(v.string())),
+  calendarScale: v.optional(v.union(v.literal("week"), v.literal("month"))),
+  calendarColorBy: v.optional(
+    v.union(v.literal("space"), v.literal("status"), v.literal("health")),
+  ),
+  timelineScale: v.optional(
+    v.union(
+      v.literal("day"),
+      v.literal("week"),
+      v.literal("month"),
+      v.literal("quarter"),
+    ),
+  ),
+  showUnscheduled: v.optional(v.boolean()),
+  dashboardWidgets: v.optional(v.array(savedViewDashboardWidgetValidator)),
+});
+
 export const savedViewConfigValidator = v.object({
   groupBy: v.optional(v.string()),
   sortBy: v.optional(v.string()),
@@ -79,6 +106,7 @@ export const savedViewConfigValidator = v.object({
   columnWidths: v.optional(v.record(v.string(), v.number())),
   columnVisibility: v.optional(v.record(v.string(), v.boolean())),
   columnOrder: v.optional(v.array(v.string())),
+  project: v.optional(projectSavedViewSettingsValidator),
 });
 
 export const workOsCustomFieldTypeValidator = v.union(

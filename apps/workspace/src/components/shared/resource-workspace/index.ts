@@ -10,4 +10,5 @@ export type {
   ResourceWorkspaceAction,
   ResourceWorkspaceConfig,
   ResourceWorkspaceView,
+  ResourceWorkspaceViewAction,
 } from "./types";

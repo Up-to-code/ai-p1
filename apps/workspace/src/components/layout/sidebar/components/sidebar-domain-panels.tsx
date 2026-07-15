@@ -1,11 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { FileText, Plus } from "lucide-react";
+import { useQuery as useConvexQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
 import type { NavigationDomainId } from "@qentrah/domain-contracts";
 import { useTranslations } from "next-intl";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { useAuthSession } from "@/domains/auth";
 import { useDocsQuery } from "@/domains/docs/api/docs";
+import { SpaceCreateForm } from "@/domains/spaces";
+import { CreateProjectForm } from "@/domains/projects/components/create-project-form";
+import { ProjectManagementTree, type ProjectManagementTreeProjection } from "@/components/shared";
 import { SidebarPanelLayout } from "./sidebar-panel-layout";
 import { SidebarProjectedDomainLinks } from "./sidebar-projected-domain-links";
 
@@ -27,7 +33,47 @@ export function SidebarCalendarPanel() {
 }
 
 export function SidebarProjectsPanel() {
-  return <ProjectedDomainPanel domainId="projects" />;
+  const organizationId = useAuthSession().workspace.organizationId ?? undefined;
+  const projection = useConvexQuery(
+    api.projectWorkspace.read.getProjectManagementTree,
+    organizationId ? { organizationId } : "skip",
+  ) as ProjectManagementTreeProjection | undefined;
+  const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(
+    () => new Set(["spaces", "channels", "direct-messages"]),
+  );
+  const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
+  const [createProjectOpen, setCreateProjectOpen] = useState(false);
+  function toggle(id: string) {
+    setExpandedIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+  return (
+    <>
+      <SidebarPanelLayout title="Projects">
+        {projection ? (
+          <ProjectManagementTree
+            projection={projection}
+            expandedIds={expandedIds}
+            onToggle={toggle}
+            onCreateSpace={() => setCreateSpaceOpen(true)}
+            onCreateProject={() => setCreateProjectOpen(true)}
+          />
+        ) : (
+          <div className="space-y-1 p-2" aria-label="Loading Project navigation">
+            <div className="h-7 animate-pulse rounded bg-muted" />
+            <div className="h-7 animate-pulse rounded bg-muted" />
+            <div className="h-7 animate-pulse rounded bg-muted" />
+          </div>
+        )}
+      </SidebarPanelLayout>
+      <SpaceCreateForm open={createSpaceOpen} onOpenChange={setCreateSpaceOpen} />
+      <CreateProjectForm isOpen={createProjectOpen} onCancel={() => setCreateProjectOpen(false)} onSuccess={() => setCreateProjectOpen(false)} />
+    </>
+  );
 }
 
 export function SidebarCrmPanel() {

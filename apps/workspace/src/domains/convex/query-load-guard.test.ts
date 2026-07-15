@@ -48,7 +48,7 @@ describe("Convex query load guards", () => {
       expect(crudRoutes).toContain(route);
     }
 
-    expect(read("src/domains/projects/components/ProjectsPageRedesigned.tsx")).toContain("useProjectsIndexQuery");
+    expect(read("src/domains/projects/hooks/use-project-collection-view.ts")).toContain("useProjectsIndexQuery");
     expect(read("src/domains/clients/components/clients-screens.tsx")).toContain("useClientsIndexQuery");
     expect(read("src/domains/activity/components/activity-screen.tsx")).toContain("useWorkspaceIndexedResource");
     expect(read("src/domains/calendar/components/CalendarPageRedesigned.tsx")).toContain("useCalendarIndexRangeQueryResult");

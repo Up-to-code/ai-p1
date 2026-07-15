@@ -6,10 +6,10 @@
 
 ## Inventory summary
 
-- Source files scanned: 1775
-- Files exposing interfaces: 1504
-- Convex registered functions: 467
-- Application routes: 108
+- Source files scanned: 1805
+- Files exposing interfaces: 1531
+- Convex registered functions: 477
+- Application routes: 120
 - Hono/Convex HTTP registrations: 210
 - Eve/MCP tool entries: 118
 - Package commands: 91
@@ -173,6 +173,18 @@
 | `/:locale/privacy` | page | `apps/marketing/app/(site)/[locale]/privacy/page.tsx` |
 | `/:locale/profile` | page | `apps/workspace/src/app/[locale]/(app)/profile/page.tsx` |
 | `/:locale/projects` | page | `apps/workspace/src/app/[locale]/(app)/projects/page.tsx` |
+| `/:locale/projects/board` | page | `apps/workspace/src/app/[locale]/(app)/projects/board/page.tsx` |
+| `/:locale/projects/board/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/projects/board/[savedViewId]/page.tsx` |
+| `/:locale/projects/calendar` | page | `apps/workspace/src/app/[locale]/(app)/projects/calendar/page.tsx` |
+| `/:locale/projects/calendar/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/projects/calendar/[savedViewId]/page.tsx` |
+| `/:locale/projects/dashboard` | page | `apps/workspace/src/app/[locale]/(app)/projects/dashboard/page.tsx` |
+| `/:locale/projects/dashboard/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/projects/dashboard/[savedViewId]/page.tsx` |
+| `/:locale/projects/list` | page | `apps/workspace/src/app/[locale]/(app)/projects/list/page.tsx` |
+| `/:locale/projects/list/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/projects/list/[savedViewId]/page.tsx` |
+| `/:locale/projects/table` | page | `apps/workspace/src/app/[locale]/(app)/projects/table/page.tsx` |
+| `/:locale/projects/table/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/projects/table/[savedViewId]/page.tsx` |
+| `/:locale/projects/timeline` | page | `apps/workspace/src/app/[locale]/(app)/projects/timeline/page.tsx` |
+| `/:locale/projects/timeline/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/projects/timeline/[savedViewId]/page.tsx` |
 | `/:locale/reports` | page | `apps/workspace/src/app/[locale]/(app)/reports/page.tsx` |
 | `/:locale/resources` | page | `apps/workspace/src/app/[locale]/(app)/resources/page.tsx` |
 | `/:locale/search` | page | `apps/workspace/src/app/[locale]/(app)/search/page.tsx` |
@@ -805,6 +817,16 @@ fully composed path.
 | mutation | `createFromHono` | `apps/workspace/convex/projectSpaces/write.ts` |
 | mutation | `deleteFromHono` | `apps/workspace/convex/projectSpaces/write.ts` |
 | mutation | `updateFromHono` | `apps/workspace/convex/projectSpaces/write.ts` |
+| query | `getProjectManagementTree` | `apps/workspace/convex/projectWorkspace/read.ts` |
+| query | `getSurfaceProjection` | `apps/workspace/convex/projectWorkspace/read.ts` |
+| mutation | `createAndAttachView` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `createDefaultRouteView` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `detachViewTab` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `duplicateViewTab` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `ensureProjectWorkspaceDefaults` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `renameViewTab` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `reorderViewTabs` | `apps/workspace/convex/projectWorkspace/write.ts` |
+| mutation | `updateViewConfig` | `apps/workspace/convex/projectWorkspace/write.ts` |
 | mutation | `createReport` | `apps/workspace/convex/reports/commands.ts` |
 | mutation | `scheduleReport` | `apps/workspace/convex/reports/commands.ts` |
 | mutation | `setReportGrants` | `apps/workspace/convex/reports/commands.ts` |
@@ -1415,6 +1437,10 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/projectSpaces/read.ts` | convex-query: listByOrganization<br>convex-query: list<br>convex-query: get<br>convex-query: listBySpace |
 | `apps/workspace/convex/projectSpaces/validators.ts` | value: projectSpaceInputValidator<br>value: projectSpaceValidator |
 | `apps/workspace/convex/projectSpaces/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono |
+| `apps/workspace/convex/projectWorkspace/data.ts` | value: PROJECT_WORKSPACE_SURFACE_KEY<br>type: ProjectWorkspaceViewType<br>function: isProjectWorkspaceViewType<br>function: canonicalProjectWorkspaceRoute |
+| `apps/workspace/convex/projectWorkspace/read.ts` | function: projectWorkspaceTabProjection<br>function: readableProjectWorkspaceTabs<br>convex-query: getSurfaceProjection<br>convex-query: getProjectManagementTree |
+| `apps/workspace/convex/projectWorkspace/validators.ts` | value: projectWorkspaceViewTypeValidator<br>value: projectWorkspaceTabCapabilitiesValidator<br>value: projectWorkspaceTabValidator<br>value: projectWorkspaceSurfaceProjectionValidator<br>value: projectWorkspaceCreateInputValidator<br>value: projectManagementTreeProjectionValidator |
+| `apps/workspace/convex/projectWorkspace/write.ts` | convex-mutation: ensureProjectWorkspaceDefaults<br>convex-mutation: createAndAttachView<br>convex-mutation: renameViewTab<br>convex-mutation: reorderViewTabs<br>convex-mutation: duplicateViewTab<br>convex-mutation: detachViewTab<br>convex-mutation: updateViewConfig<br>convex-mutation: createDefaultRouteView |
 | `apps/workspace/convex/projects/read.ts` | convex-query: list<br>convex-query: listPaged<br>convex-query: stats<br>convex-query: options<br>convex-query: listByClient<br>convex-query: get<br>convex-query: taskCounts<br>convex-query: listBySpace<br>convex-query: listAccessibleBySpaceMembership |
 | `apps/workspace/convex/projects/rollup.ts` | function: validateStrictTaskDates<br>function: updateProjectRollup |
 | `apps/workspace/convex/projects/validators.ts` | value: projectStatusValidator<br>value: projectHealthValidator<br>value: visibilityValidator<br>type: ProjectVisibility<br>type: StoredProjectVisibility<br>function: normalizeProjectVisibility<br>value: projectInputValidator<br>value: projectValidator |
@@ -1451,7 +1477,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/schema/search.ts` | value: searchTables |
 | `apps/workspace/convex/schema/theories.ts` | value: theoriesTables |
 | `apps/workspace/convex/schema/users.ts` | value: userTables |
-| `apps/workspace/convex/schema/validators.ts` | value: workOsRecordResourceValidator<br>value: recordStateValidator<br>value: scopeTypeValidator<br>value: workspaceVisibilityValidator<br>value: viewTypeValidator<br>value: savedViewValueValidator<br>value: savedViewFilterValidator<br>value: savedViewColumnValidator<br>value: savedViewConfigValidator<br>value: workOsCustomFieldTypeValidator<br>value: workOsCustomFieldOptionValidator<br>value: workOsCustomFieldDefinitionValidator<br>value: workOsCustomFieldValueValidator |
+| `apps/workspace/convex/schema/validators.ts` | value: workOsRecordResourceValidator<br>value: recordStateValidator<br>value: scopeTypeValidator<br>value: workspaceVisibilityValidator<br>value: viewTypeValidator<br>value: savedViewValueValidator<br>value: savedViewFilterValidator<br>value: savedViewColumnValidator<br>value: savedViewDashboardWidgetValidator<br>value: projectSavedViewSettingsValidator<br>value: savedViewConfigValidator<br>value: workOsCustomFieldTypeValidator<br>value: workOsCustomFieldOptionValidator<br>value: workOsCustomFieldDefinitionValidator<br>value: workOsCustomFieldValueValidator |
 | `apps/workspace/convex/schema/views.ts` | value: viewTables |
 | `apps/workspace/convex/schema_utils.ts` | value: IndexPatterns<br>value: QueryOptimization<br>function: checkIndexCoverage<br>function: indexName |
 | `apps/workspace/convex/search/accessContext.ts` | convex-query: resolve |
@@ -1547,8 +1573,20 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/organization/spaces/page.tsx` | function: OrganizationSpacesPage |
 | `apps/workspace/src/app/[locale]/(app)/profile/page.tsx` | function: ProfilePage |
 | `apps/workspace/src/app/[locale]/(app)/projects/[projectId]/layout.tsx` | function: ProjectLayout |
+| `apps/workspace/src/app/[locale]/(app)/projects/board/[savedViewId]/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/board/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/calendar/[savedViewId]/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/calendar/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/dashboard/[savedViewId]/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/dashboard/page.tsx` | function: Page |
 | `apps/workspace/src/app/[locale]/(app)/projects/layout.tsx` | function: ProjectsLayout |
+| `apps/workspace/src/app/[locale]/(app)/projects/list/[savedViewId]/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/list/page.tsx` | function: Page |
 | `apps/workspace/src/app/[locale]/(app)/projects/page.tsx` | function: ProjectsPage |
+| `apps/workspace/src/app/[locale]/(app)/projects/table/[savedViewId]/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/table/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/timeline/[savedViewId]/page.tsx` | function: Page |
+| `apps/workspace/src/app/[locale]/(app)/projects/timeline/page.tsx` | function: Page |
 | `apps/workspace/src/app/[locale]/(app)/reports/page.tsx` | function: ReportsPage |
 | `apps/workspace/src/app/[locale]/(app)/resources/page.tsx` | function: ResourcesPage |
 | `apps/workspace/src/app/[locale]/(app)/search/page.tsx` | function: SearchCenterPage |
@@ -1754,11 +1792,12 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/components/shared/page-toolbar.tsx` | interface: PageTab<br>interface: PageToolbarProps<br>function: PageToolbar<br>function: ToolbarSearch<br>function: ToolbarButton<br>function: ToolbarGhostButton<br>function: ToolbarViewToggle |
 | `apps/workspace/src/components/shared/pipeline.tsx` | interface: PipelineColumn<br>interface: PipelineCardProps<br>interface: PipelineProps<br>function: Pipeline |
 | `apps/workspace/src/components/shared/plan-card/plan-card.tsx` | type: PlanCardProps<br>function: PlanCard |
+| `apps/workspace/src/components/shared/project-management-tree/project-management-tree.tsx` | type: ProjectManagementTreeProjection<br>type: ProjectManagementTreeProps<br>function: ProjectManagementTree |
 | `apps/workspace/src/components/shared/query-debug.ts` | type: QueryDebugMetadata<br>type: QueryDebugDetail<br>function: normalizeQueryDebugDetails |
 | `apps/workspace/src/components/shared/record-modal.tsx` | function: RecordModal<br>function: RecordFieldRow |
 | `apps/workspace/src/components/shared/resource-workspace/resource-view-menu.tsx` | function: ResourceViewMenu |
 | `apps/workspace/src/components/shared/resource-workspace/resource-workspace-layout.tsx` | type: ResourceWorkspaceLayoutProps<br>function: useResourceWorkspaceExtension<br>function: ResourceWorkspaceLayout |
-| `apps/workspace/src/components/shared/resource-workspace/types.ts` | type: ResourceWorkspaceView<br>type: ResourceWorkspaceAction<br>type: ResourceViewCatalogSection<br>type: ResourceViewCatalogItem<br>type: ResourceWorkspaceConfig |
+| `apps/workspace/src/components/shared/resource-workspace/types.ts` | type: ResourceWorkspaceView<br>type: ResourceWorkspaceViewAction<br>type: ResourceWorkspaceAction<br>type: ResourceViewCatalogSection<br>type: ResourceViewCatalogItem<br>type: ResourceWorkspaceConfig |
 | `apps/workspace/src/components/shared/review-input.tsx` | type: ReviewInputUser<br>type: ReviewInputSubmission<br>type: ReviewInputProps |
 | `apps/workspace/src/components/shared/share-popover/components/share-invite-dialog.tsx` | function: ShareInviteDialog |
 | `apps/workspace/src/components/shared/share-popover/components/share-mcp-dialog.tsx` | function: ShareMcpDialog |
@@ -2097,8 +2136,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/profile/profile-view-model.ts` | type: ProfileTab<br>type: ProfileTabSpec<br>type: ProfileRolePresentation<br>value: profileTabs<br>function: profileInitials<br>function: profileFormValues<br>function: profileRolePresentation<br>function: profileNotificationEntries |
 | `apps/workspace/src/domains/profile/store/profile.types.ts` | interface: ProfileSettings |
 | `apps/workspace/src/domains/profile/validation/profile.schema.ts` | value: profileSchema<br>type: ProfileFormValues |
+| `apps/workspace/src/domains/projects/api/project-workspace.ts` | function: useProjectWorkspaceSurface<br>function: useCreateProjectViewTab<br>function: useRenameProjectViewTab<br>function: useDuplicateProjectViewTab<br>function: useDetachProjectViewTab<br>function: useReorderProjectViewTabs<br>function: useUpdateProjectViewConfig |
 | `apps/workspace/src/domains/projects/api/projects.ts` | value: PROJECTS_PAGE_SIZE<br>function: useProjectsPagedQuery<br>function: useProjectsIndexQuery<br>function: useProjectOptionsQueryResult<br>function: useProjectQuery<br>function: useProjectTaskCounts<br>value: projectApi<br>value: createProjectRequest<br>value: updateProjectRequest<br>value: deleteProjectRequest |
-| `apps/workspace/src/domains/projects/components/ProjectsPageRedesigned.tsx` | function: ProjectsPageRedesigned |
 | `apps/workspace/src/domains/projects/components/add-project-widget-modal.tsx` | type: ProjectWidgetType<br>interface: ProjectWidgetOption<br>function: AddProjectWidgetModal |
 | `apps/workspace/src/domains/projects/components/add-widget-modal.tsx` | type: WidgetType<br>interface: WidgetOption<br>function: AddWidgetModal |
 | `apps/workspace/src/domains/projects/components/client-picker-modal.tsx` | function: ClientPickerModal |
@@ -2122,11 +2161,19 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/projects/components/project-list-view.tsx` | function: ProjectListView |
 | `apps/workspace/src/domains/projects/components/project-overview-sidebar.tsx` | function: ProjectOverviewSidebar |
 | `apps/workspace/src/domains/projects/components/project-pickers.tsx` | function: ProjectStatusPicker<br>function: ProjectHealthPicker<br>type: ClientOption<br>function: ClientInlinePicker |
+| `apps/workspace/src/domains/projects/components/project-resource-layout.tsx` | function: ProjectResourceLayout |
 | `apps/workspace/src/domains/projects/components/project-tabs.tsx` | function: ProjectTabs |
 | `apps/workspace/src/domains/projects/components/project-tags-settings.tsx` | function: ProjectTagsSettings |
 | `apps/workspace/src/domains/projects/components/projects-overview-dashboard.tsx` | function: ProjectsOverviewDashboard |
 | `apps/workspace/src/domains/projects/components/projects-page-skeleton.tsx` | function: ProjectsPageSkeleton |
 | `apps/workspace/src/domains/projects/components/projects-router.tsx` | function: ProjectsRouter |
+| `apps/workspace/src/domains/projects/components/views/project-board-view.tsx` | function: ProjectBoardView |
+| `apps/workspace/src/domains/projects/components/views/project-calendar-view.tsx` | function: ProjectCalendarView |
+| `apps/workspace/src/domains/projects/components/views/project-dashboard-view.tsx` | function: ProjectDashboardView |
+| `apps/workspace/src/domains/projects/components/views/project-list-collection-view.tsx` | function: ProjectListCollectionView |
+| `apps/workspace/src/domains/projects/components/views/project-table-view.tsx` | function: ProjectTableView |
+| `apps/workspace/src/domains/projects/components/views/project-timeline-view.tsx` | function: ProjectTimelineView |
+| `apps/workspace/src/domains/projects/components/views/project-view-states.tsx` | function: ProjectViewLoading<br>function: ProjectViewError<br>function: ProjectViewEmpty |
 | `apps/workspace/src/domains/projects/components/views/shared.ts` | value: STATUS_COLORS<br>value: PRIORITY_COLORS<br>function: statusStyleFor<br>function: priorityStyleFor<br>value: COUNTRY_FLAGS |
 | `apps/workspace/src/domains/projects/components/views/task-map-view.tsx` | function: TaskMapView |
 | `apps/workspace/src/domains/projects/components/widgets/assignee-widget.tsx` | function: AssigneeWidget |
@@ -2147,10 +2194,12 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/projects/components/widgets/workload-chart-widget.tsx` | function: WorkloadChartWidget |
 | `apps/workspace/src/domains/projects/hooks/use-current-project-id.ts` | function: normalizeCurrentProjectId<br>function: useCurrentProjectId |
 | `apps/workspace/src/domains/projects/hooks/use-dashboard-persistence.ts` | interface: DashboardConfig<br>function: mergeDashboardPatches<br>function: useDashboardPersistence |
+| `apps/workspace/src/domains/projects/hooks/use-project-collection-view.ts` | function: useProjectCollectionView |
 | `apps/workspace/src/domains/projects/hooks/use-project-switcher.ts` | function: useProjectSwitcher |
 | `apps/workspace/src/domains/projects/lib/project-view-model.ts` | value: projectFilters<br>value: projectViews<br>value: monthFormatter<br>value: weekdayFormatter<br>function: toggleProjectAssetType<br>function: matchesProjectSearch<br>function: projectFormDefaults<br>function: parseIsoDate<br>function: projectDateDisplayLabel<br>function: nextProjectCalendarMonth<br>function: projectWeekdayLabels<br>function: formatIsoDate<br>function: calendarDaysForMonth<br>function: statusTone<br>function: projectDocumentAssets<br>function: projectLocationLabel<br>function: projectInventoryMetrics<br>function: projectMovementWidth<br>function: compactProjectDetailRows |
 | `apps/workspace/src/domains/projects/store/projects.types.ts` | type: Project |
 | `apps/workspace/src/domains/projects/validation/project.schema.ts` | value: projectStatuses<br>value: projectHealths<br>value: projectSchema<br>type: ProjectFormValues |
+| `apps/workspace/src/domains/projects/workspace/project-workspace.ts` | value: PROJECT_VIEW_TYPES<br>type: ProjectViewType<br>type: ProjectWorkspaceSurfaceTab<br>type: ProjectWorkspaceSurfaceProjection<br>function: isProjectViewType<br>function: projectViewRoute<br>function: defaultProjectViewConfig |
 | `apps/workspace/src/domains/reports/components/reports-screen.tsx` | function: ReportsScreen |
 | `apps/workspace/src/domains/resource-planning/components/resource-planning-command-panel.tsx` | function: ResourcePlanningCommandPanel |
 | `apps/workspace/src/domains/resource-planning/components/resource-planning-screen.tsx` | function: ResourcePlanningScreen |
@@ -2183,7 +2232,6 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/storage/use-indexeddb-config.ts` | interface: UseIndexedDbConfigOptions<br>function: useIndexedDbConfig |
 | `apps/workspace/src/domains/storage/use-local-config.ts` | function: useLocalConfig |
 | `apps/workspace/src/domains/tasks/api/fields.ts` | type: WorkOsCustomFieldType<br>interface: CustomFieldOption<br>interface: CustomFieldDefinition<br>value: POPULAR_FIELD_TYPES<br>value: ALL_FIELD_TYPES<br>function: useFieldDefinitionsQuery<br>function: useFieldValuesQuery<br>function: createCustomFieldRequest<br>function: updateCustomFieldDisplayRequest<br>function: deleteCustomFieldRequest<br>function: setCustomFieldValueRequest |
-| `apps/workspace/src/domains/tasks/api/saved-views.ts` | type: SavedViewResourceType<br>type: SavedViewType<br>type: SavedViewFilterValue<br>interface: SavedViewConfig<br>type: SavedViewScope<br>interface: SavedViewRecord<br>interface: ListSavedViewsArgs<br>function: useSavedViewsQuery<br>function: useDefaultSavedViewQuery<br>interface: CreateSavedViewInput<br>function: useCreateSavedViewMutation<br>interface: UpdateSavedViewInput<br>interface: SavedViewGrant<br>function: useSavedViewGrantsQuery<br>function: useUpdateSavedViewMutation<br>function: useDeleteSavedViewMutation<br>function: useSetDefaultSavedViewMutation<br>function: useShareSavedViewMutation<br>function: useMakeSavedViewPersonalMutation |
 | `apps/workspace/src/domains/tasks/api/tasks.ts` | type: GroupBy<br>function: readPersistedGroupBy<br>function: writePersistedGroupBy<br>function: useTasksQuery<br>function: useTaskWorkspaceQuery<br>function: useTasksGroupedQuery<br>function: useTaskStatsQuery<br>function: useTaskQuery<br>function: taskPayloadFromForm<br>function: taskFormValuesFromRecord<br>value: taskApi<br>value: createTaskRequest<br>value: updateTaskRequest<br>value: deleteTaskRequest<br>function: assignTasksToProjectRequest<br>function: bulkTasksRequest |
 | `apps/workspace/src/domains/tasks/components/saved-view-sharing-dialog.tsx` | function: SavedViewSharingDialog |
 | `apps/workspace/src/domains/tasks/components/saved-views-dropdown.tsx` | interface: SavedViewsDropdownProps<br>function: SavedViewsDropdown |
@@ -2241,6 +2289,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/usage/components/usage-state-panel.tsx` | function: UsageStatePanel |
 | `apps/workspace/src/domains/usage/config/usage-tabs.config.ts` | type: UsageTab<br>value: USAGE_TABS |
 | `apps/workspace/src/domains/usage/lib/usage-formatters.ts` | type: UsageLocale<br>type: UsagePlanIntervalLabels<br>function: usageMoneyLabel<br>function: usageDateLabel<br>function: usagePlanPriceLabel |
+| `apps/workspace/src/domains/views/api/saved-views.ts` | type: SavedViewResourceType<br>type: SavedViewType<br>type: SavedViewFilterValue<br>type: SavedViewDashboardWidget<br>type: ProjectSavedViewSettings<br>interface: SavedViewConfig<br>type: SavedViewScope<br>interface: SavedViewRecord<br>interface: ListSavedViewsArgs<br>function: useSavedViewsQuery<br>function: useDefaultSavedViewQuery<br>function: useTrackedViewMutation<br>interface: CreateSavedViewInput<br>function: useCreateSavedViewMutation<br>interface: UpdateSavedViewInput<br>interface: SavedViewGrant<br>function: useSavedViewGrantsQuery<br>function: useUpdateSavedViewMutation<br>function: useDeleteSavedViewMutation<br>function: useSetDefaultSavedViewMutation<br>function: useShareSavedViewMutation<br>function: useMakeSavedViewPersonalMutation |
 | `apps/workspace/src/domains/work-os/components/work-os-module-screen.tsx` | function: WorkOsModuleScreen |
 | `apps/workspace/src/domains/work-os/components/work-os-record-drawer.tsx` | function: WorkOsRecordDrawer |
 | `apps/workspace/src/domains/work-os/components/work-os-record-picker.tsx` | type: WorkOsPickerOption<br>function: WorkOsRecordPicker |

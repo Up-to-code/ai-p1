@@ -8,10 +8,16 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { X } from "lucide-react";
+import { MoreHorizontal, X } from "lucide-react";
 import { RouteTransition } from "@/components/layout/route-transition";
 import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ResourceViewMenu } from "./resource-view-menu";
 import type { ResourceWorkspaceAction, ResourceWorkspaceConfig } from "./types";
 
@@ -134,26 +140,47 @@ export function ResourceWorkspaceLayout({
             {config.views.map((view) => {
               const active = view.id === config.activeViewId;
               return (
-                <Link
-                  key={view.id}
-                  href={view.href}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "flex h-8 shrink-0 items-center gap-1.5 border-b-2 px-2 text-[11px] font-medium transition-colors",
-                    active
-                      ? "border-foreground text-foreground"
-                      : "border-transparent text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {view.icon ? (
-                    <span
-                      style={view.color ? { color: view.color } : undefined}
-                    >
-                      {view.icon}
-                    </span>
+                <div key={view.id} className="group/view flex shrink-0 items-end">
+                  <Link
+                    href={view.href}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "flex h-8 items-center gap-1.5 border-b-2 px-2 text-[11px] font-medium transition-colors",
+                      active
+                        ? "border-foreground text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {view.icon ? (
+                      <span style={view.color ? { color: view.color } : undefined}>
+                        {view.icon}
+                      </span>
+                    ) : null}
+                    {view.label}
+                  </Link>
+                  {view.actions?.length ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        aria-label={`${view.label} view actions`}
+                        className="mb-0.5 grid h-7 w-6 place-items-center rounded-md text-muted-foreground opacity-0 transition group-hover/view:opacity-100 focus:opacity-100 data-[popup-open]:opacity-100"
+                      >
+                        <MoreHorizontal className="h-3.5 w-3.5" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" sideOffset={4} className="w-40">
+                        {view.actions.map((action) => (
+                          <DropdownMenuItem
+                            key={action.id}
+                            disabled={action.disabled}
+                            variant={action.destructive ? "destructive" : "default"}
+                            onClick={() => void action.onSelect()}
+                          >
+                            {action.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   ) : null}
-                  {view.label}
-                </Link>
+                </div>
               );
             })}
             {config.viewCatalog?.length && config.onAddView ? (

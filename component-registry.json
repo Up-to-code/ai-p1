@@ -1248,7 +1248,9 @@
       "usedIn": [
         "components/shared/resource-workspace",
         "domains/tasks/components/task-resource-layout",
-        "app/[locale]/(app)/tasks/layout"
+        "app/[locale]/(app)/tasks/layout",
+        "domains/projects/components/project-resource-layout",
+        "app/[locale]/(app)/projects/layout"
       ],
       "props": [
         "config",
@@ -1260,6 +1262,24 @@
       ],
       "createdAt": "2026-07-12",
       "notes": "Owns placement only. Domain route layouts provide configuration and view pages provide domain Adapters. Pathname transitions are scoped inside the body seam so the persistent header and tabs never remount or fade. The exported useResourceWorkspaceExtension hook lets the active view dock view-owned UI without moving that logic into the shell. Does not import domain mutations or schemas."
+    },
+    {
+      "name": "ProjectManagementTree",
+      "path": "apps/workspace/src/components/shared/project-management-tree/project-management-tree.tsx",
+      "kind": "shared-ui",
+      "summary": "Stateless hierarchical renderer for an authorized Project-management navigation projection, including Spaces, Projects, documents, Channels, direct messages, counts, and create actions.",
+      "usedIn": [
+        "components/layout/sidebar/components/sidebar-domain-panels"
+      ],
+      "props": [
+        "projection",
+        "expandedIds",
+        "onToggle",
+        "onCreateSpace",
+        "onCreateProject"
+      ],
+      "createdAt": "2026-07-15",
+      "notes": "Rendering-only. Convex projectWorkspace.getProjectManagementTree filters every Space, Project, Document, and Channel before this component receives the payload. Expansion remains UI-only state in the domain adapter."
     },
     {
       "name": "ResourceViewMenu",

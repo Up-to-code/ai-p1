@@ -55,7 +55,7 @@ describe("route catalog", () => {
     expect(forwardPersistentParams("/ai", current)).toBe("/ai?mode=ai&threadId=t1&state=encoded");
     expect(forwardPersistentParams("/inbox", current)).toBe("/inbox");
     expect(forwardPersistentParams("/spaces", current)).toBe("/spaces");
-    expect(forwardPersistentParams("/projects", current)).toBe("/projects");
+    expect(forwardPersistentParams("/projects", current)).toBe("/projects?space=s1");
     expect(forwardPersistentParams("/clients", current)).toBe("/clients");
     expect(forwardPersistentParams("/opportunities", current)).toBe("/opportunities");
     expect(forwardPersistentParams("/deals", current)).toBe("/deals");

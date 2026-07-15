@@ -70,7 +70,7 @@ export const ROUTE_CATALOG: readonly RouteCatalogEntry[] = [
   { id: "inboxAssignedComments", path: "/inbox/assigned-comments", persistentParams: ["scope"], railItem: "inbox" },
   { id: "inbox", path: "/inbox", persistentParams: ["tab", "filter"], railItem: "inbox", aliases: ["/ws/inbox"] },
   { id: "spaces", path: "/spaces", persistentParams: [], railItem: "spaces", aliases: ["/ws/spaces", "/inbox/spaces", "/organization/spaces"] },
-  { id: "projects", path: "/projects", persistentParams: [], railItem: "projects" },
+  { id: "projects", path: "/projects/table", persistentParams: ["search", "status", "health", "member", "space"], railItem: "projects", aliases: ["/projects"] },
   { id: "search", path: "/search", persistentParams: [], railItem: "home" },
   { id: "organization", path: "/organization", persistentParams: ["tab"], railItem: "admin" },
   { id: "automations", path: "/automations", persistentParams: ["view"], railItem: "automations" },
