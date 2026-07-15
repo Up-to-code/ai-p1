@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "../_generated/server";
+import { internalMutation, internalQuery } from "../_generated/server";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 
@@ -46,7 +46,7 @@ async function collectTable(ctx: QueryCtx | MutationCtx, table: LifecycleTable, 
   return (await ctx.db.query(table).take(limit)) as LegacyLifecycleRecord[];
 }
 
-export const previewWorkspaceRecordStateBackfill = query({
+export const previewWorkspaceRecordStateBackfill = internalQuery({
   args: { limit: v.optional(v.number()) },
   returns: v.array(v.object({
     table: v.string(),
@@ -74,7 +74,7 @@ export const previewWorkspaceRecordStateBackfill = query({
   },
 });
 
-export const backfillWorkspaceRecordState = mutation({
+export const backfillWorkspaceRecordState = internalMutation({
   args: { limit: v.optional(v.number()), dryRun: v.optional(v.boolean()) },
   returns: v.array(v.object({
     table: v.string(),

@@ -15,7 +15,7 @@ export const getAuthorizedProjection = query({
     await assertOrganizationPermission(ctx, args.organizationId, "read");
     const actor = await requireServerActor(ctx);
     const role = await getOrganizationRole(ctx, args.organizationId, actor.userId);
-    const [roleLayout, defaultLayout, userOverlay] = await Promise.all([
+    const [roleLayout, defaultLayout, userOverlay, rollout] = await Promise.all([
       role
         ? ctx.db
           .query("organizationNavigationLayouts")
@@ -36,10 +36,13 @@ export const getAuthorizedProjection = query({
           q.eq("organizationId", args.organizationId).eq("userId", actor.userId),
         )
         .unique(),
+      ctx.db.query("organizationPlatformRollouts").withIndex("by_organization_feature", (q) => q.eq("organizationId", args.organizationId).eq("featureKey", "agency_os")).unique(),
     ]);
 
     const accessDecisions = await Promise.all(
       IMPLEMENTED_NAVIGATION_CATALOG.map(async (domain) => {
+        const agencyDomains = new Set(["crm", "delivery", "resources", "finance", "reports", "automations", "ai"]);
+        if (rollout?.stage === "disabled" && agencyDomains.has(domain.id)) return [domain.id, false] as const;
         const decisions = await Promise.all(domain.readResources.map((resource) =>
           canPerformOrganizationAction(
             ctx,

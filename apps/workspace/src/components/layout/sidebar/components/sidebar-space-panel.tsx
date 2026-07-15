@@ -1,7 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useQuery as useConvexQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 import {
   Layers,
   Check,
@@ -138,23 +141,20 @@ function AllSpacesView({
 function ActiveSpaceView({
   activeSpace,
   spaceSlug,
-  level,
-  onSelect,
   orgId,
 }: {
   activeSpace: { id: string; name: string; slug: string; color?: string };
   spaceSlug: string | null;
-  level: string;
-  onSelect: (slug: string) => void;
   orgId?: string;
 }) {
   const projectsResult = useProjectsIndexQuery(orgId);
   const projects = projectsResult?.results ?? [];
+  const projectLinks = useConvexQuery(api.projectSpaces.read.listBySpace, orgId ? { organizationId: orgId, spaceId: activeSpace.id as Id<"spaces"> } : "skip");
 
   const [projectsExpanded, setProjectsExpanded] = useState(true);
 
-  // TODO: Filter projects by space membership using projectSpaces junction table
-  const spaceProjects = projects; // Will be filtered by space membership
+  const linkedProjectIds = new Set((projectLinks ?? []).map((link) => String(link.projectId)));
+  const spaceProjects = projects.filter((project) => linkedProjectIds.has(String(project.id)));
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-none">
@@ -197,18 +197,19 @@ function ActiveSpaceView({
 
         <div className="px-4 py-1">
           <p className="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">
-            Quick links
+            Space
           </p>
           <div className="flex flex-col gap-0.5">
             <WorkspaceLink
-              href="/tasks"
+              href={`/spaces?space=${spaceSlug}`}
               className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-accent/30 hover:text-foreground"
             >
               <span className="flex h-5 w-5 items-center justify-center rounded bg-muted text-[9px] font-bold">
                 T
               </span>
-              Tasks
+              Overview
             </WorkspaceLink>
+            {[{ label: "Saved task views", href: `/tasks?space=${spaceSlug}&view=saved` }, { label: "Documents", href: `/docs?space=${spaceSlug}` }, { label: "Calendar", href: `/calendar?space=${spaceSlug}` }, { label: "Members", href: `/team?space=${spaceSlug}` }, { label: "Reports", href: `/reports?space=${spaceSlug}` }, { label: "Space settings", href: `/organization/spaces?space=${spaceSlug}` }].map((item) => <WorkspaceLink key={item.label} href={item.href} className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-accent/30 hover:text-foreground"><span className="flex size-5 items-center justify-center rounded bg-muted text-[9px] font-bold">•</span>{item.label}</WorkspaceLink>)}
           </div>
       </div>
     </div>
@@ -268,7 +269,7 @@ function CreateMenu({ orgId, canCreate }: { orgId?: string; canCreate: boolean }
 
 export function SidebarSpacePanel() {
   const t = useTranslations("Sidebar");
-  const { spaceSlug, setSpace, projectId, level, activeSpace, orgId } = useNavigation();
+  const { spaceSlug, setSpace, level, activeSpace, orgId } = useNavigation();
   const { openRailItem } = useSidebarRail();
 
   const capabilitiesQuery = useQuery({
@@ -304,8 +305,6 @@ export function SidebarSpacePanel() {
           <ActiveSpaceView
             activeSpace={activeSpace}
             spaceSlug={spaceSlug}
-            level={level}
-            onSelect={handleSpaceSelect}
             orgId={orgId ?? undefined}
           />
         ) : (

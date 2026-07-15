@@ -35,6 +35,7 @@ describe("Convex modelization schema guards", () => {
 
   it("keeps high-traffic workspace records on recordState indexes", () => {
     const schema = read("convex/schema/domains.ts");
+    const compactSchema = schema.replace(/\s+/g, "").replace(/,\]/g, "]");
 
     for (const table of ["projects", "clients", "deals", "tasks", "calendarEvents"]) {
       expect(schema).toMatch(new RegExp(`${table}: defineTable\\([\\s\\S]*recordState: recordStateValidator`));
@@ -47,7 +48,7 @@ describe("Convex modelization schema guards", () => {
       '.index("by_org_assignee_state_due", ["organizationId", "assigneeUserId", "recordState", "dueDate"])',
       '.index("by_org_workflow_state_order", ["organizationId", "status", "recordState", "pipelineOrder"])',
     ]) {
-      expect(schema).toContain(index);
+      expect(compactSchema).toContain(index.replace(/\s+/g, ""));
     }
   });
 

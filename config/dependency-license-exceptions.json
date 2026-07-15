@@ -1,0 +1,20 @@
+{
+  "Artistic-2.0": "Recorded for legal review; transitive tooling only.",
+  "BlueOak-1.0.0": "Recorded permissive exception.",
+  "CC-BY-3.0": "Metadata dataset attribution review recorded.",
+  "CC-BY-4.0": "Browser compatibility dataset attribution review recorded.",
+  "CC0-1.0": "Public-domain dedication recorded.",
+  "FSL-1.1-MIT": "Sentry CLI build tooling; version and production boundary must remain pinned.",
+  "LGPL-3.0-or-later": "Sharp platform binary boundary; dynamic linking and distribution review recorded.",
+  "Apache-2.0 AND LGPL-3.0-or-later": "Sharp platform binary boundary; dynamic linking and distribution review recorded.",
+  "Apache-2.0 AND LGPL-3.0-or-later AND MIT": "Sharp WASM platform boundary review recorded.",
+  "MPL-2.0": "File-level copyleft dependency review recorded.",
+  "MIT AND OFL-1.1": "Font attribution and redistribution review recorded.",
+  "MIT-0": "Permissive exception recorded.",
+  "Public Domain": "Public-domain package metadata recorded.",
+  "Python-2.0": "Legacy permissive license exception recorded.",
+  "SEE LICENSE IN LICENSE": "Zapier SDK/tooling boundary requires its bundled license and version to remain pinned.",
+  "Standard 'no charge' license: https://gsap.com/standard-license.": "GSAP runtime is an explicit source-available/commercial-boundary exception; legal confirmation remains required before distribution.",
+  "Unlicense": "Public-domain-equivalent exception recorded.",
+  "WTFPL": "Permissive exception recorded."
+}

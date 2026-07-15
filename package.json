@@ -19,6 +19,8 @@
     "brand:sync": "node scripts/brand-sync.mjs",
     "docs:codebase-map": "node scripts/generate-codebase-interface-map.mjs",
     "docs:codebase-map:check": "node scripts/generate-codebase-interface-map.mjs --check",
+    "licenses:generate": "node scripts/check-dependency-licenses.mjs",
+    "licenses:check": "node scripts/check-dependency-licenses.mjs --check",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",

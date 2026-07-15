@@ -140,6 +140,7 @@ import type * as migrations_backfillOrganizationTaskVisibility from "../migratio
 import type * as migrations_backfillRecordState from "../migrations/backfillRecordState.js";
 import type * as migrations_backfillTaskAssignments from "../migrations/backfillTaskAssignments.js";
 import type * as migrations_migrateToOrganizationSpaces from "../migrations/migrateToOrganizationSpaces.js";
+import type * as migrations_prepareAgencyCutover from "../migrations/prepareAgencyCutover.js";
 import type * as migrations_purgeLegacyAssetMedia from "../migrations/purgeLegacyAssetMedia.js";
 import type * as migrations_purgeLegacyMcpConnections from "../migrations/purgeLegacyMcpConnections.js";
 import type * as migrations_removeAssets from "../migrations/removeAssets.js";
@@ -195,6 +196,7 @@ import type * as permissions_index from "../permissions/index.js";
 import type * as pipeline_stages_read from "../pipeline_stages/read.js";
 import type * as pipeline_stages_write from "../pipeline_stages/write.js";
 import type * as platform_access from "../platform/access.js";
+import type * as platform_rollout from "../platform/rollout.js";
 import type * as portal_access from "../portal/access.js";
 import type * as portal_commands from "../portal/commands.js";
 import type * as portal_read from "../portal/read.js";
@@ -426,6 +428,7 @@ declare const fullApi: ApiFromModules<{
   "migrations/backfillRecordState": typeof migrations_backfillRecordState;
   "migrations/backfillTaskAssignments": typeof migrations_backfillTaskAssignments;
   "migrations/migrateToOrganizationSpaces": typeof migrations_migrateToOrganizationSpaces;
+  "migrations/prepareAgencyCutover": typeof migrations_prepareAgencyCutover;
   "migrations/purgeLegacyAssetMedia": typeof migrations_purgeLegacyAssetMedia;
   "migrations/purgeLegacyMcpConnections": typeof migrations_purgeLegacyMcpConnections;
   "migrations/removeAssets": typeof migrations_removeAssets;
@@ -481,6 +484,7 @@ declare const fullApi: ApiFromModules<{
   "pipeline_stages/read": typeof pipeline_stages_read;
   "pipeline_stages/write": typeof pipeline_stages_write;
   "platform/access": typeof platform_access;
+  "platform/rollout": typeof platform_rollout;
   "portal/access": typeof portal_access;
   "portal/commands": typeof portal_commands;
   "portal/read": typeof portal_read;

@@ -6,13 +6,13 @@
 
 ## Inventory summary
 
-- Source files scanned: 1769
-- Files exposing interfaces: 1498
-- Convex registered functions: 462
-- Application routes: 106
+- Source files scanned: 1773
+- Files exposing interfaces: 1502
+- Convex registered functions: 465
+- Application routes: 107
 - Hono/Convex HTTP registrations: 210
 - Eve/MCP tool entries: 118
-- Package commands: 88
+- Package commands: 91
 
 ## Package commands
 
@@ -58,6 +58,7 @@
 | @qentrah/workspace | lint | `eslint` |
 | @qentrah/workspace | check:convex-runtime | `node scripts/check-convex-runtime.mjs` |
 | @qentrah/workspace | test | `vitest run` |
+| @qentrah/workspace | test:agency-readiness | `vitest run convex/access/*.test.ts convex/automations/*.test.ts convex/crm/*.test.ts convex/delivery/*.test.ts convex/finance/*.test.ts convex/navigation/*.test.ts convex/portal/*.test.ts convex/resourcePlanning/*.test.ts convex/savedViews/*.test.ts convex/search/*.test.ts convex/security/*.test.ts src/domains/navigation/*.test.ts src/domains/search/*.test.ts src/server/domains/search/*.test.ts` |
 | @qentrah/workspace | test:e2e | `playwright test` |
 | @qentrah/zapier-app | test | `npm run build && vitest --run` |
 | @qentrah/zapier-app | clean | `rimraf ./dist ./build` |
@@ -78,6 +79,8 @@
 | qentrah | brand:sync | `node scripts/brand-sync.mjs` |
 | qentrah | docs:codebase-map | `node scripts/generate-codebase-interface-map.mjs` |
 | qentrah | docs:codebase-map:check | `node scripts/generate-codebase-interface-map.mjs --check` |
+| qentrah | licenses:generate | `node scripts/check-dependency-licenses.mjs` |
+| qentrah | licenses:check | `node scripts/check-dependency-licenses.mjs --check` |
 | qentrah | build | `npm run build --workspaces --if-present` |
 | qentrah | test | `npm run test --workspaces --if-present` |
 | qentrah | typecheck | `npm run typecheck --workspaces --if-present` |
@@ -159,6 +162,7 @@
 | `/:locale/opportunities/:id` | page | `apps/workspace/src/app/[locale]/(app)/opportunities/[id]/page.tsx` |
 | `/:locale/organization` | page | `apps/workspace/src/app/[locale]/(app)/organization/page.tsx` |
 | `/:locale/organization/activity` | page | `apps/workspace/src/app/[locale]/(app)/organization/activity/page.tsx` |
+| `/:locale/organization/admin-config` | page | `apps/workspace/src/app/[locale]/(app)/organization/admin-config/page.tsx` |
 | `/:locale/organization/channels` | page | `apps/workspace/src/app/[locale]/(app)/organization/channels/page.tsx` |
 | `/:locale/organization/custom-permissions` | page | `apps/workspace/src/app/[locale]/(app)/organization/custom-permissions/page.tsx` |
 | `/:locale/organization/search-policy` | page | `apps/workspace/src/app/[locale]/(app)/organization/search-policy/page.tsx` |
@@ -673,13 +677,14 @@ fully composed path.
 | query | `list` | `apps/workspace/convex/memory.ts` |
 | mutation | `put` | `apps/workspace/convex/memory.ts` |
 | internalMutation | `runBatch` | `apps/workspace/convex/migrations/backfillOrganizationTaskVisibility.ts` |
-| mutation | `backfillWorkspaceRecordState` | `apps/workspace/convex/migrations/backfillRecordState.ts` |
-| query | `previewWorkspaceRecordStateBackfill` | `apps/workspace/convex/migrations/backfillRecordState.ts` |
+| internalMutation | `backfillWorkspaceRecordState` | `apps/workspace/convex/migrations/backfillRecordState.ts` |
+| internalQuery | `previewWorkspaceRecordStateBackfill` | `apps/workspace/convex/migrations/backfillRecordState.ts` |
 | internalMutation | `runBatch` | `apps/workspace/convex/migrations/backfillTaskAssignments.ts` |
 | internalMutation | `migrateToOrganizationSpaces` | `apps/workspace/convex/migrations/migrateToOrganizationSpaces.ts` |
+| internalMutation | `runBatch` | `apps/workspace/convex/migrations/prepareAgencyCutover.ts` |
 | internalMutation | `purgeAllLegacyAssetMedia` | `apps/workspace/convex/migrations/purgeLegacyAssetMedia.ts` |
 | internalMutation | `purgeLegacyMcpConnections` | `apps/workspace/convex/migrations/purgeLegacyMcpConnections.ts` |
-| mutation | `archiveLegacyAssets` | `apps/workspace/convex/migrations/removeAssets.ts` |
+| internalMutation | `archiveLegacyAssets` | `apps/workspace/convex/migrations/removeAssets.ts` |
 | query | `getSurfaceByKey` | `apps/workspace/convex/modelization/read.ts` |
 | query | `listSavedViews` | `apps/workspace/convex/modelization/read.ts` |
 | query | `listSurfaceTabs` | `apps/workspace/convex/modelization/read.ts` |
@@ -766,6 +771,8 @@ fully composed path.
 | mutation | `seedDefaults` | `apps/workspace/convex/pipeline_stages/write.ts` |
 | mutation | `update` | `apps/workspace/convex/pipeline_stages/write.ts` |
 | query | `canUsePlatformAdminAction` | `apps/workspace/convex/platform/access.ts` |
+| query | `getAgencyOs` | `apps/workspace/convex/platform/rollout.ts` |
+| mutation | `setAgencyOs` | `apps/workspace/convex/platform/rollout.ts` |
 | mutation | `activateSession` | `apps/workspace/convex/portal/commands.ts` |
 | mutation | `decideDeliveryApproval` | `apps/workspace/convex/portal/commands.ts` |
 | mutation | `issueSession` | `apps/workspace/convex/portal/commands.ts` |
@@ -1338,12 +1345,13 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/media/write.ts` | convex-mutation: attachFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: removeFromHono<br>convex-mutation: createFolderFromHono<br>convex-mutation: deleteFolderFromHono |
 | `apps/workspace/convex/memory.ts` | convex-query: list<br>convex-mutation: put<br>convex-mutation: deleteMemory |
 | `apps/workspace/convex/migrations/backfillOrganizationTaskVisibility.ts` | function: legacyTaskVisibilityPatch<br>convex-internalMutation: runBatch |
-| `apps/workspace/convex/migrations/backfillRecordState.ts` | convex-query: previewWorkspaceRecordStateBackfill<br>convex-mutation: backfillWorkspaceRecordState |
+| `apps/workspace/convex/migrations/backfillRecordState.ts` | convex-internalQuery: previewWorkspaceRecordStateBackfill<br>convex-internalMutation: backfillWorkspaceRecordState |
 | `apps/workspace/convex/migrations/backfillTaskAssignments.ts` | convex-internalMutation: runBatch |
 | `apps/workspace/convex/migrations/migrateToOrganizationSpaces.ts` | convex-internalMutation: migrateToOrganizationSpaces |
+| `apps/workspace/convex/migrations/prepareAgencyCutover.ts` | convex-internalMutation: runBatch |
 | `apps/workspace/convex/migrations/purgeLegacyAssetMedia.ts` | convex-internalMutation: purgeAllLegacyAssetMedia |
 | `apps/workspace/convex/migrations/purgeLegacyMcpConnections.ts` | convex-internalMutation: purgeLegacyMcpConnections |
-| `apps/workspace/convex/migrations/removeAssets.ts` | convex-mutation: archiveLegacyAssets |
+| `apps/workspace/convex/migrations/removeAssets.ts` | convex-internalMutation: archiveLegacyAssets |
 | `apps/workspace/convex/modelization/data.ts` | type: WorkflowSeed<br>type: SavedViewSeed<br>type: SurfaceSeed<br>type: SurfaceTabSeed<br>function: ensureWorkflowDefinition<br>function: ensureWorkflowState<br>function: ensureSavedView<br>function: ensureSurface<br>function: ensureSurfaceTab<br>function: listActiveSurfaceTabs |
 | `apps/workspace/convex/modelization/read.ts` | convex-query: getSurfaceByKey<br>convex-query: listSurfaceTabs<br>convex-query: listSavedViews<br>convex-query: listWorkflowStates |
 | `apps/workspace/convex/modelization/validators.ts` | value: seedWorkspaceDefaultsResultValidator<br>value: surfaceValidator<br>value: surfaceTabValidator<br>value: savedViewValidator<br>value: workflowStateValidator |
@@ -1396,6 +1404,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/pipeline_stages/read.ts` | convex-query: list |
 | `apps/workspace/convex/pipeline_stages/write.ts` | convex-mutation: create<br>convex-mutation: update<br>convex-mutation: remove<br>convex-mutation: reorder<br>convex-mutation: seedDefaults |
 | `apps/workspace/convex/platform/access.ts` | function: assertPlatformAdmin<br>convex-query: canUsePlatformAdminAction |
+| `apps/workspace/convex/platform/rollout.ts` | convex-query: getAgencyOs<br>convex-mutation: setAgencyOs |
 | `apps/workspace/convex/portal/access.ts` | type: PortalCapability<br>function: hashPortalToken<br>function: resolvePortalAccess |
 | `apps/workspace/convex/portal/commands.ts` | convex-mutation: issueSession<br>convex-mutation: activateSession<br>convex-mutation: submitRequest<br>convex-mutation: decideDeliveryApproval |
 | `apps/workspace/convex/portal/read.ts` | convex-query: engagement |
@@ -1526,6 +1535,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/opportunities/[id]/page.tsx` | function: OpportunityDetailsPage |
 | `apps/workspace/src/app/[locale]/(app)/opportunities/page.tsx` | function: OpportunitiesPage |
 | `apps/workspace/src/app/[locale]/(app)/organization/activity/page.tsx` | function: OrganizationActivityPage |
+| `apps/workspace/src/app/[locale]/(app)/organization/admin-config/page.tsx` | function: AdminConfigurationPage |
 | `apps/workspace/src/app/[locale]/(app)/organization/channels/page.tsx` | function: OrganizationChannelsPage |
 | `apps/workspace/src/app/[locale]/(app)/organization/custom-permissions/page.tsx` | function: OrganizationCustomPermissionsPage |
 | `apps/workspace/src/app/[locale]/(app)/organization/page.tsx` | function: OrganizationPage |
@@ -2037,6 +2047,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/organization/api/update-profile.ts` | function: updateOrganizationProfileRequest |
 | `apps/workspace/src/domains/organization/api/use-update-profile.ts` | function: useUpdateOrganizationProfileMutation |
 | `apps/workspace/src/domains/organization/components/accept-invite-screen.tsx` | function: AcceptInviteScreen |
+| `apps/workspace/src/domains/organization/components/admin-configuration-screen.tsx` | function: AdminConfigurationScreen |
 | `apps/workspace/src/domains/organization/components/organization-logo-uploader.tsx` | function: OrganizationLogoUploader |
 | `apps/workspace/src/domains/organization/components/panels/agent-links-panel.tsx` | function: AgentLinksPanel |
 | `apps/workspace/src/domains/organization/components/panels/api-keys-panel.tsx` | function: ApiKeysPanel |

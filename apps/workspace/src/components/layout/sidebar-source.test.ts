@@ -21,6 +21,10 @@ describe("sidebar source", () => {
       'id: "docs"',
       'id: "calendar"',
       'id: "crm"',
+      'id: "delivery"',
+      'id: "resources"',
+      'id: "finance"',
+      'id: "reports"',
       'id: "automations"',
       'id: "ai"',
       'id: "admin"',
@@ -32,17 +36,13 @@ describe("sidebar source", () => {
       expect(nextIndex, item).toBeGreaterThan(previousIndex);
       previousIndex = nextIndex;
     }
-
-    expect(source).not.toContain('id: "delivery"');
-    expect(source).not.toContain('id: "finance"');
-    expect(source).not.toContain('id: "reports"');
   });
 
   it("keeps domain launcher labels available in English and Arabic", () => {
     const enSidebar = JSON.parse(readSource("messages/en.json"))["Sidebar"];
     const arSidebar = JSON.parse(readSource("messages/ar.json"))["Sidebar"];
 
-    for (const key of ["home", "inbox", "spaces", "projects", "tasks", "docs", "calendar", "crm", "automations", "ai", "admin"]) {
+    for (const key of ["home", "inbox", "spaces", "projects", "tasks", "docs", "calendar", "crm", "delivery", "resources", "finance", "reports", "automations", "ai", "admin"]) {
       expect(enSidebar[key], `en:${key}`).toEqual(expect.any(String));
       expect(arSidebar[key], `ar:${key}`).toEqual(expect.any(String));
     }
