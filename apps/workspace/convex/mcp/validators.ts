@@ -1,4 +1,18 @@
 import { v } from "convex/values";
+import { actions as canonicalActions } from "@qentrah/domain-contracts";
+
+/** DB-schema resource subset — matches the Convex schema exactly (10 resources). */
+type McpDbResource =
+  | "organization"
+  | "client"
+  | "project"
+  | "deal"
+  | "calendar"
+  | "task"
+  | "media"
+  | "space"
+  | "finance"
+  | "report";
 
 export const mcpResourceValidator = v.union(
   v.literal("organization"),
@@ -14,10 +28,7 @@ export const mcpResourceValidator = v.union(
 );
 
 export const mcpActionValidator = v.union(
-  v.literal("read"),
-  v.literal("create"),
-  v.literal("update"),
-  v.literal("delete"),
+  ...canonicalActions.map((a) => v.literal(a)) as [any, any, ...any[]],
 );
 
 export const mcpPermissionValidator = v.object({
@@ -84,20 +95,10 @@ export const mcpConnectionValidator = v.object({
   revokedAt: v.optional(v.number()),
 });
 
-export type McpResource =
-  | "organization"
-  | "client"
-  | "project"
-  | "deal"
-  | "calendar"
-  | "task"
-  | "media"
-  | "space"
-  | "finance"
-  | "report";
-
+export type McpResource = McpDbResource;
 export type McpAction = "read" | "create" | "update" | "delete";
 
+/** DB-schema permission type — matches the Convex validator. */
 export type McpPermission = {
   resource: McpResource;
   actions: McpAction[];

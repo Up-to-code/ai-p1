@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { calendarEventTypeSchema, calendarEventStatusSchema } from "@qentrah/domain-contracts";
 
 export const calendarEventPayloadSchema = z.object({
   title: z.string().trim().min(1),
@@ -9,8 +10,8 @@ export const calendarEventPayloadSchema = z.object({
   documentId: z.string().trim().optional().transform((value) => value || undefined),
   date: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/),
   time: z.string().trim().regex(/^\d{2}:\d{2}$/),
-  type: z.enum(["meeting", "deadline", "document", "reminder", "milestone", "focusBlock"]),
-  status: z.enum(["confirmed", "pending", "draft"]),
+  type: calendarEventTypeSchema,
+  status: calendarEventStatusSchema,
   durationMinutes: z.coerce.number().int().positive().optional().default(30),
   attendeeUserIds: z.array(z.string().trim()).optional(),
   externalAttendees: z.array(z.string().trim()).optional(),

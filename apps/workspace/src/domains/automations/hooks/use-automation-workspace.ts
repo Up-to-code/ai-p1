@@ -43,7 +43,7 @@ function toCanvasNodes(workflow: AutomationRecord): Node<AutomationNodeData>[] {
   }));
 }
 
-export function useAutomationWorkspace() {
+export function useAutomationWorkspace(initialAutomationId?: string) {
   const organization = useOrganizationContext();
   const toast = useToast();
   const workflows = useQuery(
@@ -81,8 +81,12 @@ export function useAutomationWorkspace() {
   );
 
   useEffect(() => {
-    if (!selectedId && workflows?.[0]) setSelectedId(workflows[0]._id);
-  }, [selectedId, workflows]);
+    if (selectedId || !workflows?.length) return;
+    const requested = workflows.find(
+      (workflow) => workflow._id === initialAutomationId,
+    );
+    setSelectedId(requested?._id ?? workflows[0]._id);
+  }, [initialAutomationId, selectedId, workflows]);
 
   useEffect(() => {
     if (!selectedWorkflow) return;
@@ -193,17 +197,40 @@ export function useAutomationWorkspace() {
     if (!organization.id) return;
     try {
       const trigger = componentById(template.trigger);
-      const action = componentById(template.action);
-      if (!trigger || !action) return;
+      const actions = template.actions
+        .map((action) => componentById(action))
+        .filter((action): action is AutomationComponentDefinition => Boolean(action));
+      if (!trigger || actions.length !== template.actions.length) return;
+      const templateNodes = [
+        {
+          id: "trigger",
+          kind: "trigger" as const,
+          type: trigger.id,
+          label: trigger.label,
+          x: 120,
+          y: 180,
+          config: trigger.defaultConfig,
+        },
+        ...actions.map((action, index) => ({
+          id: action.id,
+          kind: "action" as const,
+          type: action.id,
+          label: action.label,
+          x: 440 + index * 320,
+          y: 180,
+          config: action.defaultConfig,
+        })),
+      ];
       const id = await createWorkflow({
         organizationId: organization.id,
         name: template.name,
         description: template.description,
-        nodes: [
-          { id: "trigger-1", kind: "trigger", type: trigger.id, label: trigger.label, x: 80, y: 180, config: trigger.defaultConfig },
-          { id: "action-1", kind: "action", type: action.id, label: action.label, x: 440, y: 180, config: action.defaultConfig },
-        ],
-        edges: [{ id: "trigger-1-action-1", source: "trigger-1", target: "action-1" }],
+        nodes: templateNodes,
+        edges: templateNodes.slice(1).map((node, index) => ({
+          id: `${templateNodes[index].id}-${node.id}`,
+          source: templateNodes[index].id,
+          target: node.id,
+        })),
       });
       setSelectedId(id);
     } catch (error) {
@@ -248,7 +275,7 @@ export function useAutomationWorkspace() {
   }, [drainLayoutSaves, selectedId]);
 
   const save = useCallback(async (options?: { silent?: boolean }) => {
-    if (!organization.id || !selectedId) return;
+    if (!organization.id || !selectedId) return false;
     setIsSaving(true);
     setPersistenceStatus("saving");
     try {
@@ -277,10 +304,12 @@ export function useAutomationWorkspace() {
       const positions = nodes.map((node) => ({ id: node.id, x: node.position.x, y: node.position.y }));
       lastLayoutSignatureRef.current = layoutSignature(positions, viewportRef.current);
       if (!options?.silent) toast.toast({ title: "Automation saved", type: "success" });
+      return true;
     } catch (error) {
       setPersistenceStatus("error");
       logger.error("automation.content_save_failed", { automationId: selectedId, error });
       if (!options?.silent) toast.toast({ title: "Could not save automation", description: error instanceof Error ? error.message : undefined, type: "error" });
+      return false;
     } finally {
       setIsSaving(false);
     }
@@ -330,7 +359,24 @@ export function useAutomationWorkspace() {
     save,
     setEnabled: async (enabled: boolean) => {
       if (!organization.id || !selectedId) return;
-      await setEnabled({ organizationId: organization.id, automationId: selectedId, enabled });
+      try {
+        if (dirtyRef.current && !(await save({ silent: true }))) return;
+        await setEnabled({
+          organizationId: organization.id,
+          automationId: selectedId,
+          enabled,
+        });
+        toast.toast({
+          title: enabled ? "Automation commissioned" : "Automation paused",
+          type: "success",
+        });
+      } catch (error) {
+        toast.toast({
+          title: "Automation could not be commissioned",
+          description: error instanceof Error ? error.message : undefined,
+          type: "error",
+        });
+      }
     },
     remove: async () => {
       if (!organization.id || !selectedId) return;
@@ -339,8 +385,24 @@ export function useAutomationWorkspace() {
     },
     run: async () => {
       if (!organization.id || !selectedId) return;
-      const result = await runWorkflow({ organizationId: organization.id, automationId: selectedId });
-      toast.toast({ title: result.status === "success" ? "Automation ran" : "Automation failed", description: result.message, type: result.status === "success" ? "success" : "error" });
+      try {
+        if (dirtyRef.current && !(await save({ silent: true }))) return;
+        const result = await runWorkflow({
+          organizationId: organization.id,
+          automationId: selectedId,
+        });
+        toast.toast({
+          title: result.status === "queued" ? "Automation queued" : "Automation started",
+          description: result.message,
+          type: "success",
+        });
+      } catch (error) {
+        toast.toast({
+          title: "Automation could not start",
+          description: error instanceof Error ? error.message : undefined,
+          type: "error",
+        });
+      }
     },
   };
 }

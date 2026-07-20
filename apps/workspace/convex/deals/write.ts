@@ -5,6 +5,7 @@ import type { Id } from "../_generated/dataModel";
 import { getAuthUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { dealInputValidator, dealValidator } from "./validators";
+import { presentWorkspaceRecord } from "../shared/present";
 
 export type DealInput = {
   title: string;
@@ -23,10 +24,6 @@ export type DealInput = {
   tags?: string[];
 };
 
-function presentDeal<TDeal extends { _id: string }>(deal: TDeal) {
-  return { ...deal, id: deal._id };
-}
-
 async function createDealCore(ctx: MutationCtx, args: { organizationId: string; input: DealInput; actorUserId: string }) {
   const now = Date.now();
   const ownerUserId = args.input.ownerUserId ?? args.actorUserId;
@@ -43,7 +40,7 @@ async function createDealCore(ctx: MutationCtx, args: { organizationId: string; 
 
   const deal = await ctx.db.get(id);
   if (!deal) throw new Error("Deal could not be created.");
-  return { presented: presentDeal(deal), now };
+  return { presented: presentWorkspaceRecord(deal), now };
 }
 
 /** Canonical Deal creation Interface for another domain command in the same transaction. */
@@ -77,7 +74,7 @@ async function updateDealCore(ctx: MutationCtx, args: { organizationId: string; 
 
   const deal = await ctx.db.get(args.dealId);
   if (!deal) throw new Error("Deal was not found.");
-  return { presented: presentDeal(deal), now };
+  return { presented: presentWorkspaceRecord(deal), now };
 }
 
 async function deleteDealCore(ctx: MutationCtx, args: { organizationId: string; dealId: Id<"deals">; actorUserId: string }) {

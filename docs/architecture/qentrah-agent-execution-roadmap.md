@@ -133,6 +133,14 @@ Wave gate: one canonical sales pipeline; no orphan Projects; no simulated financ
 
 ## Wave 6 - Durable Agentic Execution
 
+Implementation note (2026-07-19): the owner-scoped Published Custom Agent
+lifecycle and the Automation-specific durable Run/Step engine are implemented,
+including immutable definition/Agent snapshots, encrypted provider Connections,
+schedule/webhook/manual commissioning, idempotency, cancellation, recovery,
+Google Sheets input, and WhatsApp output. This is a production slice of durable
+execution, not completion of the broader G6.1-G6.9 IntentPlan, ActionGate, task
+proposal, and inline-editor scope below.
+
 | ID | Class | Depends | Ownership | Outcome |
 |---|---|---|---|---|
 | G6.1 | C | F1.6 | AgentRun schema/queries | Durable runs, steps, attempts, approvals, outputs, and errors |

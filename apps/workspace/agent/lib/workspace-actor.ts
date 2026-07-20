@@ -22,7 +22,7 @@ export interface WorkspaceActor {
   readonly convexToken?: string;
 }
 
-type ActorContext = {
+export type ActorContext = {
   readonly session: { readonly auth: SessionAuth };
 };
 

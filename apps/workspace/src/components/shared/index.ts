@@ -78,6 +78,7 @@ export {
   ResourceWorkspaceLayout,
   ResourceViewMenu,
   useResourceWorkspaceExtension,
+  useOptionalResourceWorkspaceExtension,
   type ResourceWorkspaceLayoutProps,
   type ResourceViewCatalogItem,
   type ResourceViewCatalogSection,

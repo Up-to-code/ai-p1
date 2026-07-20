@@ -9,6 +9,7 @@ import { createAuthHttpClient } from "@qentrah/auth/http";
 import type { AuthFn } from "eve/channels/auth";
 import type { SessionAuthContext } from "eve/context";
 import { z } from "zod";
+import { timingSafeEqual } from "node:crypto";
 
 type SessionCredential = { token: string; cookie: string };
 
@@ -26,6 +27,49 @@ const sessionResponseSchema = z.object({
 const activeMemberRoleSchema = z.object({ role: z.string().nullish() });
 const authTopology = resolveAuthTopology();
 const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL ?? "";
+
+function bearerToken(event: Request) {
+  const authorization = event.headers.get("authorization")?.trim() ?? "";
+  return authorization.toLowerCase().startsWith("bearer ")
+    ? authorization.slice(7).trim()
+    : "";
+}
+
+function secretMatches(candidate: string, expected: string) {
+  const left = Buffer.from(candidate);
+  const right = Buffer.from(expected);
+  return left.length === right.length && timingSafeEqual(left, right);
+}
+
+export const automationService: AuthFn = async (event) => {
+  const expected = process.env.EVE_AUTOMATION_SECRET?.trim() ?? "";
+  const candidate = bearerToken(event);
+  if (!expected || !candidate || !secretMatches(candidate, expected)) return null;
+  const organizationId = event.headers.get("x-organization-id")?.trim() ?? "";
+  const userId = event.headers.get("x-automation-user-id")?.trim() ?? "";
+  const customAgentId = event.headers.get("x-agent-id")?.trim() ?? "";
+  const agentInstructions =
+    event.headers.get("x-agent-instructions")?.trim() ?? "";
+  if (!organizationId || !userId || !customAgentId || !agentInstructions) {
+    return null;
+  }
+  return {
+    principalId: userId,
+    principalType: "runtime",
+    authenticator: "qentrah-automation",
+    attributes: {
+      userId,
+      organizationId,
+      role: "automation",
+      customAgentId,
+      customAgentName: event.headers.get("x-agent-name")?.trim() ?? "Published agent",
+      customAgentRevision:
+        event.headers.get("x-agent-revision")?.trim() ?? "0",
+      automationAgentInstructions: agentInstructions,
+      automationMode: "response_only",
+    },
+  } satisfies SessionAuthContext;
+};
 
 export function readSessionCredential(event: Request): SessionCredential | null {
   const credential = readAuthCredential(event);
@@ -102,6 +146,9 @@ export const betterAuth: AuthFn = async (event) => {
         role,
         sessionToken: credential.token,
         convexToken: convexResult.token,
+        ...(event.headers.get("x-agent-id")?.trim()
+          ? { customAgentId: event.headers.get("x-agent-id")!.trim() }
+          : {}),
       },
     } satisfies SessionAuthContext;
   } catch {

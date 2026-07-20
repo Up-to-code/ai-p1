@@ -1,6 +1,23 @@
 import { z } from "zod";
 import { evaluateAgentToolRisk } from "./risk-policy";
 import {
+  clientTypeSchema,
+  clientStatusSchema,
+  projectStatusSchema,
+  projectHealthSchema,
+  dealStageSchema,
+  dealStatusSchema,
+  calendarEventTypeSchema,
+  calendarEventStatusSchema,
+  taskPrioritySchema,
+  spaceVisibilitySchema,
+  spaceMemberRoleSchema,
+  notificationCategorySchema,
+  recurrenceFrequencySchema,
+  mediaResourceTypeSchema,
+  mediaKindSchema,
+} from "@qentrah/domain-contracts";
+import {
   getRegistryTool,
   type McpAdapter,
   type McpPermissionAction,
@@ -36,17 +53,17 @@ const timestamp = z.number();
 const listLimit = z.number().int().min(1).max(50).optional();
 const listSearch = z.string().trim().max(160).optional();
 const listCursor = z.string().nullable().optional();
-const clientType = z.enum(["person", "organization"]).optional();
-const clientStatus = z.enum(["new", "active", "nurture", "inactive", "archived"]).optional();
-const projectStatus = z.enum(["planned", "active", "paused", "completed", "archived"]).optional();
-const projectHealth = z.enum(["onTrack", "atRisk", "blocked"]).optional();
-const dealStage = z.enum(["lead", "qualified", "proposal_sent", "contract_sent", "won", "lost"]).optional();
-const dealStatus = z.enum(["open", "won", "lost", "paused"]).optional();
-const calendarType = z.enum(["meeting", "deadline", "document", "reminder", "milestone", "focusBlock"]).optional();
-const calendarStatus = z.enum(["confirmed", "pending", "draft"]).optional();
-const taskStatus = z.enum(["todo", "inProgress", "waiting", "done", "canceled", "pending", "progress", "submitted", "failed", "success", "inReview", "expire"]).optional();
-const priority = z.enum(["low", "normal", "high", "urgent"]).optional();
-const mediaKind = z.enum(["image", "video", "document"]).optional();
+const clientType = clientTypeSchema.optional();
+const clientStatus = clientStatusSchema.optional();
+const projectStatus = projectStatusSchema.optional();
+const projectHealth = projectHealthSchema.optional();
+const dealStage = dealStageSchema.optional();
+const dealStatus = dealStatusSchema.optional();
+const calendarType = calendarEventTypeSchema.optional();
+const calendarStatus = calendarEventStatusSchema.optional();
+const taskStatus = z.string().trim().min(1).optional();
+const priority = taskPrioritySchema.optional();
+const mediaKind = mediaKindSchema.optional();
 
 const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approvalRequirement" | "dataSensitivity">> = [
   {
@@ -156,7 +173,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "Create a new space in the organization.",
     resource: "space",
     action: "create",
-    inputSchema: { name: id, slug: z.string(), description: maybeText, icon: maybeText, color: maybeText, visibility: z.enum(["private", "public", "request_only"]).optional() },
+    inputSchema: { name: id, slug: z.string(), description: maybeText, icon: maybeText, color: maybeText, visibility: spaceVisibilitySchema.optional() },
   },
   {
     name: "spaces_update",
@@ -164,7 +181,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "Update an existing space's name, slug, description, or visibility.",
     resource: "space",
     action: "update",
-    inputSchema: { spaceId: id, name: maybeText, slug: z.string().optional(), description: maybeText, icon: maybeText, color: maybeText, visibility: z.enum(["private", "public", "request_only"]).optional() },
+    inputSchema: { spaceId: id, name: maybeText, slug: z.string().optional(), description: maybeText, icon: maybeText, color: maybeText, visibility: spaceVisibilitySchema.optional() },
   },
   {
     name: "spaces_delete",
@@ -189,7 +206,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "Add a user to a space with a specific role.",
     resource: "space",
     action: "update",
-    inputSchema: { spaceId: id, userId: id, role: z.enum(["admin", "member", "viewer"]) },
+    inputSchema: { spaceId: id, userId: id, role: spaceMemberRoleSchema },
   },
   {
     name: "space_members_remove",
@@ -206,7 +223,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "Update a user's role in a space.",
     resource: "space",
     action: "update",
-    inputSchema: { spaceId: id, userId: id, role: z.enum(["admin", "member", "viewer"]) },
+    inputSchema: { spaceId: id, userId: id, role: spaceMemberRoleSchema },
   },
   {
     name: "clients_list",
@@ -495,11 +512,11 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     inputSchema: {
       title: z.string().min(1),
       body: z.string().min(1),
-      category: z.enum(["calendar", "task", "manual", "organization"]).optional(),
+      category: notificationCategorySchema.optional(),
       scheduledAt: timestamp,
       timezone: maybeText,
       recurrence: z.object({
-        frequency: z.enum(["daily", "weekly", "monthly"]),
+        frequency: recurrenceFrequencySchema,
         interval: z.number().int().min(1).max(30),
         untilAt: timestamp.optional(),
       }).optional(),
@@ -515,11 +532,11 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
       scheduleId: id,
       title: z.string().min(1),
       body: z.string().min(1),
-      category: z.enum(["calendar", "task", "manual", "organization"]).optional(),
+      category: notificationCategorySchema.optional(),
       scheduledAt: timestamp,
       timezone: maybeText,
       recurrence: z.object({
-        frequency: z.enum(["daily", "weekly", "monthly"]),
+        frequency: recurrenceFrequencySchema,
         interval: z.number().int().min(1).max(30),
         untilAt: timestamp.optional(),
       }).optional(),
@@ -619,7 +636,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     resource: "media",
     action: "create",
     inputSchema: {
-      resourceType: z.enum(["project", "client", "calendarEvent", "task"]),
+      resourceType: mediaResourceTypeSchema,
       resourceId: id,
       name: id,
       url: id,

@@ -1,6 +1,19 @@
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { assertActiveWorkspaceRecord } from "../workspace/businessData";
+import {
+  clientTypeSchema,
+  clientStatusSchema,
+  projectStatusSchema,
+  projectHealthSchema,
+  dealStageSchema,
+  dealStatusSchema,
+  taskPrioritySchema,
+  calendarEventTypeSchema,
+  calendarEventStatusSchema,
+  spaceVisibilitySchema,
+  visibilitySchema,
+} from "@qentrah/domain-contracts";
 
 export type Input = Record<string, unknown>;
 
@@ -94,8 +107,8 @@ function oneOf<T extends string>(value: unknown, allowed: readonly T[], fallback
 export function clientInput(input: Input) {
   return {
     name: requiredString(input, "name"),
-    type: oneOf(input.type, ["person", "organization"] as const, "person"),
-    status: oneOf(input.status, ["new", "active", "nurture", "inactive", "archived"] as const, "new"),
+    type: oneOf(input.type, clientTypeSchema.options, "person"),
+    status: oneOf(input.status, clientStatusSchema.options, "new"),
     source: optionalString(input, "source") ?? "mcp",
     company: optionalString(input, "company"),
     contactName: optionalString(input, "contactName"),
@@ -111,10 +124,10 @@ export function clientPatchInput(input: Input) {
   return {
     ...(Object.hasOwn(input, "name") ? { name: requiredString(input, "name") } : {}),
     ...(Object.hasOwn(input, "type")
-      ? { type: oneOf(input.type, ["person", "organization"] as const, "person") }
+      ? { type: oneOf(input.type, clientTypeSchema.options, "person") }
       : {}),
     ...(Object.hasOwn(input, "status")
-      ? { status: oneOf(input.status, ["new", "active", "nurture", "inactive", "archived"] as const, "new") }
+      ? { status: oneOf(input.status, clientStatusSchema.options, "new") }
       : {}),
     ...(Object.hasOwn(input, "source") ? { source: optionalString(input, "source") } : {}),
     ...(Object.hasOwn(input, "company") ? { company: optionalString(input, "company") } : {}),
@@ -129,7 +142,7 @@ export function clientPatchInput(input: Input) {
 }
 
 export function projectStatus(input: Input) {
-  return oneOf(input.status, ["planned", "active", "paused", "completed", "archived"] as const, "planned");
+  return oneOf(input.status, projectStatusSchema.options, "planned");
 }
 
 export function projectInput(input: Input) {
@@ -138,7 +151,7 @@ export function projectInput(input: Input) {
     clientId: optionalRelationId(input, "clientId") as Id<"clients"> | undefined,
     opportunityId: optionalRelationId(input, "opportunityId") as Id<"opportunities"> | undefined,
     status: projectStatus(input),
-    health: oneOf(input.health, ["onTrack", "atRisk", "blocked"] as const, "onTrack"),
+    health: oneOf(input.health, projectHealthSchema.options, "onTrack"),
     budget: optionalNumber(input, "budget"),
     currency: optionalString(input, "currency"),
     description: optionalString(input, "description"),
@@ -146,11 +159,11 @@ export function projectInput(input: Input) {
 }
 
 function dealStage(input: Input) {
-  return oneOf(input.stage, ["lead", "qualified", "proposal_sent", "contract_sent", "won", "lost"] as const, "lead");
+  return oneOf(input.stage, dealStageSchema.options, "lead");
 }
 
 function dealStatus(input: Input) {
-  return oneOf(input.status, ["open", "won", "lost", "paused"] as const, "open");
+  return oneOf(input.status, dealStatusSchema.options, "open");
 }
 
 export function dealInput(input: Input) {
@@ -182,8 +195,8 @@ export function calendarInput(input: Input) {
     documentId: optionalString(input, "documentId") as Id<"docs"> | undefined,
     startAt: requiredNumber(input, "startAt"),
     endAt: optionalNumber(input, "endAt") ?? requiredNumber(input, "startAt"),
-    type: oneOf(input.type, ["meeting", "deadline", "document", "reminder", "milestone", "focusBlock"] as const, "meeting"),
-    status: oneOf(input.status, ["confirmed", "pending", "draft"] as const, "confirmed"),
+    type: oneOf(input.type, calendarEventTypeSchema.options, "meeting"),
+    status: oneOf(input.status, calendarEventStatusSchema.options, "confirmed"),
     location: optionalString(input, "location"),
     meetingUrl: optionalString(input, "meetingUrl"),
     notes: optionalString(input, "notes"),
@@ -201,10 +214,10 @@ export function calendarPatchInput(input: Input) {
     ...(Object.hasOwn(input, "startAt") ? { startAt: requiredNumber(input, "startAt") } : {}),
     ...(Object.hasOwn(input, "endAt") ? { endAt: requiredNumber(input, "endAt") } : {}),
     ...(Object.hasOwn(input, "type")
-      ? { type: oneOf(input.type, ["meeting", "deadline", "document", "reminder", "milestone", "focusBlock"] as const, "meeting") }
+      ? { type: oneOf(input.type, calendarEventTypeSchema.options, "meeting") }
       : {}),
     ...(Object.hasOwn(input, "status")
-      ? { status: oneOf(input.status, ["confirmed", "pending", "draft"] as const, "confirmed") }
+      ? { status: oneOf(input.status, calendarEventStatusSchema.options, "confirmed") }
       : {}),
     ...(Object.hasOwn(input, "attendeeUserIds")
       ? { attendeeUserIds: Array.isArray(input.attendeeUserIds) ? input.attendeeUserIds.filter((id): id is string => typeof id === "string") : [] }
@@ -222,11 +235,13 @@ export function calendarPatchInput(input: Input) {
 }
 
 function priority(input: Input) {
-  return oneOf(input.priority, ["low", "normal", "high", "urgent"] as const, "normal");
+  return oneOf(input.priority, taskPrioritySchema.options, "normal");
 }
 
 export function taskStatus(input: Input) {
-  return oneOf(input.status, ["todo", "inProgress", "waiting", "done", "canceled"] as const, "todo");
+  const value = input.status;
+  if (typeof value === "string" && value.trim().length > 0) return value.trim();
+  return "todo";
 }
 
 export function taskInput(input: Input) {
@@ -240,7 +255,7 @@ export function taskInput(input: Input) {
     spaceId: optionalString(input, "spaceId"),
     dueDate: optionalString(input, "dueDate"),
     description: optionalString(input, "description") ?? optionalString(input, "notes"),
-    visibility: oneOf(input.visibility, ["private", "team", "workspace"] as const, "workspace"),
+    visibility: oneOf(input.visibility, visibilitySchema.options, "workspace"),
   };
 }
 
@@ -259,7 +274,7 @@ export function taskPatchInput(input: Input) {
       ? { description: optionalString(input, "description") ?? optionalString(input, "notes") }
       : {}),
     ...(Object.hasOwn(input, "visibility")
-      ? { visibility: oneOf(input.visibility, ["private", "team", "workspace"] as const, "workspace") }
+      ? { visibility: oneOf(input.visibility, visibilitySchema.options, "workspace") }
       : {}),
   };
 }

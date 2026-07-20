@@ -3,17 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Plus, FileText, Search, Folder, Info } from "lucide-react";
+import { Plus, FileText, Info } from "lucide-react";
 import { EmptyWorkspace, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useAuthSession } from "@/domains/auth";
 import { useDocsQuery, useDocFoldersQuery, createDocRequest, createDocFolderRequest, useDocQuery } from "../api/docs";
 import type { DocRecord } from "../docs.types";
-import { cn } from "@/lib/utils";
 import { DOC_TEMPLATE_CONTENT, DOC_TEMPLATE_TYPES, emptyDoc } from "../docs.constants";
 import { DocCreateForm } from "./doc-create-form";
 import { buildBreadcrumbPath, getSubfolders } from "../lib/folder-utils";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Home } from "lucide-react";
 import { useRouter, usePathname } from "@/i18n/routing";
 import { DocEditor } from "./doc-editor";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -21,6 +19,7 @@ import { DocsTableSkeleton } from "./docs-table-skeleton";
 import { DocsListTable, type DocsListItem } from "./docs-list-table";
 import { Input } from "@/components/ui/input";
 import { DocTemplateCover } from "./doc-template-cover";
+import { DocsResourceLayout } from "./docs-resource-layout";
 
 export function DocsPageRedesigned({
   projectId: projectIdProp,
@@ -152,33 +151,19 @@ export function DocsPageRedesigned({
 
   if (workspaceStatus !== "ready") {
     return (
-      <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0">
-          <h1 className="text-lg font-semibold text-foreground">{t("title")}</h1>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled
-              className="h-9 rounded-lg px-4 text-sm font-medium"
-            >
-              <Folder className="w-4 h-4 mr-2" />
-              {t("folders.newFolder")}
-            </Button>
-            <Button
-              type="button"
-              disabled
-              className="h-9 rounded-lg px-4 text-sm font-medium"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {t("actions.newDoc")}
-            </Button>
-          </div>
-        </div>
+      <DocsResourceLayout
+        onNewFolder={() => {}}
+        onNewDoc={() => {}}
+        breadcrumbPath={[]}
+        selectedFolderId={selectedFolderId}
+        onSelectFolder={() => {}}
+        search={search}
+        onSearchChange={() => {}}
+      >
         <div className="flex-1 flex items-center justify-center">
           <WorkspaceQueryState status={workspaceStatus} variant="table" />
         </div>
-      </div>
+      </DocsResourceLayout>
     );
   }
 
@@ -186,33 +171,15 @@ export function DocsPageRedesigned({
 
   if (!isLoading && !isTemplatesView && tableData.length === 0 && !showNewFolder && !showFolderGuidance) {
     return (
-      <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0">
-          <h1 className="text-lg font-semibold text-foreground">
-            {filter === "shared" ? "Shared with me" : filter === "recent" ? "Recent" : t("title")}
-          </h1>
-          <div className="flex items-center gap-2">
-            {!filter ? (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowNewFolder(true)}
-                className="h-9 rounded-lg px-4 text-sm font-medium"
-              >
-                <Folder className="w-4 h-4 mr-2" />
-                {t("folders.newFolder")}
-              </Button>
-            ) : null}
-            <Button
-              type="button"
-              onClick={() => openCreateDoc()}
-              className="h-9 rounded-lg px-4 text-sm font-medium"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {t("actions.newDoc")}
-            </Button>
-          </div>
-        </div>
+      <DocsResourceLayout
+        onNewFolder={() => setShowNewFolder(true)}
+        onNewDoc={() => openCreateDoc()}
+        breadcrumbPath={breadcrumbPath}
+        selectedFolderId={selectedFolderId}
+        onSelectFolder={setSelectedFolderId}
+        search={search}
+        onSearchChange={setSearch}
+      >
         <div className="flex-1 flex items-center justify-center">
           <EmptyWorkspace
             icon={FileText}
@@ -220,88 +187,20 @@ export function DocsPageRedesigned({
             description={filter === "shared" ? "Documents shared by teammates will appear here." : filter === "recent" ? "Documents you recently worked in will appear here." : t("empty.description")}
           />
         </div>
-      </div>
+      </DocsResourceLayout>
     );
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0">
-          <h1 className="text-lg font-semibold text-foreground">
-            {isTemplatesView ? "Templates" : filter === "shared" ? "Shared with me" : filter === "recent" ? "Recent" : t("title")}
-          </h1>
-        <div className="flex items-center gap-2">
-          {!filter && !isTemplatesView ? (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowNewFolder(true)}
-              className="h-9 rounded-lg px-4 text-sm font-medium"
-            >
-              <Folder className="w-4 h-4 mr-2" />
-              {t("folders.newFolder")}
-            </Button>
-          ) : null}
-          <Button
-            type="button"
-            onClick={() => openCreateDoc()}
-            className="h-9 rounded-lg px-4 text-sm font-medium"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {t("actions.newDoc")}
-          </Button>
-        </div>
-      </div>
-
-      {/* Breadcrumb bar */}
-      <div className="flex shrink-0 items-center gap-2 border-b border-border bg-[var(--q-bg)] px-6 py-3">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => setSelectedFolderId(null)}
-          className={cn(
-            "h-8 rounded-lg px-3 text-xs font-medium",
-            selectedFolderId === null
-              ? "bg-[var(--q-bg-secondary)] text-foreground"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <Home className="h-3.5 w-3.5 mr-2" />
-          {t("title")}
-        </Button>
-        {breadcrumbPath.map((folder) => (
-          <div key={folder.id} className="flex items-center gap-1">
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedFolderId(folder.id)}
-              className={cn(
-                "h-8 rounded-lg px-3 text-xs font-medium",
-                folder.id === selectedFolderId
-                  ? "bg-[var(--q-bg-secondary)] text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {folder.name}
-            </Button>
-          </div>
-        ))}
-        <div className="ml-auto flex items-center gap-2">
-          <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-[var(--q-bg-secondary)] px-3 focus-within:ring-2 focus-within:ring-ring/20">
-            <Search className="h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={common("search")}
-              className="h-7 w-48 border-0 bg-transparent px-0 text-xs font-medium shadow-none focus-visible:ring-0"
-            />
-          </div>
-        </div>
-      </div>
-
+    <DocsResourceLayout
+      onNewFolder={() => setShowNewFolder(true)}
+      onNewDoc={() => openCreateDoc()}
+      breadcrumbPath={breadcrumbPath}
+      selectedFolderId={selectedFolderId}
+      onSelectFolder={setSelectedFolderId}
+      search={search}
+      onSearchChange={setSearch}
+    >
       {/* Content */}
       <div className="flex-1 overflow-auto bg-[var(--q-bg)]">
         {showNewFolder ? (
@@ -441,6 +340,6 @@ export function DocsPageRedesigned({
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </DocsResourceLayout>
   );
 }

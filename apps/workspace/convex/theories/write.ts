@@ -3,10 +3,7 @@ import { mutation } from "../_generated/server";
 import { getAuthUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { theoryInputValidator, theoryValidator } from "./validators";
-
-function presentTheory<TDoc extends { _id: string }>(doc: TDoc) {
-  return { ...doc, id: doc._id };
-}
+import { presentWorkspaceRecord } from "../shared/present";
 
 export const createFromHono = mutation({
   args: { organizationId: v.string(), input: theoryInputValidator },
@@ -35,7 +32,7 @@ export const createFromHono = mutation({
 
     const theory = await ctx.db.get(id);
     if (!theory) throw new Error("Theory could not be created.");
-    return presentTheory(theory);
+    return presentWorkspaceRecord(theory);
   },
 });
 
@@ -71,7 +68,7 @@ export const updateFromHono = mutation({
 
     const theory = await ctx.db.get(args.theoryId);
     if (!theory) throw new Error("Theory was not found.");
-    return presentTheory(theory);
+    return presentWorkspaceRecord(theory);
   },
 });
 

@@ -19,6 +19,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
+  "dependencies": {
+    "@qentrah/domain-contracts": "0.1.0"
+  },
   "devDependencies": {
     "typescript": "^5",
     "vitest": "^4.1.6"

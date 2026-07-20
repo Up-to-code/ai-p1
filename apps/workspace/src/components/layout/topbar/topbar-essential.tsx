@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLocale } from "next-intl";
 import {
   Building2,
+  Bot,
   Check,
   ChevronDown,
   CreditCard,
@@ -60,9 +61,11 @@ function roleLabel(role?: string | null) {
 function WorkspaceContextSection({
   organizationId,
   capabilities,
+  locale,
 }: {
   organizationId?: string;
   capabilities?: OrganizationCapabilities;
+  locale: string;
 }) {
   const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
@@ -156,24 +159,45 @@ function WorkspaceContextSection({
           </div>
         </div>
 
-        {canCreate ? (
-          <div className="grid grid-cols-2 gap-1">
-            <button
-              type="button"
-              className="flex items-center justify-center gap-1.5 rounded-lg bg-[var(--q-sidebar-accent)] px-2 py-2 text-xs font-medium transition-colors hover:brightness-95 dark:hover:brightness-125"
-              onClick={() => setCreateSpaceOpen(true)}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Space
-            </button>
-            <button
-              type="button"
-              className="flex items-center justify-center gap-1.5 rounded-lg bg-[var(--q-sidebar-accent)] px-2 py-2 text-xs font-medium transition-colors hover:brightness-95 dark:hover:brightness-125"
-              onClick={() => setCreateProjectOpen(true)}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Project
-            </button>
+        {canCreate || organizationId ? (
+          <div>
+            <div className="px-1.5 pb-1 text-[10px] font-semibold uppercase text-muted-foreground">
+              Create
+            </div>
+            <div className="grid grid-cols-3 gap-1">
+              {canCreate && (
+                <>
+                  <button
+                    type="button"
+                    className="flex items-center justify-center gap-1.5 rounded-lg bg-[var(--q-sidebar-accent)] px-2 py-2 text-xs font-medium transition-colors hover:brightness-95 dark:hover:brightness-125"
+                    onClick={() => setCreateSpaceOpen(true)}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Space
+                  </button>
+                  <button
+                    type="button"
+                    className="flex items-center justify-center gap-1.5 rounded-lg bg-[var(--q-sidebar-accent)] px-2 py-2 text-xs font-medium transition-colors hover:brightness-95 dark:hover:brightness-125"
+                    onClick={() => setCreateProjectOpen(true)}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Project
+                  </button>
+                </>
+              )}
+              {organizationId && (
+                <Link
+                  href={`/${locale}/ai/agents/new`}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 rounded-lg bg-[var(--q-sidebar-accent)] px-2 py-2 text-xs font-medium transition-colors hover:brightness-95 dark:hover:brightness-125",
+                    !canCreate && "col-span-3",
+                  )}
+                >
+                  <Bot className="h-3.5 w-3.5" />
+                  Agent
+                </Link>
+              )}
+            </div>
           </div>
         ) : null}
       </div>
@@ -300,7 +324,11 @@ export function TopbarEssential() {
             </DropdownMenuItem>
           ))}
 
-          <WorkspaceContextSection organizationId={organizationId} capabilities={capabilities} />
+          <WorkspaceContextSection
+            organizationId={organizationId}
+            capabilities={capabilities}
+            locale={locale}
+          />
 
           {capabilities?.canUpdateProjects ? (
             <>

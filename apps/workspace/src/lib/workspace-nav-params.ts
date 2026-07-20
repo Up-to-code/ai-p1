@@ -48,6 +48,11 @@ export const PERSISTENT_PARAMS: PersistentParamConfig[] = [
     skipPaths: [],
   },
   {
+    // Published custom agent selected for the active Eve conversation.
+    key: "agentId",
+    skipPaths: [],
+  },
+  {
     // Active space filter — carried so space context survives navigation
     // within a project. Cleared when switching projects or going global.
     key: "space",

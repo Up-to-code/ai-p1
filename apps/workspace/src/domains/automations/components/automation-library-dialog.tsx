@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FileText, ListChecks, Play, Search, UserRound, Webhook } from "lucide-react";
+import { Bot, CalendarClock, FileText, ListChecks, MessageCircle, Play, Search, Sheet, UserRound, Webhook } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -14,10 +14,14 @@ import {
   type AutomationTemplate,
 } from "../catalog";
 
-const groups: AutomationGroup[] = ["Tasks", "Documents", "Clients", "Integrations"];
+const groups: AutomationGroup[] = ["AI Agents", "Integrations", "Tasks", "Documents", "Clients", "Lifecycle"];
 const icons = {
   play: Play,
   webhook: Webhook,
+  schedule: CalendarClock,
+  sheets: Sheet,
+  agent: Bot,
+  whatsapp: MessageCircle,
   task: ListChecks,
   document: FileText,
   client: UserRound,

@@ -18,6 +18,7 @@ interface ThreadDB {
 export interface ThreadStorageEntry {
   id: string;
   title: string;
+  customAgentId?: string;
   sessionState: SessionState | null;
   events: HandleMessageStreamEvent[];
   createdAt: number;
@@ -98,6 +99,7 @@ export async function saveThread(
     const entry: ThreadStorageEntry = {
       id,
       title: data.title,
+      customAgentId: data.customAgentId,
       sessionState: data.sessionState,
       events: data.events,
       createdAt: data.createdAt ?? (existing as ThreadStorageEntry)?.createdAt ?? Date.now(),

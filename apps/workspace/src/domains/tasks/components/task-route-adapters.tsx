@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useResourceWorkspaceExtension } from "@/components/shared";
+import { useOptionalResourceWorkspaceExtension } from "@/components/shared";
 import { TASK_STAGES } from "../tasks.constants";
 import { TaskTableFieldsPanel } from "./task-table-fields-panel";
 import { useTaskWorkspace } from "./task-workspace-provider";
@@ -43,18 +43,20 @@ export function TaskListRouteAdapter() {
 
 export function TaskTableRouteAdapter() {
   const workspace = useTaskWorkspace();
-  const { closeExtensionPanel, openExtensionPanel } = useResourceWorkspaceExtension();
+  const extension = useOptionalResourceWorkspaceExtension();
+  const closeExtensionPanel = extension?.closeExtensionPanel;
+  const openExtensionPanel = extension?.openExtensionPanel;
   // The extension host is browser-owned; close this route's panel on unmount.
   useEffect(() => closeExtensionPanel, [closeExtensionPanel]);
 
   const openFields = () => {
-    if (!workspace.organizationId) return;
+    if (!workspace.organizationId || !openExtensionPanel || !closeExtensionPanel) return;
     openExtensionPanel(<TaskTableFieldsPanel organizationId={workspace.organizationId} open embedded onClose={closeExtensionPanel} />, "Task fields");
   };
 
   return (
     <TaskRouteShell>
-      <TaskTableView tasks={workspace.pagedTasks} organizationId={workspace.organizationId} projectId={workspace.projectId} spaceId={workspace.spaceId} memberOptions={workspace.memberOptions} onTaskOpen={workspace.openTask} onTaskUpdate={workspace.updateTask} onTaskDelete={workspace.deleteTask} onTaskCreate={workspace.createTask} onTaskMove={workspace.moveTask} onOpenFields={openFields} viewState={workspace.viewState} onViewStateChange={workspace.updateViewState} onTasksBulk={workspace.bulkTasks} />
+      <TaskTableView tasks={workspace.pagedTasks} organizationId={workspace.organizationId} projectId={workspace.projectId} spaceId={workspace.spaceId} memberOptions={workspace.memberOptions} onTaskOpen={workspace.openTask} onTaskUpdate={workspace.updateTask} onTaskDelete={workspace.deleteTask} onTaskCreate={workspace.createTask} onTaskMove={workspace.moveTask} onOpenFields={openExtensionPanel ? openFields : undefined} viewState={workspace.viewState} onViewStateChange={workspace.updateViewState} onTasksBulk={workspace.bulkTasks} />
     </TaskRouteShell>
   );
 }

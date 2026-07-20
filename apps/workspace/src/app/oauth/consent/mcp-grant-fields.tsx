@@ -17,6 +17,8 @@ import type { McpConsentGrantController } from "./use-mcp-consent-grant";
 
 const resourceLabels: Record<McpResource, string> = {
   organization: "Organization",
+  member: "Members",
+  role: "Roles",
   space: "Spaces",
   project: "Projects",
   task: "Tasks",

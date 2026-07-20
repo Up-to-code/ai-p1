@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { visibilitySchema } from "@qentrah/domain-contracts";
 
 const optionalTrimmedText = z.string().trim().optional().transform((value) => value || undefined);
 
@@ -7,7 +8,7 @@ export const docPayloadSchema = z.object({
   content: optionalTrimmedText,
   folderId: optionalTrimmedText,
   projectId: optionalTrimmedText,
-  visibility: z.enum(["private", "team", "workspace"]).optional(),
+  visibility: visibilitySchema.optional(),
   tags: z.array(z.string().trim()).optional(),
 });
 

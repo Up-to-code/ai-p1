@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { projectStatusSchema, projectHealthSchema, projectVisibilitySchema } from "@qentrah/domain-contracts";
 
 const optionalTrimmedText = z.string().trim().optional().transform((value) => value || undefined);
 
@@ -6,9 +7,9 @@ export const projectPayloadSchema = z.object({
   name: z.string().trim().min(1),
   clientId: optionalTrimmedText,
   opportunityId: optionalTrimmedText,
-  status: z.enum(["planned", "active", "paused", "completed", "archived"]),
-  health: z.enum(["onTrack", "atRisk", "blocked"]).default("onTrack"),
-  visibility: z.enum(["private", "space_members", "organization"]).optional(),
+  status: projectStatusSchema,
+  health: projectHealthSchema.default("onTrack"),
+  visibility: projectVisibilitySchema.optional(),
   teamMemberIds: z.array(z.string().trim()).optional(),
   startDate: optionalTrimmedText,
   endDate: optionalTrimmedText,

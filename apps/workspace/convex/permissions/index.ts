@@ -1,63 +1,17 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import { components } from "../_generated/api";
+import { resources as canonicalResources, actions as canonicalActions } from "@qentrah/domain-contracts";
+import type { Resource, Action } from "@qentrah/domain-contracts";
+
+export type { Resource, Action } from "@qentrah/domain-contracts";
 
 export type OrganizationRole = "owner" | "admin" | "member";
 export type SpaceRole = "admin" | "member" | "viewer";
 export type ProjectVisibility = "private" | "space_members" | "organization";
 
-export type Resource =
-  | "organization"
-  | "space"
-  | "project"
-  | "task"
-  | "client"
-  | "deal"
-  | "calendar"
-  | "document"
-  | "media"
-  | "team"
-  | "member"
-  | "role"
-  | "asset"
-  | "visibility"
-  | "integration"
-  | "apiKey"
-  | "oauthApp"
-  | "channel"
-  | "finance"
-  | "report";
-
-export type Action = "create" | "read" | "update" | "delete";
-
 export const permissions = {
-  resources: {
-    organization: "organization",
-    space: "space",
-    project: "project",
-    task: "task",
-    client: "client",
-    deal: "deal",
-    calendar: "calendar",
-    document: "document",
-    media: "media",
-    team: "team",
-    member: "member",
-    role: "role",
-    asset: "asset",
-    visibility: "visibility",
-    integration: "integration",
-    apiKey: "apiKey",
-    oauthApp: "oauthApp",
-    channel: "channel",
-    finance: "finance",
-    report: "report",
-  },
-  actions: {
-    create: "create",
-    read: "read",
-    update: "update",
-    delete: "delete",
-  },
+  resources: Object.fromEntries(canonicalResources.map((r) => [r, r])) as Record<Resource, Resource>,
+  actions: Object.fromEntries(canonicalActions.map((a) => [a, a])) as Record<Action, Action>,
 } as const satisfies {
   resources: Record<Resource, Resource>;
   actions: Record<Action, Action>;

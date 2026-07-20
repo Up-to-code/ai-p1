@@ -1,8 +1,11 @@
 import { z } from "zod";
+import {
+  dealStageSchema,
+  dealStatusSchema,
+  dealPrioritySchema,
+} from "@qentrah/domain-contracts";
 
-export const dealStageSchema = z.enum(["lead", "qualified", "proposal_sent", "contract_sent", "won", "lost"]);
-export const dealStatusSchema = z.enum(["open", "won", "lost", "paused"]);
-export const dealPrioritySchema = z.enum(["low", "normal", "high", "urgent"]);
+export { dealStageSchema, dealStatusSchema, dealPrioritySchema };
 
 export const dealSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),

@@ -6,6 +6,7 @@ export type RailItemId = NavigationDomainId | null;
 
 export const ROUTE_IDS = [
   "ws",
+  "customAgents",
   "ai",
   "tasks",
   "calendar",
@@ -53,18 +54,19 @@ export interface RouteCatalogEntry {
 }
 
 const contextParams = ["project", "space"] as const;
-const aiParams = ["mode", "threadId", "state"] as const;
+const aiParams = ["mode", "threadId", "state", "agentId"] as const;
 const dealParams = ["filter", "sort"] as const;
 const taskParams = ["filter", "project", "space"] as const;
 
 export const ROUTE_CATALOG: readonly RouteCatalogEntry[] = [
-  { id: "ws", path: "/ws", persistentParams: [], railItem: "home" },
+  { id: "ws", path: "/ws", persistentParams: [], railItem: null },
+  { id: "customAgents", path: "/ai/agents", persistentParams: [], railItem: "automations" },
   { id: "ai", path: "/ai", persistentParams: aiParams, railItem: "ai" },
-  { id: "tasks", path: "/tasks", persistentParams: taskParams, railItem: "tasks" },
-  { id: "calendar", path: "/calendar", persistentParams: contextParams, railItem: "calendar" },
-  { id: "docs", path: "/docs", persistentParams: contextParams, railItem: "docs" },
-  { id: "clients", path: "/clients", persistentParams: [], railItem: null },
-  { id: "deals", path: "/deals", persistentParams: dealParams, railItem: null, aliases: ["/opportunities"] },
+  { id: "tasks", path: "/tasks/table", persistentParams: taskParams, railItem: "tasks", aliases: ["/tasks", "/tasks/board", "/tasks/list", "/tasks/calendar", "/tasks/timeline"] },
+  { id: "calendar", path: "/calendar/month", persistentParams: contextParams, railItem: "calendar", aliases: ["/calendar", "/calendar/week", "/calendar/day"] },
+  { id: "docs", path: "/docs", persistentParams: contextParams, railItem: "docs", aliases: ["/docs/list", "/docs/grid", "/docs/recent", "/docs/shared"] },
+  { id: "clients", path: "/clients/table", persistentParams: [], railItem: null, aliases: ["/clients", "/clients/pipeline", "/clients/board"] },
+  { id: "deals", path: "/deals/pipeline", persistentParams: dealParams, railItem: null, aliases: ["/deals", "/deals/board", "/deals/table", "/opportunities"] },
   { id: "channels", path: "/channels", persistentParams: contextParams, railItem: "inbox", aliases: ["/ws/channels", "/inbox/channels", "/organization/channels"] },
   { id: "inboxReplies", path: "/inbox/replies", persistentParams: ["status"], railItem: "inbox" },
   { id: "inboxAssignedComments", path: "/inbox/assigned-comments", persistentParams: ["scope"], railItem: "inbox" },

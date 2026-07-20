@@ -39,13 +39,7 @@ import {
   normalizeTaskStatus,
 } from "../../tasks.constants";
 import { sortPipelineTasks } from "../../task-pipeline-order";
-
-function plainText(value: string | undefined) {
-  return value
-    ?.replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+import { plainText } from "./shared/task-view-utils";
 
 type TaskListViewProps = {
   tasks: TaskRecord[];

@@ -38,7 +38,7 @@ function node(
 /** Canonical product order. Rollout and authorization decide which domains reach a caller. */
 export const IMPLEMENTED_NAVIGATION_CATALOG: readonly NavigationCatalogDomain[] = [
   {
-    id: "home", labelKey: "home", iconId: "home", routeId: "ws", required: true, opensPanel: true, readResources: ["organization"],
+    id: "home", labelKey: "home", iconId: "home", routeId: "ws", required: true, opensPanel: false, readResources: ["organization"],
     nodes: [
       node("home", "home.overview", "overview", "overview", "ws", { required: true }),
       node("home", "home.my-work", "myWork", "my-work", "tasks", { params: { filter: "my" }, required: true }),
@@ -116,7 +116,15 @@ export const IMPLEMENTED_NAVIGATION_CATALOG: readonly NavigationCatalogDomain[] 
   {
     id: "automations", labelKey: "automations", iconId: "automations", routeId: "automations", required: true, opensPanel: true, readResources: ["organization"],
     nodes: [
-      node("automations", "automations.coming-soon", "comingSoon", "automations", "automations", { required: true }),
+      node("automations", "automations.workflows", "workflows", "automations", "automations", { required: true }),
+      node("automations", "automations.agents", "agents", "ai", "customAgents", { required: true }),
+      node("automations", "automations.active-runs", "activeRuns", "recent", "automations", { params: { view: "active-runs" } }),
+      node("automations", "automations.approvals", "approvals", "attention", "automations", { params: { view: "approvals" } }),
+      node("automations", "automations.failures", "failures", "overdue", "automations", { params: { view: "failures" } }),
+      node("automations", "automations.history", "runHistory", "recent", "automations", { params: { view: "history" } }),
+      node("automations", "automations.webhooks", "webhooks", "integrations", "automations", { params: { view: "webhooks" } }),
+      node("automations", "automations.connections", "connections", "integrations", "automations", { params: { view: "connections" } }),
+      node("automations", "automations.usage", "usageAndLimits", "billing", "automations", { params: { view: "usage" } }),
     ],
   },
   {

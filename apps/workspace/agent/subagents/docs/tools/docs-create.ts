@@ -23,7 +23,7 @@ export default defineTool({
   async execute(args, ctx) {
     const { organizationId } = requireWorkspaceActor(ctx);
     return runOrganizationActionWorkflow(ctx, organizationId, {
-      permission: { resource: "client", action: "update" },
+      permission: { resource: "document", action: "create" },
       perform: () =>
         fetchAuthMutation(ctx, api.clientDocs.write.createFromHono, {
           organizationId,

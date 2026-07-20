@@ -53,6 +53,50 @@
     "./dropdown-menu": {
       "types": "./dist/components/ui/dropdown-menu.d.ts",
       "import": "./dist/components/ui/dropdown-menu.js"
+    },
+    "./input": {
+      "types": "./dist/components/ui/input.d.ts",
+      "import": "./dist/components/ui/input.js"
+    },
+    "./textarea": {
+      "types": "./dist/components/ui/textarea.d.ts",
+      "import": "./dist/components/ui/textarea.js"
+    },
+    "./skeleton": {
+      "types": "./dist/components/ui/skeleton.d.ts",
+      "import": "./dist/components/ui/skeleton.js"
+    },
+    "./card": {
+      "types": "./dist/components/ui/card.d.ts",
+      "import": "./dist/components/ui/card.js"
+    },
+    "./alert": {
+      "types": "./dist/components/ui/alert.d.ts",
+      "import": "./dist/components/ui/alert.js"
+    },
+    "./avatar": {
+      "types": "./dist/components/ui/avatar.d.ts",
+      "import": "./dist/components/ui/avatar.js"
+    },
+    "./checkbox": {
+      "types": "./dist/components/ui/checkbox.d.ts",
+      "import": "./dist/components/ui/checkbox.js"
+    },
+    "./progress": {
+      "types": "./dist/components/ui/progress.d.ts",
+      "import": "./dist/components/ui/progress.js"
+    },
+    "./separator": {
+      "types": "./dist/components/ui/separator.d.ts",
+      "import": "./dist/components/ui/separator.js"
+    },
+    "./spinner": {
+      "types": "./dist/components/ui/spinner.d.ts",
+      "import": "./dist/components/ui/spinner.js"
+    },
+    "./switch": {
+      "types": "./dist/components/ui/switch.d.ts",
+      "import": "./dist/components/ui/switch.js"
     }
   },
   "scripts": {

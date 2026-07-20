@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { visibilitySchema } from "@qentrah/domain-contracts";
 
 export const followUpPayloadSchema = z.object({
   clientId: z.string().trim().min(1),
@@ -12,7 +13,7 @@ export const followUpPayloadSchema = z.object({
   projectId: z.string().trim().optional().transform((value) => value || undefined),
   calendarEventId: z.string().trim().optional().transform((value) => value || undefined),
   assigneeUserId: z.string().trim().optional().transform((value) => value || undefined),
-  visibility: z.enum(["private", "team", "workspace"]).optional(),
+  visibility: visibilitySchema.optional(),
 });
 
 export type FollowUpPayload = z.infer<typeof followUpPayloadSchema>;

@@ -1,50 +1,9 @@
+import { organizationCapabilityChecks } from "@qentrah/domain-contracts";
 import {
   organizationAccessControl,
   organizationRoles,
   type OrganizationPermissionStatement,
 } from "./permissions";
-
-const organizationCapabilityChecks = {
-  canReadOrganization: { resource: "organization", action: "read" },
-  canUpdateOrganization: { resource: "organization", action: "update" },
-  canInviteMembers: { resource: "member", action: "create" },
-  canUpdateMembers: { resource: "member", action: "update" },
-  canRemoveMembers: { resource: "member", action: "delete" },
-  canReadRoles: { resource: "role", action: "read" },
-  canCreateRoles: { resource: "role", action: "create" },
-  canUpdateRoles: { resource: "role", action: "update" },
-  canDeleteRoles: { resource: "role", action: "delete" },
-  canReadProjects: { resource: "project", action: "read" },
-  canCreateProjects: { resource: "project", action: "create" },
-  canUpdateProjects: { resource: "project", action: "update" },
-  canDeleteProjects: { resource: "project", action: "delete" },
-  canReadClients: { resource: "client", action: "read" },
-  canCreateClients: { resource: "client", action: "create" },
-  canUpdateClients: { resource: "client", action: "update" },
-  canDeleteClients: { resource: "client", action: "delete" },
-  canReadTasks: { resource: "task", action: "read" },
-  canCreateTasks: { resource: "task", action: "create" },
-  canUpdateTasks: { resource: "task", action: "update" },
-  canDeleteTasks: { resource: "task", action: "delete" },
-  canReadMedia: { resource: "media", action: "read" },
-  canCreateMedia: { resource: "media", action: "create" },
-  canUpdateMedia: { resource: "media", action: "update" },
-  canDeleteMedia: { resource: "media", action: "delete" },
-  canReadApiKeys: { resource: "apiKey", action: "read" },
-  canCreateApiKeys: { resource: "apiKey", action: "create" },
-  canUpdateApiKeys: { resource: "apiKey", action: "update" },
-  canDeleteApiKeys: { resource: "apiKey", action: "delete" },
-  canReadCalendarEvents: { resource: "calendar", action: "read" },
-  canCreateCalendarEvents: { resource: "calendar", action: "create" },
-  canUpdateCalendarEvents: { resource: "calendar", action: "update" },
-  canDeleteCalendarEvents: { resource: "calendar", action: "delete" },
-} as const satisfies Record<
-  string,
-  {
-    resource: keyof OrganizationPermissionStatement;
-    action: string;
-  }
->;
 
 type OrganizationCapabilityKey = keyof typeof organizationCapabilityChecks;
 

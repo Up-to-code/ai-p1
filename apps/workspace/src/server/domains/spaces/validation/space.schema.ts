@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { spaceVisibilitySchema, spaceProjectVisibilitySchema } from "@qentrah/domain-contracts";
 
 const optionalTrimmedText = z.string().trim().optional().transform((value) => value || undefined);
 
@@ -12,8 +13,8 @@ export const spacePayloadSchema = z.object({
     .trim()
     .min(1)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
-  visibility: z.enum(["private", "public", "request_only"]),
-  defaultProjectVisibility: z.enum(["private", "space_members", "organization"]).optional(),
+  visibility: spaceVisibilitySchema,
+  defaultProjectVisibility: spaceProjectVisibilitySchema.optional(),
   allowMemberProjectCreation: z.boolean().optional(),
 });
 

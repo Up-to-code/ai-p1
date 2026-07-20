@@ -63,6 +63,13 @@ panels. AI likewise remains a secondary-panel mode and top-bar action rather
 than a duplicate launcher domain. Automations reserves a truthful coming-soon
 surface until its editor and operating contracts are ready.
 
+As of 2026-07-19, the Automation editor and operating contracts are implemented.
+The launcher may expose Automation definitions, Published Custom Agents, active
+Runs, approvals, failures, history, webhooks, encrypted Connections, and usage.
+This launch amendment does not change the top-level domain order or authorize
+React to derive access; the Convex Automation and Resource Access Modules remain
+authoritative.
+
 Inbox is an attention surface, not a second collaboration store. Recipient
 events own Primary, Other, Later, Cleared, and read state. Replies are derived
 from actual Channel thread messages, while Channels/messages/threads remain

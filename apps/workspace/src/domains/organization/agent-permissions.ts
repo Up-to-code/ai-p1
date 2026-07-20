@@ -2,6 +2,7 @@ import type {
   McpConnectionPermission,
   McpPermissionAction,
   McpPermissionResource,
+  GrantableMcpResource,
   OrganizationCapabilities,
   OrganizationMcpConnection,
 } from "./api";
@@ -40,7 +41,7 @@ export function agentPermissionSummary(
 
 export function grantableAgentPermissions(capabilities?: OrganizationCapabilities): McpConnectionPermission[] {
   if (!capabilities) return [];
-  const actions = {
+  const actions: Record<GrantableMcpResource, Array<McpPermissionAction | false>> = {
     organization: capabilities.canReadOrganization ? ["read"] : [],
     client: [
       capabilities.canReadClients && "read",
@@ -84,9 +85,9 @@ export function grantableAgentPermissions(capabilities?: OrganizationCapabilitie
       capabilities.canUpdateMedia && "update",
       capabilities.canDeleteMedia && "delete",
     ],
-  } satisfies Record<McpPermissionResource, Array<McpPermissionAction | false>>;
+  };
 
-  return (Object.keys(actions) as McpPermissionResource[])
+  return (Object.keys(actions) as GrantableMcpResource[])
     .map((resource) => {
       const resourceActions = actions[resource].filter((action) => action !== false) as McpPermissionAction[];
       return { resource, actions: resourceActions };

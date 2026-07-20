@@ -6,10 +6,10 @@
 
 ## Inventory summary
 
-- Source files scanned: 1808
-- Files exposing interfaces: 1534
-- Convex registered functions: 478
-- Application routes: 122
+- Source files scanned: 1876
+- Files exposing interfaces: 1594
+- Convex registered functions: 510
+- Application routes: 131
 - Hono/Convex HTTP registrations: 210
 - Eve/MCP tool entries: 118
 - Package commands: 94
@@ -124,7 +124,11 @@
 | `/:locale/accept-invite` | page | `apps/workspace/src/app/[locale]/(auth)/accept-invite/page.tsx` |
 | `/:locale/activity` | page | `apps/workspace/src/app/[locale]/(app)/activity/page.tsx` |
 | `/:locale/ai` | page | `apps/workspace/src/app/[locale]/(app)/ai/page.tsx` |
+| `/:locale/ai/agents` | page | `apps/workspace/src/app/[locale]/(app)/ai/agents/page.tsx` |
+| `/:locale/ai/agents/:agentId` | page | `apps/workspace/src/app/[locale]/(app)/ai/agents/[agentId]/page.tsx` |
+| `/:locale/ai/agents/new` | page | `apps/workspace/src/app/[locale]/(app)/ai/agents/new/page.tsx` |
 | `/:locale/automations` | page | `apps/workspace/src/app/[locale]/(app)/automations/page.tsx` |
+| `/:locale/automations/:automationId` | page | `apps/workspace/src/app/[locale]/(app)/automations/[automationId]/page.tsx` |
 | `/:locale/billing` | page | `apps/marketing/app/(site)/[locale]/billing/page.tsx` |
 | `/:locale/billing` | page | `apps/workspace/src/app/[locale]/(app)/billing/page.tsx` |
 | `/:locale/calendar` | page | `apps/workspace/src/app/[locale]/(app)/calendar/page.tsx` |
@@ -202,10 +206,15 @@
 | `/:locale/tasks` | page | `apps/workspace/src/app/[locale]/(app)/tasks/page.tsx` |
 | `/:locale/tasks/:id` | page | `apps/workspace/src/app/[locale]/(app)/tasks/[id]/page.tsx` |
 | `/:locale/tasks/board` | page | `apps/workspace/src/app/[locale]/(app)/tasks/board/page.tsx` |
+| `/:locale/tasks/board/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/tasks/board/[savedViewId]/page.tsx` |
 | `/:locale/tasks/calendar` | page | `apps/workspace/src/app/[locale]/(app)/tasks/calendar/page.tsx` |
+| `/:locale/tasks/calendar/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/tasks/calendar/[savedViewId]/page.tsx` |
 | `/:locale/tasks/list` | page | `apps/workspace/src/app/[locale]/(app)/tasks/list/page.tsx` |
+| `/:locale/tasks/list/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/tasks/list/[savedViewId]/page.tsx` |
 | `/:locale/tasks/table` | page | `apps/workspace/src/app/[locale]/(app)/tasks/table/page.tsx` |
+| `/:locale/tasks/table/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/tasks/table/[savedViewId]/page.tsx` |
 | `/:locale/tasks/timeline` | page | `apps/workspace/src/app/[locale]/(app)/tasks/timeline/page.tsx` |
+| `/:locale/tasks/timeline/:savedViewId` | page | `apps/workspace/src/app/[locale]/(app)/tasks/timeline/[savedViewId]/page.tsx` |
 | `/:locale/team` | page | `apps/workspace/src/app/[locale]/(app)/team/page.tsx` |
 | `/:locale/terms` | page | `apps/marketing/app/(site)/[locale]/terms/page.tsx` |
 | `/:locale/theories` | page | `apps/workspace/src/app/[locale]/(app)/theories/page.tsx` |
@@ -464,14 +473,28 @@ fully composed path.
 | Exposure | Export | Source |
 | --- | --- | --- |
 | internalAction | `rotateKeys` | `apps/workspace/convex/auth.ts` |
+| action | `save` | `apps/workspace/convex/automationConnections/actions.ts` |
+| internalQuery | `assertMembership` | `apps/workspace/convex/automationConnections/internal.ts` |
+| internalQuery | `loadForExecution` | `apps/workspace/convex/automationConnections/internal.ts` |
+| internalMutation | `markUsed` | `apps/workspace/convex/automationConnections/internal.ts` |
+| internalMutation | `store` | `apps/workspace/convex/automationConnections/internal.ts` |
+| query | `listMine` | `apps/workspace/convex/automationConnections/read.ts` |
+| mutation | `revoke` | `apps/workspace/convex/automationConnections/write.ts` |
 | mutation | `decideApproval` | `apps/workspace/convex/automations/execute.ts` |
 | internalMutation | `processPendingEvents` | `apps/workspace/convex/automations/execute.ts` |
+| internalMutation | `processSchedules` | `apps/workspace/convex/automations/execute.ts` |
 | mutation | `runManual` | `apps/workspace/convex/automations/execute.ts` |
 | internalMutation | `runWebhook` | `apps/workspace/convex/automations/execute.ts` |
+| internalMutation | `executeLocalAction` | `apps/workspace/convex/automations/localAction.ts` |
 | query | `list` | `apps/workspace/convex/automations/read.ts` |
 | query | `listRuns` | `apps/workspace/convex/automations/read.ts` |
 | query | `organizationRuns` | `apps/workspace/convex/automations/read.ts` |
 | query | `pendingApprovals` | `apps/workspace/convex/automations/read.ts` |
+| mutation | `cancel` | `apps/workspace/convex/automations/runState.ts` |
+| internalMutation | `claimNextStep` | `apps/workspace/convex/automations/runState.ts` |
+| internalMutation | `completeStep` | `apps/workspace/convex/automations/runState.ts` |
+| internalMutation | `recoverDueRuns` | `apps/workspace/convex/automations/runState.ts` |
+| internalAction | `executeRun` | `apps/workspace/convex/automations/worker.ts` |
 | mutation | `create` | `apps/workspace/convex/automations/write.ts` |
 | mutation | `remove` | `apps/workspace/convex/automations/write.ts` |
 | mutation | `save` | `apps/workspace/convex/automations/write.ts` |
@@ -581,6 +604,15 @@ fully composed path.
 | query | `listContacts` | `apps/workspace/convex/crm/read.ts` |
 | query | `listLeads` | `apps/workspace/convex/crm/read.ts` |
 | query | `overview` | `apps/workspace/convex/crm/read.ts` |
+| query | `getMine` | `apps/workspace/convex/customAgents/read.ts` |
+| query | `getPublishedForRuntime` | `apps/workspace/convex/customAgents/read.ts` |
+| query | `listMine` | `apps/workspace/convex/customAgents/read.ts` |
+| query | `listPublishedMine` | `apps/workspace/convex/customAgents/read.ts` |
+| internalQuery | `loadPublishedForOwner` | `apps/workspace/convex/customAgents/read.ts` |
+| mutation | `archive` | `apps/workspace/convex/customAgents/write.ts` |
+| mutation | `create` | `apps/workspace/convex/customAgents/write.ts` |
+| mutation | `publish` | `apps/workspace/convex/customAgents/write.ts` |
+| mutation | `saveDraft` | `apps/workspace/convex/customAgents/write.ts` |
 | query | `listByOrganization` | `apps/workspace/convex/customFields/read.ts` |
 | query | `listByOrganizationForTable` | `apps/workspace/convex/customFields/read.ts` |
 | query | `listByOrganization` | `apps/workspace/convex/customFields/values_read.ts` |
@@ -921,6 +953,15 @@ fully composed path.
 | mutation | `create` | `apps/workspace/convex/spaces/write.ts` |
 | mutation | `remove` | `apps/workspace/convex/spaces/write.ts` |
 | mutation | `update` | `apps/workspace/convex/spaces/write.ts` |
+| query | `getSurfaceProjection` | `apps/workspace/convex/taskWorkspace/read.ts` |
+| mutation | `createAndAttachView` | `apps/workspace/convex/taskWorkspace/write.ts` |
+| mutation | `createDefaultRouteView` | `apps/workspace/convex/taskWorkspace/write.ts` |
+| mutation | `detachViewTab` | `apps/workspace/convex/taskWorkspace/write.ts` |
+| mutation | `duplicateViewTab` | `apps/workspace/convex/taskWorkspace/write.ts` |
+| mutation | `ensureTaskWorkspaceDefaults` | `apps/workspace/convex/taskWorkspace/write.ts` |
+| mutation | `renameViewTab` | `apps/workspace/convex/taskWorkspace/write.ts` |
+| mutation | `reorderViewTabs` | `apps/workspace/convex/taskWorkspace/write.ts` |
+| mutation | `updateViewConfig` | `apps/workspace/convex/taskWorkspace/write.ts` |
 | query | `get` | `apps/workspace/convex/theories/read.ts` |
 | query | `list` | `apps/workspace/convex/theories/read.ts` |
 | query | `listAll` | `apps/workspace/convex/theories/read.ts` |
@@ -1235,14 +1276,13 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/mobile/src/voice/hooks/useVoiceComposer.ts` | function: useVoiceComposer |
 | `apps/mobile/src/voice/lib/voiceComposerState.ts` | value: VOICE_RUNTIME_UNAVAILABLE_MESSAGE<br>value: VOICE_PERMISSION_DENIED_MESSAGE<br>value: VOICE_RECOGNITION_UNAVAILABLE_MESSAGE<br>function: normalizeVoiceAudioLevel<br>function: voiceTranscriptFromResult<br>function: voiceStateFromResult |
 | `apps/workspace/agent/lib/action-workflow.ts` | class: OrganizationActionError<br>function: requireOrganizationAction<br>function: recordOrganizationAction<br>function: runOrganizationActionWorkflow |
-| `apps/workspace/agent/lib/better-auth-channel.ts` | function: readSessionCredential<br>value: betterAuth |
+| `apps/workspace/agent/lib/better-auth-channel.ts` | value: automationService<br>function: readSessionCredential<br>value: betterAuth |
 | `apps/workspace/agent/lib/better-auth-org.ts` | function: updateOrganizationIdentity<br>function: createOrganizationInvitation<br>function: revokeOrganizationInvitation<br>function: updateOrganizationMemberRole<br>function: removeOrganizationMember<br>function: createOrganizationRole<br>function: updateOrganizationRole<br>function: deleteOrganizationRole<br>function: listOrganizationMembers<br>function: listOrganizationInvitations<br>function: listOrganizationRoles |
 | `apps/workspace/agent/lib/capabilities.ts` | type: AgentOrganizationCapabilities<br>type: Permission<br>function: capabilitiesToPermissions<br>function: hasPermission<br>function: hasCapability<br>value: toolToCapability<br>value: subagentToResource<br>function: hasSubagentAccess |
 | `apps/workspace/agent/lib/convex.ts` | function: fetchAuthQuery<br>function: fetchAuthMutation |
 | `apps/workspace/agent/lib/helpers.ts` | function: compact<br>function: limit<br>function: pagination<br>function: startOfToday<br>function: monthRange<br>function: extensionName<br>function: mediaKind<br>function: taskToolSearchResults |
 | `apps/workspace/agent/lib/memory-store.ts` | interface: Memory<br>value: memoryStore |
-| `apps/workspace/agent/lib/risk-policy.ts` | type: RiskDecision<br>function: evaluateAgentRequestRisk<br>function: evaluateToolRisk |
-| `apps/workspace/agent/lib/workspace-actor.ts` | type: WorkspaceActorErrorCode<br>class: WorkspaceActorError<br>interface: WorkspaceActor<br>function: getWorkspaceActor<br>function: requireWorkspaceActor<br>function: requireWorkspaceActorToken |
+| `apps/workspace/agent/lib/workspace-actor.ts` | type: WorkspaceActorErrorCode<br>class: WorkspaceActorError<br>interface: WorkspaceActor<br>type: ActorContext<br>function: getWorkspaceActor<br>function: requireWorkspaceActor<br>function: requireWorkspaceActorToken |
 | `apps/workspace/agent/subagents/calendar/calendar-update-input.ts` | value: calendarUpdateToolInputSchema<br>function: parseCalendarUpdatePatch |
 | `apps/workspace/agent/subagents/clients/client-update-input.ts` | value: clientUpdateToolInputSchema<br>function: parseClientUpdatePatch |
 | `apps/workspace/agent/subagents/deals/deal-update-input.ts` | value: dealUpdatePatchSchema<br>function: buildDealUpdateInput |
@@ -1266,13 +1306,24 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/auth/organization.ts` | function: createOrganizationPlugin |
 | `apps/workspace/convex/auth/runtime.ts` | type: BetterAuthRuntimeContext<br>function: asBetterAuthAdapterContext<br>value: AUTH_JWT_ALGORITHM<br>function: resolveBetterAuthRuntime<br>function: resolveSocialProviders |
 | `apps/workspace/convex/auth/topology.ts` | function: resolveConvexAuthTopology |
+| `apps/workspace/convex/automationConnections/actions.ts` | convex-action: save |
+| `apps/workspace/convex/automationConnections/credentialCrypto.ts` | function: encryptAutomationCredentials<br>function: decryptAutomationCredentials |
+| `apps/workspace/convex/automationConnections/internal.ts` | convex-internalQuery: assertMembership<br>convex-internalMutation: store<br>convex-internalQuery: loadForExecution<br>convex-internalMutation: markUsed |
+| `apps/workspace/convex/automationConnections/read.ts` | convex-query: listMine |
+| `apps/workspace/convex/automationConnections/validators.ts` | value: automationConnectionSummaryValidator<br>value: googleSheetsCredentialsValidator<br>value: whatsappCredentialsValidator<br>value: connectionSecretValidator |
+| `apps/workspace/convex/automationConnections/write.ts` | convex-mutation: revoke |
 | `apps/workspace/convex/automations/commandAdapter.ts` | function: executeAutomationAction<br>function: automationActionNeedsApproval |
+| `apps/workspace/convex/automations/configuration.ts` | function: automationNodeConfigurationProblems<br>function: automationConfigurationProblems |
 | `apps/workspace/convex/automations/events.ts` | function: emitAutomationEvent |
-| `apps/workspace/convex/automations/execute.ts` | convex-mutation: runManual<br>convex-mutation: decideApproval<br>convex-internalMutation: runWebhook<br>convex-internalMutation: processPendingEvents |
+| `apps/workspace/convex/automations/execute.ts` | convex-mutation: runManual<br>convex-mutation: decideApproval<br>convex-internalMutation: runWebhook<br>convex-internalMutation: processPendingEvents<br>convex-internalMutation: processSchedules |
 | `apps/workspace/convex/automations/graph.ts` | function: orderedReachableActions<br>function: graphProblem |
 | `apps/workspace/convex/automations/layout.ts` | function: mergeAutomationPositions<br>function: automationLayoutUnchanged |
+| `apps/workspace/convex/automations/localAction.ts` | convex-internalMutation: executeLocalAction |
+| `apps/workspace/convex/automations/preflight.ts` | function: automationEnablementProblems |
 | `apps/workspace/convex/automations/read.ts` | convex-query: list<br>convex-query: listRuns<br>convex-query: organizationRuns<br>convex-query: pendingApprovals |
+| `apps/workspace/convex/automations/runState.ts` | type: AutomationRunSource<br>function: queueAutomationRun<br>convex-internalMutation: claimNextStep<br>convex-internalMutation: completeStep<br>convex-mutation: cancel<br>convex-internalMutation: recoverDueRuns |
 | `apps/workspace/convex/automations/validators.ts` | value: automationDocumentValidator<br>value: automationRunDocumentValidator |
+| `apps/workspace/convex/automations/worker.ts` | function: renderAutomationTemplate<br>function: getGoogleSheetValues<br>function: sendWhatsAppMessage<br>convex-internalAction: executeRun |
 | `apps/workspace/convex/automations/write.ts` | convex-mutation: create<br>convex-mutation: save<br>convex-mutation: saveLayout<br>convex-mutation: setEnabled<br>convex-mutation: remove |
 | `apps/workspace/convex/betterAuth.ts` | value: betterAuthClient |
 | `apps/workspace/convex/betterAuthLocal/schema.ts` | value: tables |
@@ -1320,6 +1371,10 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/crm/read.ts` | convex-query: listLeads<br>convex-query: listCompanies<br>convex-query: listContacts<br>convex-query: overview |
 | `apps/workspace/convex/crm/search.ts` | function: leadSearchProjection<br>function: companySearchProjection<br>function: contactSearchProjection |
 | `apps/workspace/convex/crm/validators.ts` | value: leadStatusValidator<br>value: leadValidator<br>value: companyValidator<br>value: contactValidator |
+| `apps/workspace/convex/customAgents/access.ts` | function: customAgentError<br>function: requireCustomAgentOwner |
+| `apps/workspace/convex/customAgents/read.ts` | convex-query: listMine<br>convex-query: getMine<br>convex-query: listPublishedMine<br>convex-query: getPublishedForRuntime<br>convex-internalQuery: loadPublishedForOwner |
+| `apps/workspace/convex/customAgents/validators.ts` | value: customAgentDocumentValidator<br>value: publishedCustomAgentValidator |
+| `apps/workspace/convex/customAgents/write.ts` | convex-mutation: create<br>convex-mutation: saveDraft<br>convex-mutation: publish<br>convex-mutation: archive |
 | `apps/workspace/convex/customFields/access.ts` | function: customFieldPermissionResource<br>function: assertCustomFieldTargetPermission |
 | `apps/workspace/convex/customFields/read.ts` | convex-query: listByOrganization<br>convex-query: listByOrganizationForTable |
 | `apps/workspace/convex/customFields/values_read.ts` | convex-query: listByRecord<br>convex-query: listByOrganization |
@@ -1432,7 +1487,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/partnerApps/webhookUrlSafety.ts` | function: assertSafeWebhookUrl |
 | `apps/workspace/convex/partnerApps/webhooks.ts` | convex-mutation: createEndpointFromHono<br>convex-mutation: acceptInboundFromHono<br>convex-internalMutation: enqueueOutbound<br>convex-internalQuery: getDeliveryTarget<br>convex-internalMutation: markDeliveryAttempt<br>convex-action: deliver |
 | `apps/workspace/convex/partnerResourceGateway.ts` | type: PartnerResourceWriteActor<br>function: assertPartnerResourceBridgeToken<br>function: readPartnerResourceThroughGateway<br>function: writePartnerResourceThroughGateway |
-| `apps/workspace/convex/permissions/index.ts` | type: OrganizationRole<br>type: SpaceRole<br>type: ProjectVisibility<br>type: Resource<br>type: Action<br>value: permissions<br>type: PermissionRecord<br>type: PermissionCheckInput<br>type: PermissionCheckResult<br>function: getOrganizationRole<br>function: hasOrganizationMembership<br>function: getSpaceRole<br>function: canAccessSpace<br>function: canAccessProject<br>function: canPerformSpaceAction<br>function: canPerformProjectAction<br>function: checkPermission<br>function: assertPermission<br>function: canPerformOrganizationAction<br>function: assertCanAccessSpace<br>function: assertCanPerformSpaceAction<br>function: assertCanAccessProject<br>function: assertCanPerformProjectAction<br>function: assertCanPerformOrganizationAction |
+| `apps/workspace/convex/permissions/index.ts` | type: OrganizationRole<br>type: SpaceRole<br>type: ProjectVisibility<br>value: permissions<br>type: PermissionRecord<br>type: PermissionCheckInput<br>type: PermissionCheckResult<br>function: getOrganizationRole<br>function: hasOrganizationMembership<br>function: getSpaceRole<br>function: canAccessSpace<br>function: canAccessProject<br>function: canPerformSpaceAction<br>function: canPerformProjectAction<br>function: checkPermission<br>function: assertPermission<br>function: canPerformOrganizationAction<br>function: assertCanAccessSpace<br>function: assertCanPerformSpaceAction<br>function: assertCanAccessProject<br>function: assertCanPerformProjectAction<br>function: assertCanPerformOrganizationAction |
 | `apps/workspace/convex/pipeline_stages/read.ts` | convex-query: list |
 | `apps/workspace/convex/pipeline_stages/write.ts` | convex-mutation: create<br>convex-mutation: update<br>convex-mutation: remove<br>convex-mutation: reorder<br>convex-mutation: seedDefaults |
 | `apps/workspace/convex/platform/access.ts` | function: assertPlatformAdmin<br>convex-query: canUsePlatformAdminAction |
@@ -1444,8 +1499,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/projectSpaces/read.ts` | convex-query: listByOrganization<br>convex-query: list<br>convex-query: get<br>convex-query: listBySpace |
 | `apps/workspace/convex/projectSpaces/validators.ts` | value: projectSpaceInputValidator<br>value: projectSpaceValidator |
 | `apps/workspace/convex/projectSpaces/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono |
-| `apps/workspace/convex/projectWorkspace/data.ts` | value: PROJECT_WORKSPACE_SURFACE_KEY<br>type: ProjectWorkspaceViewType<br>function: isProjectWorkspaceViewType<br>function: canonicalProjectWorkspaceRoute |
-| `apps/workspace/convex/projectWorkspace/read.ts` | function: projectWorkspaceTabProjection<br>function: readableProjectWorkspaceTabs<br>convex-query: getSurfaceProjection<br>convex-query: getProjectManagementTree |
+| `apps/workspace/convex/projectWorkspace/data.ts` | value: PROJECT_WORKSPACE_SURFACE_KEY<br>type: ProjectWorkspaceViewType<br>function: isProjectWorkspaceViewType<br>function: canonicalProjectWorkspaceRoute<br>value: PROJECT_WORKSPACE_SURFACE_CONFIG |
+| `apps/workspace/convex/projectWorkspace/read.ts` | convex-query: getSurfaceProjection<br>convex-query: getProjectManagementTree |
 | `apps/workspace/convex/projectWorkspace/validators.ts` | value: projectWorkspaceViewTypeValidator<br>value: projectWorkspaceTabCapabilitiesValidator<br>value: projectWorkspaceTabValidator<br>value: projectWorkspaceSurfaceProjectionValidator<br>value: projectWorkspaceCreateInputValidator<br>value: projectManagementTreeProjectionValidator |
 | `apps/workspace/convex/projectWorkspace/write.ts` | convex-mutation: ensureProjectWorkspaceDefaults<br>convex-mutation: createAndAttachView<br>convex-mutation: renameViewTab<br>convex-mutation: reorderViewTabs<br>convex-mutation: duplicateViewTab<br>convex-mutation: detachViewTab<br>convex-mutation: updateViewConfig<br>convex-mutation: createDefaultRouteView |
 | `apps/workspace/convex/projects/read.ts` | convex-query: list<br>convex-query: listPaged<br>convex-query: stats<br>convex-query: options<br>convex-query: listByClient<br>convex-query: get<br>convex-query: taskCounts<br>convex-query: listBySpace<br>convex-query: listAccessibleBySpaceMembership |
@@ -1466,9 +1521,11 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/savedViews/read.ts` | convex-query: list<br>convex-query: get<br>convex-query: getDefault<br>convex-query: listGrants |
 | `apps/workspace/convex/savedViews/validators.ts` | value: userTableViewScopeValidator<br>value: userTableViewConfigValidator<br>value: savedViewSharingModeValidator<br>value: savedViewGrantInputValidator<br>value: savedViewGrantValidator<br>value: userTableViewValidator<br>value: createUserTableViewInputValidator<br>value: updateUserTableViewInputValidator |
 | `apps/workspace/convex/savedViews/write.ts` | convex-mutation: create<br>convex-mutation: update<br>convex-mutation: remove<br>convex-mutation: setDefault<br>convex-mutation: share<br>convex-mutation: makePersonal |
-| `apps/workspace/convex/schema/automations.ts` | value: automationNodeValidator<br>value: automationEdgeValidator<br>value: automationViewportValidator<br>value: automationTables |
+| `apps/workspace/convex/schema/automationConnections.ts` | value: automationConnectionProviderValidator<br>value: automationConnectionTables |
+| `apps/workspace/convex/schema/automations.ts` | value: automationNodeType<br>value: automationNodeValidator<br>value: automationEdgeValidator<br>value: automationViewportValidator<br>value: automationTables |
 | `apps/workspace/convex/schema/billing.ts` | value: billingTables |
 | `apps/workspace/convex/schema/crm.ts` | value: crmTables |
+| `apps/workspace/convex/schema/customAgents.ts` | value: customAgentStatusValidator<br>value: customAgentTables |
 | `apps/workspace/convex/schema/custom_fields.ts` | value: customFieldTables |
 | `apps/workspace/convex/schema/delivery.ts` | value: deliveryTables |
 | `apps/workspace/convex/schema/docs.ts` | value: docsTables |
@@ -1518,6 +1575,10 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/spaces/read.ts` | convex-query: listByOrganization<br>convex-query: listAccessible<br>convex-query: get<br>convex-query: getBySlug<br>convex-query: options |
 | `apps/workspace/convex/spaces/validators.ts` | value: spaceVisibilityValidator<br>value: spaceProjectVisibilityValidator<br>value: spaceInputValidator<br>value: spaceValidator |
 | `apps/workspace/convex/spaces/write.ts` | convex-mutation: create<br>convex-mutation: update<br>convex-mutation: remove |
+| `apps/workspace/convex/taskWorkspace/data.ts` | value: TASK_WORKSPACE_SURFACE_KEY<br>type: TaskWorkspaceViewType<br>function: isTaskWorkspaceViewType<br>function: canonicalTaskWorkspaceRoute<br>value: TASK_WORKSPACE_SURFACE_CONFIG |
+| `apps/workspace/convex/taskWorkspace/read.ts` | convex-query: getSurfaceProjection |
+| `apps/workspace/convex/taskWorkspace/validators.ts` | value: taskWorkspaceViewTypeValidator<br>value: taskWorkspaceTabCapabilitiesValidator<br>value: taskWorkspaceTabValidator<br>value: taskWorkspaceSurfaceProjectionValidator<br>value: taskWorkspaceCreateInputValidator |
+| `apps/workspace/convex/taskWorkspace/write.ts` | convex-mutation: ensureTaskWorkspaceDefaults<br>convex-mutation: createAndAttachView<br>convex-mutation: renameViewTab<br>convex-mutation: reorderViewTabs<br>convex-mutation: duplicateViewTab<br>convex-mutation: detachViewTab<br>convex-mutation: updateViewConfig<br>convex-mutation: createDefaultRouteView |
 | `apps/workspace/convex/theories/read.ts` | function: canReadTheory<br>function: readableTheoriesForUser<br>convex-query: list<br>convex-query: listPrivate<br>convex-query: listAll<br>convex-query: get<br>convex-query: search |
 | `apps/workspace/convex/theories/validators.ts` | value: theorySourceValidator<br>value: theoryInputValidator<br>value: theoryValidator |
 | `apps/workspace/convex/theories/write.ts` | convex-mutation: createFromHono<br>convex-mutation: updateFromHono<br>convex-mutation: deleteFromHono |
@@ -1531,8 +1592,13 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/convex/workspace/readStats.ts` | function: activeRows<br>function: clientStats<br>function: projectStats<br>function: calendarStats<br>function: auditStats |
 | `apps/workspace/convex/workspace/readSurface.ts` | function: activeWorkspaceRows<br>function: activeUpdatedWorkspaceRows<br>function: activeCreatedWorkspaceRows<br>function: activeChronologicalWorkspaceRows<br>function: activeDueWorkspaceRows<br>function: boundedWorkspaceReadLimit<br>function: workspaceSearchRows<br>function: presentActiveWorkspacePage |
 | `apps/workspace/convex/workspace/widgetLayouts.ts` | convex-query: getWidgetLayout<br>convex-mutation: saveWidgetLayout |
+| `apps/workspace/convex/workspaceSurfaces/helpers.ts` | type: SurfaceConfig<br>type: SurfaceTabProjection<br>type: SurfaceProjection<br>function: projectTabProjection<br>function: readableSurfaceTabs<br>function: getSurfaceByKey<br>function: buildSurfaceProjection<br>function: requireSurface<br>function: requireAttachedView<br>function: nextOrder<br>function: insertPersonalViewAndTab |
 | `apps/workspace/src/app/[locale]/(app)/activity/page.tsx` | function: ActivityPage |
+| `apps/workspace/src/app/[locale]/(app)/ai/agents/[agentId]/page.tsx` | function: CustomAgentPage |
+| `apps/workspace/src/app/[locale]/(app)/ai/agents/new/page.tsx` | function: NewCustomAgentPage |
+| `apps/workspace/src/app/[locale]/(app)/ai/agents/page.tsx` | function: CustomAgentsPage |
 | `apps/workspace/src/app/[locale]/(app)/ai/page.tsx` | function: AiPage |
+| `apps/workspace/src/app/[locale]/(app)/automations/[automationId]/page.tsx` | function: AutomationPage |
 | `apps/workspace/src/app/[locale]/(app)/automations/page.tsx` | function: AutomationsPage |
 | `apps/workspace/src/app/[locale]/(app)/billing/page.tsx` | function: BillingPage |
 | `apps/workspace/src/app/[locale]/(app)/calendar/layout.tsx` | function: CalendarLayout |
@@ -1603,13 +1669,18 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/app/[locale]/(app)/settings/page.tsx` | function: SettingsIndexPage |
 | `apps/workspace/src/app/[locale]/(app)/spaces/page.tsx` | function: SpacesRoute |
 | `apps/workspace/src/app/[locale]/(app)/tasks/[id]/page.tsx` | function: TaskDetailsPage |
+| `apps/workspace/src/app/[locale]/(app)/tasks/board/[savedViewId]/page.tsx` | function: Page |
 | `apps/workspace/src/app/[locale]/(app)/tasks/board/page.tsx` | function: TaskBoardPage |
+| `apps/workspace/src/app/[locale]/(app)/tasks/calendar/[savedViewId]/page.tsx` | function: Page |
 | `apps/workspace/src/app/[locale]/(app)/tasks/calendar/page.tsx` | function: TaskCalendarPage |
 | `apps/workspace/src/app/[locale]/(app)/tasks/layout.tsx` | function: TasksLayout |
+| `apps/workspace/src/app/[locale]/(app)/tasks/list/[savedViewId]/page.tsx` | function: Page |
 | `apps/workspace/src/app/[locale]/(app)/tasks/list/page.tsx` | function: TaskListPage |
 | `apps/workspace/src/app/[locale]/(app)/tasks/loading.tsx` | function: TasksViewLoading |
 | `apps/workspace/src/app/[locale]/(app)/tasks/page.tsx` | function: TasksPage |
+| `apps/workspace/src/app/[locale]/(app)/tasks/table/[savedViewId]/page.tsx` | function: Page |
 | `apps/workspace/src/app/[locale]/(app)/tasks/table/page.tsx` | function: TaskTablePage |
+| `apps/workspace/src/app/[locale]/(app)/tasks/timeline/[savedViewId]/page.tsx` | function: Page |
 | `apps/workspace/src/app/[locale]/(app)/tasks/timeline/page.tsx` | function: TaskTimelinePage |
 | `apps/workspace/src/app/[locale]/(app)/team/page.tsx` | function: TeamPage |
 | `apps/workspace/src/app/[locale]/(app)/theories/page.tsx` | function: TheoriesPage |
@@ -1805,7 +1876,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/components/shared/query-debug.ts` | type: QueryDebugMetadata<br>type: QueryDebugDetail<br>function: normalizeQueryDebugDetails |
 | `apps/workspace/src/components/shared/record-modal.tsx` | function: RecordModal<br>function: RecordFieldRow |
 | `apps/workspace/src/components/shared/resource-workspace/resource-view-menu.tsx` | function: ResourceViewMenu |
-| `apps/workspace/src/components/shared/resource-workspace/resource-workspace-layout.tsx` | type: ResourceWorkspaceLayoutProps<br>function: useResourceWorkspaceExtension<br>function: ResourceWorkspaceLayout |
+| `apps/workspace/src/components/shared/resource-workspace/resource-workspace-layout.tsx` | type: ResourceWorkspaceLayoutProps<br>function: useResourceWorkspaceExtension<br>function: useOptionalResourceWorkspaceExtension<br>function: ResourceWorkspaceLayout |
 | `apps/workspace/src/components/shared/resource-workspace/types.ts` | type: ResourceWorkspaceView<br>type: ResourceWorkspaceViewAction<br>type: ResourceWorkspaceAction<br>type: ResourceViewCatalogSection<br>type: ResourceViewCatalogItem<br>type: ResourceWorkspaceConfig |
 | `apps/workspace/src/components/shared/review-input.tsx` | type: ReviewInputUser<br>type: ReviewInputSubmission<br>type: ReviewInputProps |
 | `apps/workspace/src/components/shared/share-popover/components/share-invite-dialog.tsx` | function: ShareInviteDialog |
@@ -1886,12 +1957,14 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/auth/workspace-status.ts` | type: WorkspaceStatus<br>function: deriveWorkspaceStatus<br>function: getWorkspaceAuthRedirect |
 | `apps/workspace/src/domains/automations/catalog.ts` | type: AutomationGroup<br>type: AutomationIconName<br>type: AutomationComponentDefinition<br>value: automationComponents<br>type: AutomationTemplate<br>value: automationTemplates<br>function: componentById |
 | `apps/workspace/src/domains/automations/components/automation-component-palette.tsx` | function: AutomationComponentPalette |
+| `apps/workspace/src/domains/automations/components/automation-connection-dialog.tsx` | function: AutomationConnectionDialog |
 | `apps/workspace/src/domains/automations/components/automation-inspector.tsx` | function: AutomationInspector |
 | `apps/workspace/src/domains/automations/components/automation-library-dialog.tsx` | function: AutomationLibraryDialog |
 | `apps/workspace/src/domains/automations/components/automation-operations.tsx` | function: AutomationOperations |
 | `apps/workspace/src/domains/automations/components/automation-save-status.tsx` | function: AutomationSaveStatus |
 | `apps/workspace/src/domains/automations/components/automation-step-node.tsx` | function: AutomationStepNode |
 | `apps/workspace/src/domains/automations/components/automations-screen.tsx` | function: AutomationsScreen |
+| `apps/workspace/src/domains/automations/hooks/use-automation-bindings.ts` | type: AutomationConnectionProvider<br>function: useAutomationBindings |
 | `apps/workspace/src/domains/automations/hooks/use-automation-workspace.ts` | function: useAutomationWorkspace |
 | `apps/workspace/src/domains/automations/types.ts` | type: AutomationNodeKind<br>type: AutomationNodeType<br>type: AutomationNodeData<br>type: AutomationRecord<br>type: AutomationPersistenceStatus |
 | `apps/workspace/src/domains/billing/api/billing-requests.ts` | function: getBillingOverviewRequest<br>function: getBillingUsageRequest<br>function: createCheckoutRequest<br>function: getPaymentStatusRequest |
@@ -1911,6 +1984,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/calendar/components/calendar-event-form-dialog.tsx` | function: CalendarEventFormDialog |
 | `apps/workspace/src/domains/calendar/components/calendar-grid.tsx` | function: CalendarGrid<br>function: CalendarEmptyState |
 | `apps/workspace/src/domains/calendar/components/calendar-relation-picker.tsx` | function: CalendarRelationPicker<br>function: filterCalendarRelationOptions |
+| `apps/workspace/src/domains/calendar/components/calendar-resource-layout.tsx` | function: CalendarResourceLayout |
 | `apps/workspace/src/domains/calendar/hooks/use-calendar-composer-options.ts` | type: CalendarRelationOption<br>function: useCalendarComposerOptions |
 | `apps/workspace/src/domains/calendar/store/calendar.store.ts` | value: useCalendarStore |
 | `apps/workspace/src/domains/calendar/store/calendar.types.ts` | interface: CalendarEvent |
@@ -1930,6 +2004,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/clients/components/client-table-skeleton.tsx` | function: ClientTableSkeleton |
 | `apps/workspace/src/domains/clients/components/client-table-view.tsx` | function: ClientTableView |
 | `apps/workspace/src/domains/clients/components/client-view-helpers.ts` | function: stagesToDefinitions<br>function: clientToCardItem |
+| `apps/workspace/src/domains/clients/components/clients-resource-layout.tsx` | function: ClientsResourceLayout |
 | `apps/workspace/src/domains/clients/components/clients-screens.tsx` | function: ClientsWorkspace<br>function: ClientFormScreen |
 | `apps/workspace/src/domains/clients/components/detail/client-detail-header.tsx` | function: ClientDetailHeader |
 | `apps/workspace/src/domains/clients/components/detail/client-detail-layout.tsx` | function: ClientDetailLayout |
@@ -1956,6 +2031,8 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/clients/store/clients.types.ts` | type: Priority<br>type: PipelineStage<br>type: ClientAssetLinkStatus<br>interface: ClientAssetLink<br>type: ClientTaskStatus<br>interface: ClientTask |
 | `apps/workspace/src/domains/clients/validation/client.schema.ts` | value: clientSchema<br>interface: ClientFormValues |
 | `apps/workspace/src/domains/crm/components/crm-directory-screen.tsx` | function: CrmDirectoryScreen |
+| `apps/workspace/src/domains/custom-agents/components/custom-agent-editor-screen.tsx` | function: CustomAgentEditorScreen |
+| `apps/workspace/src/domains/custom-agents/components/custom-agents-screen.tsx` | function: CustomAgentsScreen |
 | `apps/workspace/src/domains/custom-fields/api/custom-fields.ts` | type: CustomFieldDefinition<br>type: CustomFieldValue<br>function: useCustomFieldDefinitionsQuery<br>function: useCustomFieldDefinitionsForTableQuery<br>function: useCustomFieldValuesQuery<br>function: useAllCustomFieldValuesQuery<br>function: useCreateCustomFieldDefinitionMutation<br>function: useUpdateCustomFieldDefinitionMutation<br>function: useDeleteCustomFieldDefinitionMutation<br>function: useUpsertCustomFieldValueMutation<br>function: useDeleteCustomFieldValueMutation |
 | `apps/workspace/src/domains/custom-fields/components/custom-fields-settings.tsx` | function: CustomFieldsSettings |
 | `apps/workspace/src/domains/custom-fields/config/field-types.config.ts` | value: CUSTOM_FIELD_TYPES<br>value: CUSTOM_FIELD_RECORD_TYPES |
@@ -1966,13 +2043,14 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/deals/components/DealsPageRedesigned.tsx` | function: DealsPageRedesigned |
 | `apps/workspace/src/domains/deals/components/deal-board.tsx` | function: DealBoard |
 | `apps/workspace/src/domains/deals/components/deal-form.tsx` | function: DealForm |
+| `apps/workspace/src/domains/deals/components/deals-resource-layout.tsx` | function: DealsResourceLayout |
 | `apps/workspace/src/domains/deals/components/deals-screen.tsx` | function: DealsWorkspace<br>function: DealDetailScreen |
 | `apps/workspace/src/domains/deals/components/deals-toolbar.tsx` | function: DealsToolbar |
 | `apps/workspace/src/domains/deals/config/deals.config.ts` | value: DEAL_STAGES<br>value: DEAL_STATUSES<br>value: DEAL_PRIORITIES<br>value: EMPTY_DEAL_FORM |
 | `apps/workspace/src/domains/deals/hooks/use-deals-workspace.ts` | function: useDealsWorkspace |
 | `apps/workspace/src/domains/deals/lib/deal-view-model.ts` | value: dealStages<br>value: activeDealStages<br>value: dealViews<br>function: stageTone<br>function: priorityTone<br>function: formatValue<br>function: formatTotalValue<br>function: formFromDeal<br>function: dealValuesForStage<br>function: matchesDealSearch |
 | `apps/workspace/src/domains/deals/store/deals.types.ts` | type: DealStats<br>type: DealFormValues |
-| `apps/workspace/src/domains/deals/validation/deal.schema.ts` | value: dealStageSchema<br>value: dealStatusSchema<br>value: dealPrioritySchema<br>value: dealSchema<br>type: DealSchemaValues |
+| `apps/workspace/src/domains/deals/validation/deal.schema.ts` | value: dealSchema<br>type: DealSchemaValues |
 | `apps/workspace/src/domains/delivery/components/commercial-lifecycle-screen.tsx` | function: CommercialLifecycleScreen |
 | `apps/workspace/src/domains/delivery/components/delivery-screen.tsx` | function: DeliveryScreen |
 | `apps/workspace/src/domains/docs/api/docs.ts` | function: useDocsQuery<br>function: useDocQuery<br>function: useDocSearchQuery<br>function: useDocFoldersQuery<br>function: docFolderPayloadFromForm<br>function: createDocRequest<br>function: updateDocRequest<br>function: useUpdateDocMutation<br>function: deleteDocRequest<br>function: moveDocRequest<br>function: createDocFolderRequest<br>function: renameDocFolderRequest<br>function: deleteDocFolderRequest |
@@ -1987,6 +2065,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/docs/components/doc-row-actions.tsx` | function: DocRowActions |
 | `apps/workspace/src/domains/docs/components/doc-template-cover.tsx` | function: DocTemplateCover |
 | `apps/workspace/src/domains/docs/components/docs-list-table.tsx` | type: DocsListItem<br>function: DocsListTable |
+| `apps/workspace/src/domains/docs/components/docs-resource-layout.tsx` | function: DocsResourceLayout |
 | `apps/workspace/src/domains/docs/components/docs-table-skeleton.tsx` | function: DocsTableSkeleton |
 | `apps/workspace/src/domains/docs/components/document-custom-fields.tsx` | function: DocumentCustomFields |
 | `apps/workspace/src/domains/docs/docs.constants.ts` | value: DEFAULT_DOC_FORM_VALUES<br>value: emptyDoc<br>value: DEFAULT_DOC_FOLDER_FORM_VALUES<br>value: ownershipFilters<br>type: OwnershipFilter<br>type: DocViewMode<br>value: DOC_TEMPLATE_TYPES<br>value: DOC_TEMPLATE_CONTENT |
@@ -2059,7 +2138,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/integrations/store/integrations.view-model.ts` | type: PartnerCatalogCardModel<br>type: PartnerConnectionCardModel<br>function: buildPartnerCatalogCards<br>type: PartnerCatalogFilter<br>function: filterPartnerCatalogCards<br>function: buildPartnerConnectionCard<br>function: activePartnerConnectionCount<br>function: partnerConnectionExpiryLabel<br>function: findPartnerIntegrationDetail |
 | `apps/workspace/src/domains/mcp/components/personal-mcp-screen.tsx` | function: PersonalMcpScreen |
 | `apps/workspace/src/domains/mcp/mcp-connection-prompts.ts` | value: defaultMcpEndpoint<br>type: McpPromptPreset<br>function: buildMcpSetupPrompt<br>function: buildMcpConfigJson<br>function: buildOpenAiMcpToolPrompt |
-| `apps/workspace/src/domains/media/api/media.ts` | type: MediaKind<br>type: MediaResourceType<br>type: MediaShareVisibility<br>type: MediaAsset<br>function: inferMediaKind<br>function: useResourceMediaQuery<br>function: attachUploadedMedia<br>function: uploadAndAttachMedia<br>function: setMediaCoverRequest<br>function: deleteMediaRequest<br>function: setMediaShareVisibilityRequest<br>function: createMediaFolderRequest<br>function: deleteMediaFolderRequest |
+| `apps/workspace/src/domains/media/api/media.ts` | type: MediaAsset<br>function: inferMediaKind<br>function: useResourceMediaQuery<br>function: attachUploadedMedia<br>function: uploadAndAttachMedia<br>function: setMediaCoverRequest<br>function: deleteMediaRequest<br>function: setMediaShareVisibilityRequest<br>function: createMediaFolderRequest<br>function: deleteMediaFolderRequest |
 | `apps/workspace/src/domains/media/components/client-documents-manager.tsx` | function: ClientDocumentsManager |
 | `apps/workspace/src/domains/media/components/resource-media-browser.tsx` | function: ResourceMediaBrowser |
 | `apps/workspace/src/domains/media/components/resource-media-uploader.tsx` | function: ResourceMediaUploader |
@@ -2096,7 +2175,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/organization/api/organization-request.ts` | type: OrganizationApiMethod<br>function: readOrganizationJsonResponse<br>function: requestOrganizationAction |
 | `apps/workspace/src/domains/organization/api/organization.ts` | function: updateAuthOrganization |
 | `apps/workspace/src/domains/organization/api/roles.ts` | function: listOrganizationRoles<br>function: createOrganizationRole<br>function: updateOrganizationRole<br>function: deleteOrganizationRole |
-| `apps/workspace/src/domains/organization/api/types.ts` | type: OrganizationMember<br>type: OrganizationInvitation<br>type: OrganizationInvitationAcceptance<br>type: OrganizationInviteLink<br>type: McpPermissionResource<br>type: McpPermissionAction<br>type: OrganizationApiKeyResource<br>type: OrganizationApiKeyAction<br>type: OrganizationApiKeyPermission<br>type: OrganizationApiKeyExpiry<br>type: McpConnectionPermission<br>type: McpConnectionScope<br>type: OrganizationMcpConnection<br>type: OrganizationApiKey<br>type: OrganizationRole<br>type: OrganizationCapabilities |
+| `apps/workspace/src/domains/organization/api/types.ts` | type: OrganizationMember<br>type: OrganizationInvitation<br>type: OrganizationInvitationAcceptance<br>type: OrganizationInviteLink<br>type: McpPermissionResource<br>type: GrantableMcpResource<br>type: McpPermissionAction<br>type: OrganizationApiKeyResource<br>type: OrganizationApiKeyAction<br>type: OrganizationApiKeyPermission<br>type: OrganizationApiKeyExpiry<br>type: McpConnectionPermission<br>type: McpConnectionScope<br>type: OrganizationMcpConnection<br>type: OrganizationApiKey<br>type: OrganizationRole<br>type: OrganizationCapabilities |
 | `apps/workspace/src/domains/organization/api/update-profile.ts` | function: updateOrganizationProfileRequest |
 | `apps/workspace/src/domains/organization/api/use-update-profile.ts` | function: useUpdateOrganizationProfileMutation |
 | `apps/workspace/src/domains/organization/components/accept-invite-screen.tsx` | function: AcceptInviteScreen |
@@ -2150,7 +2229,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/projects/components/add-project-widget-modal.tsx` | type: ProjectWidgetType<br>interface: ProjectWidgetOption<br>function: AddProjectWidgetModal |
 | `apps/workspace/src/domains/projects/components/add-widget-modal.tsx` | type: WidgetType<br>interface: WidgetOption<br>function: AddWidgetModal |
 | `apps/workspace/src/domains/projects/components/client-picker-modal.tsx` | function: ClientPickerModal |
-| `apps/workspace/src/domains/projects/components/create-project-form.tsx` | interface: CreateProjectFormProps<br>function: CreateProjectForm |
+| `apps/workspace/src/domains/projects/components/create-project-form.tsx` | type: CreateProjectFormProps<br>function: CreateProjectForm |
 | `apps/workspace/src/domains/projects/components/dashboard-context.tsx` | function: DashboardProvider<br>function: useDashboardContext |
 | `apps/workspace/src/domains/projects/components/detail/project-detail-header.tsx` | function: ProjectDetailHeader |
 | `apps/workspace/src/domains/projects/components/detail/project-detail-layout.tsx` | function: ProjectDetailLayout |
@@ -2166,6 +2245,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/projects/components/project-dashboard.tsx` | function: ProjectDashboard |
 | `apps/workspace/src/domains/projects/components/project-detail-overview.tsx` | function: ProjectDetailOverview |
 | `apps/workspace/src/domains/projects/components/project-document-editor.tsx` | function: ProjectDocumentEditor |
+| `apps/workspace/src/domains/projects/components/project-form.tsx` | interface: ProjectFormProps<br>function: ProjectForm |
 | `apps/workspace/src/domains/projects/components/project-layout-client.tsx` | function: ProjectLayoutClient |
 | `apps/workspace/src/domains/projects/components/project-list-view.tsx` | function: ProjectListView |
 | `apps/workspace/src/domains/projects/components/project-overview-sidebar.tsx` | function: ProjectOverviewSidebar |
@@ -2240,7 +2320,9 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/storage/use-fallback-config.ts` | function: useFallbackConfig |
 | `apps/workspace/src/domains/storage/use-indexeddb-config.ts` | interface: UseIndexedDbConfigOptions<br>function: useIndexedDbConfig |
 | `apps/workspace/src/domains/storage/use-local-config.ts` | function: useLocalConfig |
+| `apps/workspace/src/domains/surfaces/surface-tab-dialogs.tsx` | type: SavedViewType<br>function: SurfaceTabDialogs |
 | `apps/workspace/src/domains/tasks/api/fields.ts` | type: WorkOsCustomFieldType<br>interface: CustomFieldOption<br>interface: CustomFieldDefinition<br>value: POPULAR_FIELD_TYPES<br>value: ALL_FIELD_TYPES<br>function: useFieldDefinitionsQuery<br>function: useFieldValuesQuery<br>function: createCustomFieldRequest<br>function: updateCustomFieldDisplayRequest<br>function: deleteCustomFieldRequest<br>function: setCustomFieldValueRequest |
+| `apps/workspace/src/domains/tasks/api/task-workspace.ts` | function: useTaskWorkspaceSurface<br>function: useCreateTaskViewTab<br>function: useRenameTaskViewTab<br>function: useDuplicateTaskViewTab<br>function: useDetachTaskViewTab<br>function: useReorderTaskViewTabs<br>function: useUpdateTaskViewConfig |
 | `apps/workspace/src/domains/tasks/api/tasks.ts` | type: GroupBy<br>function: readPersistedGroupBy<br>function: writePersistedGroupBy<br>function: useTasksQuery<br>function: useTaskWorkspaceQuery<br>function: useTasksGroupedQuery<br>function: useTaskStatsQuery<br>function: useTaskQuery<br>function: taskPayloadFromForm<br>function: taskFormValuesFromRecord<br>value: taskApi<br>value: createTaskRequest<br>value: updateTaskRequest<br>value: deleteTaskRequest<br>function: assignTasksToProjectRequest<br>function: bulkTasksRequest |
 | `apps/workspace/src/domains/tasks/components/saved-view-sharing-dialog.tsx` | function: SavedViewSharingDialog |
 | `apps/workspace/src/domains/tasks/components/saved-views-dropdown.tsx` | interface: SavedViewsDropdownProps<br>function: SavedViewsDropdown |
@@ -2259,6 +2341,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/tasks/components/task-table-toolbar.tsx` | type: GroupByValue<br>value: SORT_OPTIONS<br>type: SortValue<br>function: TaskTableToolbar<br>value: TaskTableToolbarIcons |
 | `apps/workspace/src/domains/tasks/components/task-timeline-skeleton.tsx` | function: TaskTimelineSkeleton |
 | `apps/workspace/src/domains/tasks/components/task-workspace-provider.tsx` | function: TaskWorkspaceProvider<br>function: useTaskWorkspace |
+| `apps/workspace/src/domains/tasks/components/views/shared/task-view-utils.ts` | function: plainText<br>function: taskDate<br>function: compactTaskDate<br>function: taskDateRangeLabel<br>value: GROUP_COLORS<br>function: colorForTag |
 | `apps/workspace/src/domains/tasks/components/views/task-board-view.tsx` | function: TaskBoardView |
 | `apps/workspace/src/domains/tasks/components/views/task-calendar-workspace-view.tsx` | function: TaskCalendarWorkspaceView |
 | `apps/workspace/src/domains/tasks/components/views/task-list-view.tsx` | function: TaskListView |
@@ -2279,6 +2362,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/tasks/workspace/task-schedule.ts` | type: ScheduledTask<br>function: dateKey<br>function: scheduleTasks<br>function: timelineRange<br>function: timelinePosition |
 | `apps/workspace/src/domains/tasks/workspace/task-workspace-state.ts` | type: TaskWorkspaceState<br>function: resolveTaskWorkspaceState |
 | `apps/workspace/src/domains/tasks/workspace/task-workspace-view-state.ts` | value: taskWorkspaceFilters<br>type: TaskWorkspaceGroup<br>type: TaskWorkspaceSort<br>type: TaskWorkspaceDirection<br>interface: TaskWorkspaceViewState<br>value: defaultTaskWorkspaceViewState<br>function: parseTaskWorkspaceViewState<br>function: writeTaskWorkspaceViewState<br>function: resolveTaskWorkspaceViewHref<br>function: taskWorkspaceStateToSavedView<br>function: taskWorkspaceStateFromSavedView<br>function: selectTaskWorkspaceRecords |
+| `apps/workspace/src/domains/tasks/workspace/task-workspace.ts` | value: TASK_VIEW_TYPES<br>type: TaskViewType<br>type: TaskWorkspaceSurfaceTab<br>type: TaskWorkspaceSurfaceProjection<br>function: isTaskViewType<br>function: taskViewRoute<br>function: defaultTaskViewConfig |
 | `apps/workspace/src/domains/team/components/TeamPageRedesigned.tsx` | type: TeamSurfaceState<br>value: teamAvailableViews<br>value: teamHeaderActions<br>function: buildTeamRows<br>function: getTeamSurfaceState<br>function: normalizeTeamRole<br>function: teamPermissionState<br>function: teamRolePresentation<br>function: TeamPageRedesigned |
 | `apps/workspace/src/domains/theories/api/theories.ts` | function: useTheoriesQuery<br>function: usePrivateTheoriesQuery<br>function: useAllTheoriesQuery<br>function: useTheoryQuery<br>function: createTheoryRequest<br>function: updateTheoryRequest<br>function: deleteTheoryRequest |
 | `apps/workspace/src/domains/theories/components/theories-list.tsx` | function: TheoriesList |
@@ -2304,10 +2388,15 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/domains/work-os/components/work-os-record-picker.tsx` | type: WorkOsPickerOption<br>function: WorkOsRecordPicker |
 | `apps/workspace/src/domains/work-os/config/work-os-modules.config.ts` | type: WorkOsModuleKind<br>value: WORK_OS_MODULE_ICONS<br>value: WORK_OS_MODULE_STAT_KEYS |
 | `apps/workspace/src/domains/workspace/components/workspace-command-center.tsx` | function: WorkspaceCommandCenter |
+| `apps/workspace/src/domains/workspace/components/workspace-content.tsx` | function: WorkspaceContent |
 | `apps/workspace/src/domains/workspace/components/workspace-home-screen.tsx` | function: WorkspaceHomeScreen |
+| `apps/workspace/src/domains/workspace/components/workspace-index.tsx` | function: WorkspaceIndex |
+| `apps/workspace/src/domains/workspace/components/workspace-operating-surface.tsx` | function: WorkspaceOperatingSurface |
 | `apps/workspace/src/domains/workspace/components/workspace-sidebar-panel.tsx` | function: WorkspaceSidebarPanel |
+| `apps/workspace/src/domains/workspace/components/workspace-surface-provider.tsx` | function: WorkspaceSurfaceProvider<br>function: useWorkspaceSurface |
 | `apps/workspace/src/domains/workspace/hooks/use-workspace-command-center.ts` | function: useWorkspaceCommandCenter |
 | `apps/workspace/src/domains/workspace/lib/workspace-command-center.ts` | type: WorkspaceTaskGroups<br>function: localDateKey<br>function: taskDueDateKey<br>function: buildWorkspaceTaskGroups |
+| `apps/workspace/src/domains/workspace/workspace-surface.ts` | type: WorkspaceTaskView<br>type: SpaceWorkspaceView<br>type: WorkspaceSurface<br>value: defaultWorkspaceSurface<br>function: workspaceSurfaceIdentity<br>function: isWorkspaceSurface |
 | `apps/workspace/src/hooks/use-workspace-router.ts` | function: useWorkspaceRouter |
 | `apps/workspace/src/i18n/locale-registry.ts` | value: SUPPORTED_LOCALES<br>type: Locale<br>type: LocaleDirection<br>value: DEFAULT_LOCALE<br>interface: LocaleDefinition<br>function: isLocale<br>function: normalizeLocale<br>function: getLocaleDefinition<br>function: getLocaleDirection<br>function: isRtlLocale |
 | `apps/workspace/src/i18n/routing.ts` | value: routing |
@@ -2378,7 +2467,7 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/server/domains/inbox/handlers/inbox.ts` | function: handleSendMessage<br>function: handleUpdateMessage<br>function: handleDeleteMessage<br>function: handleAddReaction<br>function: handleRemoveReaction<br>function: handlePinMessage<br>function: handleUnpinMessage<br>function: handleCreateThread |
 | `apps/workspace/src/server/domains/inbox/validation/inbox.schema.ts` | value: channelPayloadSchema<br>value: messagePayloadSchema<br>value: messageContentPayloadSchema<br>value: reactionPayloadSchema<br>value: threadPayloadSchema<br>type: ChannelPayload<br>type: MessagePayload<br>type: MessageContentPayload<br>type: ReactionPayload<br>type: ThreadPayload |
 | `apps/workspace/src/server/domains/media/handlers/media.ts` | function: handleDeleteMedia<br>function: handleAttachMedia<br>function: handleCreateMediaFolder<br>function: handleDeleteMediaFolder |
-| `apps/workspace/src/server/domains/media/validation/media.schema.ts` | value: mediaKindSchema<br>function: validateMediaKind<br>value: attachMediaPayloadSchema<br>value: updateMediaPayloadSchema<br>value: createMediaFolderPayloadSchema<br>type: AttachMediaPayload<br>type: UpdateMediaPayload<br>type: CreateMediaFolderPayload |
+| `apps/workspace/src/server/domains/media/validation/media.schema.ts` | function: validateMediaKind<br>value: attachMediaPayloadSchema<br>value: updateMediaPayloadSchema<br>value: createMediaFolderPayloadSchema<br>type: AttachMediaPayload<br>type: UpdateMediaPayload<br>type: CreateMediaFolderPayload |
 | `apps/workspace/src/server/domains/notifications/handlers/notifications.ts` | function: handleGetPushDeviceStatus<br>function: handleRegisterPushDevice<br>function: handleRemovePushDevice<br>function: handleGetMyNotificationPreferences<br>function: handleUpdateMyNotificationPreferences<br>function: handleGetOrganizationNotificationPreferences<br>function: handleUpdateOrganizationNotificationPreferences<br>function: handleListNotificationSchedules<br>function: handleCreateNotificationSchedule<br>function: handleUpdateNotificationSchedule<br>function: handleCancelNotificationSchedule |
 | `apps/workspace/src/server/domains/notifications/services/notifications.ts` | function: getPushDeviceStatus<br>function: registerPushDevice<br>function: removePushDevice<br>function: getMyNotificationPreferences<br>function: updateMyNotificationPreferences<br>function: getOrganizationNotificationPreferences<br>function: updateOrganizationNotificationPreferences<br>function: listNotificationSchedules<br>function: createNotificationSchedule<br>function: updateNotificationSchedule<br>function: cancelNotificationSchedule |
 | `apps/workspace/src/server/domains/notifications/validation/notification.schema.ts` | value: notificationPreferenceSchema<br>value: pushDeviceSchema<br>value: notificationScheduleSchema<br>type: NotificationPreferenceInput<br>type: PushDeviceInput<br>type: NotificationScheduleInput |
@@ -2462,7 +2551,6 @@ intentionally excluded; callers should depend on public interfaces.
 | `apps/workspace/src/server/protocols/mcp/executor/convex-executor.ts` | type: McpToolInput<br>type: McpExecutor<br>function: createMcpConvexExecutor |
 | `apps/workspace/src/server/protocols/mcp/index.ts` | function: handleWorkspaceMcpRequest |
 | `apps/workspace/src/server/protocols/mcp/tools/catalog.ts` | type: McpPermission<br>type: McpToolDefinition<br>value: agentToolCatalog<br>value: mcpToolCatalog<br>function: canUseMcpTool<br>function: allowedMcpTools<br>function: getMcpToolDefinition |
-| `apps/workspace/src/server/protocols/mcp/tools/risk-policy.ts` | type: AgentRiskDecision<br>type: AgentToolIntent<br>function: evaluateAgentRequestRisk<br>function: evaluateAgentToolRisk |
 | `apps/workspace/src/server/protocols/mcp/transports/agent-link.ts` | function: handleRetiredMcpAgentLink<br>function: registerMcpAgentTransport |
 | `apps/workspace/src/server/protocols/mcp/transports/http-handler.ts` | type: McpHttpTopology<br>type: McpHttpHandlerDependencies<br>function: createMcpHttpHandler |
 | `apps/workspace/src/server/protocols/mcp/transports/request-policy.ts` | value: MCP_MAX_REQUEST_BYTES<br>value: MCP_REQUEST_TIMEOUT_MS<br>class: McpRequestPolicyError<br>function: enforceMcpRequestSize<br>function: withMcpDeadline |
@@ -2530,23 +2618,28 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/brand-identity/src/index.d.ts` | type: BrandLocale<br>type: BrandProduct<br>type: BrandRoute<br>value: brandIdentity<br>function: brandLabel<br>function: brandProductName<br>function: brandEnvName<br>function: brandRouteSlug<br>function: brandRoutePath<br>function: brandDomainUrl<br>function: readBrandEnv<br>function: brandCssVariables |
 | `packages/brand-identity/src/index.ts` | type: BrandLocale<br>type: BrandProduct<br>type: BrandRoute<br>value: brandIdentity<br>function: brandLabel<br>function: brandProductName<br>function: brandEnvName<br>function: brandRouteSlug<br>function: brandRoutePath<br>function: brandDomainUrl<br>function: readBrandEnv<br>function: brandCssVariables |
 | `packages/domain-contracts/src/calendar.ts` | value: calendarEventTypeSchema<br>value: calendarEventStatusSchema<br>value: calendarEventInputObjectSchema<br>value: calendarEventInputSchema<br>value: calendarEventPatchObjectSchema<br>value: calendarEventPatchSchema<br>type: CalendarEventInput<br>type: CalendarEventPatch<br>type: CalendarEventType<br>type: CalendarEventStatus |
+| `packages/domain-contracts/src/capabilities.ts` | value: organizationCapabilityChecks<br>type: OrganizationCapabilityKey<br>type: OrganizationCapabilities |
 | `packages/domain-contracts/src/clients.ts` | value: clientTypeSchema<br>value: clientStatusSchema<br>value: clientPrioritySchema<br>value: clientPipelineStageSchema<br>value: visibilitySchema<br>value: clientInputSchema<br>value: clientPatchObjectSchema<br>value: clientPatchSchema<br>value: clientRecordSchema<br>type: ClientType<br>type: ClientStatus<br>type: ClientPriority<br>type: ClientPipelineStage<br>type: Visibility<br>type: ClientInput<br>type: ClientPatch<br>type: ClientRecord<br>type: ClientSummary |
 | `packages/domain-contracts/src/crm.ts` | value: leadStatusSchema<br>value: leadInputSchema<br>value: companyInputSchema<br>value: contactInputSchema<br>type: LeadStatus<br>type: LeadInput<br>type: CompanyInput<br>type: ContactInput |
 | `packages/domain-contracts/src/deals.ts` | value: dealStageSchema<br>value: dealStatusSchema<br>value: dealPrioritySchema<br>value: dealInputSchema<br>value: dealRecordSchema<br>type: DealStage<br>type: DealStatus<br>type: DealPriority<br>type: DealInput<br>type: DealRecord<br>type: DealSummary<br>type: DealStats<br>value: crmDealStageSchema<br>value: crmDealRelationTypeSchema<br>value: crmClientPreviewSchema<br>value: crmBrokerPreviewSchema<br>value: crmProjectPreviewSchema<br>value: crmDealInputSchema<br>value: crmUpdateDealInputSchema<br>value: crmUpdateDealStageInputSchema<br>value: crmUpdateDealNotesInputSchema<br>value: crmUpdateDealFollowUpInputSchema<br>value: crmAddDealDocumentInputSchema<br>value: crmAssetDealsInputSchema<br>value: crmArchiveDealInputSchema<br>type: CrmDealInput<br>type: CrmUpdateDealInput<br>type: CrmUpdateDealStageInput<br>type: CrmUpdateDealNotesInput<br>type: CrmUpdateDealFollowUpInput<br>type: CrmAddDealDocumentInput<br>type: CrmAssetDealsInput<br>type: CrmArchiveDealInput<br>type: CrmDealRelationType<br>type: CrmClientPreview<br>type: CrmBrokerPreview<br>type: CrmProjectPreview |
 | `packages/domain-contracts/src/delivery.ts` | value: commercialModelSchema<br>value: proposalStatusSchema<br>value: contractStatusSchema<br>value: engagementStatusSchema<br>value: deliveryHealthSchema<br>value: deliverableStatusSchema<br>value: approvalStatusSchema<br>value: changeOrderStatusSchema<br>value: concernTypeSchema<br>value: concernSeveritySchema<br>value: concernStatusSchema<br>value: proposalInputSchema<br>value: contractTermsSchema<br>value: deliverableInputSchema<br>value: changeOrderInputSchema<br>type: CommercialModel<br>type: ProposalStatus<br>type: ContractStatus<br>type: EngagementStatus<br>type: DeliveryHealth<br>type: DeliverableStatus<br>type: ApprovalStatus<br>type: ChangeOrderStatus<br>type: ProposalInput<br>type: ContractTerms<br>type: DeliverableInput<br>type: ChangeOrderInput |
 | `packages/domain-contracts/src/finance.ts` | value: financeCurrencySchema<br>value: financeAmountSchema<br>value: financePositiveAmountSchema<br>value: financeAccountTypeSchema<br>value: financeScopeTypeSchema<br>value: taxCalculationSchema<br>value: invoiceLineInputSchema<br>type: FinanceAccountType<br>type: FinanceScopeType<br>type: InvoiceLineInput |
+| `packages/domain-contracts/src/media.ts` | value: mediaResourceTypeSchema<br>value: mediaKindSchema<br>value: mediaShareVisibilitySchema<br>type: MediaResourceType<br>type: MediaKind<br>type: MediaShareVisibility |
 | `packages/domain-contracts/src/navigation.ts` | value: navigationDomainIdSchema<br>value: navigationRailModeSchema<br>value: navigationNodeTypeSchema<br>value: navigationNodeSchema<br>value: navigationDomainSchema<br>value: authorizedNavigationProjectionSchema<br>value: navigationOverlayInputSchema<br>type: NavigationDomainId<br>type: NavigationRailMode<br>type: NavigationNodeType<br>type: NavigationDomain<br>type: AuthorizedNavigationProjection<br>type: NavigationOverlayInput<br>interface: NavigationNode |
+| `packages/domain-contracts/src/notifications.ts` | value: notificationCategorySchema<br>value: recurrenceFrequencySchema<br>type: NotificationCategory<br>type: RecurrenceFrequency |
+| `packages/domain-contracts/src/permissions.ts` | value: resources<br>value: actions<br>value: extraActions<br>type: Resource<br>type: Action<br>type: ExtraAction<br>type: AllAction<br>value: mcpResources<br>type: McpResource<br>value: resourceActionMap<br>type: ResourceActions<br>type: PermissionStatement |
 | `packages/domain-contracts/src/projects.ts` | value: projectStatusSchema<br>value: projectHealthSchema<br>value: projectVisibilitySchema<br>value: projectInputSchema<br>value: projectRecordSchema<br>type: ProjectStatus<br>type: ProjectHealth<br>type: ProjectVisibility<br>type: ProjectInput<br>type: ProjectRecord<br>type: ProjectSummary |
 | `packages/domain-contracts/src/resource-planning.ts` | value: resourcePrincipalTypeSchema<br>value: resourceAllocationStatusSchema<br>value: resourceLeaveStatusSchema<br>value: resourceSkillLevelSchema<br>value: resourceIntervalSchema<br>value: resourceAllocationInputSchema<br>type: ResourcePrincipalType<br>type: ResourceAllocationStatus<br>type: ResourceLeaveStatus<br>type: ResourceAllocationInput |
+| `packages/domain-contracts/src/risk-policy.ts` | type: RiskDecision<br>type: AgentToolIntent<br>function: evaluateAgentRequestRisk<br>function: evaluateAgentToolRisk<br>function: evaluateToolRisk |
 | `packages/domain-contracts/src/search.ts` | value: searchResourceTypeSchema<br>value: searchScopeTypeSchema<br>value: searchSensitivitySchema<br>value: searchOutboxStatusSchema<br>value: searchProjectionSchema<br>value: searchPolicySchema<br>type: SearchResourceType<br>type: SearchScopeType<br>type: SearchSensitivity<br>type: SearchOutboxStatus<br>type: SearchProjection<br>type: SearchPolicy<br>interface: SearchCandidate<br>value: hydratedSearchResultSchema<br>type: HydratedSearchResult<br>interface: SearchFilterConfiguration<br>interface: SearchQuery<br>interface: SearchProvider<br>interface: EmbeddingAdapter<br>type: MalwareVerdict<br>interface: MalwareScanAdapter<br>interface: ContentExtractionAdapter |
-| `packages/domain-contracts/src/spaces.ts` | value: spaceVisibilitySchema<br>value: spaceProjectVisibilitySchema<br>value: spaceInputSchema<br>value: spaceRecordSchema<br>type: SpaceVisibility<br>type: SpaceProjectVisibility<br>type: SpaceInput<br>type: SpaceRecord |
+| `packages/domain-contracts/src/spaces.ts` | value: spaceVisibilitySchema<br>value: spaceProjectVisibilitySchema<br>value: spaceMemberRoleSchema<br>value: spaceInputSchema<br>value: spaceRecordSchema<br>type: SpaceVisibility<br>type: SpaceProjectVisibility<br>type: SpaceMemberRole<br>type: SpaceInput<br>type: SpaceRecord |
 | `packages/domain-contracts/src/subscriptionPricing.ts` | type: SubscriptionPlanId<br>type: BillingCycle<br>type: BillingPlanKey<br>type: CreditPackId<br>type: AiModelClass<br>type: UsageMeterKind<br>type: BillingProviderId<br>type: SubscriptionStatus<br>type: EntitlementKey<br>type: SubscriptionEntitlements<br>type: EnterpriseEntitlementOverrides<br>type: OrganizationEntitlements<br>type: EntitlementDecision<br>type: GlobalSubscriptionPlan<br>type: MarketBillingVariant<br>type: CreditPack<br>type: CreditPurchase<br>type: CreditReservation<br>type: AiCreditCalculationInput<br>type: AiCreditCalculation<br>type: CreditBalance<br>type: AppliedCreditUsage<br>value: DEFAULT_SUBSCRIPTION_PLAN_ID<br>value: DEFAULT_BILLING_CYCLE<br>function: getGlobalPlan<br>function: listGlobalPlans<br>function: getMarketPricing<br>function: getCreditPack<br>function: listCreditPacks<br>function: includedCreditCardsForPlan<br>function: canAddCreditCardsToPlan<br>function: listAddOnCreditCards<br>function: resolveSubscriptionEntitlements<br>function: resolveOrganizationEntitlements<br>function: decideEntitlement<br>function: normalizeBillingSelection<br>function: normalizeBillingPlanKey<br>function: subscriptionPlanIdForBillingKey<br>function: billingCycleForKey<br>function: billingSelectionKey<br>function: aiModelClass<br>function: calculateAiCredits<br>function: creditsForProviderCost<br>function: customCreditPurchase<br>function: applyUsageToCreditBalance |
 | `packages/domain-contracts/src/subscriptionPricingConfig.ts` | value: CREDIT_PACKS<br>value: MODEL_CLASS_CONFIG<br>value: FALLBACK_MODEL_CREDIT_MULTIPLIER<br>value: CREDIT_CARD_UNIT_SIZE<br>value: CREDITS_PER_USD<br>value: MIN_CUSTOM_CREDIT_PURCHASE_USD<br>value: MAX_CUSTOM_CREDIT_PURCHASE_USD |
 | `packages/domain-contracts/src/tasks.ts` | value: taskPrioritySchema<br>value: taskStatusSchema<br>type: TaskVisibility<br>function: defaultTaskVisibility<br>value: checklistItemSchema<br>value: taskInputObjectSchema<br>value: taskInputSchema<br>value: taskPatchObjectSchema<br>value: taskPatchSchema<br>value: taskRecordSchema<br>type: TaskStatus<br>type: TaskPriority<br>type: ChecklistItem<br>type: TaskInput<br>type: TaskPatch<br>type: TaskRecord<br>type: TaskSummary |
 | `packages/location-map/src/react/LocationPicker.tsx` | function: LocationPicker |
 | `packages/location-map/src/react/LocationPreview.tsx` | function: LocationPreview |
 | `packages/location-map/src/types.ts` | type: LocationValue<br>function: hasMapPoint<br>function: buildLocationValueFromParts<br>function: formatLocationLabel |
-| `packages/mcp-contracts/src/index.ts` | value: mcpResources<br>value: mcpActions<br>type: McpResource<br>type: McpAction<br>type: McpPermission<br>type: McpScope<br>type: McpGrantLifetimeDays<br>type: AuthorizedMcpTool<br>type: McpGrantAuthorization<br>value: MCP_RESOURCE_PATH<br>value: MCP_READ_SCOPE<br>value: MCP_WRITE_SCOPE<br>function: hasMcpPermission |
+| `packages/mcp-contracts/src/index.ts` | type: McpGrantResource<br>type: McpPermission<br>type: McpScope<br>type: McpGrantLifetimeDays<br>type: AuthorizedMcpTool<br>type: McpGrantAuthorization<br>value: MCP_RESOURCE_PATH<br>value: MCP_READ_SCOPE<br>value: MCP_WRITE_SCOPE<br>function: hasMcpPermission |
 | `packages/mcp-contracts/src/tool-catalog.ts` | type: McpPermissionResource<br>type: McpPermissionAction<br>type: McpAdapter<br>type: McpToolRiskLevel<br>type: McpToolApprovalRequirement<br>type: McpToolDataSensitivity<br>type: McpToolRegistryItem<br>value: mcpToolRegistry<br>function: toolsForAdapter<br>function: permissionMapForAdapter<br>function: readToolNamesForAdapter<br>function: getRegistryTool |
 | `packages/our-platform-components/src/feedback/progress-bar.tsx` | type: ProgressBarSize<br>interface: ProgressBarProps<br>function: ProgressBar |
 | `packages/our-platform-components/src/pipeline/card-default.tsx` | interface: CardDefaultProps<br>function: CardDefault |
@@ -2581,14 +2674,22 @@ intentionally excluded; callers should depend on public interfaces.
 | `packages/ui/src/auth/emailPassword.ts` | type: EmailPasswordAuthError<br>function: resolveBrowserCallbackUrl<br>function: getEmailPasswordErrorMessage |
 | `packages/ui/src/chat/chat-message-area.tsx` | function: ChatMessageAreaScrollButton<br>function: ChatMessageArea<br>function: ChatMessageAreaContent |
 | `packages/ui/src/chat/markdown-content.tsx` | value: MarkdownContent |
+| `packages/ui/src/components/ui/alert.tsx` | type: AlertProps |
+| `packages/ui/src/components/ui/checkbox.tsx` | type: CheckboxProps |
 | `packages/ui/src/components/ui/color-dot.tsx` | type: ColorDotSize<br>interface: ColorDotProps<br>value: ColorDot |
 | `packages/ui/src/components/ui/color-swatch.tsx` | type: ColorSwatchSize<br>interface: ColorSwatchProps<br>value: ColorSwatch |
 | `packages/ui/src/components/ui/empty-state.tsx` | type: EmptyStateSize<br>interface: EmptyStateProps<br>value: EmptyState |
 | `packages/ui/src/components/ui/filter-chip.tsx` | type: FilterChipSize<br>interface: FilterChipProps<br>value: FilterChip<br>interface: FilterChipBarProps<br>function: FilterChipBar |
+| `packages/ui/src/components/ui/input.tsx` | interface: InputProps |
 | `packages/ui/src/components/ui/legend-item.tsx` | interface: LegendItemProps<br>value: LegendItem |
 | `packages/ui/src/components/ui/list-row.tsx` | type: ListRowVariant<br>interface: ListRowProps<br>value: ListRow |
+| `packages/ui/src/components/ui/progress.tsx` | type: ProgressProps |
+| `packages/ui/src/components/ui/separator.tsx` | type: SeparatorProps |
+| `packages/ui/src/components/ui/skeleton.tsx` | type: SkeletonProps |
+| `packages/ui/src/components/ui/spinner.tsx` | type: SpinnerProps |
 | `packages/ui/src/components/ui/status-pill.tsx` | type: StatusPillTone<br>interface: StatusPillProps<br>value: StatusPill |
 | `packages/ui/src/components/ui/tag-chip.tsx` | type: TagChipTone<br>interface: TagChipProps<br>value: TagChip |
+| `packages/ui/src/components/ui/textarea.tsx` | type: TextareaProps |
 | `packages/ui/src/docs/Callout.tsx` | type: DocsCalloutTone<br>type: DocsCallout<br>function: Callout |
 | `packages/ui/src/docs/ScopeBadge.tsx` | type: ScopeBadgeProps<br>function: ScopeBadge |
 | `packages/ui/src/forms/AdminFieldControls.tsx` | function: AdminInput<br>function: AdminSelect<br>function: AdminTextarea |

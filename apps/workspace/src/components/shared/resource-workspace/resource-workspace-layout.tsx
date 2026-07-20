@@ -50,6 +50,11 @@ export function useResourceWorkspaceExtension() {
   return context;
 }
 
+/** Returns the dock when the active view is embedded in a Resource Workspace. */
+export function useOptionalResourceWorkspaceExtension() {
+  return useContext(ResourceWorkspaceExtensionContext);
+}
+
 function actionClassName(action: ResourceWorkspaceAction) {
   if (action.variant === "primary")
     return "bg-foreground text-background hover:opacity-90";
@@ -139,25 +144,46 @@ export function ResourceWorkspaceLayout({
           >
             {config.views.map((view) => {
               const active = view.id === config.activeViewId;
+              const tabContent = (
+                <>
+                  {view.icon ? (
+                    <span style={view.color ? { color: view.color } : undefined}>
+                      {view.icon}
+                    </span>
+                  ) : null}
+                  {view.label}
+                </>
+              );
               return (
                 <div key={view.id} className="group/view flex shrink-0 items-end">
-                  <Link
-                    href={view.href}
-                    aria-current={active ? "page" : undefined}
-                    className={cn(
-                      "flex h-8 items-center gap-1.5 border-b-2 px-2 text-[11px] font-medium transition-colors",
-                      active
-                        ? "border-foreground text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {view.icon ? (
-                      <span style={view.color ? { color: view.color } : undefined}>
-                        {view.icon}
-                      </span>
-                    ) : null}
-                    {view.label}
-                  </Link>
+                  {config.onViewSelect ? (
+                    <button
+                      type="button"
+                      aria-current={active ? "page" : undefined}
+                      onClick={() => config.onViewSelect!(view.id)}
+                      className={cn(
+                        "flex h-8 items-center gap-1.5 border-b-2 px-2 text-[11px] font-medium transition-colors",
+                        active
+                          ? "border-foreground text-foreground"
+                          : "border-transparent text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {tabContent}
+                    </button>
+                  ) : (
+                    <Link
+                      href={view.href}
+                      aria-current={active ? "page" : undefined}
+                      className={cn(
+                        "flex h-8 items-center gap-1.5 border-b-2 px-2 text-[11px] font-medium transition-colors",
+                        active
+                          ? "border-foreground text-foreground"
+                          : "border-transparent text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {tabContent}
+                    </Link>
+                  )}
                   {view.actions?.length ? (
                     <DropdownMenu>
                       <DropdownMenuTrigger

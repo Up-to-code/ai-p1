@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { resolveSpaceAccess } from "../access/space";
 import { activeWorkspaceRows, boundedWorkspaceReadLimit } from "../workspace/readSurface";
+import { presentWorkspaceRecord } from "../shared/present";
 import { spaceValidator } from "./validators";
 
 const MAX_LIST_SPACES = 100;
@@ -17,10 +18,7 @@ export const listByOrganization = query({
       .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
       .take(MAX_ORG_SPACES);
 
-    return access.filterDiscoverable(activeWorkspaceRows(spaces)).map((space) => ({
-      ...space,
-      id: space._id,
-    }));
+    return access.filterDiscoverable(activeWorkspaceRows(spaces)).map(presentWorkspaceRecord);
   },
 });
 
@@ -34,10 +32,7 @@ export const listAccessible = query({
       .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
       .take(MAX_ORG_SPACES);
 
-    return access.filterDiscoverable(activeWorkspaceRows(allSpaces)).map((space) => ({
-      ...space,
-      id: space._id,
-    }));
+    return access.filterDiscoverable(activeWorkspaceRows(allSpaces)).map(presentWorkspaceRecord);
   },
 });
 
@@ -51,7 +46,7 @@ export const get = query({
       return null;
     }
     access.assertCanRead(space);
-    return { ...space, id: space._id };
+    return presentWorkspaceRecord(space);
   },
 });
 
@@ -72,7 +67,7 @@ export const getBySlug = query({
 
     if (!space || space.deletedAt) return null;
     access.assertCanDiscover(space);
-    return { ...space, id: space._id };
+    return presentWorkspaceRecord(space);
   },
 });
 

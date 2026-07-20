@@ -3,11 +3,12 @@ import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "../../../lib/convex";
 import { requireWorkspaceActor } from "../../../lib/workspace-actor";
+import { mediaResourceTypeSchema } from "@qentrah/domain-contracts";
 
 export default defineTool({
   description: "List media attachments for a specific resource.",
   inputSchema: z.object({
-    resourceType: z.enum(["project", "client", "calendarEvent", "task"]),
+    resourceType: mediaResourceTypeSchema,
     resourceId: z.string().min(1),
     limit: z.number().int().min(1).max(50).optional(),
   }).passthrough(),

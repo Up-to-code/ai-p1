@@ -1,149 +1,33 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
-import type { Doc, Id } from "../_generated/dataModel";
-import type { QueryCtx } from "../_generated/server";
+import {
+  buildSurfaceProjection,
+  readableSurfaceTabs,
+} from "../workspaceSurfaces/helpers";
+import {
+  projectWorkspaceSurfaceProjectionValidator,
+  projectWorkspaceTabValidator,
+  projectManagementTreeProjectionValidator,
+} from "./validators";
+import { PROJECT_WORKSPACE_SURFACE_CONFIG } from "./data";
+import { requireServerActor } from "../access/actor";
 import { assertOrganizationPermission } from "../organizations/profile/access";
 import { resolveSpaceAccess } from "../access/space";
 import { resolveProjectAccess } from "../access/project";
 import { resolveProjectSpaceAccess } from "../access/projectSpace";
 import { resolveDocumentAccess } from "../access/document";
 import { canPerformOrganizationAction } from "../permissions";
-import { requireServerActor } from "../access/actor";
-import { assertCanReadSavedViewScope } from "../access/savedView";
-import {
-  resolveSavedViewGrantAccess,
-  type SavedViewAccessDecision,
-} from "../access/savedViewGrant";
-import {
-  canonicalProjectWorkspaceRoute,
-  isProjectWorkspaceViewType,
-  PROJECT_WORKSPACE_SURFACE_KEY,
-} from "./data";
-import {
-  projectWorkspaceSurfaceProjectionValidator,
-  projectWorkspaceTabValidator,
-  projectManagementTreeProjectionValidator,
-} from "./validators";
-
-type ProjectWorkspaceTabProjection = typeof projectWorkspaceTabValidator.type;
-
-async function accessForView(
-  ctx: QueryCtx,
-  view: Doc<"savedViews">,
-): Promise<SavedViewAccessDecision | null> {
-  try {
-    await assertCanReadSavedViewScope(ctx, view.organizationId, view);
-    if (view.isSystemDefault) {
-      return {
-        canRead: true,
-        canConfigure: false,
-        canShare: false,
-        canDelete: false,
-        canSetDefault: false,
-      };
-    }
-    const access = await resolveSavedViewGrantAccess(ctx, view);
-    return access.canRead ? access : null;
-  } catch {
-    return null;
-  }
-}
-
-export async function projectWorkspaceTabProjection(
-  ctx: QueryCtx,
-  tab: Doc<"surfaceTabs">,
-): Promise<ProjectWorkspaceTabProjection | null> {
-  if (tab.recordState !== "active" || !tab.savedViewId) return null;
-  const view = await ctx.db.get(tab.savedViewId);
-  if (
-    !view ||
-    view.recordState !== "active" ||
-    view.resourceType !== "project" ||
-    !isProjectWorkspaceViewType(view.viewType)
-  ) {
-    return null;
-  }
-  const access = await accessForView(ctx, view);
-  if (!access) return null;
-  const removable = view.isRemovable && !view.isSystemDefault;
-  return {
-    id: tab._id,
-    label: tab.label,
-    icon: tab.icon,
-    order: tab.order,
-    canonicalRoute: canonicalProjectWorkspaceRoute(
-      view.viewType,
-      view.isSystemDefault ? undefined : view._id,
-    ),
-    savedView: {
-      id: view._id,
-      name: view.name,
-      viewType: view.viewType,
-      config: view.config,
-      sharingMode: view.sharingMode ?? (view.isSystemDefault ? "shared" : "personal"),
-      revision: view.revision ?? 1,
-      isSystemDefault: view.isSystemDefault ?? false,
-    },
-    capabilities: {
-      canRename: removable && access.canConfigure,
-      canReorder: access.canConfigure,
-      canDuplicate: access.canRead,
-      canShare: removable && access.canShare,
-      canRemove: removable && access.canConfigure,
-    },
-  };
-}
-
-export async function readableProjectWorkspaceTabs(
-  ctx: QueryCtx,
-  organizationId: string,
-  surfaceId: Doc<"surfaces">["_id"],
-) {
-  const tabs = await ctx.db
-    .query("surfaceTabs")
-    .withIndex("by_surface_state_order", (q) =>
-      q
-        .eq("organizationId", organizationId)
-        .eq("surfaceId", surfaceId)
-        .eq("recordState", "active"),
-    )
-    .collect();
-  const projected = await Promise.all(
-    tabs.map((tab) => projectWorkspaceTabProjection(ctx, tab)),
-  );
-  return projected
-    .filter((tab): tab is ProjectWorkspaceTabProjection => tab !== null)
-    .sort((left, right) => left.order - right.order);
-}
+import type { Doc, Id } from "../_generated/dataModel";
 
 export const getSurfaceProjection = query({
   args: { organizationId: v.string() },
   returns: v.union(projectWorkspaceSurfaceProjectionValidator, v.null()),
   handler: async (ctx, args) => {
-    await assertOrganizationPermission(ctx, args.organizationId, "read");
-    const surface = await ctx.db
-      .query("surfaces")
-      .withIndex("by_organization_key", (q) =>
-        q
-          .eq("organizationId", args.organizationId)
-          .eq("key", PROJECT_WORKSPACE_SURFACE_KEY),
-      )
-      .first();
-    if (!surface || surface.recordState !== "active") return null;
-    return {
-      surface: {
-        id: surface._id,
-        key: surface.key,
-        title: surface.title,
-        canonicalRoute: "/projects/table",
-      },
-      tabs: await readableProjectWorkspaceTabs(
-        ctx,
-        args.organizationId,
-        surface._id,
-      ),
-      capabilities: { canCreateView: true },
-    };
+    return buildSurfaceProjection(
+      ctx,
+      args.organizationId,
+      PROJECT_WORKSPACE_SURFACE_CONFIG,
+    );
   },
 });
 

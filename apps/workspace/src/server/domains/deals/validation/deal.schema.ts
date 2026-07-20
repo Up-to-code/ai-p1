@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { dealStageSchema, dealStatusSchema, dealPrioritySchema } from "@qentrah/domain-contracts";
 
 const optionalTrimmedText = z.string().trim().optional().transform((value) => value || undefined);
 const optionalNumber = z.union([z.number(), z.string().trim(), z.null()]).optional().transform((value) => {
@@ -11,13 +12,13 @@ export const dealPayloadSchema = z.object({
   title: z.string().trim().min(1),
   clientId: optionalTrimmedText,
   projectId: optionalTrimmedText,
-  stage: z.enum(["lead", "qualified", "proposal_sent", "contract_sent", "won", "lost"]).default("lead"),
-  status: z.enum(["open", "won", "lost", "paused"]).default("open"),
+  stage: dealStageSchema.default("lead"),
+  status: dealStatusSchema.default("open"),
   value: optionalNumber,
   currency: optionalTrimmedText.default("USD"),
   dealThinking: optionalTrimmedText,
   source: optionalTrimmedText,
-  priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
+  priority: dealPrioritySchema.default("normal"),
   closeDate: optionalTrimmedText,
   nextStep: optionalTrimmedText,
   ownerUserId: optionalTrimmedText,

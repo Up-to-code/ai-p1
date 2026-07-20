@@ -1,3 +1,5 @@
+import { organizationCapabilityChecks, type Resource, type Action } from "@qentrah/domain-contracts";
+
 export type AgentOrganizationCapabilities = {
   canReadOrganization: boolean;
   canUpdateOrganization: boolean;
@@ -34,7 +36,8 @@ export type AgentOrganizationCapabilities = {
   canDeleteMedia: boolean;
 };
 
-type Resource =
+/** Agent-scoped resource subset — only resources Eve tools operate on. */
+type AgentResource =
   | "organization"
   | "member"
   | "role"
@@ -44,14 +47,13 @@ type Resource =
   | "calendar"
   | "task"
   | "media";
-type Action = "read" | "create" | "update" | "delete";
 
-export type Permission = { resource: Resource; actions: Action[] };
+export type Permission = { resource: AgentResource; actions: Action[] };
 
 export function capabilitiesToPermissions(
   capabilities: AgentOrganizationCapabilities,
 ): Permission[] {
-  const actions: Record<Resource, (Action | false)[]> = {
+  const actions: Record<AgentResource, (Action | false)[]> = {
     organization: [
       capabilities.canReadOrganization && "read",
       capabilities.canUpdateOrganization && "update",
@@ -109,7 +111,7 @@ export function capabilitiesToPermissions(
     ],
   };
 
-  return (Object.keys(actions) as Resource[])
+  return (Object.keys(actions) as AgentResource[])
     .map((resource) => ({
       resource,
       actions: actions[resource].filter((a): a is Action => a !== false),
@@ -131,7 +133,7 @@ export function hasCapability(
   capabilities: AgentOrganizationCapabilities,
   toolName: string,
 ): boolean {
-  const [resource, action] = toolName.split("-") as [Resource, Action];
+  const [resource, action] = toolName.split("-") as [AgentResource, Action];
   if (!resource || !action) return true;
   const permission = capabilitiesToPermissions(capabilities).find(
     (p) => p.resource === resource,
@@ -139,12 +141,12 @@ export function hasCapability(
   return permission?.actions.includes(action) ?? false;
 }
 
-export const toolToCapability: Record<string, [Resource, Action]> = {
+export const toolToCapability: Record<string, [AgentResource, Action]> = {
   // Root agent tools only — domain tools are handled by subagents
   "workspace-search": ["task", "read"],
 };
 
-export const subagentToResource: Record<string, Resource> = {
+export const subagentToResource: Record<string, AgentResource> = {
   tasks: "task",
   projects: "project",
   clients: "client",

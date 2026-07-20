@@ -7,10 +7,6 @@ import { dealStageValidator, dealValidator } from "./validators";
 
 const MAX_LIST_DEALS = 500;
 
-function presentDeal<TDeal extends { _id: string }>(deal: TDeal) {
-  return presentWorkspaceRecord(deal);
-}
-
 function matchesSearch(
   deal: { title: string; source?: string; nextStep?: string; dealThinking?: string; tags?: string[] },
   search?: string,
@@ -49,7 +45,7 @@ export const list = query({
 
     return activeUpdatedWorkspaceRows(deals)
       .filter((deal) => matchesSearch(deal, args.search))
-      .map(presentDeal);
+      .map(presentWorkspaceRecord);
   },
 });
 
@@ -60,7 +56,7 @@ export const get = query({
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
     const deal = await ctx.db.get(args.dealId);
     if (!deal || deal.organizationId !== args.organizationId || deal.deletedAt) return null;
-    return presentDeal(deal);
+    return presentWorkspaceRecord(deal);
   },
 });
 

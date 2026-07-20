@@ -1,23 +1,22 @@
-export const mcpResources = [
-  "organization",
-  "space",
-  "project",
-  "task",
-  "client",
-  "deal",
-  "calendar",
-  "media",
-  "finance",
-  "report",
-] as const;
+export {
+  mcpResources as mcpResources,
+  actions as mcpActions,
+  type McpResource,
+  type Action as McpAction,
+} from "@qentrah/domain-contracts";
 
-export const mcpActions = ["read", "create", "update", "delete"] as const;
+import { mcpResources, actions as mcpActions } from "@qentrah/domain-contracts";
+import type { McpResource, Action as McpAction } from "@qentrah/domain-contracts";
 
-export type McpResource = (typeof mcpResources)[number];
-export type McpAction = (typeof mcpActions)[number];
+/**
+ * Resources that can cross the public MCP grant boundary.
+ * Member and role administration remain Eve-only and are never delegated by
+ * an OAuth grant or saved MCP connection profile.
+ */
+export type McpGrantResource = Exclude<McpResource, "member" | "role">;
 
 export type McpPermission = {
-  resource: McpResource;
+  resource: McpGrantResource;
   actions: McpAction[];
 };
 
@@ -52,7 +51,7 @@ export const MCP_WRITE_SCOPE = "mcp:write";
 
 export function hasMcpPermission(
   permissions: readonly McpPermission[],
-  resource: McpResource,
+  resource: McpGrantResource,
   action: McpAction,
 ) {
   return permissions.some(

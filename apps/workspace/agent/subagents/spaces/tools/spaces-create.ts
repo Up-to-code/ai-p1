@@ -4,6 +4,10 @@ import { api } from "@convex/_generated/api";
 import { fetchAuthMutation } from "../../../lib/convex";
 import { requireWorkspaceActor } from "../../../lib/workspace-actor";
 import { requireOrganizationAction } from "../../../lib/action-workflow";
+import {
+  spaceVisibilitySchema,
+  spaceProjectVisibilitySchema,
+} from "@qentrah/domain-contracts";
 
 export default defineTool({
   description: "Create a new space in the organization.",
@@ -13,8 +17,8 @@ export default defineTool({
     description: z.string().max(500).optional(),
     icon: z.string().max(20).optional(),
     color: z.string().max(20).optional(),
-    visibility: z.enum(["private", "public", "request_only"]).default("public"),
-    defaultProjectVisibility: z.enum(["private", "space_members", "organization"]).optional(),
+    visibility: spaceVisibilitySchema.default("public"),
+    defaultProjectVisibility: spaceProjectVisibilitySchema.optional(),
     allowMemberProjectCreation: z.boolean().optional(),
   }).passthrough(),
   async execute(args, ctx) {

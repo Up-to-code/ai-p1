@@ -38,4 +38,25 @@ crons.interval(
   {},
 );
 
+crons.interval(
+  "dispatch pending automation events",
+  { minutes: 1 },
+  internal.automations.execute.processPendingEvents,
+  { limit: 25 },
+);
+
+crons.interval(
+  "dispatch scheduled automations",
+  { minutes: 1 },
+  internal.automations.execute.processSchedules,
+  {},
+);
+
+crons.interval(
+  "recover interrupted automation runs",
+  { minutes: 5 },
+  internal.automations.runState.recoverDueRuns,
+  {},
+);
+
 export default crons;

@@ -1,6 +1,7 @@
 export {
   ResourceWorkspaceLayout,
   useResourceWorkspaceExtension,
+  useOptionalResourceWorkspaceExtension,
   type ResourceWorkspaceLayoutProps,
 } from "./resource-workspace-layout";
 export { ResourceViewMenu } from "./resource-view-menu";

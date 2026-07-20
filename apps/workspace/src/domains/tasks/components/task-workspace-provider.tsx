@@ -70,7 +70,17 @@ const TaskWorkspaceContext = createContext<TaskWorkspaceContextValue | null>(
   null,
 );
 
-export function TaskWorkspaceProvider({ children }: { children: ReactNode }) {
+export function TaskWorkspaceProvider({
+  children,
+  spaceId: spaceIdOverride,
+  viewState: viewStateOverride,
+  onOpenTask,
+}: {
+  children: ReactNode;
+  spaceId?: string | null;
+  viewState?: TaskWorkspaceViewState;
+  onOpenTask?: (taskId: string) => void;
+}) {
   const session = useAuthSession();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -82,14 +92,17 @@ export function TaskWorkspaceProvider({ children }: { children: ReactNode }) {
       ? (session.workspace.organizationId ?? undefined)
       : undefined;
   const projectIdFromUrl = useCurrentProjectId();
-  const { spaceId } = useNavigation();
+  const { spaceId: navigationSpaceId } = useNavigation();
+  const spaceId =
+    spaceIdOverride === undefined ? navigationSpaceId : spaceIdOverride;
   // The exact record and tenant relation are validated by listPage. Avoid a
   // bounded client-side options scan that can reject valid Projects.
   const projectId = projectIdFromUrl;
-  const viewState = useMemo(
+  const routeViewState = useMemo(
     () => parseTaskWorkspaceViewState(searchParams),
     [searchParams],
   );
+  const viewState = viewStateOverride ?? routeViewState;
   const tasksResult = useTaskWorkspaceQuery(organizationId, {
     projectId,
     spaceId,
@@ -120,6 +133,7 @@ export function TaskWorkspaceProvider({ children }: { children: ReactNode }) {
   );
   const updateViewState = useCallback(
     (patch: Partial<TaskWorkspaceViewState>) => {
+      if (viewStateOverride) return;
       const href = resolveTaskWorkspaceViewHref(
         pathname,
         new URLSearchParams(searchParams.toString()),
@@ -127,7 +141,7 @@ export function TaskWorkspaceProvider({ children }: { children: ReactNode }) {
       );
       if (href) router.replace(href);
     },
-    [pathname, router, searchParams, viewState],
+    [pathname, router, searchParams, viewState, viewStateOverride],
   );
 
   const updateTask = useCallback(
@@ -147,8 +161,12 @@ export function TaskWorkspaceProvider({ children }: { children: ReactNode }) {
   );
 
   const openTask = useCallback((taskId: string) => {
+    if (onOpenTask) {
+      onOpenTask(taskId);
+      return;
+    }
     router.push(`/tasks/${taskId}`);
-  }, [router]);
+  }, [onOpenTask, router]);
 
   const createTask = useCallback<TaskQuickCreateCommand>(
     async (draft) => {

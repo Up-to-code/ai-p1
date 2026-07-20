@@ -1,7 +1,7 @@
 "use client";
 
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
-import { FileText, ListChecks, Play, UserRound, Webhook, Workflow } from "lucide-react";
+import { Bot, CalendarClock, FileText, ListChecks, MessageCircle, Play, Sheet, UserRound, Webhook, Workflow } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AutomationNodeData } from "../types";
 
@@ -10,6 +10,14 @@ type AutomationCanvasNode = Node<AutomationNodeData, "automationStep">;
 export function AutomationStepNode({ data, selected }: NodeProps<AutomationCanvasNode>) {
   const Icon = data.type === "webhook"
     ? Webhook
+    : data.type === "schedule"
+      ? CalendarClock
+    : data.type === "google_sheets"
+      ? Sheet
+    : data.type === "agent"
+      ? Bot
+    : data.type === "whatsapp_message"
+      ? MessageCircle
     : data.kind === "trigger"
       ? Play
       : data.type.includes("document")
@@ -21,6 +29,14 @@ export function AutomationStepNode({ data, selected }: NodeProps<AutomationCanva
             : Workflow;
   const summary = data.type === "webhook"
     ? "POST from Zapier or another app"
+    : data.type === "schedule"
+      ? `Every ${data.config.intervalMinutes || "…"} minutes`
+    : data.type === "google_sheets"
+      ? data.config.range || "Choose a spreadsheet range"
+    : data.type === "agent"
+      ? data.config.agentId ? "Published custom agent" : "Select a published agent"
+    : data.type === "whatsapp_message"
+      ? data.config.to || "Choose a WhatsApp recipient"
     : data.type === "manual"
       ? "Run from Qentrah"
       : data.type === "update_task"

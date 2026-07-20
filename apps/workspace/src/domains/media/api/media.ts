@@ -6,10 +6,9 @@ import { uploadFiles } from "@/lib/uploadthing";
 import type { Id } from "@convex/_generated/dataModel";
 import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import { requestOrganizationAction, organizationApiPath } from "@/domains/organization/api/organization-request";
+import type { MediaKind, MediaResourceType, MediaShareVisibility } from "@qentrah/domain-contracts";
 
-export type MediaKind = "image" | "video" | "document";
-export type MediaResourceType = "project" | "client" | "calendarEvent" | "task";
-export type MediaShareVisibility = "private" | "public" | "team" | "owner" | "member";
+export type { MediaKind, MediaResourceType, MediaShareVisibility };
 export type MediaAsset = {
   _id: Id<"mediaAssets">;
   _creationTime: number;

@@ -11,7 +11,12 @@
 - **SalesOpportunity** — the canonical sales aggregate for prospective revenue, linked to a Client and optionally a delivery Project. The product displays this aggregate as a **Deal**.
 - **Deal** — customer-facing copy for a SalesOpportunity. Deals and opportunities must never be exposed as separate writable product modules.
 - **Calendar** — events and task due dates in a month-grid layout.
-- **Workspace** — the unified UI layer combining sidebar rail, topbar, and content views.
+- **Workspace** — the single-route operating surface at `/ws`. It combines the
+  fixed global rail, an authorized Organization-wide index, and swappable
+  content for attention, Channels, direct messages, Spaces, Tasks, and AI.
+  Internal selections remain UI state and never navigate to separate domain
+  routes; Convex domain Modules remain authoritative for the records rendered
+  inside the surface.
 - **Agency Operating System** — the connected commercial and delivery model that carries work from Lead through Deal, Proposal, Contract, Engagement, Project delivery, Client Approval, Invoice, Payment, Bookkeeping, and Profitability without duplicating CRM, Project, or Finance records.
 - **Engagement** — the contract-facing delivery aggregate for a Client. It owns the commercial model (`fixed_scope`, `retainer`, or `time_and_materials`), agreed scope, stakeholders, delivery health, portal configuration, and links to one or more Projects.
 - **Deliverable** — a Client-facing unit of contracted output within an Engagement or Project. It may require a Client Approval and may be changed only through a recorded Change Order after its baseline is agreed.
@@ -28,10 +33,31 @@
 - **Platform Administration** — cross-Organization operational access granted only to identities on the configured email allowlist. It is distinct from Organization ownership and fails closed for missing or non-allowlisted identities.
 - **Organization Entitlements** — the effective plan-access snapshot derived from the canonical subscription catalog, verified provider state, grace/trial dates, and optional Enterprise overrides. Existing records survive plan fallback; only capacity-increasing or paid-only operations are blocked.
 - **AI Credit** — one thousandth of one measured US dollar of provider LLM cost. Subscription credits reset monthly, purchased credits never expire, and an Eve turn must reserve credits before generation.
+- **Published Custom Agent** — an owner-scoped AI definition whose mutable draft
+  is separate from its immutable published instruction/model snapshot. Browser
+  chat may select the current published Agent, while an Automation Run binds the
+  exact published revision available when the Run is queued.
+- **Automation Definition** — an owner-scoped, Organization-owned directed
+  workflow composed of one trigger and reachable action nodes. Commissioning
+  requires a valid graph, active owner-owned provider Connections, and an
+  owner-owned Published Custom Agent for every Agent action.
+- **Automation Run** — a durable execution snapshot of an Automation Definition.
+  It owns ordered Step attempts, inputs, binding snapshots, outputs, errors,
+  approval state, cancellation, source identity, and webhook idempotency.
+- **Automation Connection** — an owner-scoped provider credential binding for
+  Google Sheets or WhatsApp. Secret material is encrypted at rest, is never
+  returned by reads, and may be used only by the owning user's commissioned
+  Automations inside the active Organization.
 - **Marketing Content** — public localized Marketing presentation delivered from Contentful through editor-friendly page, block, card, SEO, and asset references. It covers the active Home, Pricing, Legal, Navigation, Footer, brand, and metadata surfaces. Repository-owned typed copy is the fail-safe baseline; resolved CMS fields may override only known, type-compatible presentation fields and never become a dependency of Workspace runtime behavior.
 
 ## Deepened Modules
 
+- **Workspace Operating Surface** — `src/domains/workspace/` owns the typed
+  `WorkspaceSurface` selection contract, per-user/per-Organization IndexedDB
+  restoration, persistent Workspace index, and content Adapter dispatch.
+  Authorized Channels, Spaces, project trees, Tasks, attention events, and AI
+  remain reactive reads from their owning Modules. A selected Space renders its
+  Channel, Overview, List, Board, and overview cards inside `/ws`.
 - **Space** — `domains/spaces/`. Single seam for all space concerns: API hooks (`useWorkspaceSpacesQuery`, `createSpaceRequest`, etc.), active-space derivation (`useActiveSpace`), UI components (`SpaceList`, `SpaceCreateForm`, `SpaceSettings`, `SpaceSwitcher`, `SpaceNavItem`, `MemberPicker`), validation (`spaceSchema`), and the `Space` type. Server counterpart at `server/domains/spaces/` with split junction module (`spaces-junction`). Schemas in `@qentrah/domain-contracts`.
 - **Task Mutation** — `domains/tasks/hooks/use-task-mutations.ts`. Single seam for all task mutations across workspace views. Provides `createTask`, `updateTask`, `deleteTask`, `moveTask` (async functions) plus `createTaskMutation`, `updateTaskMutation`, `deleteTaskMutation`, `moveTaskMutation` (TanStack `UseMutationResult` objects). Uses TanStack Query `useMutation` with `onMutate` rollback for optimistic UI (same pattern as clients). Consistent error handling (transaction revert + toast). Auto-derives project/space from navigation context. Accepts partial changes.
 - **Task Workspace** — `domains/tasks/components/task-workspace-provider.tsx` and `task-resource-layout.tsx`. The provider owns Task querying, Project/Space scoping, sidebar filters, pagination, and editor/create orchestration. The resource Adapter configures the persistent header and route-linked views. `/tasks/table`, `/tasks/board`, and `/tasks/list` own their concrete view bodies; all writes cross the Task Mutation module.
@@ -43,6 +69,20 @@
 - **Platform Administration** — pure allowlist policy in `@qentrah/auth` (`packages/auth/src/platform-admin.ts`) with Next.js configuration and Convex access Adapters. The policy normalizes configured identities once; adapters resolve the authenticated identity and deny by default. Organization roles never imply Platform Administration.
 - **Organization Billing** — canonical catalog and pure decisions in `@qentrah/domain-contracts/subscription-pricing`; durable subscription, entitlement usage, payment reconciliation, and credit ledgers in `apps/workspace/convex/billing`. Hono creates owner-authorized checkouts, the signed Convex Dodo webhook is the only provider ingress, and Eve lifecycle hooks reserve and settle AI spend.
 - **Organization Creation** — `apps/workspace/src/domains/auth/organization-creation.ts` derives a URL-safe slug from the requested display name, asks Better Auth for availability, and deterministically retries suffixes without treating the display name as unique. Auth entry Adapters activate, seed, and open the new workspace only after creation succeeds.
+- **Published Custom Agent** — `apps/workspace/convex/customAgents` owns
+  authenticated owner-scoped draft, publish, and archive lifecycle rules.
+  `apps/workspace/src/domains/custom-agents` owns the editor/list presentation,
+  while `apps/workspace/agent/instructions/custom-agent.ts` adapts an authorized
+  published snapshot into Eve instructions. Publication never grants another
+  user access to the Agent.
+- **Automation Execution** — `apps/workspace/convex/automations` owns graph
+  validation, commissioning preflight, definition snapshots, queued Runs,
+  ordered Steps, approvals, cancellation, scheduling, webhook idempotency,
+  recovery, and provider execution. `apps/workspace/convex/automationConnections`
+  owns encrypted provider credentials; `apps/workspace/src/domains/automations`
+  is the editor and operations Adapter. External provider results are persisted
+  before the next Step is claimed, and interrupted side-effect Steps fail closed
+  for explicit retry rather than being replayed automatically.
 - **Marketing Content** — `apps/marketing/lib/contentful.ts` is the server delivery Adapter; `contentful-marketing-site.ts` and `contentful-landing-page.ts` resolve linked editor inputs into typed presentation contracts; `contentful-payload.ts` owns the known-shape overlay policy. The locale layout supplies the resolved snapshot to server translations and a narrow client context. Contentful webhooks invalidate the shared delivery cache; missing credentials, provider failures, incomplete Legal entries, and invalid fields fall back to repository copy.
 - **Agency Operating System** — existing CRM, Project, Task, Document, Calendar, Inbox, Time, Billing, and Resource Modules remain authoritative. New Engagement, Delivery, Finance, Portal, Navigation Projection, and Search Projection Interfaces connect them through explicit lifecycle commands; no umbrella Module duplicates their records or invariants.
 - **Engagement** — the contract-facing delivery aggregate connecting one signed Contract and Client to one or more Projects, commercial model, agreed scope/value, delivery health, approvals, and portal configuration. It does not replace or own Project work records.

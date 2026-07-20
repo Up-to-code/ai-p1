@@ -14,8 +14,9 @@ import {
   ChevronDown,
   MoreHorizontal,
   KanbanSquare,
+  Bot,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useWorkspaceSpacesQuery } from "@/domains/spaces/api/spaces";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
@@ -217,6 +218,7 @@ function ActiveSpaceView({
 }
 
 function CreateMenu({ orgId, canCreate }: { orgId?: string; canCreate: boolean }) {
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const [createSpaceOpen, setCreateSpaceOpen] = useState(false);
   const { openRailItem } = useSidebarRail();
@@ -233,7 +235,7 @@ function CreateMenu({ orgId, canCreate }: { orgId?: string; canCreate: boolean }
               className="flex h-8 w-full items-center gap-2 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
               <Plus className="h-3.5 w-3.5" />
-              New project or space
+              Create
             </button>
           }
         />
@@ -257,6 +259,14 @@ function CreateMenu({ orgId, canCreate }: { orgId?: string; canCreate: boolean }
               <KanbanSquare className="h-4 w-4 text-muted-foreground" />
               New Space
             </button>
+            <WorkspaceLink
+              href={`/${locale}/ai/agents/new`}
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 rounded-md px-2.5 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-accent"
+            >
+              <Bot className="h-4 w-4 text-muted-foreground" />
+              New Agent
+            </WorkspaceLink>
           </div>
         </PopoverContent>
       </Popover>

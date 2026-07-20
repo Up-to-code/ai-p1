@@ -78,16 +78,7 @@ const TASK_TABLE_COLUMNS =
 const GROUPED_TASK_LIST_COLUMNS =
   "40px minmax(360px,1.9fr) 140px 132px 120px minmax(96px,0.45fr) 36px";
 
-function plainText(value: string | undefined) {
-  return value
-    ?.replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function taskDate(value?: string) {
-  return value ? new Date(`${value}T12:00:00`) : undefined;
-}
+import { plainText, taskDate } from "./shared/task-view-utils";
 
 function TaskDateEditor({
   task,

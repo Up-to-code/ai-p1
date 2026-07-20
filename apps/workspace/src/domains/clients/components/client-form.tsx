@@ -158,7 +158,7 @@ export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: Cli
           </div>
           <div className="grid gap-5 md:grid-cols-3">
             <SelectField name="status" label="Status" value={form.status} onChange={(value) => setField("status", value)} options={["new", "active", "nurture", "inactive", "archived"].map((value) => ({ value, label: value[0].toUpperCase() + value.slice(1) }))} />
-            <SelectField name="pipelineStage" label="Pipeline stage" value={form.pipelineStage} onChange={(value) => setField("pipelineStage", value)} options={["new", "qualified", "review", "negotiation", "closed"].map((value) => ({ value, label: value[0].toUpperCase() + value.slice(1) }))} />
+            <SelectField name="pipelineStage" label="Pipeline stage" value={form.pipelineStage ?? ""} onChange={(value) => setField("pipelineStage", value)} options={["new", "qualified", "review", "negotiation", "closed"].map((value) => ({ value, label: value[0].toUpperCase() + value.slice(1) }))} />
             <SelectField name="priority" label="Priority" value={form.priority} onChange={(value) => setField("priority", value)} options={["normal", "high", "urgent"].map((value) => ({ value, label: value[0].toUpperCase() + value.slice(1) }))} />
           </div>
           <div className="grid gap-5 md:grid-cols-2">

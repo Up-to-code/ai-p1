@@ -13,6 +13,7 @@ export function DashboardScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const threadIdParam = searchParams.get("threadId");
+  const customAgentIdParam = searchParams.get("agentId") ?? undefined;
   const session = useAuthSession();
   const organizationId =
     session.workspace.status === "ready"
@@ -38,6 +39,7 @@ export function DashboardScreen() {
           title: thread.title,
           sessionState: thread.sessionState,
           events: thread.events,
+          customAgentId: thread.customAgentId,
         });
       } else {
         setRestoredThread("not-found");
@@ -67,9 +69,12 @@ export function DashboardScreen() {
 
   return (
     <EveDashboardChat
-      key={restoredThread?.id ?? "new"}
+      key={`${restoredThread?.id ?? "new"}:${
+        customAgentIdParam ?? restoredThread?.customAgentId ?? "default"
+      }`}
       organizationId={organizationId}
       restoredThread={restoredThread}
+      customAgentId={customAgentIdParam}
     />
   );
 }

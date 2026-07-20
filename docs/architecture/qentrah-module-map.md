@@ -1,6 +1,6 @@
 # Qentrah Module Map
 
-Status: Workspace MCP and shared Auth cutover, 2026-07-13
+Status: Published Agents and durable Automation execution, 2026-07-19
 
 This map records ownership and the intended seams across the Workspace, Convex,
 workspace-owned MCP transport, and Eve. `CONTEXT.md` remains the source for
@@ -47,6 +47,8 @@ ownership or accepted decisions.
 | Task Workspace | Scope, query state, commands, shared presentation | `src/domains/tasks` | Table, list, board, detail | Task access Module plus Task Mutation Module |
 | MCP Execution | OAuth bearer identity, grant-filtered tool contract, scope, dispatch, audit | workspace `/api/mcp` Adapter and `src/server/protocols/mcp`; `convex/mcp`; `@qentrah/mcp-contracts` | Stateless Streamable HTTP, Convex executor, and domain operation Adapters | `@qentrah/auth` verifies the token; Convex derives live grant and record scope on every invocation |
 | Eve Execution | Authenticated actor, planning, tools, presentation | `agent`, `src/domains/eve` | Eve channel and domain operation Adapters | Same resource access and lifecycle invariants as MCP |
+| Published Custom Agents | Owner-scoped draft lifecycle and immutable published revision | `convex/customAgents`, `src/domains/custom-agents` | Agent editor, browser Eve instructions, Automation Agent action | Server derives actor and Organization membership; publishing never widens owner access; queued Runs bind the exact published revision |
+| Automation Execution | Validated graph, commissioning, durable Run/Step state, idempotency, cancellation, approvals, and provider output | `convex/automations`, `convex/automationConnections`, `src/domains/automations` | schedule/domain/webhook/manual triggers, Google Sheets, Eve/OpenRouter, WhatsApp | Convex is authoritative; owner-scoped encrypted Connections and Agent snapshots are resolved server-side; interrupted external side effects fail closed |
 | Shared UI | Proven cross-domain rendered behavior | `packages/our-platform-components`, `src/components/shared` | Registered consumers in `component-registry.json` | UI capability state is informative, never authoritative |
 | Marketing Content | Localized public presentation and editor-friendly typed blocks with repository fallback | `apps/marketing/lib/contentful-marketing-site.ts`, `contentful-landing-page.ts`, `contentful-payload.ts`, `content.ts` | Contentful linked-entry delivery Adapter, locale layout, client presentation context, metadata, revalidation webhook | CMS inputs and references cover active Home, Pricing, Legal, Navigation, Footer, brand, SEO, and assets; canonical commercial facts, server-only credentials, and repository fallback remain code-owned |
 
@@ -61,7 +63,7 @@ access, presentation, and tests local to that behavior.
 | Activity | `src/domains/activity` | Organization audit and Inbox event reads | `/activity`, Organization aliases | canonical route, localized states, access |
 | Agency Delivery | `src/domains/delivery`; cross-runtime contracts in `@qentrah/domain-contracts` | `convex/delivery`; access in `convex/access/delivery.ts` | `/crm/proposals`, `/crm/contracts`, `/delivery`, Search Projection, portal, future MCP/Eve Adapters | command-owned Proposal→Contract→Engagement handoff, live linked-Project access, approval-backed Deliverables and Change Orders, integer minor-unit economics, audit continuity |
 | Auth | `@qentrah/auth`; `src/domains/auth`, `src/server/auth` runtime Adapters | focused Better Auth Modules under `convex/auth`, with `betterAuth.ts` binding | auth routes, organization creation/activation, business API, mobile SecureStore, Eve | canonical topology, credential parsing, Auth Context, scopes, guards; `organization-creation.ts` keeps non-unique display names separate from unique slugs; runtime Adapters resolve sessions and membership |
-| Automations | `src/domains/automations` | `convex/automations` | `/automations` | graph invariants, persistence, execution |
+| Automations | `src/domains/automations` | `convex/automations`; encrypted owner Connections in `convex/automationConnections` | `/automations`, webhook ingress, scheduler, Google Sheets, Eve/OpenRouter, WhatsApp | graph reachability, commissioning preflight, immutable queued snapshots, Step recovery, idempotency, provider failure, audit preservation |
 | Billing | `src/domains/billing`; `@qentrah/domain-contracts/subscription-pricing` | `convex/billing` | `/billing`, signed Dodo webhook, Hono checkout, Eve hooks | canonical catalog, owner actions, status/access matrix, idempotent reconciliation, atomic credit reservations |
 | Cache | `src/domains/cache` | none | Workspace hooks | invalidation without duplicate truth |
 | Calendar | `src/domains/calendar`; `@qentrah/domain-contracts/calendar` | `convex/calendar/lifecycle.ts` with validators and presentation | `/calendar`, Hono, MCP, Eve adapters | tenant links, interval ordering, reminder replacement, audit parity |
@@ -73,7 +75,7 @@ access, presentation, and tests local to that behavior.
 | Dashboard | `src/domains/dashboard` | `convex/dashboard`, `convex/workspace` | `/ws`, project dashboards | personalized reads, honest states |
 | Deals / SalesOpportunity | `src/domains/deals`; Opportunity is compatibility | `convex/deals`, `convex/opportunities` pending canonical cutover | `/deals`, compatibility routes, MCP, Eve | reconciliation, stage mapping, one write source |
 | Documents | `src/domains/docs` | document schema/read/write Modules | `/docs`, MCP, Eve | drafts, revisions, media, access |
-| Eve | `src/domains/eve` | durable execution pending | `/ai`, Eve channel | actor scope, retry, persistence |
+| Eve | `src/domains/eve`; published Agent presentation in `src/domains/custom-agents` | browser thread persistence plus published Agent lifecycle in `convex/customAgents`; general AgentRun durability remains pending | `/ai`, `/ai/agents`, Eve channel, Automation Agent Adapter | actor/Organization scope, owner-only Agent selection, immutable published revision binding, retry and persistence |
 | Inbox | Attention UI and collaboration Adapters in `src/domains/inbox` | recipient attention lifecycle in `convex/notifications/inbox.ts`; Channels/messages/threads in `convex/inbox` | `/inbox`, `/inbox/replies`, `/inbox/assigned-comments`; canonical `/channels` | recipient-only attention transitions, real thread-reply events, truthful unsupported comment assignments, and compound Channel access |
 | Integrations | `src/domains/integrations` | partner/integration records | `/integrations`, partner Adapters | credentials via backend write gateway |
 | MCP | `src/domains/mcp`; workspace MCP protocol Adapter | `convex/mcp` | `/mcp` grant-management UI, `/api/mcp` OAuth resource | catalog/handler parity, bearer-only transport, dynamic scope, rate limit, audit |
@@ -98,7 +100,7 @@ access, presentation, and tests local to that behavior.
 | Time Tracking | `src/domains/time-tracking` | canonical TimeEntry pending | task/project UI, MCP, Eve | one active timer, persisted economics |
 | Usage | `src/domains/usage` | billing/usage reads | `/usage` | scoped aggregation and formatting |
 | Work OS | `src/domains/work-os` | resource owners | shared record/editor Adapters | typed links and no duplicate records |
-| Workspace | `src/domains/workspace` | `convex/workspace` | `/ws`, global shell | personal command center and access |
+| Workspace | `src/domains/workspace` | `convex/workspace` plus authorized projections from the owning Task, Inbox, Space, Project, Document, and Navigation Modules | single-route `/ws`, global shell | typed UI-only surface selection, IndexedDB restoration, no duplicate record cache, and fail-closed restoration after access changes |
 
 ## Dependency direction
 

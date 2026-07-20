@@ -2,10 +2,10 @@ import {
   toolsForAdapter,
   type McpAction,
   type McpPermission,
-  type McpResource,
+  type McpGrantResource,
 } from "@qentrah/mcp-contracts";
 
-const resourceOrder: McpResource[] = [
+const resourceOrder: McpGrantResource[] = [
   "organization",
   "space",
   "project",
@@ -23,7 +23,7 @@ export const mcpConsentResources = resourceOrder.filter((resource) =>
   mcpTools.some((tool) => tool.resource === resource),
 );
 
-export function mcpConsentActions(resource: McpResource): McpAction[] {
+export function mcpConsentActions(resource: McpGrantResource): McpAction[] {
   return actionOrder.filter((action) =>
     mcpTools.some(
       (tool) => tool.resource === resource && tool.action === action,

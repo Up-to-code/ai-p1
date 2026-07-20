@@ -40,7 +40,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
 import { useClientsIndexQuery } from "@/domains/clients/api/clients";
 import { useWorkspaceSpacesQuery } from "@/domains/spaces/api/spaces";
@@ -102,7 +101,17 @@ function formatAiResponseHtml(content: string) {
   return html.join("");
 }
 
-export function InboxChannelScreen() {
+export function InboxChannelScreen({
+  channelId,
+  onSelectChannel,
+  onOpenSpace,
+  onOpenProject,
+}: {
+  channelId?: string;
+  onSelectChannel?: (channelId: string) => void;
+  onOpenSpace?: (spaceId: string) => void;
+  onOpenProject?: (projectId: string) => void;
+} = {}) {
   const session = useAuthSession();
   const router = useRouter();
   const params = useParams<{ locale?: string }>();
@@ -119,6 +128,9 @@ export function InboxChannelScreen() {
     content: string;
   } | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [embeddedSettingsChannelId, setEmbeddedSettingsChannelId] = useState<
+    string | null
+  >(null);
   const [messageTab, setMessageTab] = useState<"all" | "my">("all");
   const [messageSearchOpen, setMessageSearchOpen] = useState(false);
   const [messageSearchQuery, setMessageSearchQuery] = useState("");
@@ -153,9 +165,12 @@ export function InboxChannelScreen() {
   const playMessageSound = useInboxMessageSound();
 
   // Active channel from URL
-  const activeChannelId = searchParams.get("channel");
-  const isNewChannel = searchParams.get("new") === "true";
-  const settingsChannelId = searchParams.get("settings");
+  const embedded = channelId !== undefined || onSelectChannel !== undefined;
+  const activeChannelId = channelId ?? searchParams.get("channel");
+  const isNewChannel = !embedded && searchParams.get("new") === "true";
+  const settingsChannelId = embedded
+    ? embeddedSettingsChannelId
+    : searchParams.get("settings");
   const activeChannel = channels.find((c) => c.id === activeChannelId);
   const readableActiveChannelId = activeChannel?.id;
   const settingsChannel =
@@ -166,6 +181,14 @@ export function InboxChannelScreen() {
   const locale = typeof params.locale === "string" ? params.locale : "en";
 
   const updateInboxParams = (updates: Record<string, string | null>) => {
+    if (embedded) {
+      if (updates.channel) onSelectChannel?.(updates.channel);
+      if ("settings" in updates) {
+        setEmbeddedSettingsChannelId(updates.settings);
+      }
+      if (updates.new === "true") setShowCreateModal(true);
+      return;
+    }
     const next = new URLSearchParams(searchParams.toString());
     for (const [key, value] of Object.entries(updates)) {
       if (value === null || value.length === 0) {
@@ -571,7 +594,8 @@ export function InboxChannelScreen() {
     const result = await createChannelMutation.mutateAsync(data);
     setShowCreateModal(false);
     if (result.channel?.id) {
-      router.push(`/${locale}/inbox?channel=${result.channel.id}`);
+      if (embedded) onSelectChannel?.(result.channel.id);
+      else router.push(`/${locale}/inbox?channel=${result.channel.id}`);
     }
   };
 
@@ -592,11 +616,16 @@ export function InboxChannelScreen() {
     const deletedId = settingsChannel.id;
     await deleteChannelMutation.mutateAsync(deletedId);
     const nextChannel = channels.find((channel) => channel.id !== deletedId);
-    router.push(
-      nextChannel
-        ? `/${locale}/inbox?channel=${nextChannel.id}`
-        : `/${locale}/inbox`,
-    );
+    if (embedded) {
+      setEmbeddedSettingsChannelId(null);
+      if (nextChannel) onSelectChannel?.(nextChannel.id);
+    } else {
+      router.push(
+        nextChannel
+          ? `/${locale}/inbox?channel=${nextChannel.id}`
+          : `/${locale}/inbox`,
+      );
+    }
   };
 
   const pinnedMessage = activeChannel?.pinnedMessageId
@@ -647,20 +676,22 @@ export function InboxChannelScreen() {
                   }
                 />
                 {activeChannel.projectId && (
-                  <WorkspaceLink
-                    href={`/projects/${activeChannel.projectId}`}
+                  <button
+                    type="button"
+                    onClick={() => onOpenProject?.(activeChannel.projectId!)}
                     className="rounded px-2 py-1 text-[12px] text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                   >
                     View project
-                  </WorkspaceLink>
+                  </button>
                 )}
                 {activeChannel.spaceId && (
-                  <WorkspaceLink
-                    href={`/spaces/${activeChannel.spaceId}`}
+                  <button
+                    type="button"
+                    onClick={() => onOpenSpace?.(activeChannel.spaceId!)}
                     className="rounded px-2 py-1 text-[12px] text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                   >
                     View space
-                  </WorkspaceLink>
+                  </button>
                 )}
                 <Button
                   type="button"

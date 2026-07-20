@@ -3,6 +3,7 @@ import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthMutation } from "../../../lib/convex";
 import { requireWorkspaceActor } from "../../../lib/workspace-actor";
+import { notificationCategorySchema, recurrenceFrequencySchema } from "@qentrah/domain-contracts";
 
 export default defineTool({
   description: "Update a scheduled notification.",
@@ -10,11 +11,11 @@ export default defineTool({
     scheduleId: z.string().min(1),
     title: z.string().trim().min(1).optional(),
     body: z.string().trim().min(1).optional(),
-    category: z.enum(["calendar", "task", "manual", "organization"]).optional(),
+    category: notificationCategorySchema.optional(),
     scheduledAt: z.number().optional(),
     timezone: z.string().optional(),
     recurrence: z.object({
-      frequency: z.enum(["daily", "weekly", "monthly"]),
+      frequency: recurrenceFrequencySchema,
       interval: z.number().int().min(1).max(30),
       untilAt: z.number().optional(),
     }).optional(),

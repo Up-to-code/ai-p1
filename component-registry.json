@@ -845,17 +845,18 @@
     },
     {
       "name": "Skeleton",
-      "path": "apps/workspace/src/components/ui/skeleton.tsx",
+      "path": "packages/ui/src/components/ui/skeleton.tsx",
       "kind": "primitive",
-      "summary": "Loading placeholder with shimmer animation.",
+      "summary": "Loading placeholder with pulse animation using muted surface token.",
       "usedIn": [
+        "apps/workspace/src/components/ui/skeleton (re-export)",
         "~every domain"
       ],
       "props": [
         "className"
       ],
       "createdAt": "2026-01-01",
-      "notes": "Used for loading states."
+      "notes": "Promoted to packages/ui; workspace path re-exports @qentrah/ui."
     },
     {
       "name": "ColorDot",
@@ -1366,6 +1367,155 @@
       ],
       "createdAt": "2026-07-11",
       "notes": "Installed as a dependency of @reui/c-calendar-27."
+    },
+    {
+      "name": "Input",
+      "path": "packages/ui/src/components/ui/input.tsx",
+      "kind": "primitive",
+      "summary": "Text input with optional label, helper text, and accessible error state. Semantic theme tokens.",
+      "usedIn": [
+        "apps/workspace/src/components/ui/input (re-export)",
+        "~forms across workspace domains"
+      ],
+      "props": [
+        "label",
+        "error",
+        "helperText",
+        "className",
+        "...input"
+      ],
+      "createdAt": "2026-07-17",
+      "notes": "Migrated from DUI with Qentrah tokens; workspace re-exports for @/components/ui/input."
+    },
+    {
+      "name": "Textarea",
+      "path": "packages/ui/src/components/ui/textarea.tsx",
+      "kind": "primitive",
+      "summary": "Multiline text input using border/input/foreground tokens.",
+      "usedIn": [
+        "apps/workspace/src/components/ui/textarea (re-export)"
+      ],
+      "props": [
+        "className",
+        "...textarea"
+      ],
+      "createdAt": "2026-07-17",
+      "notes": "Promoted from workspace local; DUI zinc palette replaced with semantic tokens."
+    },
+    {
+      "name": "UiCard",
+      "path": "packages/ui/src/components/ui/card.tsx",
+      "kind": "primitive",
+      "summary": "Composable Card/Header/Title/Description/Content/Footer shell for app UI (distinct from marketing public Card).",
+      "usedIn": [
+        "apps/workspace/src/components/ui/card (re-export)"
+      ],
+      "props": [
+        "className",
+        "children"
+      ],
+      "createdAt": "2026-07-17",
+      "notes": "Main barrel exports as UiCard* to avoid clashing with packages/ui public marketing Card."
+    },
+    {
+      "name": "Alert",
+      "path": "packages/ui/src/components/ui/alert.tsx",
+      "kind": "primitive",
+      "summary": "role=alert banner with default/success/warning/destructive variants.",
+      "usedIn": [],
+      "props": [
+        "variant",
+        "className",
+        "children"
+      ],
+      "createdAt": "2026-07-17",
+      "notes": "New from DUI; uses semantic/destructive tokens not zinc/red hardcodes."
+    },
+    {
+      "name": "Avatar",
+      "path": "packages/ui/src/components/ui/avatar.tsx",
+      "kind": "primitive",
+      "summary": "Base UI Avatar root/image/fallback with sm/default/lg sizes.",
+      "usedIn": [
+        "apps/workspace/src/components/ui/avatar (re-export)"
+      ],
+      "props": [
+        "size",
+        "className",
+        "children"
+      ],
+      "createdAt": "2026-07-17",
+      "notes": "Preserves workspace Base UI behavior; DUI plain img version was not used."
+    },
+    {
+      "name": "Checkbox",
+      "path": "packages/ui/src/components/ui/checkbox.tsx",
+      "kind": "primitive",
+      "summary": "Accessible native checkbox with custom peer-styled control and Check icon.",
+      "usedIn": [],
+      "props": [
+        "checked",
+        "disabled",
+        "className"
+      ],
+      "createdAt": "2026-07-17",
+      "notes": "From DUI; primary tokens for checked state."
+    },
+    {
+      "name": "Progress",
+      "path": "packages/ui/src/components/ui/progress.tsx",
+      "kind": "primitive",
+      "summary": "Determinate progressbar with value/max and primary fill.",
+      "usedIn": [],
+      "props": [
+        "value",
+        "max",
+        "className"
+      ],
+      "createdAt": "2026-07-17",
+      "notes": "Complementary to @qentrah/our-platform-components ProgressBar; thinner primitive."
+    },
+    {
+      "name": "Separator",
+      "path": "packages/ui/src/components/ui/separator.tsx",
+      "kind": "primitive",
+      "summary": "Horizontal or vertical content separator.",
+      "usedIn": [],
+      "props": [
+        "orientation",
+        "className"
+      ],
+      "createdAt": "2026-07-17",
+      "notes": "From DUI with border token."
+    },
+    {
+      "name": "Spinner",
+      "path": "packages/ui/src/components/ui/spinner.tsx",
+      "kind": "primitive",
+      "summary": "Indefinite LoaderCircle spinner with aria-label Loading.",
+      "usedIn": [],
+      "props": [
+        "className"
+      ],
+      "createdAt": "2026-07-17",
+      "notes": "From DUI; lucide-react already a package dependency."
+    },
+    {
+      "name": "Switch",
+      "path": "packages/ui/src/components/ui/switch.tsx",
+      "kind": "primitive",
+      "summary": "Base UI switch with sm/default sizes and primary checked styling.",
+      "usedIn": [
+        "apps/workspace/src/components/ui/switch (re-export)"
+      ],
+      "props": [
+        "size",
+        "checked",
+        "disabled",
+        "className"
+      ],
+      "createdAt": "2026-07-17",
+      "notes": "Preserves workspace Base UI switch; DUI custom button switch was not preferred."
     }
   ]
 }

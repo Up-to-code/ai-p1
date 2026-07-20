@@ -8,6 +8,7 @@ import type { EveMessageData, EveMessage } from "eve/client";
 
 type UseEveChatOptions = {
   organizationId?: string;
+  customAgentId?: string;
   initialSession?: SessionState;
   initialEvents?: readonly HandleMessageStreamEvent[];
   restoreAttempted?: boolean;
@@ -205,6 +206,7 @@ function deriveActionProgress(events: readonly HandleMessageStreamEvent[]): EveA
 
 export function useEveChat({
   organizationId,
+  customAgentId,
   initialSession: propInitialSession,
   initialEvents: propInitialEvents,
   restoreAttempted,
@@ -237,7 +239,12 @@ export function useEveChat({
     reducer: defaultMessageReducer(),
     initialSession,
     initialEvents: propInitialEvents,
-    headers: organizationId ? { "X-Organization-Id": organizationId } : undefined,
+    headers: organizationId
+      ? {
+          "X-Organization-Id": organizationId,
+          ...(customAgentId ? { "X-Agent-Id": customAgentId } : {}),
+        }
+      : undefined,
     maxReconnectAttempts: 1,
     onSessionChange: (sess) => {
       // Only save to URL when not using a restored thread (parent manages URL)

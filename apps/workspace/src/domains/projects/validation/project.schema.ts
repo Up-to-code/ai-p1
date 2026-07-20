@@ -1,16 +1,21 @@
 import { z } from "zod";
 import { requiredText } from "@/validation/common.schema";
+import {
+  projectStatusSchema,
+  projectHealthSchema,
+  projectVisibilitySchema,
+} from "@qentrah/domain-contracts";
 
-export const projectStatuses = ["planned", "active", "paused", "completed", "archived"] as const;
-export const projectHealths = ["onTrack", "atRisk", "blocked"] as const;
+export const projectStatuses = projectStatusSchema.options;
+export const projectHealths = projectHealthSchema.options;
 
 export const projectSchema = z.object({
   name: requiredText("Project name"),
   clientId: z.string().trim().optional(),
   opportunityId: z.string().trim().optional(),
-  status: z.enum(projectStatuses).default("planned"),
-  health: z.enum(projectHealths).default("onTrack"),
-  visibility: z.enum(["private", "space_members", "organization"]).default("space_members"),
+  status: projectStatusSchema.default("planned"),
+  health: projectHealthSchema.default("onTrack"),
+  visibility: projectVisibilitySchema.default("space_members"),
   startDate: z.string().trim().optional(),
   endDate: z.string().trim().optional(),
   budget: z.string().trim().optional(),

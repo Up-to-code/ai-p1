@@ -5,7 +5,11 @@ import Image from "next/image";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import type { McpAction, McpPermission, McpResource } from "@qentrah/mcp-contracts";
+import type {
+  McpAction,
+  McpGrantResource,
+  McpPermission,
+} from "@qentrah/mcp-contracts";
 import {
   AlertTriangle, Bot, Copy, Ellipsis, ExternalLink, Loader2, Pencil,
   Plus, ShieldCheck, Trash2, Unplug,
@@ -28,7 +32,7 @@ import {
   buildMcpConfigJson, buildMcpSetupPrompt, buildOpenAiMcpToolPrompt, defaultMcpEndpoint,
 } from "../mcp-connection-prompts";
 
-const resources: Array<{ id: McpResource; label: string; actions: McpAction[] }> = [
+const resources: Array<{ id: McpGrantResource; label: string; actions: McpAction[] }> = [
   { id: "organization", label: "Organization", actions: ["read"] },
   { id: "space", label: "Spaces", actions: ["read", "create", "update", "delete"] },
   { id: "project", label: "Projects", actions: ["read", "create", "update", "delete"] },
@@ -289,7 +293,7 @@ function McpEditor({ organizationId, profile, onOpenChange, onSaved }: {
   const hasDeletePermission = permissions.some((permission) => permission.actions.includes("delete"));
   const scopeIsValid = scopeType === "organization" || (scopeType === "space" ? selectedSpaceIds.length > 0 : selectedProjectIds.length > 0);
 
-  function toggle(resource: McpResource, action: McpAction) {
+  function toggle(resource: McpGrantResource, action: McpAction) {
     setPermissions((current) => current.map((permission) => {
       if (permission.resource !== resource) return permission;
       return {

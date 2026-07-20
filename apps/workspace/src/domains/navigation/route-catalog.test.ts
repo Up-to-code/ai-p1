@@ -4,11 +4,13 @@ import { getActiveRailItem, getRouteId } from "./route-catalog";
 
 describe("route catalog", () => {
   it("selects the active rail item without confusing /ws with nested routes", () => {
-    expect(getActiveRailItem("/ws")).toBe("home");
+    expect(getActiveRailItem("/ws")).toBeNull();
     expect(getActiveRailItem("/ws-extra")).toBeNull();
     expect(getActiveRailItem("/ai")).toBe("ai");
     expect(getRouteId("/ws")).toBe("ws");
     expect(getRouteId("/ai")).toBe("ai");
+    expect(getRouteId("/ai/agents")).toBe("customAgents");
+    expect(getActiveRailItem("/ai/agents/new")).toBe("automations");
   });
 
   it("matches nested canonical routes and locale-prefixed routes", () => {
@@ -67,10 +69,10 @@ describe("route catalog", () => {
   });
 
   it("switches secondary panel modes without leaking AI parameters into Workspace", () => {
-    const current = new URLSearchParams("mode=ai&threadId=t1&state=encoded");
+    const current = new URLSearchParams("mode=ai&threadId=t1&state=encoded&agentId=a1");
 
     expect(forwardPersistentParams("/ai", current)).toBe(
-      "/ai?mode=ai&threadId=t1&state=encoded",
+      "/ai?mode=ai&threadId=t1&state=encoded&agentId=a1",
     );
     expect(
       forwardPersistentParams("/ws", current, {

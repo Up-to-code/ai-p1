@@ -6,25 +6,9 @@ import type {
   OrganizationMemberForPolicy,
   OrganizationRoleForPolicy,
 } from "./access-policy";
+import type { Resource } from "@qentrah/domain-contracts";
 
-type OrganizationResource =
-  | "organization"
-  | "team"
-  | "member"
-  | "role"
-  | "client"
-  | "task"
-  | "project"
-  | "asset"
-  | "calendar"
-  | "media"
-  | "visibility"
-  | "integration"
-  | "apiKey"
-  | "oauthApp"
-  | "space"
-  | "finance"
-  | "report";
+type OrganizationResource = Resource;
 
 export class OrganizationActionError extends Error {
   status: number;

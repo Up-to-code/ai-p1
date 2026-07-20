@@ -1,1 +1,10 @@
-// Workspace domain entry points use the canonical task workspace under domains/tasks.
+export { WorkspaceOperatingSurface } from "./components/workspace-operating-surface";
+export {
+  WorkspaceSurfaceProvider,
+  useWorkspaceSurface,
+} from "./components/workspace-surface-provider";
+export type {
+  WorkspaceSurface,
+  WorkspaceTaskView,
+  SpaceWorkspaceView,
+} from "./workspace-surface";

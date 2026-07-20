@@ -3,13 +3,10 @@ import { query } from "../_generated/server";
 import { getAuthUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { activeWorkspaceRows } from "../workspace/readSurface";
+import { presentWorkspaceRecord } from "../shared/present";
 import { theoryValidator } from "./validators";
 
 const MAX_LIST_THEORIES = 500;
-
-function presentTheory<TDoc extends { _id: string }>(doc: TDoc) {
-  return { ...doc, id: doc._id };
-}
 
 type TheoryAccessRow = {
   organizationId: string;
@@ -53,7 +50,7 @@ export const list = query({
       .take(MAX_LIST_THEORIES);
     return activeWorkspaceRows(theories)
       .filter((t) => !t.isPrivate)
-      .map(presentTheory);
+      .map(presentWorkspaceRecord);
   },
 });
 
@@ -71,7 +68,7 @@ export const listPrivate = query({
       .take(MAX_LIST_THEORIES);
     return readableTheoriesForUser(activeWorkspaceRows(theories), args.organizationId, user._id)
       .filter((theory) => theory.isPrivate)
-      .map(presentTheory);
+      .map(presentWorkspaceRecord);
   },
 });
 
@@ -86,7 +83,7 @@ export const listAll = query({
       .withIndex("by_organization", (q) => q.eq("organizationId", args.organizationId))
       .take(MAX_LIST_THEORIES);
     return readableTheoriesForUser(activeWorkspaceRows(theories), args.organizationId, user._id)
-      .map(presentTheory);
+      .map(presentWorkspaceRecord);
   },
 });
 
@@ -98,7 +95,7 @@ export const get = query({
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
     const theory = await ctx.db.get(args.theoryId);
     if (!theory || !canReadTheory(theory, args.organizationId, user._id)) return null;
-    return presentTheory(theory);
+    return presentWorkspaceRecord(theory);
   },
 });
 
@@ -118,6 +115,6 @@ export const search = query({
       .filter((t) =>
         [t.title, t.content, ...(t.tags ?? [])].some((v) => v?.toLowerCase().includes(needle)),
       )
-      .map(presentTheory);
+      .map(presentWorkspaceRecord);
   },
 });

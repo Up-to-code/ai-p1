@@ -2,9 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Building2, ChevronLeft, ChevronRight, Ellipsis, Eye, Search, Trash2, UserPlus, Users } from "lucide-react";
-import { DomainHeader, type HeaderAction } from "@/components/shared/domain/DomainHeader";
-import { type ViewMode } from "@/components/shared/view-system/ViewSwitcher";
+import { Building2, Users, Search, Trash2, Eye, Ellipsis, ChevronLeft, ChevronRight } from "lucide-react";
 import { ViewLoading } from "@/components/shared/loading/ViewLoading";
 import { useAuthSession } from "@/domains/auth";
 import { useClientsIndexQuery, useDeleteClientOptimisticMutation, useUpdateClientOptimisticMutation } from "@/domains/clients/api/clients";
@@ -23,6 +21,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ClientDetailLayout } from "./detail/client-detail-layout";
 import { cn } from "@/lib/utils";
+import { ClientsResourceLayout } from "./clients-resource-layout";
 
 const CLIENT_TABLE_PAGE_SIZE = 10;
 
@@ -67,7 +66,6 @@ function InlineSelectCell<TValue extends string>({
 export function ClientsPageRedesigned() {
   const t = useTranslations('Clients');
   const session = useAuthSession();
-  const [activeView, setActiveView] = useState<ViewMode>('table');
   const [deleting, setDeleting] = useState<Client | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -112,274 +110,196 @@ export function ClientsPageRedesigned() {
     });
   };
 
-  const actions: HeaderAction[] = [
-    {
-      label: "Add Client",
-      icon: <UserPlus className="w-4 h-4" />,
-      onClick: () => setIsCreateOpen(true),
-      variant: "primary",
-    },
-  ];
-
-  const availableViews: ViewMode[] = ['table', 'board'];
-
   if (workspaceStatus !== "ready") {
     return (
-      <div className="flex flex-col h-full">
-        <DomainHeader
-          domain="Clients"
-          currentSection="All Clients"
-          actions={actions}
-          availableViews={availableViews}
-          activeView={activeView}
-          onViewChange={setActiveView}
-        />
+      <ClientsResourceLayout
+        clientCount={0}
+        search={search}
+        onSearchChange={setSearch}
+        onAddClient={() => setIsCreateOpen(true)}
+      >
         <div className="flex-1 flex items-center justify-center">
           <ViewLoading style="spinner" message="Loading workspace..." />
         </div>
-      </div>
+      </ClientsResourceLayout>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="flex flex-col h-full">
-        <DomainHeader
-          domain="Clients"
-          currentSection="All Clients"
-          actions={actions}
-          availableViews={availableViews}
-          activeView={activeView}
-          onViewChange={setActiveView}
-        />
+      <ClientsResourceLayout
+        clientCount={0}
+        search={search}
+        onSearchChange={setSearch}
+        onAddClient={() => setIsCreateOpen(true)}
+      >
         <div className="flex-1 relative">
           <ViewLoading style="table" message="Loading clients..." />
         </div>
-      </div>
+      </ClientsResourceLayout>
     );
   }
 
   if (clients.length === 0) {
     return (
-      <div className="flex flex-col h-full">
-        <DomainHeader
-          domain="Clients"
-          currentSection="All Clients"
-          actions={actions}
-          availableViews={availableViews}
-          activeView={activeView}
-          onViewChange={setActiveView}
-        />
+      <ClientsResourceLayout
+        clientCount={0}
+        search={search}
+        onSearchChange={setSearch}
+        onAddClient={() => setIsCreateOpen(true)}
+      >
         <div className="flex-1 flex items-center justify-center">
           <EmptyWorkspace icon={Users} title={t('empty.title')} description={t('empty.desc')} />
         </div>
-      </div>
+      </ClientsResourceLayout>
     );
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <DomainHeader
-        domain="Clients"
-        currentSection={`${clients.length} client${clients.length !== 1 ? "s" : ""}`}
-        actions={actions}
-        availableViews={availableViews}
-        activeView={activeView}
-        onViewChange={setActiveView}
-      />
-
-      {/* View content */}
+    <ClientsResourceLayout
+      clientCount={clients.length}
+      search={search}
+      onSearchChange={setSearch}
+      onAddClient={() => setIsCreateOpen(true)}
+    >
       <div className="min-h-0 flex-1 overflow-auto bg-background">
-        {activeView === 'table' && (
-          <div className="min-w-0">
-            <div className="overflow-hidden border-b border-border bg-background">
-              <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                <div className="text-sm font-medium text-muted-foreground">
-                  {filteredClients.length} client{filteredClients.length === 1 ? "" : "s"}
-                </div>
-                <div className="relative w-full sm:w-72">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    value={search}
-                    onChange={(event) => { setSearch(event.target.value); setPage(1); }}
-                    placeholder="Search clients"
-                    className="h-8 rounded-md border-border bg-background pl-9 shadow-none"
-                  />
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <Table className="min-w-[760px]">
-                  <TableHeader className="bg-muted/30">
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className="w-[25%]">Client</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Stage</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {visibleClients.map((client) => (
-                      <TableRow
-                        key={client.id}
-                        className="cursor-pointer"
-                        onClick={() => setSelectedClientId(client.id)}
-                      >
-                        <TableCell onClick={(event) => event.stopPropagation()}>
-                          <div className="flex min-w-0 items-center gap-3">
-                            <button
-                              type="button"
-                              onClick={() => setSelectedClientId(client.id)}
-                              aria-label={`Open ${client.name}`}
-                              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors hover:bg-foreground hover:text-background"
-                            >
-                              {client.type === "organization" ? <Building2 className="h-4 w-4" /> : <Users className="h-4 w-4" />}
-                            </button>
-                            <div className="min-w-0 flex-1">
-                              <EditableTitle
-                                value={client.name}
-                                onChange={(name) => {
-                                  if (name.trim()) updateClientField(client, "name", name.trim());
-                                }}
-                                trigger="doubleClick"
-                                size="md"
-                                ariaLabel={`Edit ${client.name} name`}
-                                className="block text-sm text-foreground hover:text-foreground"
-                              />
-                              {client.company ? <p className="truncate text-xs text-muted-foreground">{client.company}</p> : null}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell onClick={(event) => event.stopPropagation()}>
+        <div className="min-w-0">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[760px]">
+              <TableHeader className="bg-muted/30">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-[25%]">Client</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Stage</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visibleClients.map((client) => (
+                  <TableRow
+                    key={client.id}
+                    className="cursor-pointer"
+                    onClick={() => setSelectedClientId(client.id)}
+                  >
+                    <TableCell onClick={(event) => event.stopPropagation()}>
+                      <div className="flex min-w-0 items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedClientId(client.id)}
+                          aria-label={`Open ${client.name}`}
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors hover:bg-foreground hover:text-background"
+                        >
+                          {client.type === "organization" ? <Building2 className="h-4 w-4" /> : <Users className="h-4 w-4" />}
+                        </button>
+                        <div className="min-w-0 flex-1">
                           <EditableTitle
-                            value={client.contact || ""}
-                            onChange={(contact) => updateClientField(client, "contact", contact.trim())}
-                            placeholder="Add email"
+                            value={client.name}
+                            onChange={(name) => {
+                              if (name.trim()) updateClientField(client, "name", name.trim());
+                            }}
                             trigger="doubleClick"
                             size="md"
-                            ariaLabel={`Edit ${client.name} email`}
-                            className="block max-w-56 text-sm font-normal text-foreground hover:text-foreground"
+                            ariaLabel={`Edit ${client.name} name`}
+                            className="block text-sm text-foreground hover:text-foreground"
                           />
-                          <EditableTitle
-                            value={client.phone || ""}
-                            onChange={(phone) => updateClientField(client, "phone", phone.trim())}
-                            placeholder="Add phone"
-                            trigger="doubleClick"
-                            size="sm"
-                            ariaLabel={`Edit ${client.name} phone`}
-                            className="mt-0.5 block max-w-56 font-normal text-muted-foreground hover:text-foreground"
-                          />
-                        </TableCell>
-                        <TableCell onClick={(event) => event.stopPropagation()}>
-                          <InlineSelectCell
-                            value={(client.pipelineStage ?? "new") as (typeof CLIENT_STAGES)[number]}
-                            options={CLIENT_STAGES}
-                            onChange={(pipelineStage) => updateClientField(client, "pipelineStage", pipelineStage)}
-                            colored
-                          />
-                        </TableCell>
-                        <TableCell onClick={(event) => event.stopPropagation()}>
-                          <InlineSelectCell
-                            value={client.status}
-                            options={CLIENT_STATUSES}
-                            onChange={(status) => updateClientField(client, "status", status)}
-                            colored
-                          />
-                        </TableCell>
-                        <TableCell onClick={(event) => event.stopPropagation()}>
-                          <InlineSelectCell
-                            value={client.type}
-                            options={CLIENT_TYPES}
-                            onChange={(type) => updateClientField(client, "type", type)}
-                          />
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap text-muted-foreground">
-                          {client.createdAt ? new Date(client.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "—"}
-                        </TableCell>
-                        <TableCell onClick={(event) => event.stopPropagation()}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" aria-label={`Actions for ${client.name}`}>
-                                  <Ellipsis className="h-4 w-4" />
-                                </Button>
-                              }
-                            />
-                            <DropdownMenuContent align="end" sideOffset={2} className="min-w-36 rounded-md p-0.5">
-                              <DropdownMenuItem className="px-2 py-1 text-xs" onClick={() => setSelectedClientId(client.id)}>
-                                <Eye className="h-4 w-4" /> View client
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="px-2 py-1 text-xs" variant="destructive" onClick={() => setDeleting(client)}>
-                                <Trash2 className="h-4 w-4" /> Delete client
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {visibleClients.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={7} className="h-28 text-center text-muted-foreground">No clients match your search.</TableCell>
-                      </TableRow>
-                    ) : null}
-                  </TableBody>
-                </Table>
-              </div>
-
-              <div className="flex items-center justify-between gap-4 border-t border-border/70 px-4 py-3">
-                <p className="text-xs text-muted-foreground">
-                  {filteredClients.length === 0 ? 0 : (currentPage - 1) * CLIENT_TABLE_PAGE_SIZE + 1}–{Math.min(currentPage * CLIENT_TABLE_PAGE_SIZE, filteredClients.length)} of {filteredClients.length}
-                </p>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" disabled={currentPage === 1} onClick={() => setPage((value) => Math.max(1, value - 1))} aria-label="Previous page">
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="min-w-16 text-center text-xs font-medium">{currentPage} / {totalPages}</span>
-                  <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" disabled={currentPage === totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))} aria-label="Next page">
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+                          {client.company ? <p className="truncate text-xs text-muted-foreground">{client.company}</p> : null}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell onClick={(event) => event.stopPropagation()}>
+                      <EditableTitle
+                        value={client.contact || ""}
+                        onChange={(contact) => updateClientField(client, "contact", contact.trim())}
+                        placeholder="Add email"
+                        trigger="doubleClick"
+                        size="md"
+                        ariaLabel={`Edit ${client.name} email`}
+                        className="block max-w-56 text-sm font-normal text-foreground hover:text-foreground"
+                      />
+                      <EditableTitle
+                        value={client.phone || ""}
+                        onChange={(phone) => updateClientField(client, "phone", phone.trim())}
+                        placeholder="Add phone"
+                        trigger="doubleClick"
+                        size="sm"
+                        ariaLabel={`Edit ${client.name} phone`}
+                        className="mt-0.5 block max-w-56 font-normal text-muted-foreground hover:text-foreground"
+                      />
+                    </TableCell>
+                    <TableCell onClick={(event) => event.stopPropagation()}>
+                      <InlineSelectCell
+                        value={(client.pipelineStage ?? "new") as (typeof CLIENT_STAGES)[number]}
+                        options={CLIENT_STAGES}
+                        onChange={(pipelineStage) => updateClientField(client, "pipelineStage", pipelineStage)}
+                        colored
+                      />
+                    </TableCell>
+                    <TableCell onClick={(event) => event.stopPropagation()}>
+                      <InlineSelectCell
+                        value={client.status}
+                        options={CLIENT_STATUSES}
+                        onChange={(status) => updateClientField(client, "status", status)}
+                        colored
+                      />
+                    </TableCell>
+                    <TableCell onClick={(event) => event.stopPropagation()}>
+                      <InlineSelectCell
+                        value={client.type}
+                        options={CLIENT_TYPES}
+                        onChange={(type) => updateClientField(client, "type", type)}
+                      />
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
+                      {client.createdAt ? new Date(client.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                    </TableCell>
+                    <TableCell onClick={(event) => event.stopPropagation()}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" aria-label={`Actions for ${client.name}`}>
+                              <Ellipsis className="h-4 w-4" />
+                            </Button>
+                          }
+                        />
+                        <DropdownMenuContent align="end" sideOffset={2} className="min-w-36 rounded-md p-0.5">
+                          <DropdownMenuItem className="px-2 py-1 text-xs" onClick={() => setSelectedClientId(client.id)}>
+                            <Eye className="h-4 w-4" /> View client
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="px-2 py-1 text-xs" variant="destructive" onClick={() => setDeleting(client)}>
+                            <Trash2 className="h-4 w-4" /> Delete client
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {visibleClients.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-28 text-center text-muted-foreground">No clients match your search.</TableCell>
+                  </TableRow>
+                ) : null}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="flex items-center justify-between gap-4 border-t border-border/70 px-4 py-3">
+            <p className="text-xs text-muted-foreground">
+              {filteredClients.length === 0 ? 0 : (currentPage - 1) * CLIENT_TABLE_PAGE_SIZE + 1}–{Math.min(currentPage * CLIENT_TABLE_PAGE_SIZE, filteredClients.length)} of {filteredClients.length}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" disabled={currentPage === 1} onClick={() => setPage((value) => Math.max(1, value - 1))} aria-label="Previous page">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="min-w-16 text-center text-xs font-medium">{currentPage} / {totalPages}</span>
+              <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" disabled={currentPage === totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))} aria-label="Next page">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-        )}
-
-        {activeView === 'board' && (
-          <div className="h-full p-6">
-            <GroupedList
-              items={clients.map((client) => clientToCardItem({
-                id: client.id,
-                name: client.name,
-                contact: client.contact,
-                phone: client.phone,
-                company: client.company,
-                source: client.source,
-                pipelineStage: client.pipelineStage ?? "new",
-                type: client.type,
-              }))}
-              stages={[
-                {
-                  key: "all",
-                  name: t("toolbar.filters.all"),
-                  color: "#9CA3AF",
-                  order: 0,
-                }
-              ]}
-              showSearch
-              showCount
-              defaultExpanded
-              onRowClick={(item) => {
-                const client = clients.find((c) => c.id === item.id);
-                if (client) setSelectedClientId(client.id);
-              }}
-            />
-          </div>
-        )}
-
+        </div>
       </div>
 
       <Dialog open={Boolean(selectedClientId)} onOpenChange={(open) => !open && setSelectedClientId(null)}>
@@ -428,6 +348,6 @@ export function ClientsPageRedesigned() {
           // Refresh handled by optimistic mutation
         }}
       />
-    </div>
+    </ClientsResourceLayout>
   );
 }

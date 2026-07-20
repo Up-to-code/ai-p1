@@ -14,7 +14,7 @@
 
 Qentrah helps agencies run the complete client lifecycle without splitting context across separate CRM, project-management, communication, and finance systems. A lead can become a deal, contract, engagement, delivery project, approval, invoice, and profitability record while each domain remains authoritative and auditable.
 
-The product is an active `v0.1.0` pre-release. This repository is private while its source-available publication packet completes legal, security, provenance, and engineering review.
+The product is an active `v0.1.0` pre-release. This public repository is source-available under the Business Source License 1.1; production use remains subject to the license and commercial terms described below.
 
 ## What Qentrah includes
 
@@ -151,9 +151,9 @@ Qentrah is **source-available, not Open Source**, before the Change Date. The co
 
 The included Qentrah logo and trademarks are not licensed under BSL. Unmodified builds may display the included identity; forks and modified distributions must rebrand according to [TRADEMARKS.md](TRADEMARKS.md).
 
-## Publication status
+## Release readiness
 
-Repository visibility must remain private until the release gates are complete. The current evidence and required approvals are tracked in:
+The public source repository is available for evaluation and permitted use under the license. A tagged `v0.1.0` release remains gated on the recorded legal, security, provenance, and engineering evidence tracked in:
 
 - [Source-available readiness](docs/compliance/open-source-readiness.md)
 - [Publication runbook](docs/operations/source-publication.md)
@@ -161,7 +161,7 @@ Repository visibility must remain private until the release gates are complete. 
 - [Copyright provenance](docs/compliance/copyright-provenance.md)
 - [Asset provenance](docs/compliance/asset-provenance.json)
 
-No preparation document, milestone, or successful non-strict check authorizes publication or creation of the `v0.1.0` release.
+No preparation document, milestone, or successful non-strict check authorizes creation of the `v0.1.0` release.
 
 ## Community policies
 

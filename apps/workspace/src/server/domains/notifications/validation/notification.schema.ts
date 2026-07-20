@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { notificationCategorySchema, recurrenceFrequencySchema } from "@qentrah/domain-contracts";
 
 const categorySchema = z.object({
   calendar: z.boolean(),
@@ -39,11 +40,11 @@ export const pushDeviceSchema = z.object({
 export const notificationScheduleSchema = z.object({
   title: z.string().trim().min(1).max(120),
   body: z.string().trim().min(1).max(400),
-  category: z.enum(["calendar", "task", "manual", "organization"]).default("manual"),
+  category: notificationCategorySchema.default("manual"),
   scheduledAt: z.number().int().positive(),
   timezone: z.string().trim().max(80).optional(),
   recurrence: z.object({
-    frequency: z.enum(["daily", "weekly", "monthly"]),
+    frequency: recurrenceFrequencySchema,
     interval: z.number().int().min(1).max(30),
     untilAt: z.number().int().positive().optional(),
   }).optional(),

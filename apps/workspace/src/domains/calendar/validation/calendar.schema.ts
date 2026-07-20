@@ -1,13 +1,17 @@
 import { z } from "zod";
 import { requiredText } from "@/validation/common.schema";
+import {
+  calendarEventTypeSchema,
+  calendarEventStatusSchema,
+} from "@qentrah/domain-contracts";
 
 export const calendarEventSchema = z.object({
   title: requiredText("Title"),
   ownerUserId: z.string().trim().optional(),
   date: requiredText("Date"),
   time: requiredText("Time"),
-  type: z.enum(["meeting", "deadline", "document", "reminder", "milestone", "focusBlock"]),
-  status: z.enum(["confirmed", "pending", "draft"]),
+  type: calendarEventTypeSchema,
+  status: calendarEventStatusSchema,
   durationMinutes: z.coerce.number().int().positive().optional(),
   clientId: z.string().optional(),
   projectId: z.string().optional(),

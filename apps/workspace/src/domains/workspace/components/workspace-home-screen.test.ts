@@ -5,9 +5,9 @@ import { fileURLToPath } from "node:url";
 const source = readFileSync(fileURLToPath(new URL("./workspace-home-screen.tsx", import.meta.url)), "utf8");
 
 describe("Workspace home renderer", () => {
-  it("uses the personal command center instead of a duplicate task workspace", () => {
-    expect(source).toContain('from "./workspace-command-center"');
-    expect(source).toContain("<WorkspaceCommandCenter />");
+  it("uses the single-route operating surface", () => {
+    expect(source).toContain('from "./workspace-operating-surface"');
+    expect(source).toContain("<WorkspaceOperatingSurface />");
     expect(source).not.toContain("TasksPageRedesigned");
     expect(source).not.toContain('from "@/domains/projects/components/views/task-table-view"');
   });

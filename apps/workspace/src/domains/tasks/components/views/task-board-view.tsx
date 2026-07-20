@@ -100,61 +100,7 @@ const PRIORITY_FLAG: Record<TaskRecord["priority"], string> = {
   low: "text-zinc-400",
 };
 
-const GROUP_COLORS = [
-  "#6366f1",
-  "#8b5cf6",
-  "#3b82f6",
-  "#0ea5e9",
-  "#14b8a6",
-  "#22c55e",
-  "#f59e0b",
-  "#f97316",
-  "#ef4444",
-  "#ec4899",
-  "#a855f7",
-  "#78716c",
-] as const;
-
-function plainText(value: string | undefined) {
-  return value
-    ?.replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function colorForTag(tag: string) {
-  const index = Array.from(tag).reduce(
-    (value, character) => value + character.charCodeAt(0),
-    0,
-  );
-  return GROUP_COLORS[index % GROUP_COLORS.length];
-}
-
-function compactTaskDate(value?: string) {
-  if (!value) return "";
-  const date = value.includes("T")
-    ? new Date(value)
-    : new Date(`${value}T12:00:00`);
-  const dateLabel = date.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-  });
-  if (!value.includes("T")) return dateLabel;
-  return `${dateLabel} ${date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`;
-}
-
-function taskDate(value?: string) {
-  if (!value) return undefined;
-  return value.includes("T") ? new Date(value) : new Date(`${value}T12:00:00`);
-}
-
-function taskDateRangeLabel(startDate?: string, dueDate?: string) {
-  if (startDate && dueDate)
-    return `${compactTaskDate(startDate)} → ${compactTaskDate(dueDate)}`;
-  if (startDate) return `Starts ${compactTaskDate(startDate)}`;
-  if (dueDate) return compactTaskDate(dueDate);
-  return "Set dates";
-}
+import { plainText, colorForTag, compactTaskDate, taskDate, taskDateRangeLabel, GROUP_COLORS } from "./shared/task-view-utils";
 
 function BoardAddTask({
   status,

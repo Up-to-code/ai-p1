@@ -1,18 +1,7 @@
-export type McpPermissionResource =
-  | "organization"
-  | "member"
-  | "role"
-  | "space"
-  | "client"
-  | "project"
-  | "deal"
-  | "calendar"
-  | "task"
-  | "media"
-  | "finance"
-  | "report";
+import type { McpResource, Action } from "@qentrah/domain-contracts";
 
-export type McpPermissionAction = "read" | "create" | "update" | "delete";
+export type McpPermissionResource = McpResource;
+export type McpPermissionAction = Action;
 
 export type McpAdapter = "agent" | "mcp";
 export type McpToolRiskLevel = "read" | "low_write" | "sensitive_write" | "destructive" | "admin";

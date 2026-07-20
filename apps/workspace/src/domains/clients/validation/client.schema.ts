@@ -1,5 +1,11 @@
 import { z } from "zod";
 import { optionalText, requiredText } from "@/validation/common.schema";
+import {
+  clientTypeSchema,
+  clientStatusSchema,
+  clientPrioritySchema,
+  visibilitySchema,
+} from "@qentrah/domain-contracts";
 
 const optionalNumericText = (label: string) =>
   z
@@ -12,7 +18,7 @@ const optionalNumericText = (label: string) =>
 export const clientSchema = z
   .object({
     name: requiredText("Full name"),
-    type: z.enum(["person", "organization"]),
+    type: clientTypeSchema,
     contact: z
       .string()
       .trim()
@@ -32,11 +38,11 @@ export const clientSchema = z
     generation: optionalText.default(""),
     budget: optionalText.default(""),
     assetInterest: optionalText.default(""),
-    status: z.enum(["new", "active", "nurture", "inactive", "archived"]),
-    visibility: z.enum(["private", "team", "workspace"]).optional(),
-    pipelineStage: z.enum(["new", "qualified", "review", "negotiation", "closed"]),
+    status: clientStatusSchema,
+    visibility: visibilitySchema.optional(),
+    pipelineStage: z.string().trim().min(1).optional(),
     pipelineOrder: z.number().finite().optional(),
-    priority: z.enum(["normal", "high", "urgent"]),
+    priority: clientPrioritySchema,
     nextAction: optionalText.default(""),
     issue: optionalText,
     notes: optionalText,
@@ -63,7 +69,7 @@ export interface ClientFormValues {
   assetInterest: string;
   status: "new" | "active" | "nurture" | "inactive" | "archived";
   visibility?: "private" | "team" | "workspace";
-  pipelineStage: "new" | "qualified" | "review" | "negotiation" | "closed";
+  pipelineStage?: string;
   pipelineOrder?: number;
   priority: "normal" | "high" | "urgent";
   nextAction: string;

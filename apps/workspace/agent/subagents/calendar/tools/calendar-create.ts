@@ -3,6 +3,10 @@ import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthMutation } from "../../../lib/convex";
 import { requireWorkspaceActor } from "../../../lib/workspace-actor";
+import {
+  calendarEventTypeSchema,
+  calendarEventStatusSchema,
+} from "@qentrah/domain-contracts";
 
 export default defineTool({
   description: "Create a new calendar event.",
@@ -15,8 +19,8 @@ export default defineTool({
     documentId: z.string().min(1).optional(),
     startAt: z.number(),
     endAt: z.number(),
-    type: z.enum(["meeting", "deadline", "document", "reminder", "milestone", "focusBlock"]),
-    status: z.enum(["confirmed", "pending", "draft"]),
+    type: calendarEventTypeSchema,
+    status: calendarEventStatusSchema,
     location: z.string().optional(),
     meetingUrl: z.string().optional(),
     notes: z.string().optional(),

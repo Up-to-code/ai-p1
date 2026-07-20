@@ -3,10 +3,7 @@ import { mutation } from "../_generated/server";
 import { getAuthUser } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { opportunityInputValidator, opportunityValidator } from "./validators";
-
-function presentOpportunity<TOpportunity extends { _id: string }>(opportunity: TOpportunity) {
-  return { ...opportunity, id: opportunity._id };
-}
+import { presentWorkspaceRecord } from "../shared/present";
 
 export const createFromHono = mutation({
   args: { organizationId: v.string(), input: opportunityInputValidator },
@@ -38,7 +35,7 @@ export const createFromHono = mutation({
 
     const opportunity = await ctx.db.get(id);
     if (!opportunity) throw new Error("Opportunity could not be created.");
-    return presentOpportunity(opportunity);
+    return presentWorkspaceRecord(opportunity);
   },
 });
 
@@ -70,7 +67,7 @@ export const updateFromHono = mutation({
 
     const opportunity = await ctx.db.get(args.opportunityId);
     if (!opportunity) throw new Error("Opportunity was not found.");
-    return presentOpportunity(opportunity);
+    return presentWorkspaceRecord(opportunity);
   },
 });
 

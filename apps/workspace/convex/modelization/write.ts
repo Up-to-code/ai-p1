@@ -159,6 +159,27 @@ const SURFACE_DEFAULTS: Array<SurfaceSeed & { tabs: SurfaceTabSeed[] }> = [
     ],
   },
   {
+    key: "workspace:tasks",
+    title: "Tasks",
+    scopeType: "workspace",
+    tabs: [
+      {
+        label: "Table",
+        icon: "table",
+        order: 0,
+        tabType: "savedView",
+        savedViewTemplateId: "default:workspace:task-table",
+      },
+      {
+        label: "Board",
+        icon: "kanban",
+        order: 10,
+        tabType: "savedView",
+        savedViewTemplateId: "default:workspace:task-board",
+      },
+    ],
+  },
+  {
     key: "workspace:home",
     title: "Workspace Home",
     scopeType: "workspace",

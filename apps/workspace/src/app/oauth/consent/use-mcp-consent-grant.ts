@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import type { McpPermission, McpResource } from "@qentrah/mcp-contracts";
+import type {
+  McpGrantResource,
+  McpPermission,
+} from "@qentrah/mcp-contracts";
 import {
   defaultMcpConsentPermissions,
   mcpConsentActions,
@@ -55,7 +58,7 @@ export function useMcpConsentGrant(input: {
   );
 
   function togglePermission(
-    resource: McpResource,
+    resource: McpGrantResource,
     action: McpPermission["actions"][number],
   ) {
     if (!mcpConsentActions(resource).includes(action)) return;

@@ -3,11 +3,12 @@ import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "../../../lib/convex";
 import { requireWorkspaceActor } from "../../../lib/workspace-actor";
+import { dealStageSchema } from "@qentrah/domain-contracts";
 
 export default defineTool({
   description: "List deals, optionally filtered by stage.",
   inputSchema: z.object({
-    stage: z.enum(["lead", "qualified", "proposal_sent", "contract_sent", "won", "lost"]).optional(),
+    stage: dealStageSchema.optional(),
     search: z.string().trim().max(160).optional(),
     limit: z.number().int().min(1).max(50).optional(),
   }).passthrough(),

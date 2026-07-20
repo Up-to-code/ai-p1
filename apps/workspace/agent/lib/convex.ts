@@ -1,8 +1,10 @@
-import type { ToolContext } from "eve/tools";
 import { fetchMutation, fetchQuery } from "convex/nextjs";
 import type { FunctionReference, FunctionReturnType } from "convex/server";
 import type { ArgsAndOptions } from "convex/server";
-import { requireWorkspaceActorToken } from "./workspace-actor";
+import {
+  requireWorkspaceActorToken,
+  type ActorContext,
+} from "./workspace-actor";
 
 type OptionalArgs<FuncRef extends FunctionReference<"query" | "mutation" | "action">> =
   FuncRef["_args"] extends Record<string, never>
@@ -20,7 +22,7 @@ function authArgs<FuncRef extends FunctionReference<"query" | "mutation" | "acti
 }
 
 export async function fetchAuthQuery<Query extends FunctionReference<"query">>(
-  ctx: ToolContext,
+  ctx: ActorContext,
   query: Query,
   ...args: OptionalArgs<Query>
 ): Promise<FunctionReturnType<Query>> {
@@ -29,7 +31,7 @@ export async function fetchAuthQuery<Query extends FunctionReference<"query">>(
 }
 
 export async function fetchAuthMutation<Mutation extends FunctionReference<"mutation">>(
-  ctx: ToolContext,
+  ctx: ActorContext,
   mutation: Mutation,
   ...args: OptionalArgs<Mutation>
 ): Promise<FunctionReturnType<Mutation>> {

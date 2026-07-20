@@ -7,6 +7,8 @@ import { assertOrganizationEntitlement } from "../billing/access";
 import { automationEdgeValidator, automationNodeValidator, automationViewportValidator } from "./validators";
 import { graphProblem } from "./graph";
 import { automationLayoutUnchanged, mergeAutomationPositions } from "./layout";
+import { getAuthUser } from "../auth";
+import { automationEnablementProblems } from "./preflight";
 
 async function assertOwnedAutomation(
   ctx: MutationCtx,
@@ -20,7 +22,12 @@ async function assertOwnedAutomation(
     "update",
   );
   const automation = await ctx.db.get(automationId);
-  if (!automation || automation.organizationId !== organizationId) {
+  const user = await getAuthUser(ctx);
+  if (
+    !automation ||
+    automation.organizationId !== organizationId ||
+    automation.createdByUserId !== user._id
+  ) {
     throw new ConvexError({ code: "NOT_FOUND", message: "Automation not found." });
   }
   return automation;
@@ -47,8 +54,7 @@ export const create = mutation({
       key: "automation_run",
       used: 0,
     });
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new ConvexError({ code: "UNAUTHENTICATED", message: "Sign in required." });
+    const user = await getAuthUser(ctx);
     const now = Date.now();
     return await ctx.db.insert("automations", {
       organizationId: args.organizationId,
@@ -61,7 +67,7 @@ export const create = mutation({
         { id: "action-1", kind: "action", type: "update_task", label: "Update task status", x: 440, y: 180, config: { status: "in_progress" } },
       ],
       edges: args.edges ?? [{ id: "trigger-1-action-1", source: "trigger-1", target: "action-1" }],
-      createdByUserId: identity.subject,
+      createdByUserId: user._id,
       createdAt: now,
       updatedAt: now,
       runCount: 0,
@@ -97,6 +103,23 @@ export const save = mutation({
     }
     const problem = graphProblem(args.nodes, args.edges);
     if (problem) throw new ConvexError({ code: "INVALID_WORKFLOW", message: problem });
+    if (automation.enabled) {
+      const problems = await automationEnablementProblems(ctx, {
+        ...automation,
+        name: args.name.trim() || "Untitled automation",
+        description: args.description?.trim() || undefined,
+        nodes: args.nodes,
+        edges: args.edges,
+        viewport: args.viewport,
+      });
+      if (problems.length > 0) {
+        throw new ConvexError({
+          code: "AUTOMATION_NOT_READY",
+          message: problems.join(" "),
+          problems,
+        });
+      }
+    }
     const savedAt = Date.now();
     const revision = currentRevision + 1;
     await ctx.db.patch(args.automationId, {
@@ -138,7 +161,17 @@ export const setEnabled = mutation({
   args: { organizationId: v.string(), automationId: v.id("automations"), enabled: v.boolean() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    await assertOwnedAutomation(ctx, args.organizationId, args.automationId);
+    const automation = await assertOwnedAutomation(ctx, args.organizationId, args.automationId);
+    if (args.enabled) {
+      const problems = await automationEnablementProblems(ctx, automation);
+      if (problems.length > 0) {
+        throw new ConvexError({
+          code: "AUTOMATION_NOT_READY",
+          message: problems.join(" "),
+          problems,
+        });
+      }
+    }
     await ctx.db.patch(args.automationId, { enabled: args.enabled, updatedAt: Date.now() });
     return null;
   },
@@ -149,12 +182,42 @@ export const remove = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     await assertOwnedAutomation(ctx, args.organizationId, args.automationId);
+    const now = Date.now();
     const runs = await ctx.db
       .query("automationRuns")
-      .withIndex("by_automation_started", (q) => q.eq("automationId", args.automationId))
+      .withIndex("by_automation_started", (q) =>
+        q.eq("automationId", args.automationId),
+      )
       .collect();
-    await Promise.all(runs.map((run) => ctx.db.delete(run._id)));
-    await ctx.db.delete(args.automationId);
+    for (const run of runs.filter(
+      (candidate) =>
+        !["success", "failed", "cancelled"].includes(candidate.status),
+    )) {
+      await ctx.db.patch(run._id, {
+        status: "cancelled",
+        message: "Automation archived by its owner.",
+        finishedAt: now,
+      });
+      const steps = await ctx.db
+        .query("automationRunSteps")
+        .withIndex("by_run_action", (q) => q.eq("runId", run._id))
+        .collect();
+      await Promise.all(
+        steps
+          .filter((step) => step.status === "pending")
+          .map((step) =>
+            ctx.db.patch(step._id, {
+              status: "cancelled",
+              finishedAt: now,
+            }),
+          ),
+      );
+    }
+    await ctx.db.patch(args.automationId, {
+      enabled: false,
+      archivedAt: now,
+      updatedAt: now,
+    });
     return null;
   },
 });

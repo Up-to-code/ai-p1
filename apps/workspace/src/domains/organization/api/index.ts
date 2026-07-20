@@ -6,6 +6,7 @@ export type {
   OrganizationInvitationAcceptance,
   OrganizationInviteLink,
   McpPermissionResource,
+  GrantableMcpResource,
   McpPermissionAction,
   OrganizationApiKeyResource,
   OrganizationApiKeyAction,

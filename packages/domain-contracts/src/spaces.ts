@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const spaceVisibilitySchema = z.enum(["private", "public", "request_only"]);
 export const spaceProjectVisibilitySchema = z.enum(["private", "space_members", "organization"]);
+export const spaceMemberRoleSchema = z.enum(["admin", "member", "viewer"]);
 
 export const spaceInputSchema = z.object({
   name: z.string().trim().min(1, "Space name is required"),
@@ -38,5 +39,6 @@ export const spaceRecordSchema = z.object({
 
 export type SpaceVisibility = z.infer<typeof spaceVisibilitySchema>;
 export type SpaceProjectVisibility = z.infer<typeof spaceProjectVisibilitySchema>;
+export type SpaceMemberRole = z.infer<typeof spaceMemberRoleSchema>;
 export type SpaceInput = z.infer<typeof spaceInputSchema>;
 export type SpaceRecord = z.infer<typeof spaceRecordSchema>;

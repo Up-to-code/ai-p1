@@ -3,6 +3,7 @@ import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { fetchAuthMutation } from "../../../lib/convex";
 import { requireWorkspaceActor } from "../../../lib/workspace-actor";
+import { mediaResourceTypeSchema, mediaKindSchema } from "@qentrah/domain-contracts";
 
 function extensionName(url: string): string {
   try {
@@ -14,7 +15,7 @@ function extensionName(url: string): string {
   }
 }
 
-function mediaKind(input: { kind?: "image" | "document" | "video"; mimeType?: string }) {
+function mediaKind(input: { kind?: z.infer<typeof mediaKindSchema>; mimeType?: string }) {
   if (input.kind) return input.kind;
   if (input.mimeType?.startsWith("image/")) return "image";
   if (input.mimeType?.startsWith("video/")) return "video";
@@ -24,13 +25,13 @@ function mediaKind(input: { kind?: "image" | "document" | "video"; mimeType?: st
 export default defineTool({
   description: "Attach an external URL as media to a resource.",
   inputSchema: z.object({
-    resourceType: z.enum(["project", "client", "calendarEvent", "task"]),
+    resourceType: mediaResourceTypeSchema,
     resourceId: z.string().min(1),
     url: z.string().url(),
     name: z.string().min(1).optional(),
     mimeType: z.string().optional(),
     size: z.number().optional(),
-    kind: z.enum(["image", "document", "video"]).optional(),
+    kind: mediaKindSchema.optional(),
     isCover: z.boolean().optional(),
   }).passthrough(),
   async execute(args, ctx) {

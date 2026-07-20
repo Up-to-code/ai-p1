@@ -492,6 +492,42 @@
     "stateTitle": "Coming soon",
     "description": "Automation workflows are being redesigned as a focused, reliable operating surface. Editors, run history, webhooks, and connections stay unavailable until that contract is ready."
   },
+  "CustomAgents": {
+    "eyebrow": "Agent builder",
+    "title": "Custom agents",
+    "description": "Create owner-scoped AI agents, publish immutable revisions, test them in chat, and select them in durable automations.",
+    "newAgent": "New agent",
+    "emptyTitle": "Create your first custom agent",
+    "emptyDescription": "Define the agent's job and instructions, then publish it before selecting it in an automation.",
+    "noDescription": "No description",
+    "revision": "Draft revision {revision}",
+    "organizationRequired": "Select an Organization before creating an agent.",
+    "saved": "Agent saved",
+    "saveFailed": "Agent could not be saved",
+    "published": "Agent published",
+    "publishFailed": "Agent could not be published",
+    "back": "Back to custom agents",
+    "testAgent": "Test agent",
+    "save": "Save",
+    "publish": "Save and publish",
+    "instructionsHelp": "These instructions are snapshotted into every published revision. Automation runs always use the latest explicitly published revision.",
+    "runtime": "Runtime",
+    "modelHelp": "Use a model identifier supported by the configured OpenRouter or Eve runtime.",
+    "archiveTitle": "Archive agent",
+    "archiveDescription": "Archived agents stop appearing in new automation selections. Existing published run snapshots remain auditable.",
+    "archive": "Archive",
+    "fields": {
+      "name": "Agent name",
+      "description": "Description",
+      "instructions": "Instructions",
+      "model": "Model"
+    },
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived"
+    }
+  },
   "Inbox": {
     "title": "Inbox",
     "markAllRead": "Mark all read",

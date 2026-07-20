@@ -7,29 +7,10 @@ import {
   getOrganizationRole,
 } from "../../permissions";
 import type { Action, Resource } from "../../permissions";
+import { resources as canonicalResources } from "@qentrah/domain-contracts";
 
 type OrganizationAction = "read" | "update";
-type OrganizationPermissionResource =
-  | "organization"
-  | "team"
-  | "member"
-  | "role"
-  | "client"
-  | "deal"
-  | "task"
-  | "project"
-  | "asset"
-  | "calendar"
-  | "document"
-  | "media"
-  | "visibility"
-  | "integration"
-  | "apiKey"
-  | "oauthApp"
-  | "space"
-  | "channel"
-  | "finance"
-  | "report";
+type OrganizationPermissionResource = Resource;
 
 const capabilitiesReturnValidator = v.object({
   canReadOrganization: v.boolean(),
@@ -146,27 +127,7 @@ export const canUpdateProfile = query({
 export const canUseResourceAction = query({
   args: {
     organizationId: v.string(),
-    resource: v.union(
-      v.literal("organization"),
-      v.literal("team"),
-      v.literal("member"),
-      v.literal("role"),
-      v.literal("client"),
-      v.literal("deal"),
-      v.literal("task"),
-      v.literal("project"),
-      v.literal("asset"),
-      v.literal("calendar"),
-      v.literal("document"),
-      v.literal("media"),
-      v.literal("visibility"),
-      v.literal("integration"),
-      v.literal("apiKey"),
-      v.literal("oauthApp"),
-      v.literal("space"),
-      v.literal("finance"),
-      v.literal("report"),
-    ),
+    resource: v.union(...canonicalResources.map((r) => v.literal(r)) as [any, any, ...any[]]),
     action: v.string(),
   },
   returns: v.object({ allowed: v.boolean() }),

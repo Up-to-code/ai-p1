@@ -1,25 +1,22 @@
 import { ConvexError, v } from "convex/values";
 import { mutation } from "../_generated/server";
-import type { Doc, Id } from "../_generated/dataModel";
-import type { MutationCtx } from "../_generated/server";
-import { assertOrganizationPermission } from "../organizations/profile/access";
 import { requireServerActor } from "../access/actor";
-import { assertCanReadSavedViewScope } from "../access/savedView";
+import { assertOrganizationPermission } from "../organizations/profile/access";
 import {
   assertSavedViewGrantAction,
   resolveSavedViewGrantAccess,
 } from "../access/savedViewGrant";
+import { assertCanReadSavedViewScope } from "../access/savedView";
+import {
+  requireSurface,
+  requireAttachedView,
+  insertPersonalViewAndTab,
+} from "../workspaceSurfaces/helpers";
 import { savedViewConfigValidator } from "../schema/validators";
 import {
-  canonicalProjectWorkspaceRoute,
+  PROJECT_WORKSPACE_SURFACE_CONFIG,
   isProjectWorkspaceViewType,
-  PROJECT_WORKSPACE_SURFACE_KEY,
 } from "./data";
-import {
-  ensureSavedView,
-  ensureSurface,
-  ensureSurfaceTab,
-} from "../modelization/data";
 import {
   projectWorkspaceCreateInputValidator,
   projectWorkspaceViewTypeValidator,
@@ -39,6 +36,7 @@ export const ensureProjectWorkspaceDefaults = mutation({
   handler: async (ctx, args) => {
     const actor = await requireServerActor(ctx);
     await assertOrganizationPermission(ctx, args.organizationId, "read");
+    const { ensureSavedView, ensureSurface, ensureSurfaceTab } = await import("../modelization/data");
     const now = Date.now();
     const view = await ensureSavedView(ctx, {
       organizationId: args.organizationId,
@@ -68,7 +66,7 @@ export const ensureProjectWorkspaceDefaults = mutation({
       actorUserId: actor.userId,
       now,
       seed: {
-        key: PROJECT_WORKSPACE_SURFACE_KEY,
+        key: PROJECT_WORKSPACE_SURFACE_CONFIG.key,
         title: "Projects",
         scopeType: "workspace",
       },
@@ -91,129 +89,6 @@ export const ensureProjectWorkspaceDefaults = mutation({
   },
 });
 
-async function requireProjectSurface(
-  ctx: MutationCtx,
-  organizationId: string,
-  surfaceId: Id<"surfaces">,
-) {
-  await assertOrganizationPermission(ctx, organizationId, "read");
-  const surface = await ctx.db.get(surfaceId);
-  if (
-    !surface ||
-    surface.organizationId !== organizationId ||
-    surface.key !== PROJECT_WORKSPACE_SURFACE_KEY ||
-    surface.recordState !== "active"
-  ) {
-    throw workspaceError(
-      "PROJECT_WORKSPACE_SURFACE_NOT_FOUND",
-      "The Project workspace surface was not found.",
-    );
-  }
-  return surface;
-}
-
-async function requireAttachedView(
-  ctx: MutationCtx,
-  organizationId: string,
-  tabId: Id<"surfaceTabs">,
-) {
-  const tab = await ctx.db.get(tabId);
-  if (
-    !tab ||
-    tab.organizationId !== organizationId ||
-    tab.recordState !== "active" ||
-    !tab.savedViewId
-  ) {
-    throw workspaceError("PROJECT_WORKSPACE_TAB_NOT_FOUND", "The view tab was not found.");
-  }
-  await requireProjectSurface(ctx, organizationId, tab.surfaceId);
-  const view = await ctx.db.get(tab.savedViewId);
-  if (
-    !view ||
-    view.organizationId !== organizationId ||
-    view.resourceType !== "project" ||
-    view.recordState !== "active" ||
-    !isProjectWorkspaceViewType(view.viewType)
-  ) {
-    throw workspaceError("PROJECT_WORKSPACE_VIEW_NOT_FOUND", "The saved Project view was not found.");
-  }
-  await assertCanReadSavedViewScope(ctx, organizationId, view);
-  return { tab, view };
-}
-
-async function nextOrder(
-  ctx: MutationCtx,
-  organizationId: string,
-  surfaceId: Id<"surfaces">,
-) {
-  const tabs = await ctx.db
-    .query("surfaceTabs")
-    .withIndex("by_surface_state_order", (q) =>
-      q
-        .eq("organizationId", organizationId)
-        .eq("surfaceId", surfaceId)
-        .eq("recordState", "active"),
-    )
-    .collect();
-  return Math.max(-10, ...tabs.map((tab) => tab.order)) + 10;
-}
-
-async function insertPersonalViewAndTab(
-  ctx: MutationCtx,
-  args: {
-    organizationId: string;
-    surfaceId: Id<"surfaces">;
-    actorUserId: string;
-    viewType: Exclude<Doc<"savedViews">["viewType"], "fileManager">;
-    name: string;
-    config: Doc<"savedViews">["config"];
-    description?: string;
-    order?: number;
-  },
-) {
-  const now = Date.now();
-  const viewId = await ctx.db.insert("savedViews", {
-    organizationId: args.organizationId,
-    resourceType: "project",
-    viewType: args.viewType,
-    name: args.name.trim() || "Untitled view",
-    description: args.description,
-    ownerUserId: args.actorUserId,
-    scopeType: "workspace",
-    visibility: "private",
-    sharingMode: "personal",
-    revision: 1,
-    config: args.config,
-    isSystemDefault: false,
-    isRemovable: true,
-    recordState: "active",
-    createdByUserId: args.actorUserId,
-    createdAt: now,
-    updatedAt: now,
-  });
-  const tabId = await ctx.db.insert("surfaceTabs", {
-    organizationId: args.organizationId,
-    surfaceId: args.surfaceId,
-    tabType: "savedView",
-    label: args.name.trim() || "Untitled view",
-    order:
-      args.order ??
-      (await nextOrder(ctx, args.organizationId, args.surfaceId)),
-    savedViewId: viewId,
-    ownerUserId: args.actorUserId,
-    visibility: "private",
-    recordState: "active",
-    createdByUserId: args.actorUserId,
-    createdAt: now,
-    updatedAt: now,
-  });
-  return {
-    tabId,
-    viewId,
-    canonicalRoute: canonicalProjectWorkspaceRoute(args.viewType, viewId),
-  };
-}
-
 export const createAndAttachView = mutation({
   args: { input: projectWorkspaceCreateInputValidator },
   returns: v.object({
@@ -223,14 +98,16 @@ export const createAndAttachView = mutation({
   }),
   handler: async (ctx, { input }) => {
     const actor = await requireServerActor(ctx);
-    await requireProjectSurface(ctx, input.organizationId, input.surfaceId);
+    await requireSurface(ctx, input.organizationId, input.surfaceId, PROJECT_WORKSPACE_SURFACE_CONFIG, "PROJECT_WORKSPACE");
     return insertPersonalViewAndTab(ctx, {
       organizationId: input.organizationId,
       surfaceId: input.surfaceId,
       actorUserId: actor.userId,
       viewType: input.viewType,
+      resourceType: "project",
       name: input.name,
       config: input.config,
+      buildRoute: PROJECT_WORKSPACE_SURFACE_CONFIG.buildRoute,
     });
   },
 });
@@ -244,7 +121,9 @@ export const renameViewTab = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     await requireServerActor(ctx);
-    const { tab, view } = await requireAttachedView(ctx, args.organizationId, args.tabId);
+    const { tab, view } = await requireAttachedView(
+      ctx, args.organizationId, args.tabId, PROJECT_WORKSPACE_SURFACE_CONFIG, "PROJECT_WORKSPACE",
+    );
     if (!isProjectWorkspaceViewType(view.viewType)) {
       throw workspaceError("PROJECT_WORKSPACE_VIEW_NOT_FOUND", "The saved Project view was not found.");
     }
@@ -274,13 +153,15 @@ export const reorderViewTabs = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     await requireServerActor(ctx);
-    await requireProjectSurface(ctx, args.organizationId, args.surfaceId);
+    await requireSurface(ctx, args.organizationId, args.surfaceId, PROJECT_WORKSPACE_SURFACE_CONFIG, "PROJECT_WORKSPACE");
     const uniqueIds = [...new Set(args.orderedTabIds)];
     if (uniqueIds.length !== args.orderedTabIds.length) {
       throw workspaceError("PROJECT_WORKSPACE_ORDER_INVALID", "View tab order contains duplicates.");
     }
     for (const [index, tabId] of uniqueIds.entries()) {
-      const { tab, view } = await requireAttachedView(ctx, args.organizationId, tabId);
+      const { tab, view } = await requireAttachedView(
+        ctx, args.organizationId, tabId, PROJECT_WORKSPACE_SURFACE_CONFIG, "PROJECT_WORKSPACE",
+      );
       if (tab.surfaceId !== args.surfaceId) {
         throw workspaceError("PROJECT_WORKSPACE_ORDER_INVALID", "A view tab belongs to another surface.");
       }
@@ -302,7 +183,9 @@ export const duplicateViewTab = mutation({
   }),
   handler: async (ctx, args) => {
     const actor = await requireServerActor(ctx);
-    const { tab, view } = await requireAttachedView(ctx, args.organizationId, args.tabId);
+    const { tab, view } = await requireAttachedView(
+      ctx, args.organizationId, args.tabId, PROJECT_WORKSPACE_SURFACE_CONFIG, "PROJECT_WORKSPACE",
+    );
     if (!isProjectWorkspaceViewType(view.viewType)) {
       throw workspaceError("PROJECT_WORKSPACE_VIEW_NOT_FOUND", "The saved Project view was not found.");
     }
@@ -315,10 +198,12 @@ export const duplicateViewTab = mutation({
       surfaceId: tab.surfaceId,
       actorUserId: actor.userId,
       viewType: view.viewType,
+      resourceType: "project",
       name: `${view.name} copy`,
       description: view.description,
       config: view.config,
       order: tab.order + 1,
+      buildRoute: PROJECT_WORKSPACE_SURFACE_CONFIG.buildRoute,
     });
   },
 });
@@ -328,7 +213,9 @@ export const detachViewTab = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     await requireServerActor(ctx);
-    const { tab, view } = await requireAttachedView(ctx, args.organizationId, args.tabId);
+    const { tab, view } = await requireAttachedView(
+      ctx, args.organizationId, args.tabId, PROJECT_WORKSPACE_SURFACE_CONFIG, "PROJECT_WORKSPACE",
+    );
     if (view.isSystemDefault || !view.isRemovable) {
       throw workspaceError("PROJECT_WORKSPACE_SYSTEM_VIEW", "The default Project view cannot be removed.");
     }
@@ -405,15 +292,17 @@ export const createDefaultRouteView = mutation({
   returns: v.string(),
   handler: async (ctx, args) => {
     const actor = await requireServerActor(ctx);
-    await requireProjectSurface(ctx, args.organizationId, args.surfaceId);
+    await requireSurface(ctx, args.organizationId, args.surfaceId, PROJECT_WORKSPACE_SURFACE_CONFIG, "PROJECT_WORKSPACE");
     const label = args.viewType[0].toUpperCase() + args.viewType.slice(1);
     const created = await insertPersonalViewAndTab(ctx, {
       organizationId: args.organizationId,
       surfaceId: args.surfaceId,
       actorUserId: actor.userId,
       viewType: args.viewType,
+      resourceType: "project",
       name: label,
       config: args.config,
+      buildRoute: PROJECT_WORKSPACE_SURFACE_CONFIG.buildRoute,
     });
     return created.canonicalRoute;
   },

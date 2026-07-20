@@ -2,18 +2,15 @@
 
 import { useState } from 'react';
 import { useTranslations } from "next-intl";
-import { Plus, BadgeDollarSign, Trash2 } from "lucide-react";
+import { BadgeDollarSign, Trash2 } from "lucide-react";
 import { QentrahTable, type QentrahColumnDef } from "@qentrah/ui";
-import { DomainHeader, type HeaderAction } from "@/components/shared/domain/DomainHeader";
-import { type ViewMode } from "@/components/shared/view-system/ViewSwitcher";
 import { ViewLoading } from "@/components/shared/loading/ViewLoading";
 import { StatusPill, EmptyWorkspace, DeleteRecordDialog } from "@/components/shared/crud-ui";
 import { useAuthSession } from "@/domains/auth";
 import { useRouter } from "@/i18n/routing";
 import { useDealsWorkspace } from "../hooks/use-deals-workspace";
-import { updateDealRequest, deleteDealRequest } from "../api/deals";
 import type { Deal, DealStage, DealPriority } from "../store/deals.types";
-import { dealStages, stageTone, priorityTone, formatValue, matchesDealSearch } from "../lib/deal-view-model";
+import { stageTone, priorityTone, formatValue, matchesDealSearch } from "../lib/deal-view-model";
 import { DealBoard } from "./deal-board";
 import { DealForm } from "./deal-form";
 import { WorkOsRecordDrawer } from "@/domains/work-os/components/work-os-record-drawer";
@@ -21,12 +18,12 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 import { DEAL_PRIORITIES, EMPTY_DEAL_FORM } from "../config/deals.config";
 import { formFromDeal } from "../lib/deal-view-model";
+import { DealsResourceLayout } from "./deals-resource-layout";
 
 export function DealsPageRedesigned() {
   const t = useTranslations("Deals");
   const common = useTranslations("Common");
   const router = useRouter();
-  const [activeView, setActiveView] = useState<ViewMode>('board');
 
   const {
     workspaceStatus, deals, search,
@@ -112,118 +109,58 @@ export function DealsPageRedesigned() {
     },
   ];
 
-  const actions: HeaderAction[] = [
-    {
-      label: t("actions.new"),
-      icon: <Plus className="w-4 h-4" />,
-      onClick: openCreateDrawer,
-      variant: "primary",
-    },
-  ];
-
-  const availableViews: ViewMode[] = ['table', 'board', 'calendar', 'timeline', 'dashboard', 'widgets'];
-
   if (workspaceStatus !== "ready") {
     return (
-      <div className="flex flex-col h-screen">
-        <DomainHeader
-          domain="Deals"
-          currentSection="All Deals"
-          actions={actions}
-          availableViews={availableViews}
-          activeView={activeView}
-          onViewChange={setActiveView}
-        />
+      <DealsResourceLayout
+        dealCount={0}
+        search={search}
+        onSearchChange={setSearch}
+        onAddDeal={openCreateDrawer}
+      >
         <div className="flex-1 flex items-center justify-center">
           <ViewLoading style="spinner" message="Loading workspace..." />
         </div>
-      </div>
+      </DealsResourceLayout>
     );
   }
 
   if (filteredDeals.length === 0) {
     return (
-      <div className="flex flex-col h-screen">
-        <DomainHeader
-          domain="Deals"
-          currentSection="All Deals"
-          actions={actions}
-          availableViews={availableViews}
-          activeView={activeView}
-          onViewChange={setActiveView}
-        />
+      <DealsResourceLayout
+        dealCount={0}
+        search={search}
+        onSearchChange={setSearch}
+        onAddDeal={openCreateDrawer}
+      >
         <div className="flex-1 flex items-center justify-center">
           <EmptyWorkspace icon={BadgeDollarSign} title="" description="" />
         </div>
-      </div>
+      </DealsResourceLayout>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      <DomainHeader
-        domain="Deals"
-        currentSection={`${filteredDeals.length} deal${filteredDeals.length !== 1 ? "s" : ""}`}
-        actions={actions}
-        availableViews={availableViews}
-        activeView={activeView}
-        onViewChange={setActiveView}
-      />
-
+    <DealsResourceLayout
+      dealCount={filteredDeals.length}
+      search={search}
+      onSearchChange={setSearch}
+      onAddDeal={openCreateDrawer}
+    >
       {/* View content */}
       <div className="flex-1 overflow-hidden">
-        {activeView === 'table' && (
-          <div className="h-full p-6">
-            <div className="rounded-xl border border-border bg-card overflow-hidden h-full">
-              <QentrahTable
-                rows={filteredDeals}
-                columns={columns}
-                density="compact"
-                height="100%"
-                rowSelection="single"
-                getRowId={(row) => row.id}
-              />
-            </div>
-          </div>
-        )}
-
-        {activeView === 'board' && (
-          <div className="h-full p-6">
-            <DealBoard
-              deals={filteredDeals}
-              labels={dealStageLabels}
-              priorityLabels={dealPriorityLabels}
-              onEdit={openEditDrawer}
-              onDelete={confirmRemove}
-              onMoveStage={moveStage}
-              movingId={busyId}
+        {/* Table view is the default */}
+        <div className="h-full p-6">
+          <div className="rounded-xl border border-border bg-card overflow-hidden h-full">
+            <QentrahTable
+              rows={filteredDeals}
+              columns={columns}
+              density="compact"
+              height="100%"
+              rowSelection="single"
+              getRowId={(row) => row.id}
             />
           </div>
-        )}
-
-        {activeView === 'calendar' && (
-          <div className="h-full p-6">
-            <ViewLoading style="calendar" message="Calendar view coming soon" />
-          </div>
-        )}
-
-        {activeView === 'timeline' && (
-          <div className="h-full p-6">
-            <ViewLoading style="table" message="Timeline view coming soon" />
-          </div>
-        )}
-
-        {activeView === 'dashboard' && (
-          <div className="h-full p-6">
-            <ViewLoading style="skeleton" message="Dashboard view coming soon" />
-          </div>
-        )}
-
-        {activeView === 'widgets' && (
-          <div className="h-full p-6">
-            <ViewLoading style="skeleton" message="Widgets view coming soon" />
-          </div>
-        )}
+        </div>
       </div>
 
       <DeleteRecordDialog
@@ -267,6 +204,6 @@ export function DealsPageRedesigned() {
           />
         )}
       </WorkOsRecordDrawer>
-    </div>
+    </DealsResourceLayout>
   );
 }

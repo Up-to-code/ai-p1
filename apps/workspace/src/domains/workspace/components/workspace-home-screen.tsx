@@ -1,7 +1,7 @@
 "use client";
 
-import { WorkspaceCommandCenter } from "./workspace-command-center";
+import { WorkspaceOperatingSurface } from "./workspace-operating-surface";
 
 export function WorkspaceHomeScreen() {
-  return <WorkspaceCommandCenter />;
+  return <WorkspaceOperatingSurface />;
 }

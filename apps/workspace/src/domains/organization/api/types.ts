@@ -1,6 +1,7 @@
 "use client";
 
 import type { OrganizationPermissionStatement } from "@qentrah/auth";
+import type { McpResource, Action as McpAction } from "@qentrah/domain-contracts";
 
 export type OrganizationMember = {
   id: string;
@@ -51,7 +52,10 @@ export type OrganizationInviteLink = {
   updatedAt: number;
 };
 
-export type McpPermissionResource =
+export type McpPermissionResource = McpResource;
+
+/** Subset of MCP resources that can be granted to agent connections. */
+export type GrantableMcpResource =
   | "organization"
   | "client"
   | "project"
@@ -61,7 +65,7 @@ export type McpPermissionResource =
   | "media"
   | "space";
 
-export type McpPermissionAction = "read" | "create" | "update" | "delete";
+export type McpPermissionAction = McpAction;
 
 export type OrganizationApiKeyResource =
   | "organization"

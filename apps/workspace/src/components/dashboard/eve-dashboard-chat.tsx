@@ -20,14 +20,17 @@ export interface RestoredThread {
   title?: string;
   sessionState: SessionState;
   events: HandleMessageStreamEvent[];
+  customAgentId?: string;
 }
 
 export function EveDashboardChat({
   organizationId: propOrgId,
   restoredThread,
+  customAgentId: propCustomAgentId,
 }: {
   organizationId?: string;
   restoredThread?: RestoredThread | null;
+  customAgentId?: string;
 }) {
   const searchParams = useSearchParams();
   const sessionParam = searchParams.get("state");
@@ -35,6 +38,7 @@ export function EveDashboardChat({
   const qParam = searchParams.get("q"); // pre-filled query from search "Continue with AI"
   const authSession = useAuthSession();
   const organizationId = propOrgId ?? authSession.workspace.organizationId ?? undefined;
+  const customAgentId = propCustomAgentId ?? restoredThread?.customAgentId;
   const reduceMotion = useReducedMotion();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -60,6 +64,7 @@ export function EveDashboardChat({
 
   const { messages, isStreaming, errorMessage, send, stop, reset, status, session, events, progress } = useEveChat({
     organizationId,
+    customAgentId,
     initialSession: restoredThread?.sessionState,
     initialEvents: restoredThread?.events,
     restoreAttempted: restoredThread === null,
@@ -136,6 +141,7 @@ export function EveDashboardChat({
 
         await saveThread(organizationId, id, {
           title: threadTitleRef.current || "New conversation",
+          customAgentId,
           sessionState: currentSession,
           events: events as HandleMessageStreamEvent[],
         });
@@ -157,7 +163,7 @@ export function EveDashboardChat({
     }
 
     prevIsStreamingRef.current = isStreaming;
-  }, [isStreaming, session, events, messages.length, organizationId]);
+  }, [customAgentId, isStreaming, session, events, messages.length, organizationId]);
 
   // Auto-save AI responses as theories with context from the user's message
   useEffect(() => {

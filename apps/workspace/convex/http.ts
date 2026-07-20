@@ -118,8 +118,13 @@ http.route({
     const result = await ctx.runMutation(internal.automations.execute.runWebhook, {
       token,
       payload,
+      idempotencyKey:
+        request.headers.get("idempotency-key")?.trim().slice(0, 160) ||
+        undefined,
     });
-    return Response.json(result, { status: result.status === "success" ? 200 : 422 });
+    return Response.json(result, {
+      status: result.status === "queued" ? 202 : 422,
+    });
   }),
 });
 

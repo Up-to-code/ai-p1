@@ -7,10 +7,6 @@ import { opportunityStageValidator, opportunityValidator } from "./validators";
 
 const MAX_LIST_OPPORTUNITIES = 500;
 
-function presentOpportunity<TOpportunity extends { _id: string }>(opportunity: TOpportunity) {
-  return presentWorkspaceRecord(opportunity);
-}
-
 function matchesSearch(
   opportunity: { title: string; source?: string; nextStep?: string; tags?: string[] },
   search?: string,
@@ -48,7 +44,7 @@ export const list = query({
 
     return activeUpdatedWorkspaceRows(opportunities)
       .filter((opportunity) => matchesSearch(opportunity, args.search))
-      .map(presentOpportunity);
+      .map(presentWorkspaceRecord);
   },
 });
 
@@ -59,7 +55,7 @@ export const get = query({
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
     const opportunity = await ctx.db.get(args.opportunityId);
     if (!opportunity || opportunity.organizationId !== args.organizationId || opportunity.deletedAt) return null;
-    return presentOpportunity(opportunity);
+    return presentWorkspaceRecord(opportunity);
   },
 });
 

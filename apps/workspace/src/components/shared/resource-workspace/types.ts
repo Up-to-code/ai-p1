@@ -47,4 +47,5 @@ export type ResourceWorkspaceConfig = {
   actions?: ResourceWorkspaceAction[];
   viewCatalog?: ResourceViewCatalogItem[];
   onAddView?: (view: ResourceViewCatalogItem) => void | Promise<void>;
+  onViewSelect?: (viewId: string) => void;
 };
