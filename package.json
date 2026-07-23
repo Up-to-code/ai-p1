@@ -1,8 +1,8 @@
 {
   "name": "qentrah",
+
   "version": "0.1.0",
   "private": true,
-  "license": "BUSL-1.1",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -12,19 +12,16 @@
     "dev:workspace:desktop": "npm --workspace @qentrah/workspace run desktop:dev",
     "build:workspace:desktop": "npm --workspace @qentrah/workspace run desktop:pack",
     "dist:workspace:desktop": "npm --workspace @qentrah/workspace run desktop:dist",
+    "dev:partners": "npm --workspace @qentrah/partners run dev",
+    "dev:admin": "npm --workspace @qentrah/admin-review run dev",
+    "dev:demo": "npm --workspace @qentrah/demo-partner-app run dev",
     "dev:marketing": "npm --workspace @qentrah/marketing run dev",
-    "dev:mobile": "npm --workspace @qentrah/mobile run start",
-    "dev:zapier": "npm --workspace @qentrah/zapier-app run dev",
+    "dev:strapi": "npm --workspace @qentrah/strapi run dev",
+    "build:strapi": "npm --workspace @qentrah/strapi run build",
+    "seed:strapi": "npm --workspace @qentrah/strapi run seed",
     "brand:assets": "node scripts/brand-assets.mjs",
-    "assets:public": "node scripts/public-media-assets.mjs",
     "brand:scan": "node scripts/brand-scan.mjs",
     "brand:sync": "node scripts/brand-sync.mjs",
-    "docs:codebase-map": "node scripts/generate-codebase-interface-map.mjs",
-    "docs:codebase-map:check": "node scripts/generate-codebase-interface-map.mjs --check",
-    "licenses:generate": "node scripts/check-dependency-licenses.mjs",
-    "licenses:check": "node scripts/check-dependency-licenses.mjs --check",
-    "licenses:project:check": "node scripts/check-project-license.mjs",
-    "publication:check": "node scripts/check-project-license.mjs --strict",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
@@ -60,6 +57,7 @@
   },
   "dependencies": {
     "@alloc/quick-lru": "^5.2.0",
+    "@clerk/shared": "^4.23.0",
     "@sentry/nextjs": "^8.54.0",
     "ai": "^7.0.14",
     "eve": "^0.19.0",
@@ -68,9 +66,6 @@
     "next": "16.3.0-canary.32",
     "obug": "^2.1.3",
     "require-in-the-middle": "^8.0.1",
-    "slate": "^0.120.0",
-    "slate-dom": "^0.119.0",
-    "slate-react": "^0.120.0",
     "stacktrace-parser": "^0.1.11",
     "tinyglobby": "^0.2.17"
   }
