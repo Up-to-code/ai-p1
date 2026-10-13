@@ -172,3 +172,7 @@ No preparation document, milestone, or successful non-strict check authorizes cr
 - [Trademark policy](TRADEMARKS.md)
 
 For licensing questions, contact [legal@qentrah.com](mailto:legal@qentrah.com).
+
+## Project links
+
+[Source](https://github.com/Up-to-code/ai-p1) · [Issues](https://github.com/Up-to-code/ai-p1/issues) · [Public project directory](https://github.com/qentrah/.github/blob/main/profile/PROJECTS.md)
